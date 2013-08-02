@@ -1,0 +1,14 @@
+junkPlayground/Library/*
+junkPlayground/Temp/*
+junkPlayground/deploy/junk_Data/*
+junkPlayground/deploy/junk.exe
+*.csproj
+*.pidb
+*.unityproj
+*Thumbs.db
+*Thumbs.db.meta
+*.sln
+*.suo
+*.userprefs
+*.cache
+
