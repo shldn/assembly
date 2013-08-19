@@ -13,7 +13,7 @@ public class TSPManager : MonoBehaviour {
     private int populationSize = 40;
     private int iterations = 100;
     private int selectionMethod = 0;
-    private float scaleFactor = 0.01f;
+    private float scaleFactor = 0.02f;
     private bool greedyCrossover = true;
     private double[,] map = null;
     private Thread workerThread = null;
@@ -21,13 +21,13 @@ public class TSPManager : MonoBehaviour {
 
     void UpdateMap(double[,] map)
     {
+        CityFactory.Inst.DeleteAll();
         for (int i = 0; i < citiesCount; i++)
             CityFactory.Inst.GetCity(scaleFactor * (float)map[i, 0], scaleFactor * (float)map[i, 1]);        
     }
 
     void UpdatePath(double[,] path)
     {
-        Debug.LogError("UpdatePath: " + citiesCount);
         for (int i = 0; i < citiesCount; ++i)
         {
             Debug.DrawLine(new Vector3(scaleFactor * (float)path[i, 0], CityFactory.Inst.cityHeight, scaleFactor * (float)path[i, 1]),
@@ -62,7 +62,6 @@ public class TSPManager : MonoBehaviour {
 
     void SearchSolution()
     {
-        Debug.LogError("SearchSolution");
         // create fitness function
         TSP.TSPFitnessFunction fitnessFunction = new TSP.TSPFitnessFunction(map);
         // create population
@@ -113,7 +112,7 @@ public class TSPManager : MonoBehaviour {
     void OnGUI()
     {
         GUILayout.BeginVertical();
-        if (GUILayout.Button("Generate"))
+        if (GUILayout.Button("Create Cities"))
             GenerateMap();
 
         if (GUILayout.Button("Start"))
