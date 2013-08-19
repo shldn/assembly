@@ -19,15 +19,6 @@ public class TSPManager : MonoBehaviour {
     private Thread workerThread = null;
     private volatile bool needToStop = false;
 
-    void Start () {
-        Init();	
-	}
-
-    void Init()
-    {
-        GenerateMap();
-    }
-
     void UpdateMap(double[,] map)
     {
         for (int i = 0; i < citiesCount; i++)
@@ -121,7 +112,12 @@ public class TSPManager : MonoBehaviour {
 
     void OnGUI()
     {
-        if (GUI.Button(new Rect(0, 0, 40, 30), "Start"))
+        GUILayout.BeginVertical();
+        if (GUILayout.Button("Generate"))
+            GenerateMap();
+
+        if (GUILayout.Button("Start"))
             SearchSolution();
+        GUILayout.EndVertical();
     }
 }
