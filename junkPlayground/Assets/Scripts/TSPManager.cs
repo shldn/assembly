@@ -28,12 +28,14 @@ public class TSPManager : MonoBehaviour {
 
     void UpdatePath(double[,] path)
     {
-        for (int i = 0; i < citiesCount; ++i)
-        {
-            Debug.DrawLine(new Vector3(scaleFactor * (float)path[i, 0], CityFactory.Inst.cityHeight, scaleFactor * (float)path[i, 1]),
-                            new Vector3(scaleFactor * (float)path[i + 1, 0], CityFactory.Inst.cityHeight, scaleFactor * (float)path[i + 1, 1]), // path array goes to citiesCount+1
-                            Color.cyan, 1000); 
-        }
+        GameObject pathObj = new GameObject();
+        LineRenderer line = pathObj.AddComponent<LineRenderer>();
+        line.material = new Material(Shader.Find("Particles/Additive"));
+        line.SetColors(Color.cyan, Color.cyan);
+        line.SetWidth(0.2f, 0.2f);
+        line.SetVertexCount(citiesCount+1);
+        for (int i = 0; i < citiesCount+1; ++i)
+            line.SetPosition(i, new Vector3(scaleFactor * (float)path[i, 0], CityFactory.Inst.cityHeight, scaleFactor * (float)path[i, 1]));
     }
 
     void ErasePath()
