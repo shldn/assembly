@@ -14,10 +14,12 @@ public class TSPManager : MonoBehaviour {
     private int iterations = 100;
     private int selectionMethod = 0;
     private float scaleFactor = 0.02f;
+    private float heightOffset = 0.1f;
     private bool greedyCrossover = true;
     private double[,] map = null;
     private Thread workerThread = null;
     private volatile bool needToStop = false;
+    private int pathCount = 0;
 
     void UpdateMap(double[,] map)
     {
@@ -31,11 +33,14 @@ public class TSPManager : MonoBehaviour {
         GameObject pathObj = new GameObject();
         LineRenderer line = pathObj.AddComponent<LineRenderer>();
         line.material = new Material(Shader.Find("Particles/Additive"));
-        line.SetColors(Color.cyan, Color.cyan);
+        Color color = Color.cyan;
+        color.a = 0.2f;
+        line.SetColors(color, color);
         line.SetWidth(0.2f, 0.2f);
         line.SetVertexCount(citiesCount+1);
         for (int i = 0; i < citiesCount+1; ++i)
-            line.SetPosition(i, new Vector3(scaleFactor * (float)path[i, 0], CityFactory.Inst.cityHeight, scaleFactor * (float)path[i, 1]));
+            line.SetPosition(i, new Vector3(scaleFactor * (float)path[i, 0], CityFactory.Inst.cityHeight + pathCount * heightOffset, scaleFactor * (float)path[i, 1]));
+        pathCount++;
     }
 
     void ErasePath()
