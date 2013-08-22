@@ -9,42 +9,22 @@ using AForge.Genetic;
 
 public class TSPManager : MonoBehaviour {
 
+    static public readonly float scaleFactor = 0.02f;
+
     private int citiesCount = 20;
     private int populationSize = 40;
     private int iterations = 100;
     private int selectionMethod = 0;
-    private float scaleFactor = 0.02f;
-    private float heightOffset = 0.1f;
     private bool greedyCrossover = true;
     private double[,] map = null;
     private Thread workerThread = null;
     private volatile bool needToStop = false;
-    private int pathCount = 0;
 
     void UpdateMap(double[,] map)
     {
         CityFactory.Inst.DeleteAll();
         for (int i = 0; i < citiesCount; i++)
             CityFactory.Inst.GetCity(scaleFactor * (float)map[i, 0], scaleFactor * (float)map[i, 1]);        
-    }
-
-    void UpdatePath(double[,] path)
-    {
-        GameObject pathObj = new GameObject();
-        LineRenderer line = pathObj.AddComponent<LineRenderer>();
-        line.material = new Material(Shader.Find("Particles/Additive"));
-        Color color = Color.cyan;
-        color.a = 0.2f;
-        line.SetColors(color, color);
-        line.SetWidth(0.2f, 0.2f);
-        line.SetVertexCount(citiesCount+1);
-        for (int i = 0; i < citiesCount+1; ++i)
-            line.SetPosition(i, new Vector3(scaleFactor * (float)path[i, 0], CityFactory.Inst.cityHeight + pathCount * heightOffset, scaleFactor * (float)path[i, 1]));
-        pathCount++;
-    }
-
-    void ErasePath()
-    {
     }
 
     // Generate new map for the Traivaling Salesman problem
@@ -63,8 +43,8 @@ public class TSPManager : MonoBehaviour {
 
         // set the map
         UpdateMap(map);
-        // erase path if it is
-        ErasePath();
+        // erase paths
+        PathFactory.Inst.DeleteAll();
     }
 
     void SearchSolution()
@@ -102,7 +82,7 @@ public class TSPManager : MonoBehaviour {
             path[citiesCount, 0] = map[bestValue[0], 0];
             path[citiesCount, 1] = map[bestValue[0], 1];
 
-            UpdatePath(path);
+            PathFactory.Inst.CreatePath(path, citiesCount);
 
             // set current iteration's info
             fitnessFunction.PathLength(population.BestChromosome);
