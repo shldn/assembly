@@ -11,13 +11,3 @@ public class BindingForce
 	public float frequency;
 	
 }
-
-public class StrongForce : BindingForce
-{
-
-}
-
-public class WeakForce : BindingForce
-{
-
-}

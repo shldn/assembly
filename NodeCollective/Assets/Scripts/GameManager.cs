@@ -33,16 +33,22 @@ public class GameManager : MonoBehaviour {
 					float distToNode = ( otherNode.transform.position - currentNode.transform.position ).magnitude;
 					
 					// Attractive force
-					currentNode.rigidbody.AddForce( vectorToNode / distToNode );
+                    if ((currentNode.nodeKey == otherNode.nodeLock) || (currentNode.nodeLock == otherNode.nodeKey))
+                    {
+                        Vector3 attractiveVector = 100 * (vectorToNode / Mathf.Pow(distToNode, 2));
+                        Debug.DrawLine(currentNode.transform.position, otherNode.transform.position, new Color( 1f, 1f, 1f, attractiveVector.magnitude * 0.1f ));
+                        currentNode.rigidbody.AddForce( attractiveVector );
+                    }
 					
 					// Repulsive force
-					currentNode.rigidbody.AddForce( 100 * ( -vectorToNode / Mathf.Pow( distToNode, 5 )));
+					currentNode.rigidbody.AddForce( 1000 * ( -vectorToNode / Mathf.Pow( distToNode, 5 )));
 					
 				}
 			}
 		}
 	}
-	
+
+	/*
 	void OnGUI()
 	{
 		for( int i = 0; i < allNodes.Length; i++ )
@@ -98,4 +104,5 @@ public class GameManager : MonoBehaviour {
 			GUI.Label( new Rect( partScreenPos.x, ( Screen.height - partScreenPos.y ), 300, 300 ), nodeInfo );
 		}
 	}
+    */
 }

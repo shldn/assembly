@@ -4,7 +4,7 @@ using System.Collections;
 public class Sense
 {
 
-	public StrongForce strong = new StrongForce();
-	public WeakForce weak = new WeakForce();
+    public BindingForce strong = new BindingForce();
+    public BindingForce weak = new BindingForce();
 	
 }

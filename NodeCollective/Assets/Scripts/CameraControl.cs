@@ -42,10 +42,7 @@ public class CameraControl : MonoBehaviour {
 		else
 			lookedAtObject = null;
 		
-		
-		
-		
-		
+
 		// Translate position with keyboard input.
 		Vector3 tempPosition = transform.position;
 		if( Input.GetKey( KeyCode.W ))
@@ -64,25 +61,5 @@ public class CameraControl : MonoBehaviour {
 			tempPosition -= transform.up * cameraMoveSpeed * Time.deltaTime;
 		transform.position = tempPosition;
 		
-	}
-	
-	
-	void OnGUI()
-	{
-		/*
-		GUI.DrawTexture( new Rect(( Screen.width * 0.5f ) - 5f, ( Screen.height * 0.5f ) - 5f, 10f, 10f ), crosshairTex );
-		
-		
-		if( lookedAtObject )
-		{
-			Part lookedAtPart = lookedAtObject.GetComponent< Part >();
-			if( lookedAtPart )
-			{
-				Vector3 partScreenPos = Camera.main.WorldToScreenPoint( lookedAtPart.transform.position );
-				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-				GUI.Label( new Rect( partScreenPos.x - 100, ( Screen.height - partScreenPos.y ) - 100, 200, 200 ), lookedAtPart.dna );
-			}
-		}
-		*/
 	}
 }
