@@ -4,15 +4,19 @@ using System.Collections;
 public class GameManager : MonoBehaviour {
 	
 	public static Node[] allNodes;
+    public static Prefabs prefabs;
 
+
+    void Awake()
+    {
+        allNodes = FindObjectsOfType(typeof(Node)) as Node[];
+        prefabs = GetComponent<Prefabs>();
+    } // End of Awake().
 	
-	// Update is called once per frame
+
 	void Update()
 	{
-		allNodes = FindObjectsOfType( typeof( Node )) as Node[];
-	
-		if( Input.GetKey( KeyCode.Escape ))
-			Application.Quit();
+        allNodes = FindObjectsOfType(typeof(Node)) as Node[];
 		
 		if( Input.GetKey( KeyCode.F12 ))
 			Application.LoadLevel( 0 );
@@ -32,21 +36,14 @@ public class GameManager : MonoBehaviour {
 					Vector3 vectorToNode = ( otherNode.transform.position - currentNode.transform.position ).normalized;
 					float distToNode = ( otherNode.transform.position - currentNode.transform.position ).magnitude;
 					
-					// Attractive force
-                    if ((currentNode.nodeKey == otherNode.nodeLock) || (currentNode.nodeLock == otherNode.nodeKey))
-                    {
-                        Vector3 attractiveVector = 100 * (vectorToNode / Mathf.Pow(distToNode, 2));
-                        Debug.DrawLine(currentNode.transform.position, otherNode.transform.position, new Color( 1f, 1f, 1f, attractiveVector.magnitude * 0.1f ));
-                        currentNode.rigidbody.AddForce( attractiveVector );
-                    }
-					
 					// Repulsive force
 					currentNode.rigidbody.AddForce( 1000 * ( -vectorToNode / Mathf.Pow( distToNode, 5 )));
 					
 				}
 			}
 		}
-	}
+	} // End of Update().
+
 
 	/*
 	void OnGUI()
@@ -103,6 +100,6 @@ public class GameManager : MonoBehaviour {
 						
 			GUI.Label( new Rect( partScreenPos.x, ( Screen.height - partScreenPos.y ), 300, 300 ), nodeInfo );
 		}
-	}
+	} // End of OnGUI().
     */
 }
