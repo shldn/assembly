@@ -9,7 +9,8 @@ public class Node : MonoBehaviour
     public int nodeLock;
 
     public Node[] connections = new Node[0];
-    public VectorLine[] connectionLines = new VectorLine[0];
+    public VectorLine[] muscleLine = new VectorLine[0];
+    public VectorLine[] signalLine = new VectorLine[0];
 	
 	public Sense sense = new Sense();
 	public Control control = new Control();
@@ -41,7 +42,7 @@ public class Node : MonoBehaviour
                 for (int i = 0; i < connections.Length; i++)
                 {
                     newConnections[i] = connections[i];
-                    newConnectionLines[i] = connectionLines[i];
+                    newConnectionLines[i] = muscleLine[i];
                 }
 
                 newConnections[connections.Length] = otherNode;
@@ -49,9 +50,9 @@ public class Node : MonoBehaviour
                 Vector3[] linePoints = new Vector3[] { transform.position, otherNode.transform.position };
 
                 newConnectionLines[connections.Length] = new VectorLine("ConnectionLine", linePoints, lineMaterial, 3.0f);
-                newConnectionLines[connectionLines.Length].endCap = "ConnectionLineCaps";
+                newConnectionLines[muscleLine.Length].endCap = "ConnectionLineCaps";
                 connections = newConnections;
-                connectionLines = newConnectionLines;
+                muscleLine = newConnectionLines;
             }
         }
     } // End of Start().
@@ -63,12 +64,12 @@ public class Node : MonoBehaviour
         {
             if (!connections[i])
             {
-                VectorLine.Destroy(ref connectionLines[i]);
+                VectorLine.Destroy(ref muscleLine[i]);
                 continue;
             }
 
             Node otherNode = connections[i];
-            VectorLine currentLine = connectionLines[i];
+            VectorLine currentLine = muscleLine[i];
 
             // Attractive force
             Vector3 vectorToNode = (otherNode.transform.position - transform.position).normalized;
@@ -114,7 +115,7 @@ public class Node : MonoBehaviour
     void DestroyNode()
     {
         for (int i = 0; i < connections.Length; i++)
-            VectorLine.Destroy(ref connectionLines[i]);
+            VectorLine.Destroy(ref muscleLine[i]);
 
         Destroy(gameObject);
     } // End of DestroyNode().
