@@ -12,6 +12,6 @@ public class GraphicsManager : MonoBehaviour {
     void Awake()
     {
         // Set up line types.
-        VectorLine.SetEndCap("ConnectionLineCaps", EndCap.Back, lineMaterial, endTex);
+        VectorLine.SetEndCap("CalorieCaps", EndCap.Back, lineMaterial, endTex);
     } // End of Awake().
 }

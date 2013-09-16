@@ -4,27 +4,68 @@ using System.Collections;
 public class GameManager : MonoBehaviour {
 	
 	public static Node[] allNodes;
+	public static Bond[] allBonds;
+	
     public static Prefabs prefabs;
+	float totalEnergy;
+	
+	public static GUISkin readoutSkin;
 
 
     void Awake()
     {
-        allNodes = FindObjectsOfType(typeof(Node)) as Node[];
         prefabs = GetComponent<Prefabs>();
+		
+        allNodes = FindObjectsOfType(typeof(Node)) as Node[];
+        allBonds = FindObjectsOfType(typeof(Bond)) as Bond[];
+		
+		// Randomly assign bonds.
+		// Loop through all nodes...
+		for( int i = 0; i < allNodes.Length; i++ )
+		{
+			Node currentNode = allNodes[i];
+			
+			for(int j = 0; j < allNodes.Length; j++)
+			{
+				Node otherNode = allNodes[j];
+				if(Random.Range(0.0f, 1.0f) <= 0.02)
+				{
+					bool bondExists = false;
+					for(int k = 0; k < allBonds.Length; k++)
+					{
+						Bond currentBond = allBonds[k];
+						if(((currentBond.nodeA == currentNode) && (currentBond.nodeB == otherNode)) || ((currentBond.nodeA == otherNode) && (currentBond.nodeB == currentNode)))
+							bondExists = true;
+					}
+					
+					if(!bondExists)
+					{
+						GameObject newBondGameObject = Instantiate(prefabs.bond, Vector3.zero, Quaternion.identity) as GameObject;
+						Bond newBond = newBondGameObject.GetComponent<Bond>();
+						newBond.nodeA = currentNode;
+						newBond.nodeB = otherNode;
+					}
+				}
+			}
+		}
+		
     } // End of Awake().
 	
 
 	void Update()
 	{
         allNodes = FindObjectsOfType(typeof(Node)) as Node[];
+        allBonds = FindObjectsOfType(typeof(Bond)) as Bond[];
 		
 		if( Input.GetKey( KeyCode.F12 ))
 			Application.LoadLevel( 0 );
 		
+		totalEnergy = 0;
 		// Loop through all nodes...
 		for( int i = 0; i < allNodes.Length; i++ )
 		{
 			Node currentNode = allNodes[i];
+			totalEnergy += currentNode.calories;
 			
 			// Interaction with other nodes...
 			for( int j = 0; j < allNodes.Length; j++ )
@@ -45,9 +86,22 @@ public class GameManager : MonoBehaviour {
 	} // End of Update().
 
 
-	/*
+	
 	void OnGUI()
 	{
+		GUI.skin = readoutSkin;
+        GUI.skin.label.alignment = TextAnchor.UpperLeft;
+
+		string readout = "";
+		readout += "UCSD Experimental Game Lab 2013\n";
+		readout += "total energy in sys: " + totalEnergy + "\n";
+		readout += allNodes.Length + " nodes\n";
+		readout += allBonds.Length + " bonds\n";
+		readout += "\n";
+		readout += (1.0f / Time.deltaTime).ToString("F1") + "fps\n";
+		GUI.Label( new Rect( 0, 0, Screen.width, Screen.height ), readout );
+		
+		/*
 		for( int i = 0; i < allNodes.Length; i++ )
 		{
 			Node currentNode = allNodes[i];
@@ -100,6 +154,6 @@ public class GameManager : MonoBehaviour {
 						
 			GUI.Label( new Rect( partScreenPos.x, ( Screen.height - partScreenPos.y ), 300, 300 ), nodeInfo );
 		}
+		*/
 	} // End of OnGUI().
-    */
 }
