@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Actuate
-{
+public class Actuate : Attribute {
 	
 	public float sensitivity;
 	
@@ -12,4 +11,4 @@ public class Actuate
 	public float release;
 
 
-}
+} // End of Actuate.
