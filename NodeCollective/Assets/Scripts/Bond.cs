@@ -2,8 +2,8 @@
 using System.Collections;
 using Vectrosity;
 
-public class Bond : MonoBehaviour
-{
+public class Bond : MonoBehaviour {
+
     public Node nodeA;
     public Node nodeB;
     public VectorLine muscleLine;
@@ -18,20 +18,19 @@ public class Bond : MonoBehaviour
 	
 	float signalLink;
 	
-	void Awake()
-	{
+
+	void Awake(){
 		muscleLine = new VectorLine("muscleLine", muscleEndPoints, muscleLineMaterial, 3.0f);
 		signalLine = new VectorLine("signalLine", signalEndPoints, signalLineMaterial, 3.0f);
 		//calorieLine = new VectorLine("calorieLine", calorieEndPoints, lineMaterial, 3.0f);
 		
 		signalLink = Random.Range(-1.0f, 1.0f);
-	}
+	} // End of Awake().
 	
-	void Update()
-	{
+
+	void Update(){
 		// Destroy the bond if either of the nodes are missing.
-		if(!nodeA || !nodeB)
-		{
+		if(!nodeA || !nodeB){
 			VectorLine.Destroy(ref muscleLine);
 			VectorLine.Destroy(ref signalLine);
 			//VectorLine.Destroy(ref calorieLine);
@@ -86,13 +85,11 @@ public class Bond : MonoBehaviour
 		float signalEndRadius = 0.4f;
 		float signalOffset = 0.15f;
 		Vector3 signalEndOffset = Quaternion.LookRotation(dirAtoB, Camera.main.transform.forward) * -Vector3.right * signalOffset;
-		if(signalLink > 0)
-		{
+		if(signalLink > 0){
 			signalEndPoints[0] = nodeB.transform.position + signalEndOffset + (-dirAtoB * signalEndRadius);
 			signalEndPoints[1] = nodeB.transform.position + signalEndOffset + (-dirAtoB * (signalEndRadius + ((distToNode - (2.0f * signalEndRadius)) * Mathf.Abs(signalLink * nodeB.signalDecay))));
 		}
-		else
-		{
+		else{
 			signalEndPoints[0] = nodeA.transform.position + signalEndOffset + (dirAtoB * signalEndRadius);
 			signalEndPoints[1] = nodeA.transform.position + signalEndOffset + (dirAtoB * (signalEndRadius + ((distToNode - (2.0f * signalEndRadius)) * Mathf.Abs(signalLink * nodeA.signalDecay))));
 		}
@@ -119,4 +116,4 @@ public class Bond : MonoBehaviour
         calorieLine.Draw3D();
         */
 	} // End of Update().
-}
+} // End of Bond.

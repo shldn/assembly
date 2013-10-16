@@ -12,8 +12,7 @@ public class GameManager : MonoBehaviour {
 	public static GUISkin readoutSkin;
 
 
-    void Awake()
-    {
+    void Awake(){
         prefabs = GetComponent<Prefabs>();
 		
         allNodes = FindObjectsOfType(typeof(Node)) as Node[];
@@ -21,25 +20,20 @@ public class GameManager : MonoBehaviour {
 		
 		// Randomly assign bonds.
 		// Loop through all nodes...
-		for( int i = 0; i < allNodes.Length; i++ )
-		{
+		for( int i = 0; i < allNodes.Length; i++ ){
 			Node currentNode = allNodes[i];
 			
-			for(int j = 0; j < allNodes.Length; j++)
-			{
+			for(int j = 0; j < allNodes.Length; j++){
 				Node otherNode = allNodes[j];
-				if(Random.Range(0.0f, 1.0f) <= 0.01)
-				{
+				if(Random.Range(0.0f, 1.0f) <= 0.02){
 					bool bondExists = false;
-					for(int k = 0; k < allBonds.Length; k++)
-					{
+					for(int k = 0; k < allBonds.Length; k++){
 						Bond currentBond = allBonds[k];
 						if(((currentBond.nodeA == currentNode) && (currentBond.nodeB == otherNode)) || ((currentBond.nodeA == otherNode) && (currentBond.nodeB == currentNode)))
 							bondExists = true;
 					}
 					
-					if(!bondExists)
-					{
+					if(!bondExists){
 						GameObject newBondGameObject = Instantiate(prefabs.bond, Vector3.zero, Quaternion.identity) as GameObject;
 						Bond newBond = newBondGameObject.GetComponent<Bond>();
 						newBond.nodeA = currentNode;
@@ -48,47 +42,39 @@ public class GameManager : MonoBehaviour {
 				}
 			}
 		}
-		
     } // End of Awake().
 	
 
-	void Update()
-	{
+	void Update(){
         allNodes = FindObjectsOfType(typeof(Node)) as Node[];
         allBonds = FindObjectsOfType(typeof(Bond)) as Bond[];
 		
-		if( Input.GetKey( KeyCode.F12 ))
+		if(Input.GetKey(KeyCode.F12))
 			Application.LoadLevel( 0 );
 		
 		totalEnergy = 0;
 		// Loop through all nodes...
-		for( int i = 0; i < allNodes.Length; i++ )
-		{
+		for( int i = 0; i < allNodes.Length; i++ ){
 			Node currentNode = allNodes[i];
 			totalEnergy += currentNode.calories;
 			
 			// Interaction with other nodes...
-			for( int j = 0; j < allNodes.Length; j++ )
-			{
+			for( int j = 0; j < allNodes.Length; j++ ){
 				Node otherNode = allNodes[j];
 				
-				if( i != j )
-				{
+				if( i != j ){
 					Vector3 vectorToNode = ( otherNode.transform.position - currentNode.transform.position ).normalized;
 					float distToNode = ( otherNode.transform.position - currentNode.transform.position ).magnitude;
 					
 					// Repulsive force
 					currentNode.rigidbody.AddForce( 1000 * ( -vectorToNode / Mathf.Pow( distToNode, 5 )));
-					
 				}
 			}
 		}
 	} // End of Update().
 
-
 	
-	void OnGUI()
-	{
+	void OnGUI(){
 		GUI.skin = readoutSkin;
         GUI.skin.label.alignment = TextAnchor.UpperLeft;
 
@@ -102,8 +88,7 @@ public class GameManager : MonoBehaviour {
 		GUI.Label( new Rect( 0, 0, Screen.width, Screen.height ), readout );
 		
 		/*
-		for( int i = 0; i < allNodes.Length; i++ )
-		{
+		for( int i = 0; i < allNodes.Length; i++ ){
 			Node currentNode = allNodes[i];
 			
 			// Show node information.
@@ -115,16 +100,13 @@ public class GameManager : MonoBehaviour {
 			nodeInfo += currentNode.nodeName + "\n";
 			nodeInfo += "  Sense\n";
 			// Show readouts for both strong and weak forces.
-			for( var j = 0; j < 2; j++ )
-			{
+			for( var j = 0; j < 2; j++ ){
 				BindingForce currentForce;
-				if( j == 0 )
-				{
+				if( j == 0 ){
 					currentForce = currentNode.sense.strong;
 					nodeInfo += "    Strong Force\n";
 				}
-				else
-				{
+				else{
 					currentForce = currentNode.sense.weak;
 					nodeInfo += "    Weak Force\n";
 				}
@@ -156,4 +138,4 @@ public class GameManager : MonoBehaviour {
 		}
 		*/
 	} // End of OnGUI().
-}
+} // End of GameManager.

@@ -9,7 +9,6 @@ public class CameraControl : MonoBehaviour {
     public float orbitRotateSpeed = 2.0f;
     public float orbitZoomSpeed = 6.0f;
 
-
 	Vector3 targetEulers;
 	float smoothVelEulersX;
 	float smoothVelEulersY;
@@ -33,13 +32,14 @@ public class CameraControl : MonoBehaviour {
 
     bool spacePressed;
 	
-	void Start()
-	{
+
+	void Start(){
 		targetEulers = transform.eulerAngles;
+		targetPos = transform.position;
 	} // End of Start().
 
-	void FixedUpdate()
-	{
+
+	void FixedUpdate(){
         // Smoothly interpolate camera position/rotation.
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime);
 
@@ -49,26 +49,23 @@ public class CameraControl : MonoBehaviour {
         transform.eulerAngles = tempEulers;
 
         // Toggle camera lock/free movement with Spacebar.
-        if (Input.GetKey(KeyCode.Space) && !spacePressed)
-        {
+        if (Input.GetKey(KeyCode.Space) && !spacePressed){
             spacePressed = true;
             cameraLock = !cameraLock;
         }
-        if (!Input.GetKey(KeyCode.Space))
+
+        if(!Input.GetKey(KeyCode.Space))
             spacePressed = false;
 
-
         cameraFocused = false;
-        if (cameraLock)
-        {
+        if(cameraLock){
             Screen.lockCursor = false;
 
             // Move in/out with mousewheel.
             targetPos += Camera.main.transform.forward * Input.GetAxis("Mouse ScrollWheel") * orbitZoomSpeed;
 
 
-            if(focusedNode)
-            {
+            if(focusedNode){
                 cameraFocused = true;
                 focusedPos = focusedNode.transform.position;
 
@@ -79,8 +76,7 @@ public class CameraControl : MonoBehaviour {
                     focusedNode.calories -= 10.0f * Time.deltaTime;
             }
 
-            if(cameraFocused)
-            {
+            if(cameraFocused){
                 Vector2 xyToFocusedPos = Mathw.XYToPos(Camera.main.transform.position, focusedPos);
                 targetEulers.x = xyToFocusedPos.x;
                 targetEulers.y = xyToFocusedPos.y;
@@ -100,13 +96,10 @@ public class CameraControl : MonoBehaviour {
             }
 
             // If camera is locked, user can use cursor to manipulate nodes.
-            if(lookedAtObject)
-            {
+            if(lookedAtObject){
                 Node lookedAtNode = lookedAtObject.GetComponent<Node>();
-                if (lookedAtNode)
-                {
-                    if (Input.GetMouseButton(0))
-                    {
+                if (lookedAtNode){
+                    if (Input.GetMouseButton(0)){
                         focusedNode = lookedAtNode;
                         Vector2 xyToNode = Mathw.XYToPos(Camera.main.transform.position, focusedNode.transform.position);
                         orbitEulers.x = xyToNode.x;
@@ -117,8 +110,7 @@ public class CameraControl : MonoBehaviour {
                 }
             }
         }
-        else
-        {
+        else{
             Screen.lockCursor = true;
             lookedAtObject = null;
             focusedNode = null;
@@ -155,8 +147,7 @@ public class CameraControl : MonoBehaviour {
 	} // End of Update().
 
 
-    void OnGUI()
-    {
+    void OnGUI(){
         // Show camera type/controls.
         GUI.skin = GameManager.readoutSkin;
         GUI.skin.label.alignment = TextAnchor.UpperCenter;
@@ -174,8 +165,7 @@ public class CameraControl : MonoBehaviour {
 
 
         // Indicate selected node.
-        if(focusedNode)
-        {
+        if(focusedNode){
             Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(focusedNode.transform.position);
             selectedNodeScreenPos.y = Screen.height - selectedNodeScreenPos.y;
             float selectionBoxWidth = 650.0f / Vector3.Distance(Camera.main.transform.position, focusedNode.transform.position);
@@ -183,4 +173,4 @@ public class CameraControl : MonoBehaviour {
             GUI.Label(selectionBoxRect, nodeSelectTex);
         }
     } // End of OnGUI().
-}
+} // End of CameraControl.

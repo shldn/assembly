@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Node : MonoBehaviour
-{
+public class Node : MonoBehaviour {
+
 	public string nodeName = "Node";
 	
 	public Sense sense = new Sense();
@@ -15,18 +15,16 @@ public class Node : MonoBehaviour
 	public float signal;
 	public float signalDecay = 1.0f;
 
-	void Awake()
-	{
+
+	void Awake(){
         calories = Random.Range(0.5f, 1.0f);
 	} // End of Awake().
 
 	
-	void Update()
-	{
+	void Update(){
         calories += caloriesDelta * Time.deltaTime;
 		//calories = Mathf.Clamp(calories, 0.0f, 10.0f);
 		caloriesDelta = 0.0f;
-		
 
         renderer.material.color = new Color(calories, calories, calories, 1.0f);
 		renderer.material.color = Color.Lerp(renderer.material.color, Color.cyan * 2.0f, signal);
@@ -46,8 +44,8 @@ public class Node : MonoBehaviour
         //    DestroyNode();
 	} // End of Update().
 
-    void DestroyNode()
-    {
+
+    void DestroyNode(){
         Destroy(gameObject);
     } // End of DestroyNode().
-}
+} // End of Node.

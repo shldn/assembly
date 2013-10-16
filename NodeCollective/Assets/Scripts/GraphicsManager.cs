@@ -9,9 +9,9 @@ public class GraphicsManager : MonoBehaviour {
     public Texture2D frontTex;
     public Texture2D endTex;
 
-    void Awake()
-    {
+
+    void Awake(){
         // Set up line types.
         VectorLine.SetEndCap("CalorieCaps", EndCap.Back, lineMaterial, endTex);
     } // End of Awake().
-}
+} // End of GraphicsManager.
