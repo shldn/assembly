@@ -255,23 +255,9 @@ public class GameManager : MonoBehaviour {
             }
         }
 
-        // Second pass; write DNA, recording bond connections and information.
-        string newDNA = "";
-        for(int i = 0; i < gotNodes.Length; i++) {
-            Node currentNode = gotNodes[i];
-            currentNode.assemblyIndex = i;
-            // First part of the DNA is the node's index and node characteristics.
-            newDNA += i + "_" + currentNode.GetDNAInfo();
-
-            for (int j = 0; j < currentNode.bonds.Length; j++) {
-                Bond currentBond = currentNode.bonds[j];
-                if (currentBond.nodeA == currentNode)
-                    newDNA += "-" + currentBond.nodeB.assemblyIndex;
-            }
-
-            // This node is done, indicated by ','
-            newDNA += ",";
-        }
+        // Assign node indices
+        for(int i = 0; i < gotNodes.Length; i++)
+            gotNodes[i].assemblyIndex = i;
 
         // Create the new assembly.
         Assembly newAssembly = new Assembly();
@@ -282,18 +268,6 @@ public class GameManager : MonoBehaviour {
         for(int i = 0; i < gotNodes.Length; i++)
             gotNodes[i].myAssembly = newAssembly;
 
-        // Save new assembly to a file.
-        DirectoryInfo dir = new DirectoryInfo("C:/Assembly/saves");
-        FileInfo[] info = dir.GetFiles("*.*");
-        int lastFileNum = 0;
-        for (int t = 0; t < info.Length; t++) {
-            FileInfo currentFile = info[t];
-            int currentFileNum = int.Parse(currentFile.Name.Substring(0,3));
-            if(currentFileNum >= lastFileNum)
-                lastFileNum = currentFileNum;
-        }
-        System.IO.File.WriteAllText("C:/Assembly/saves/" + (lastFileNum + 1).ToString("000") + "_" + newAssembly.callsign + ".txt", newDNA);
-        
         return newAssembly;
     } // End of GetAssembly().
 	

@@ -183,6 +183,9 @@ public class CameraControl : MonoBehaviour {
                 // Make our new assembly.
                 Assembly newAssembly = GameManager.GetAssembly(selectedNode);
 
+                // Save assembly to file.
+                newAssembly.Save();
+
                 // Update GameManager assembly list and select the new assembly.
                 newAssemblies[newAssemblies.Length - 1] = newAssembly;
                 GameManager.allAssemblies = newAssemblies;

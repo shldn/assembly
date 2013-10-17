@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.IO;
 
 public class Assembly {
 
@@ -24,5 +25,44 @@ public class Assembly {
                 greatestRad = radius;
         }
         return greatestRad;
+    }
+
+    // Save assembly to a file.
+    public void Save()
+    {        
+        DirectoryInfo dir = new DirectoryInfo("C:/Assembly/saves");
+        FileInfo[] info = dir.GetFiles("*.*");
+        int lastFileNum = 0;
+        for (int t = 0; t < info.Length; t++)
+        {
+            FileInfo currentFile = info[t];
+            int currentFileNum = int.Parse(currentFile.Name.Substring(0, 3));
+            if (currentFileNum >= lastFileNum)
+                lastFileNum = currentFileNum;
+        }
+        System.IO.File.WriteAllText("C:/Assembly/saves/" + (lastFileNum + 1).ToString("000") + "_" + callsign + ".txt", GetDNA());
+        
+    }
+
+    private string GetDNA()
+    {
+        string newDNA = "";
+        for (int i = 0; i < nodes.Length; i++)
+        {
+            Node currentNode = nodes[i];
+            // First part of the DNA is the node's index and node characteristics.
+            newDNA += i + "_" + currentNode.GetDNAInfo();
+
+            for (int j = 0; j < currentNode.bonds.Length; j++)
+            {
+                Bond currentBond = currentNode.bonds[j];
+                if (currentBond.nodeA == currentNode)
+                    newDNA += "-" + currentBond.nodeB.assemblyIndex;
+            }
+
+            // This node is done, indicated by ','
+            newDNA += ",";
+        }
+        return newDNA;
     }
 }
