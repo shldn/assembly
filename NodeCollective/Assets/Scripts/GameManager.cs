@@ -4,6 +4,7 @@ using System.IO;
 
 // erik was here
 // Wes was here
+// Wes was here AGAIN
 public class GameManager : MonoBehaviour {
 	
     // Up-to-date arrays of all world elements.
