@@ -1,11 +1,5 @@
-junkPlayground/Library/*
-junkPlayground/Temp/*
-junkPlayground/deploy/junk_Data/*
-junkPlayground/deploy/junk.exe
-OrganismGen/Library/*
-OrganismGen/Temp/*
-NodeCollective/Library/*
-NodeCollective/Temp/*
+Assembly/Library/*
+Assembly/Temp/*
 *.csproj
 *.pidb
 *.unityproj
