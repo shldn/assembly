@@ -2,7 +2,7 @@
 using System.Collections;
 using System.IO;
 
-
+// erik was here
 // Wes was here
 public class GameManager : MonoBehaviour {
 	
