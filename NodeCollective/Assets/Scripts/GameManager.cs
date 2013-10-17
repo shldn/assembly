@@ -26,6 +26,8 @@ public class GameManager : MonoBehaviour {
 	public float bondRatio = 0.02f; // The chance that a bond will form between any two nodes.
     public int numFoodPellets = 5;
 
+    public int numFrames = 0;
+
 
     void Start(){
         prefabs = GetComponent<Prefabs>();
@@ -108,6 +110,8 @@ public class GameManager : MonoBehaviour {
 	
 
 	void Update(){
+        numFrames++;
+
         // Update game element arrays.
         allNodes = FindObjectsOfType(typeof(Node)) as Node[];
         allBonds = FindObjectsOfType(typeof(Bond)) as Bond[];
