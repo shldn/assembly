@@ -2,7 +2,7 @@
 using System.Collections;
 using System.IO;
 
-
+// erik was here
 public class GameManager : MonoBehaviour {
 	
     // Up-to-date arrays of all world elements.
