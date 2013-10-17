@@ -9,6 +9,10 @@ public class GraphicsManager : MonoBehaviour {
     public Texture2D frontTex;
     public Texture2D endTex;
 
+    public Texture2D senseFlare;
+    public Texture2D synapseFlare;
+    public Texture2D muscleFlare;
+
 
     void Awake(){
         // Set up line types.
