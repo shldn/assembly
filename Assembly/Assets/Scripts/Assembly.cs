@@ -8,7 +8,7 @@ public class Assembly {
 
     public Vector3 GetCenter(){
         Vector3 totalPos = Vector3.zero;
-        for (var i = 0; i < nodes.Length; i++) {
+        for(int i = 0; i < nodes.Length; i++) {
             totalPos += nodes[i].transform.position;
         }
         totalPos /= nodes.Length;

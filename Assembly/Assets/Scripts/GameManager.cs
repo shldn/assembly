@@ -163,7 +163,7 @@ public class GameManager : MonoBehaviour {
 
 
         if(Input.GetKeyDown(KeyCode.P))
-            GetAssembly("C:/Assembly/saves/116_Patrice.txt");
+            GetAssembly("C:/Assembly/saves/123_Faviola.txt");
 	} // End of Update().
 
 
@@ -193,16 +193,16 @@ public class GameManager : MonoBehaviour {
 
         // First pass; finds all nodes through their bonds.
         // Go until we run out of new nodes.
-        while (newNodes.Length > 0){
+        while(newNodes.Length > 0){
             // Run through all of our new nodes to test.
-            for (int i = 0; i < newNodes.Length; i++){
+            for(int i = 0; i < newNodes.Length; i++){
                 Node currentNode = newNodes[i];
                 currentNode.assemblyIndex = nodeNum;
                 nodeNum++;
 
                 // Remove this node from newNodes; we're gonna check it soon and won't need it anymore.
                 Node[] subbedNewNodes = new Node[newNodes.Length - 1];
-                for (int h = 0; h < subbedNewNodes.Length; h++){
+                for(int h = 0; h < subbedNewNodes.Length; h++){
                     if (h < i)
                         subbedNewNodes[h] = newNodes[h];
                     else
@@ -211,7 +211,7 @@ public class GameManager : MonoBehaviour {
                 newNodes = subbedNewNodes;
 
                 // Run through each new node's bonds.
-                for (int j = 0; j < currentNode.bonds.Length; j++){
+                for(int j = 0; j < currentNode.bonds.Length; j++){
                     Bond currentBond = currentNode.bonds[j];
                     // We're gonna test the node at both ends; we don't know which direction the bond goes.
                     bool gotAlreadyA = false;
@@ -225,7 +225,7 @@ public class GameManager : MonoBehaviour {
                     }
 
                     // Add A if it's new.
-                    if (!gotAlreadyA){
+                    if(!gotAlreadyA){
                         Node[] tempGotNodes = new Node[gotNodes.Length + 1];
                         Node[] tempNewNodes = new Node[newNodes.Length + 1];
                         for (int m = 0; m < gotNodes.Length; m++)
@@ -239,7 +239,7 @@ public class GameManager : MonoBehaviour {
                     }
 
                     // Add B if it's new.
-                    if (!gotAlreadyB){
+                    if(!gotAlreadyB){
                         Node[] tempGotNodes = new Node[gotNodes.Length + 1];
                         Node[] tempNewNodes = new Node[newNodes.Length + 1];
                         for (int r = 0; r < gotNodes.Length; r++)
