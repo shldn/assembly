@@ -136,9 +136,14 @@ public class GameManager : MonoBehaviour {
 
 		
 		totalEnergy = 0;
+        // Loop through all assemblies...
+        for(int i = 0; i < allAssemblies.Length; i++){
+            allAssemblies[i].Update();
+        }
+
 		// Loop through all nodes...
         // Node loop 0.
-		for( int i = 0; i < allNodes.Count; i++ ){
+		/*for( int i = 0; i < allNodes.Length; i++ ){
 			Node currentNode = allNodes[i];
 			totalEnergy += currentNode.calories;
 			
@@ -146,15 +151,15 @@ public class GameManager : MonoBehaviour {
 			for( int j = 0; j < allNodes.Count; j++ ){
 				Node otherNode = allNodes[j];
 				
-				if( i != j ){
-					Vector3 vectorToNode = ( otherNode.transform.position - currentNode.transform.position ).normalized;
-					float distToNode = ( otherNode.transform.position - currentNode.transform.position ).magnitude;
+				Vector3 vectorToNode = ( otherNode.transform.position - currentNode.transform.position ).normalized;
+				float distToNode = ( otherNode.transform.position - currentNode.transform.position ).magnitude;
 					
-					// Repulsive force
-					currentNode.rigidbody.AddForce( 1000 * ( -vectorToNode / Mathf.Pow( distToNode, 5 )));
-				}
+				// Repulsive force
+				currentNode.rigidbody.AddForce( 1000 * ( -vectorToNode / Mathf.Pow( distToNode, 5 )));
+				currentNode.rigidbody.AddForce( 1000 * ( -vectorToNode / Mathf.Pow( distToNode, 5 )));
+				otherNode.rigidbody.AddForce( 1000 * ( vectorToNode / Mathf.Pow( distToNode, 5 )));
 			}
-		}
+		}*/
 		 
 		// Node loop 1.
 		//for( int i = 0; i < allNodes.Length; i++ ){

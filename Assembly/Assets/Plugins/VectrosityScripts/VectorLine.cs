@@ -1331,9 +1331,9 @@ public class VectorLine {
 #if UNITY_3
 		m_mesh.colors = m_lineColors;
 #else
-		if( m_mesh.colors32.Length != m_lineColors.Length)
-				Debug.Log("VectorLine: num mesh colors: " + m_mesh.colors32.Length + " != num line colors: " + m_lineColors.Length);
-		else
+		if( m_mesh.colors32.Length != m_lineColors.Length){
+		//		Debug.Log("VectorLine: num mesh colors: " + m_mesh.colors32.Length + " != num line colors: " + m_lineColors.Length);
+		}else
 			m_mesh.colors32 = m_lineColors;
 #endif
 	}
