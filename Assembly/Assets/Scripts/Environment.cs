@@ -1,16 +1,14 @@
-﻿using UnityEngine;
-using System.Collections;
-
+﻿
 // This is the Environment.
-public class Environment : MonoBehaviour {
+public class Environment {
 
-	// Use this for initialization
-	void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
+    private static int calories = 100;
+
+    public static bool IsFit(Assembly assembly)
+    {
+        return assembly.nodes.Length > 20;
+    }
+
+    // Accessors
+    public static int CaloriesAvailable { get { return calories; } set { calories = value; } }
 }
