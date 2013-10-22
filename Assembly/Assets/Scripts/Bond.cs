@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using Vectrosity;
 
-public class Bond : MonoBehaviour
-{
+public class Bond{
 
     public Node nodeA;
     public Node nodeB;
@@ -24,10 +24,6 @@ public class Bond : MonoBehaviour
     // Amount of 'give' in the bond.
     float bondGive;
 
-    // The attachment points (rotations) for each node.
-    Quaternion nodeARot;
-    Quaternion nodeBRot;
-
 
     public Material muscleLineMaterial;
     public Material signalLineMaterial;
@@ -37,8 +33,14 @@ public class Bond : MonoBehaviour
 
     float signalLink;
 
+    private static List<Bond> allBonds = new List<Bond>();
+    public static List<Bond> GetAll() { return allBonds; }
 
-    void Awake(){
+
+    public Bond(Node newNodeA, Node newNodeB){
+        nodeA = newNodeA;
+        nodeB = newNodeB;
+
         muscleLine = new VectorLine("muscleLine", muscleEndPoints, muscleLineMaterial, 3.0f);
         signalLine = new VectorLine("signalLine", signalEndPoints, signalLineMaterial, 3.0f);
         synapseLine = new VectorLine("synapseLine", synapseEndPoints, synapseLineMaterial, 3.0f);
@@ -46,38 +48,11 @@ public class Bond : MonoBehaviour
 
         signalLink = (Random.Range(0, 2) * 2) - 1;
 
-        // DEBUG
-        nodeARot = Random.rotation;
-        nodeBRot = Random.rotation;
-
+        allBonds.Add(this);
     } // End of Awake().
 
 
-    void Update(){
-		// Destroy the bond if either of the nodes are missing.
-		if(!nodeA || !nodeB){
-			Destroy();
-			return;
-		}
-
-        float bondStrength = 10f;
-
-
-        // negates calcified directions.
-        nodeARot = Quaternion.LookRotation(nodeB.transform.position - nodeA.transform.position);
-        nodeBRot = Quaternion.LookRotation(nodeA.transform.position - nodeB.transform.position);
-
-        if (!calcified)
-            bondStrength = 1f;
-        
-
-        Vector3 nodeATargetPos = nodeB.transform.position + (nodeBRot * Vector3.forward * bondDist);
-        Vector3 nodeBTargetPos = nodeA.transform.position + (nodeARot * Vector3.forward * bondDist);
-
-        nodeA.rigidbody.AddForce(bondStrength * (nodeATargetPos - nodeA.transform.position).normalized * Vector3.Distance(nodeATargetPos, nodeA.transform.position));
-        nodeB.rigidbody.AddForce(bondStrength * (nodeBTargetPos - nodeB.transform.position).normalized * Vector3.Distance(nodeBTargetPos, nodeB.transform.position));
-
-
+    public void Update(){
 
         // Attractive force
 		Vector3 vectorAtoB = nodeB.transform.position - nodeA.transform.position;
@@ -86,6 +61,9 @@ public class Bond : MonoBehaviour
 		
         // DEBUG - attraction is a constant.
         float attraction = 12.0f;
+
+        nodeA.rigidbody.AddForce(vectorAtoB.normalized * attraction);
+        nodeB.rigidbody.AddForce(-vectorAtoB.normalized * attraction);
 
 
 
@@ -109,10 +87,10 @@ public class Bond : MonoBehaviour
 		muscleEndPoints[lineFlip ? 0 : 1] = nodeB.transform.position + (-dirAtoB * muscleEndRadius);
         // Line color shows strength of connection.
 		Color muscleColor = Color.Lerp(Color.gray, Color.white, Mathf.Abs(calorieTransfer) * 3.0f);
-		muscleColor.a = Mathf.Clamp01(attraction * 0.1f);
+		muscleColor.a = 0.5f;
         muscleLine.SetColor(muscleColor);
         // Line width based on magnitude of calorie flow.
-        muscleLine.SetWidths(new float[] {7.0f + (0.1f * Mathf.Clamp(attraction + Mathf.Abs(calorieTransfer * 50.0f), 0.0f, 200.0f))});
+        muscleLine.SetWidths(new float[] {2f});
         muscleLine.Draw3D();
 		
 		
@@ -152,10 +130,10 @@ public class Bond : MonoBehaviour
 			}
 	        // Line color shows strength of connection.
 			Color signalColor = nodeA.senseColor;
-			signalColor.a = attraction * 0.1f;
+			signalColor.a = 0.5f;
 	        signalLine.SetColor(signalColor);
 	        // Line width based on magnitude of signal flow.
-	        signalLine.SetWidths(new float[] {5.0f});
+	        signalLine.SetWidths(new float[] {2.0f});
 		}
 	    signalLine.Draw3D();
 		
@@ -198,8 +176,9 @@ public class Bond : MonoBehaviour
 	        // Line color shows strength of connection.
 			Color synapseColor = Color.Lerp(nodeA.muscleColor, Color.white, 0f);
 	        synapseLine.SetColor(Color.Lerp(synapseColor, Color.white, Mathf.Abs(nodeA.synapse) + Mathf.Abs(nodeB.synapse)));
+            synapseColor.a = 0.5f;
 	        // Line width based on magnitude of signal flow.
-	        synapseLine.SetWidths(new float[] {3.0f});
+	        synapseLine.SetWidths(new float[] {1.0f});
 		}
 		motionLine.Draw3D();
 	    synapseLine.Draw3D();
@@ -219,6 +198,5 @@ public class Bond : MonoBehaviour
         VectorLine.Destroy(ref signalLine);
         VectorLine.Destroy(ref synapseLine);
         VectorLine.Destroy(ref motionLine);
-        Destroy(gameObject);
     } // End of DestroyBond().
 } // End of Bond.

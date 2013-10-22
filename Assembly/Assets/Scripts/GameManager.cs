@@ -9,14 +9,11 @@ using System.IO;
 public class GameManager : MonoBehaviour {
 	
     // Up-to-date arrays of all world elements.
-	public static Bond[] allBonds = new Bond[0];
 	public static FoodPellet[] allFoodPellets;
     public static Assembly[] allAssemblies = new Assembly[0];
 	
     public static Prefabs prefabs; // Contains prefab transforms.
     public static GraphicsManager graphics; // Contains graphical information.
-
-	float totalEnergy; // Total energy present in the world (realistically, shouldn't change.)
 	
 	public static GUISkin readoutSkin;
 
@@ -52,6 +49,7 @@ public class GameManager : MonoBehaviour {
         List<Node> allNodes = Node.GetAll();
 
 		// Randomly assign bonds.
+        List<Bond> allBonds = Bond.GetAll();
 		// Loop through all nodes...
 		for(int i = 0; i < allNodes.Count; i++){
 			Node currentNode = allNodes[i];
@@ -62,7 +60,7 @@ public class GameManager : MonoBehaviour {
 				if(Random.Range(0.0f, 1.0f) <= bondRatio){
                     // Make sure the bond doesn't already exist.
 					bool bondExists = false;
-					for(int k = 0; k < allBonds.Length; k++){
+					for(int k = 0; k < allBonds.Count; k++){
 						Bond currentBond = allBonds[k];
 						if(((currentBond.nodeA == currentNode) && (currentBond.nodeB == otherNode)) || ((currentBond.nodeA == otherNode) && (currentBond.nodeB == currentNode)))
 							bondExists = true;
@@ -70,10 +68,7 @@ public class GameManager : MonoBehaviour {
 
                     int bondLimit = 3;
                     if (!bondExists && (i != j) && (currentNode.bonds.Length < bondLimit) && (otherNode.bonds.Length < bondLimit)) {
-						GameObject newBondGameObject = Instantiate(prefabs.bond, Vector3.zero, Quaternion.identity) as GameObject;
-						Bond newBond = newBondGameObject.GetComponent<Bond>();
-						newBond.nodeA = currentNode;
-						newBond.nodeB = otherNode;
+						Bond newBond = new Bond(currentNode, otherNode);
 
                         // Update current node's bonds:
                         Bond[] curNewBonds = new Bond[currentNode.bonds.Length + 1];
@@ -116,7 +111,7 @@ public class GameManager : MonoBehaviour {
 
         // Update game element arrays.
         List<Node> allNodes = Node.GetAll();
-        allBonds = FindObjectsOfType(typeof(Bond)) as Bond[];
+        List<Bond> allBonds = Bond.GetAll();
         allFoodPellets = FindObjectsOfType(typeof(FoodPellet)) as FoodPellet[];
 
         // Delete all elements if 'L' pressed...
@@ -129,42 +124,21 @@ public class GameManager : MonoBehaviour {
                 aPellet.Destroy();
         }
 
+        // Update() functions in abstract classes.
+        for(int i = 0; i < allAssemblies.Length; i++){
+            allAssemblies[i].Update();
+        }
+        for(int i = 0; i < allBonds.Count; i++){
+            allBonds[i].Update();
+        }
+
+
+
         // Add more elements if 'g' is pressed..
         if(Input.GetKeyDown(KeyCode.G)){
             Start();
         }
 
-		
-		totalEnergy = 0;
-        // Loop through all assemblies...
-        for(int i = 0; i < allAssemblies.Length; i++){
-            allAssemblies[i].Update();
-        }
-
-		// Loop through all nodes...
-        // Node loop 0.
-		/*for( int i = 0; i < allNodes.Length; i++ ){
-			Node currentNode = allNodes[i];
-			totalEnergy += currentNode.calories;
-			
-			// Kinetic nteraction with other nodes...
-			for( int j = 0; j < allNodes.Count; j++ ){
-				Node otherNode = allNodes[j];
-				
-				Vector3 vectorToNode = ( otherNode.transform.position - currentNode.transform.position ).normalized;
-				float distToNode = ( otherNode.transform.position - currentNode.transform.position ).magnitude;
-					
-				// Repulsive force
-				currentNode.rigidbody.AddForce( 1000 * ( -vectorToNode / Mathf.Pow( distToNode, 5 )));
-				currentNode.rigidbody.AddForce( 1000 * ( -vectorToNode / Mathf.Pow( distToNode, 5 )));
-				otherNode.rigidbody.AddForce( 1000 * ( vectorToNode / Mathf.Pow( distToNode, 5 )));
-			}
-		}*/
-		 
-		// Node loop 1.
-		//for( int i = 0; i < allNodes.Length; i++ ){
-		//	Node currentNode = allNodes[i];
-		//}
 
 
         if(Input.GetKeyDown(KeyCode.P))
@@ -180,9 +154,8 @@ public class GameManager : MonoBehaviour {
 		string readout = "";
         readout += "'Assembly'\n";
 		readout += "UCSD Arthur C. Clarke Center 2013\n";
-		readout += "total energy in sys: " + totalEnergy + "\n";
 		readout += Node.GetAll().Count + " nodes\n";
-		readout += allBonds.Length + " bonds\n";
+		readout += Bond.GetAll().Count+ " bonds\n";
 		readout += "\n";
 		readout += (1.0f / Time.deltaTime).ToString("F1") + "fps\n";
 		GUI.Label( new Rect( 5, 0, Screen.width, Screen.height ), readout );
@@ -337,15 +310,10 @@ public class GameManager : MonoBehaviour {
                 string[] rawBondNum = currentNode.Substring(idIndex + 3).Split('-');
                 for (int k = 0; k < rawBondNum.Length; k++) {
                     // Create the new bond.
-                    GameObject newBondTrans = Instantiate(GameManager.prefabs.bond, Vector3.zero, Quaternion.identity) as GameObject;
-                    Bond newBond = newBondTrans.GetComponent<Bond>();
-
                     // Find the other node we are going to bond to, based on the given index.
                     Node currentBondNode = allNodes[int.Parse(rawBondNum[k])];
 
-                    // Assign both nodes to the new bond.
-                    newBond.nodeA = currentRealNode;
-                    newBond.nodeB = currentBondNode;
+                    Bond newBond = new Bond(currentRealNode, currentBondNode);
 
                     // Inform each node about the new bond.
                     Bond[] curRealNodeTempBonds = new Bond[currentRealNode.bonds.Length + 1];

@@ -7,6 +7,7 @@ public class Assembly {
     public string callsign;
     public Node[] nodes;
 
+
     public void Update(){
         // Repulsive force between nodes within assembly.
         for( int i = 0; i < nodes.Length; i++ ){
@@ -26,7 +27,8 @@ public class Assembly {
 				otherNode.rigidbody.AddForce(-repulsiveForce);
             }
         }
-    }
+    } // End of Update().
+
 
     public Vector3 GetCenter(){
         Vector3 totalPos = Vector3.zero;
@@ -35,7 +37,8 @@ public class Assembly {
         }
         totalPos /= nodes.Length;
         return totalPos;
-    }
+    } // End of GetCenter().
+
 
     public float GetRadius(){
         float greatestRad = 0;
@@ -46,7 +49,8 @@ public class Assembly {
                 greatestRad = radius;
         }
         return greatestRad;
-    }
+    } // End of GetRadius().
+
 
     // Save assembly to a file.
     public void Save()
@@ -62,8 +66,8 @@ public class Assembly {
                 lastFileNum = currentFileNum;
         }
         System.IO.File.WriteAllText("C:/Assembly/saves/" + (lastFileNum + 1).ToString("000") + "_" + callsign + ".txt", GetDNA());
-        
-    }
+    } // End of Save().
+
 
     private string GetDNA()
     {
@@ -85,5 +89,35 @@ public class Assembly {
             newDNA += ",";
         }
         return newDNA;
+    } // End of GetDNA().
+
+
+    // Combines two Assemblies into one.
+    public Assembly Merge(Assembly assemblyA, Assembly assemblyB){
+        Assembly mergedAssembly = new Assembly();
+
+        // Combine assembly names. John + Abbey = Jobey, etc.
+        mergedAssembly.callsign = assemblyA.callsign.Substring(0, Mathf.RoundToInt(assemblyA.callsign.Length * 0.5f)) + assemblyB.callsign.Substring(0, Mathf.RoundToInt(assemblyB.callsign.Length * 0.5f));
+
+        mergedAssembly.nodes = new Node[assemblyA.nodes.Length + assemblyB.nodes.Length];
+        for(int i = 0; i < assemblyA.nodes.Length; i++){
+            mergedAssembly.nodes[i] = assemblyA.nodes[i];
+        }
+        for(int i = 0; i < assemblyB.nodes.Length; i++){
+            mergedAssembly.nodes[i + 1] = assemblyB.nodes[i];
+        }
+
+        return mergedAssembly;
+    } // End of Merge().
+
+
+    public void Destroy(Assembly anAssembly){
+        // Delete the assembly and all of its components.
     }
-}
+
+
+    public void Disband(Assembly anAssembly){
+        // Break all bonds in the assembly.
+        // Remove the assembly from allAssemblies.
+    }
+} // End of Assembly.cs.

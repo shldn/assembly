@@ -9,7 +9,7 @@ public class Node : MonoBehaviour {
 	public string nodeName = "Node";
 	public NodeType nodeType = NodeType.bone;
 
-    public Bond[] bonds;
+    public Bond[] bonds = new Bond[0];
 
     public float calories;
 	public float caloriesDelta;
@@ -148,7 +148,7 @@ public class Node : MonoBehaviour {
         // Remove dead bonds from array.
         int shifter = 0;
         for (int i = 0; i < bonds.Length; i++) {
-            if (!bonds[i])
+            if (bonds[i] == null)
                 shifter++;
             if((i + shifter) < bonds.Length)
                 bonds[i] = bonds[i + shifter];
