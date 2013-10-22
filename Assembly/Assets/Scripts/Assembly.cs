@@ -7,6 +7,27 @@ public class Assembly {
     public string callsign;
     public Node[] nodes;
 
+    public void Update(){
+        // Repulsive force between nodes within assembly.
+        for( int i = 0; i < nodes.Length; i++ ){
+			Node currentNode = nodes[i];
+			
+			// Kinetic nteraction with other nodes...
+			for( int j = (i + 1); j < nodes.Length; j++ ){
+				Node otherNode = nodes[j];
+
+                Vector3 vectorToNode = ( otherNode.transform.position - currentNode.transform.position ).normalized;
+				float distToNode = ( otherNode.transform.position - currentNode.transform.position ).magnitude;
+				
+				// Repulsive force
+				Vector3 repulsiveForce = 1000 * ( -vectorToNode / Mathf.Pow( distToNode, 5 ));
+
+				currentNode.rigidbody.AddForce(repulsiveForce);
+				otherNode.rigidbody.AddForce(-repulsiveForce);
+            }
+        }
+    }
+
     public Vector3 GetCenter(){
         Vector3 totalPos = Vector3.zero;
         for(int i = 0; i < nodes.Length; i++) {
