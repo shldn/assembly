@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 // erik was here
@@ -8,7 +9,6 @@ using System.IO;
 public class GameManager : MonoBehaviour {
 	
     // Up-to-date arrays of all world elements.
-	public static Node[] allNodes;
 	public static Bond[] allBonds = new Bond[0];
 	public static FoodPellet[] allFoodPellets;
     public static Assembly[] allAssemblies = new Assembly[0];
@@ -48,15 +48,15 @@ public class GameManager : MonoBehaviour {
             Vector3 randomPos = new Vector3(Random.Range(-foodPelletGenSpread, foodPelletGenSpread), Random.Range(-foodPelletGenSpread, foodPelletGenSpread), Random.Range(-foodPelletGenSpread, foodPelletGenSpread));
             Instantiate(prefabs.foodPellet, randomPos, Random.rotation);
         }
-		
-        allNodes = FindObjectsOfType(typeof(Node)) as Node[];
+
+        List<Node> allNodes = Node.GetAll();
 
 		// Randomly assign bonds.
 		// Loop through all nodes...
-		for(int i = 0; i < allNodes.Length; i++){
+		for(int i = 0; i < allNodes.Count; i++){
 			Node currentNode = allNodes[i];
 			// Check against all other nodes.
-			for(int j = 0; j < allNodes.Length; j++){
+			for(int j = 0; j < allNodes.Count; j++){
 				Node otherNode = allNodes[j];
                 // Random chance of bond being created.
 				if(Random.Range(0.0f, 1.0f) <= bondRatio){
@@ -115,7 +115,7 @@ public class GameManager : MonoBehaviour {
         numFrames++;
 
         // Update game element arrays.
-        allNodes = FindObjectsOfType(typeof(Node)) as Node[];
+        List<Node> allNodes = Node.GetAll();
         allBonds = FindObjectsOfType(typeof(Bond)) as Bond[];
         allFoodPellets = FindObjectsOfType(typeof(FoodPellet)) as FoodPellet[];
 
@@ -138,12 +138,12 @@ public class GameManager : MonoBehaviour {
 		totalEnergy = 0;
 		// Loop through all nodes...
         // Node loop 0.
-		for( int i = 0; i < allNodes.Length; i++ ){
+		for( int i = 0; i < allNodes.Count; i++ ){
 			Node currentNode = allNodes[i];
 			totalEnergy += currentNode.calories;
 			
 			// Kinetic nteraction with other nodes...
-			for( int j = 0; j < allNodes.Length; j++ ){
+			for( int j = 0; j < allNodes.Count; j++ ){
 				Node otherNode = allNodes[j];
 				
 				if( i != j ){
@@ -176,7 +176,7 @@ public class GameManager : MonoBehaviour {
         readout += "'Assembly'\n";
 		readout += "UCSD Arthur C. Clarke Center 2013\n";
 		readout += "total energy in sys: " + totalEnergy + "\n";
-		readout += allNodes.Length + " nodes\n";
+		readout += Node.GetAll().Count + " nodes\n";
 		readout += allBonds.Length + " bonds\n";
 		readout += "\n";
 		readout += (1.0f / Time.deltaTime).ToString("F1") + "fps\n";

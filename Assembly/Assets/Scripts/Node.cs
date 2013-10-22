@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public enum NodeType {bone, sense, control, muscle}
 
@@ -39,6 +40,9 @@ public class Node : MonoBehaviour {
     public Renderer billboard;
 	
     Vector2 billboardTexScale = Vector2.one;
+
+    private static List<Node> allNodes = new List<Node>();
+    public static List<Node> GetAll() { return allNodes; }
 	
 	void Awake(){
 		nodeType = (NodeType) Random.Range(0, 4);
@@ -55,6 +59,8 @@ public class Node : MonoBehaviour {
 
         // Store billboard scale so we can flip it.
         billboardTexScale = billboard.material.GetTextureScale("_MainTex");
+
+        allNodes.Add(this);
 	} // End of Awake().
 
 	
@@ -171,4 +177,9 @@ public class Node : MonoBehaviour {
     public void Destroy(){
         Destroy(gameObject);
     } // End of DestroyNode().
+
+    private void OnDestroy()
+    {
+        allNodes.Remove(this);
+    }
 } // End of Node.
