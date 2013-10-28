@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 public class FoodPellet : MonoBehaviour {
 
+    private static List<FoodPellet> allFoodPellets = new List<FoodPellet>();
+    public static List<FoodPellet> GetAll() { return allFoodPellets; }
+
 	void Start(){
 		transform.rotation = Random.rotation;
 		

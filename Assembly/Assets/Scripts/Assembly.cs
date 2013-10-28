@@ -124,6 +124,24 @@ public class Assembly {
 				otherNode.rigidbody.AddForce(-repulsiveForce);
             }
         }
+
+        
+        // TEMP
+        // 'Fitness Function'... sort of.
+        // Disband an assembly when it gets too big.
+        if(nodes.Length > 5){
+            for(int i = 0; i < nodes.Length; i++){
+                Node currentNode = nodes[i];
+
+                Vector3 burstVector = currentNode.transform.position - GetCenter();
+                Vector3 burstForce = burstVector.normalized * (10f / burstVector.magnitude);
+
+                currentNode.rigidbody.AddForce(burstForce, ForceMode.Impulse);
+                currentNode.bondCooldown = 3f;
+            }
+            Disband();
+        }
+        
     } // End of Update().
 
 
@@ -215,20 +233,21 @@ public class Assembly {
     } // End of AddNode().
     
 
-
+    // Delete the assembly and all of its components.
     public void Destroy(){
-        // Delete the assembly and all of its components.
+        for(int i = 0; i < nodes.Length; i++)
+            nodes[i].Destroy();
         allAssemblies.Remove(this);
     } // End of Destroy().
 
 
+    // Deconstruct all bonds within the assembly.
     public void Disband(){
         for(int i = 0; i < nodes.Length; i++){
             Node currentNode = nodes[i];
-            while(currentNode.bonds.Length > 0){
-                Debug.Log(currentNode.bonds[0]);
+            while(currentNode.bonds.Length > 0)
                 currentNode.bonds[0].Destroy();
-            }
+            currentNode.myAssembly = null;
         }
         allAssemblies.Remove(this);
     } // End of Disband().

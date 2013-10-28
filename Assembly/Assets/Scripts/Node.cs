@@ -41,6 +41,9 @@ public class Node : MonoBehaviour {
 	
     Vector2 billboardTexScale = Vector2.one;
 
+    // Prevents nodes from immediately re-bonding after being disbanded from an assembly.
+    public float bondCooldown = 0;
+
     private static List<Node> allNodes = new List<Node>();
     public static List<Node> GetAll() { return allNodes; }
 	
@@ -133,8 +136,8 @@ public class Node : MonoBehaviour {
         signal = 0;
 		// Sense nearby food.
         if(nodeType == NodeType.sense){
-		    for(int i = 0; i < GameManager.allFoodPellets.Length; i++){
-			    FoodPellet currentPellet = GameManager.allFoodPellets[i];
+		    for(int i = 0; i < FoodPellet.GetAll().Count; i++){
+			    FoodPellet currentPellet = FoodPellet.GetAll()[i];
 			    float distToPellet = Vector3.Distance(transform.position, currentPellet.transform.position);
 			    signal += 1 / Mathf.Pow(distToPellet * 0.2f, 3);
 		    }
@@ -147,6 +150,48 @@ public class Node : MonoBehaviour {
 		if(nodeType == NodeType.sense)
 			signalRelay = true;
 
+
+
+        // TEMP
+        // Un-bonded nodes are attracted to other nodes.
+        if((bondCooldown <= 0f) && (bonds.Length < 3)){
+            for(int i = 0; i < allNodes.Count; i++){
+                Node otherNode = allNodes[i];
+
+                bool bondedToNode = false;
+                for(int j = 0; j < bonds.Length; j++){
+                    Bond currentBond = bonds[j];
+                    if((currentBond.nodeA == otherNode) || (currentBond.nodeB == otherNode))
+                        bondedToNode = true;
+                }
+
+                if(!bondedToNode && (otherNode != this) && (myAssembly == null || (myAssembly != otherNode.myAssembly)) && (otherNode.bonds.Length < 3)){
+
+                    // Attractive force
+		            Vector3 vectorAtoB = otherNode.transform.position - transform.position;
+                    Vector3 dirAtoB = vectorAtoB.normalized;
+                    float distToNode = vectorAtoB.magnitude;
+		
+                    if(distToNode < 20){
+                        // DEBUG - attraction is a constant.
+                        float attraction = 6f / (Mathf.Pow(distToNode, 2));
+
+                        rigidbody.AddForce(vectorAtoB.normalized * attraction);
+                    }
+
+                    // Attach if close enough.
+                    if(distToNode <= 2f)
+                        new Bond(this, otherNode);
+                }
+            }
+        }
+
+        bondCooldown -= Time.deltaTime;
+
+
+        // TEMP
+        // Puts a limit on node speed.
+        rigidbody.velocity = Vector3.ClampMagnitude(rigidbody.velocity, 10f);
 	} // End of Update().
 
 

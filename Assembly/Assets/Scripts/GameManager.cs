@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour {
 
         List<Node> allNodes = Node.GetAll();
 
-        
+        /*
 		// Randomly assign bonds.
         List<Bond> allBonds = Bond.GetAll();
 		// Loop through all nodes...
@@ -68,12 +68,12 @@ public class GameManager : MonoBehaviour {
 
                     int bondLimit = 3;
                     if (!bondExists && (i != j) && (currentNode.bonds.Length < bondLimit) && (otherNode.bonds.Length < bondLimit)){
-						Bond newBond = new Bond(currentNode, otherNode);
+						new Bond(currentNode, otherNode);
 					}
 				}
 			}
 		}
-        
+        */
 
 
 
@@ -97,12 +97,6 @@ public class GameManager : MonoBehaviour {
 	void Update(){
         numFrames++;
 
-        // Update game element arrays.
-        List<Node> allNodes = Node.GetAll();
-        List<Bond> allBonds = Bond.GetAll();
-        List<Assembly> allAssemblies = Assembly.GetAll();
-        allFoodPellets = FindObjectsOfType(typeof(FoodPellet)) as FoodPellet[];
-
         // Delete all elements if 'L' pressed...
         if(Input.GetKeyDown(KeyCode.L)){
             while (Node.GetAll().Count > 0)
@@ -116,11 +110,11 @@ public class GameManager : MonoBehaviour {
         }
 
         // Update() functions in abstract classes.
-        for(int i = 0; i < allAssemblies.Count; i++){
-            allAssemblies[i].Update();
+        for(int i = 0; i < Assembly.GetAll().Count; i++){
+            Assembly.GetAll()[i].Update();
         }
-        for(int i = 0; i < allBonds.Count; i++){
-            allBonds[i].Update();
+        for(int i = 0; i < Bond.GetAll().Count; i++){
+            Bond.GetAll()[i].Update();
         }
 
 
