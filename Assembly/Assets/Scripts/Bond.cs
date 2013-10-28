@@ -17,6 +17,7 @@ public class Bond{
     public Vector3[] motionEndPoints = new Vector3[] { Vector3.zero, Vector3.zero };
 
 
+
     public Material muscleLineMaterial;
     public Material signalLineMaterial;
     public Material synapseLineMaterial;
@@ -204,6 +205,7 @@ public class Bond{
 		motionLine.Draw3D();
 	    synapseLine.Draw3D();
 		
+
 	} // End of Update().
 
 
