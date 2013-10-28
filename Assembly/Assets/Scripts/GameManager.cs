@@ -109,6 +109,8 @@ public class GameManager : MonoBehaviour {
                 Node.GetAll()[Node.GetAll().Count - 1].Destroy();
             while (Bond.GetAll().Count > 0)
                 Bond.GetAll()[Bond.GetAll().Count - 1].Destroy();
+            while (Assembly.GetAll().Count > 0)
+                Assembly.GetAll()[Assembly.GetAll().Count - 1].Destroy();
             foreach(FoodPellet aPellet in allFoodPellets)
                 aPellet.Destroy();
         }

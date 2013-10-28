@@ -218,6 +218,7 @@ public class Assembly {
 
     public void Destroy(){
         // Delete the assembly and all of its components.
+        allAssemblies.Remove(this);
     } // End of Destroy().
 
 
