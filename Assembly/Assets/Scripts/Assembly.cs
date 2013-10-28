@@ -180,7 +180,9 @@ public class Assembly {
             if (currentFileNum >= lastFileNum)
                 lastFileNum = currentFileNum;
         }
-        System.IO.File.WriteAllText("C:/Assembly/saves/" + (lastFileNum + 1).ToString("000") + "_" + callsign + ".txt", GetDNA());
+        string filename = "C:/Assembly/saves/" + (lastFileNum + 1).ToString("000") + "_" + callsign + ".txt";
+        Debug.Log("Saving " + filename);
+        System.IO.File.WriteAllText(filename, GetDNA());
     } // End of Save().
 
 

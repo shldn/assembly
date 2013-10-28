@@ -150,9 +150,8 @@ public class GameManager : MonoBehaviour {
     // Create an assembly from a file.
     public static Assembly GetAssembly(string path) {
         // Create the new assembly.
-        Assembly newAssembly = new Assembly();
         // Prepare an array to load up with nodes.
-        Node[] allNodes = new Node[0];
+        List<Node> newNodes = new List<Node>();
 
         // Load individual node data, separated by ','.
         string newAssemDna = System.IO.File.ReadAllText(path);
@@ -176,27 +175,13 @@ public class GameManager : MonoBehaviour {
             Vector3 randomPos = new Vector3(Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread));
             GameObject newNodeTrans = Instantiate(GameManager.prefabs.node, randomPos, Quaternion.identity) as GameObject;
             Node newNode = newNodeTrans.GetComponent<Node>();
-            newNode.myAssembly = newAssembly;
-
-            // Find the point at which the node's index stops being defined.
-            int idIndex = currentNode.IndexOf("_");
-
-            // Get the index of the node (the integer number before the index-stop character).
-            newNode.assemblyIndex = int.Parse(currentNode.Substring(0, idIndex));
-
-            // Add the new node to the allNodes array.
-            Node[] tempAllNodes = new Node[allNodes.Length + 1];
-            for(int j = 0; j < allNodes.Length; j++){
-                tempAllNodes[j] = allNodes[j];
-            }
-            tempAllNodes[tempAllNodes.Length - 1] = newNode;
-            allNodes = tempAllNodes;
+            newNodes.Add(newNode);
         }
 
         // Second pass: Loop back through all nodes to assign bonds
         for(int i = 0; i < rawNodes.Length; i++) {
             string currentNode = rawNodes[i];
-            Node currentRealNode = allNodes[i];
+            Node currentRealNode = newNodes[i];
 
             // Find the point at which the node's index stops being defined.
             int idIndex = currentNode.IndexOf("_");
@@ -208,26 +193,14 @@ public class GameManager : MonoBehaviour {
                 for (int k = 0; k < rawBondNum.Length; k++) {
                     // Create the new bond.
                     // Find the other node we are going to bond to, based on the given index.
-                    Node currentBondNode = allNodes[int.Parse(rawBondNum[k])];
+                    Node currentBondNode = newNodes[int.Parse(rawBondNum[k])];
 
+                    // new Bond adds itself to the Node bond lists
                     Bond newBond = new Bond(currentRealNode, currentBondNode);
-
-                    // Inform each node about the new bond.
-                    Bond[] curRealNodeTempBonds = new Bond[currentRealNode.bonds.Length + 1];
-                    for (int j = 0; j < currentRealNode.bonds.Length; j++)
-                        curRealNodeTempBonds[j] = currentRealNode.bonds[j];
-                    curRealNodeTempBonds[curRealNodeTempBonds.Length - 1] = newBond;
-                    currentRealNode.bonds = curRealNodeTempBonds;
-
-                    Bond[] curBondNodeTempBonds = new Bond[currentBondNode.bonds.Length + 1];
-                    for (int j = 0; j < currentBondNode.bonds.Length; j++)
-                        curBondNodeTempBonds[j] = currentBondNode.bonds[j];
-                    curBondNodeTempBonds[curBondNodeTempBonds.Length - 1] = newBond;
-                    currentBondNode.bonds = curBondNodeTempBonds;
                 }
             }
         }
 
-        return newAssembly;
+        return (newNodes.Count == 0) ? null : new Assembly(newNodes[0]);
     } // End of GetAssembly().
 } // End of GameManager.
