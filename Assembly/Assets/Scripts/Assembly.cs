@@ -222,7 +222,13 @@ public class Assembly {
 
 
     public void Disband(){
-        // Break all bonds in the assembly.
-        // Remove the assembly from allAssemblies.
+        for(int i = 0; i < nodes.Length; i++){
+            Node currentNode = nodes[i];
+            while(currentNode.bonds.Length > 0){
+                Debug.Log(currentNode.bonds[0]);
+                currentNode.bonds[0].Destroy();
+            }
+        }
+        allAssemblies.Remove(this);
     } // End of Disband().
 } // End of Assembly.cs.

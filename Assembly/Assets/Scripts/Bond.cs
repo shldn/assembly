@@ -17,14 +17,6 @@ public class Bond{
     public Vector3[] motionEndPoints = new Vector3[] { Vector3.zero, Vector3.zero };
 
 
-    bool calcified = false;
-
-    // The target distance of the bond.
-    float bondDist = 1f;
-    // Amount of 'give' in the bond.
-    float bondGive;
-
-
     public Material muscleLineMaterial;
     public Material signalLineMaterial;
     public Material synapseLineMaterial;
@@ -212,12 +204,6 @@ public class Bond{
 		motionLine.Draw3D();
 	    synapseLine.Draw3D();
 		
-		// DEBUG
-        // Applies a stronger bond between nodes. If we start with them this strong, however, they
-        //   blast apart due to physics imprecision.
-        if (Input.GetKey(KeyCode.C)){
-            calcified = true;
-        }
 	} // End of Update().
 
 
@@ -227,5 +213,27 @@ public class Bond{
         VectorLine.Destroy(ref signalLine);
         VectorLine.Destroy(ref synapseLine);
         VectorLine.Destroy(ref motionLine);
+
+        Bond[] tempNodeABonds = new Bond[nodeA.bonds.Length - 1];
+        int nodeABondsCount = 0;
+        for(int i = 0; i < nodeA.bonds.Length; i++){
+            if(nodeA.bonds[i] != this){
+                tempNodeABonds[nodeABondsCount] = nodeA.bonds[i];
+                nodeABondsCount++;
+            }
+        }
+        nodeA.bonds = tempNodeABonds;
+
+        Bond[] tempNodeBBonds = new Bond[nodeB.bonds.Length - 1];
+        int nodeBBondsCount = 0;
+        for(int i = 0; i < nodeB.bonds.Length; i++){
+            if(nodeB.bonds[i] != this){
+                tempNodeBBonds[nodeBBondsCount] = nodeB.bonds[i];
+                nodeBBondsCount++;
+            }
+        }
+        nodeB.bonds = tempNodeBBonds;
+
+        allBonds.Remove(this);
     } // End of DestroyBond().
 } // End of Bond.

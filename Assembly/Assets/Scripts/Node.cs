@@ -143,23 +143,6 @@ public class Node : MonoBehaviour {
 		// Synapse pulse
 		synapseRunner += Time.deltaTime;
 		synapse = Mathf.Cos(synapseRunner * synapseFreq / (2 * Mathf.PI)) * signal;
-
-
-        // Remove dead bonds from array.
-        int shifter = 0;
-        for (int i = 0; i < bonds.Length; i++) {
-            if (bonds[i] == null)
-                shifter++;
-            if((i + shifter) < bonds.Length)
-                bonds[i] = bonds[i + shifter];
-        }
-        if (shifter > 0) {
-            Bond[] tempBonds = new Bond[bonds.Length - shifter];
-            for (int i = 0; i < tempBonds.Length; i++) {
-                tempBonds[i] = bonds[i];
-            }
-            bonds = tempBonds;
-        }
 		
 		if(nodeType == NodeType.sense)
 			signalRelay = true;

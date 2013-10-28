@@ -107,35 +107,6 @@ public class CameraControl : MonoBehaviour {
             }
 
 
-            /*
-            // If camera is locked, user can use cursor to manipulate assemblies/nodes.
-            // If the cursor is over some object...
-            if(lookedAtObject){
-                // If we click on a node...
-                Node lookedAtNode = lookedAtObject.GetComponent<Node>();
-                if(lookedAtNode){
-                    if (Input.GetMouseButtonUp(0)){
-                        // Select the assembly attached to the node, if applicable...
-                        if((lookedAtNode.myAssembly != null) && (selectedAssembly != lookedAtNode.myAssembly) && (!selectedNode || (selectedNode == lookedAtNode) || (lookedAtNode.myAssembly != selectedNode.myAssembly))){
-                            selectedNode = null;
-                            FocusOnAssembly(lookedAtNode.myAssembly);
-                        }
-                        // Otherwise just select the node.
-                        else{
-                            selectedNode = lookedAtNode;
-                            selectedAssembly = null;
-                            targetRot = Quaternion.LookRotation(selectedNode.transform.position - transform.position, Camera.main.transform.up);
-                        }
-                    }
-                    // DEBUG - Right click will pump in signal.
-                    else if (Input.GetMouseButton(1))
-                        lookedAtNode.signal = 1.0f;
-                }
-				
-				FoodPellet lookedAtPellet = lookedAtObject.GetComponent<FoodPellet>();
-            }
-            */
-
             if(lookedAtObject){
                 Node lookedAtNode = lookedAtObject.GetComponent<Node>();
                 if(lookedAtNode && Input.GetMouseButtonDown(0))
@@ -160,6 +131,8 @@ public class CameraControl : MonoBehaviour {
                 }
             }
 
+            if((selectedAssembly != null) && Input.GetKeyDown(KeyCode.Delete))
+                selectedAssembly.Disband();
 
             
             if(mouseClickedNode && mouseReleasedNode && (mouseClickedNode != mouseReleasedNode))
