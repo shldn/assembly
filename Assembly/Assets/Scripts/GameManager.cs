@@ -105,10 +105,10 @@ public class GameManager : MonoBehaviour {
 
         // Delete all elements if 'L' pressed...
         if(Input.GetKeyDown(KeyCode.L)){
-            foreach(Node aNode in allNodes)
-                aNode.Destroy();
-            foreach(Bond aBond in allBonds)
-                aBond.Destroy();
+            while (Node.GetAll().Count > 0)
+                Node.GetAll()[Node.GetAll().Count - 1].Destroy();
+            while (Bond.GetAll().Count > 0)
+                Bond.GetAll()[Bond.GetAll().Count - 1].Destroy();
             foreach(FoodPellet aPellet in allFoodPellets)
                 aPellet.Destroy();
         }

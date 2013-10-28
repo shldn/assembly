@@ -227,5 +227,7 @@ public class Bond{
         VectorLine.Destroy(ref signalLine);
         VectorLine.Destroy(ref synapseLine);
         VectorLine.Destroy(ref motionLine);
+
+        allBonds.Remove(this);
     } // End of DestroyBond().
 } // End of Bond.

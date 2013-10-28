@@ -176,10 +176,7 @@ public class Node : MonoBehaviour {
 
     public void Destroy(){
         Destroy(gameObject);
+        allNodes.Remove(this);
     } // End of DestroyNode().
 
-
-    private void OnDestroy(){
-        allNodes.Remove(this);
-    }
 } // End of Node.
