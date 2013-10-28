@@ -176,6 +176,13 @@ public class CameraControl : MonoBehaviour {
                 targetPos -= transform.up * cameraMoveSpeed * Time.deltaTime;
         }
 
+        // Save assembly based on the selected assembly when Return is pressed.
+        if ((selectedNode != null || selectedAssembly != null) && Input.GetKeyDown(KeyCode.Return)) {
+            if( selectedNode && selectedNode.myAssembly != null )
+                selectedNode.myAssembly.Save();
+            else if(selectedAssembly != null)
+                selectedAssembly.Save();
+        }
 
 
         // Auto-random-orbit toggled by 'O' key.
