@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Vectrosity;
 
 public class CameraControl : MonoBehaviour {
 	
@@ -32,6 +33,15 @@ public class CameraControl : MonoBehaviour {
     public Texture2D nodeSelectTex;
 
     bool spacePressed;
+
+    Node mouseClickedNode = null;
+    Node mouseReleasedNode = null;
+
+    public VectorLine dragLine;
+    public Material dragLineMaterial;
+    public Vector3[] dragLineEndPoints = new Vector3[] { Vector3.zero, Vector3.zero };
+
+
 
 
 	void Start(){
@@ -72,17 +82,6 @@ public class CameraControl : MonoBehaviour {
         if(cameraLock){
             Screen.lockCursor = false;
             
-            if(selectedNode){
-                cameraFocused = true;
-                focusedPos = selectedNode.transform.position;
-
-                // Pump calories in/out of selected node with up/down arrow keys.
-                if(Input.GetKey(KeyCode.UpArrow))
-                    selectedNode.calories += 10.0f * Time.deltaTime;
-                if(Input.GetKey(KeyCode.DownArrow))
-                    selectedNode.calories -= 10.0f * Time.deltaTime;
-            }
-
             if (selectedAssembly != null) {
                 cameraFocused = true;
                 focusedPos = selectedAssembly.GetCenter();
@@ -107,13 +106,15 @@ public class CameraControl : MonoBehaviour {
                 targetPos += Camera.main.transform.forward * Input.GetAxis("Mouse ScrollWheel") * orbitZoomSpeed;
             }
 
+
+            /*
             // If camera is locked, user can use cursor to manipulate assemblies/nodes.
             // If the cursor is over some object...
             if(lookedAtObject){
                 // If we click on a node...
                 Node lookedAtNode = lookedAtObject.GetComponent<Node>();
                 if(lookedAtNode){
-                    if (Input.GetMouseButtonDown(0)){
+                    if (Input.GetMouseButtonUp(0)){
                         // Select the assembly attached to the node, if applicable...
                         if((lookedAtNode.myAssembly != null) && (selectedAssembly != lookedAtNode.myAssembly) && (!selectedNode || (selectedNode == lookedAtNode) || (lookedAtNode.myAssembly != selectedNode.myAssembly))){
                             selectedNode = null;
@@ -133,6 +134,37 @@ public class CameraControl : MonoBehaviour {
 				
 				FoodPellet lookedAtPellet = lookedAtObject.GetComponent<FoodPellet>();
             }
+            */
+
+            if(lookedAtObject){
+                Node lookedAtNode = lookedAtObject.GetComponent<Node>();
+                if(lookedAtNode && Input.GetMouseButtonDown(0))
+                    mouseClickedNode = lookedAtNode;
+                else if(lookedAtNode && Input.GetMouseButtonUp(0))
+                    mouseReleasedNode = lookedAtNode;
+
+                // 'Selecting' a single node.
+                if(mouseReleasedNode && (mouseClickedNode == mouseReleasedNode)){
+                    Node clickAndReleaseNode = mouseReleasedNode;
+                    // Select the assembly attached to the node, if applicable...
+                    if((clickAndReleaseNode.myAssembly != null) && (selectedAssembly != clickAndReleaseNode.myAssembly) && (!selectedNode || (selectedNode == clickAndReleaseNode) || (clickAndReleaseNode.myAssembly != selectedNode.myAssembly))){
+                        selectedNode = null;
+                        FocusOnAssembly(clickAndReleaseNode.myAssembly);
+                    }
+                    // Otherwise just select the node.
+                    else{
+                        selectedNode = clickAndReleaseNode;
+                        selectedAssembly = null;
+                        targetRot = Quaternion.LookRotation(selectedNode.transform.position - transform.position, Camera.main.transform.up);
+                    }
+                }
+            }
+
+
+            
+            if(mouseClickedNode && mouseReleasedNode && (mouseClickedNode != mouseReleasedNode))
+                new Bond(mouseClickedNode, mouseReleasedNode);
+            
         }
         // If we're in free-look mode...
         else{
@@ -172,27 +204,6 @@ public class CameraControl : MonoBehaviour {
         }
 
 
-        // Make new assembly based on the selected node when Return is pressed.
-        if (selectedNode) {
-            if(selectedNode && (selectedNode.myAssembly == null) && Input.GetKeyDown(KeyCode.Return)){
-                // Gonna plop the new assembly into the GameManager.allAssemblies list.
-                Assembly[] newAssemblies = new Assembly[GameManager.allAssemblies.Length + 1];
-                for (int i = 0; i < GameManager.allAssemblies.Length; i++)
-                    newAssemblies[i] = GameManager.allAssemblies[i];
-
-                // Make our new assembly.
-                Assembly newAssembly = GameManager.GetAssembly(selectedNode);
-
-                // Save assembly to file.
-                newAssembly.Save();
-
-                // Update GameManager assembly list and select the new assembly.
-                newAssemblies[newAssemblies.Length - 1] = newAssembly;
-                GameManager.allAssemblies = newAssemblies;
-                FocusOnAssembly(newAssembly);
-            }
-        }
-
 
         // Auto-random-orbit toggled by 'O' key.
         if(Input.GetKeyDown(KeyCode.O)){
@@ -202,11 +213,16 @@ public class CameraControl : MonoBehaviour {
                 autoOrbit = Quaternion.identity;
         }
         targetRot = Quaternion.RotateTowards(targetRot, targetRot * autoOrbit, Time.deltaTime * 2.5f);
+
+        if(Input.GetMouseButtonUp(0)){
+            mouseClickedNode = null;
+            mouseReleasedNode = null;
+        }
     } // End of Update(). 
 
 
     void OnGUI(){
-        // Show camera type/controls.
+        // Show camera type/controls information.
         GUI.skin = GameManager.readoutSkin;
         GUI.skin.label.alignment = TextAnchor.UpperCenter;
         string viewInfo = "";
@@ -245,8 +261,8 @@ public class CameraControl : MonoBehaviour {
         }
 
         // Label assemblies.
-        for(int i = 0; i < GameManager.allAssemblies.Length; i++){
-            Assembly currentAssembly = GameManager.allAssemblies[i];
+        for(int i = 0; i < Assembly.GetAll().Count; i++){
+            Assembly currentAssembly = Assembly.GetAll()[i];
 
             GUI.color = Color.white;
             // Highlight all nodes in selected Assembly.

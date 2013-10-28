@@ -41,6 +41,18 @@ public class Bond{
         nodeA = newNodeA;
         nodeB = newNodeB;
 
+        Bond[] tempNodeABonds = new Bond[nodeA.bonds.Length + 1];
+        for(int i = 0; i < nodeA.bonds.Length; i++)
+            tempNodeABonds[i] = nodeA.bonds[i];
+        tempNodeABonds[nodeA.bonds.Length] = this;
+        nodeA.bonds = tempNodeABonds;
+
+        Bond[] tempnodeBBonds = new Bond[nodeB.bonds.Length + 1];
+        for(int i = 0; i < nodeB.bonds.Length; i++)
+            tempnodeBBonds[i] = nodeB.bonds[i];
+        tempnodeBBonds[nodeB.bonds.Length] = this;
+        nodeB.bonds = tempnodeBBonds;
+
         muscleLine = new VectorLine("muscleLine", muscleEndPoints, muscleLineMaterial, 3.0f);
         signalLine = new VectorLine("signalLine", signalEndPoints, signalLineMaterial, 3.0f);
         synapseLine = new VectorLine("synapseLine", synapseEndPoints, synapseLineMaterial, 3.0f);
@@ -64,6 +76,23 @@ public class Bond{
 
         nodeA.rigidbody.AddForce(vectorAtoB.normalized * attraction);
         nodeB.rigidbody.AddForce(-vectorAtoB.normalized * attraction);
+
+
+        // If neither node are in an assembly, create a new assembly.
+        if((nodeA.myAssembly == null) && (nodeB.myAssembly == null))
+            new Assembly(nodeA);
+
+        // If one of the nodes is in an assembly, add the other to it.
+        if((nodeA.myAssembly != null) && (nodeB.myAssembly == null))
+            nodeA.myAssembly.AddNode(nodeB);
+
+        if((nodeB.myAssembly != null) && (nodeA.myAssembly == null))
+            nodeB.myAssembly.AddNode(nodeA);
+
+        // If both are in assemblies, merge them.
+        if((nodeA.myAssembly != null) && (nodeB.myAssembly != null) && (nodeA.myAssembly != nodeB.myAssembly)){
+            nodeA.myAssembly.Merge(nodeB.myAssembly);
+        }
 
 
 

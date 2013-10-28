@@ -10,7 +10,6 @@ public class GameManager : MonoBehaviour {
 	
     // Up-to-date arrays of all world elements.
 	public static FoodPellet[] allFoodPellets;
-    public static Assembly[] allAssemblies = new Assembly[0];
 	
     public static Prefabs prefabs; // Contains prefab transforms.
     public static GraphicsManager graphics; // Contains graphical information.
@@ -48,6 +47,7 @@ public class GameManager : MonoBehaviour {
 
         List<Node> allNodes = Node.GetAll();
 
+        
 		// Randomly assign bonds.
         List<Bond> allBonds = Bond.GetAll();
 		// Loop through all nodes...
@@ -67,28 +67,16 @@ public class GameManager : MonoBehaviour {
 					}
 
                     int bondLimit = 3;
-                    if (!bondExists && (i != j) && (currentNode.bonds.Length < bondLimit) && (otherNode.bonds.Length < bondLimit)) {
+                    if (!bondExists && (i != j) && (currentNode.bonds.Length < bondLimit) && (otherNode.bonds.Length < bondLimit)){
 						Bond newBond = new Bond(currentNode, otherNode);
-
-                        // Update current node's bonds:
-                        Bond[] curNewBonds = new Bond[currentNode.bonds.Length + 1];
-                        for(int l = 0; l < currentNode.bonds.Length; l++){
-                            curNewBonds[l] = currentNode.bonds[l];
-                        }
-                        curNewBonds[currentNode.bonds.Length] = newBond;
-                        currentNode.bonds = curNewBonds;
-
-                        // Update other node's bonds:
-                        Bond[] othNewBonds = new Bond[otherNode.bonds.Length + 1];
-                        for (int m = 0; m < otherNode.bonds.Length; m++){
-                            othNewBonds[m] = otherNode.bonds[m];
-                        }
-                        othNewBonds[otherNode.bonds.Length] = newBond;
-                        otherNode.bonds = othNewBonds;
 					}
 				}
 			}
 		}
+        
+
+
+
 		
         // Initialize 'names' array for random Assembly names to be pulled from.
         names = namesText.text.Split('\n');
@@ -112,6 +100,7 @@ public class GameManager : MonoBehaviour {
         // Update game element arrays.
         List<Node> allNodes = Node.GetAll();
         List<Bond> allBonds = Bond.GetAll();
+        List<Assembly> allAssemblies = Assembly.GetAll();
         allFoodPellets = FindObjectsOfType(typeof(FoodPellet)) as FoodPellet[];
 
         // Delete all elements if 'L' pressed...
@@ -125,7 +114,7 @@ public class GameManager : MonoBehaviour {
         }
 
         // Update() functions in abstract classes.
-        for(int i = 0; i < allAssemblies.Length; i++){
+        for(int i = 0; i < allAssemblies.Count; i++){
             allAssemblies[i].Update();
         }
         for(int i = 0; i < allBonds.Count; i++){
@@ -161,94 +150,6 @@ public class GameManager : MonoBehaviour {
 		GUI.Label( new Rect( 5, 0, Screen.width, Screen.height ), readout );
 	} // End of OnGUI().
 
-
-    // Creates a new assembly off of a root node and saves it to a file.
-    public static Assembly GetAssembly(Node rootNode){
-        Node[] gotNodes = new Node[1] {rootNode};
-        Node[] newNodes = gotNodes;
-
-        int nodeNum = 0;
-
-        // First pass; finds all nodes through their bonds.
-        // Go until we run out of new nodes.
-        while(newNodes.Length > 0){
-            // Run through all of our new nodes to test.
-            for(int i = 0; i < newNodes.Length; i++){
-                Node currentNode = newNodes[i];
-                currentNode.assemblyIndex = nodeNum;
-                nodeNum++;
-
-                // Remove this node from newNodes; we're gonna check it soon and won't need it anymore.
-                Node[] subbedNewNodes = new Node[newNodes.Length - 1];
-                for(int h = 0; h < subbedNewNodes.Length; h++){
-                    if (h < i)
-                        subbedNewNodes[h] = newNodes[h];
-                    else
-                        subbedNewNodes[h] = newNodes[h + 1];
-                }
-                newNodes = subbedNewNodes;
-
-                // Run through each new node's bonds.
-                for(int j = 0; j < currentNode.bonds.Length; j++){
-                    Bond currentBond = currentNode.bonds[j];
-                    // We're gonna test the node at both ends; we don't know which direction the bond goes.
-                    bool gotAlreadyA = false;
-                    bool gotAlreadyB = false;
-                    // See if we already got the node at either end.
-                    for (int k = 0; k < gotNodes.Length; k++){
-                        if (currentBond.nodeA == gotNodes[k])
-                            gotAlreadyA = true;
-                        if (currentBond.nodeB == gotNodes[k])
-                            gotAlreadyB = true;
-                    }
-
-                    // Add A if it's new.
-                    if(!gotAlreadyA){
-                        Node[] tempGotNodes = new Node[gotNodes.Length + 1];
-                        Node[] tempNewNodes = new Node[newNodes.Length + 1];
-                        for (int m = 0; m < gotNodes.Length; m++)
-                            tempGotNodes[m] = gotNodes[m];
-                        for (int n = 0; n < newNodes.Length; n++)
-                            tempNewNodes[n] = newNodes[n];
-                        tempGotNodes[tempGotNodes.Length - 1] = currentBond.nodeA;
-                        tempNewNodes[tempNewNodes.Length - 1] = currentBond.nodeA;
-                        gotNodes = tempGotNodes;
-                        newNodes = tempNewNodes;
-                    }
-
-                    // Add B if it's new.
-                    if(!gotAlreadyB){
-                        Node[] tempGotNodes = new Node[gotNodes.Length + 1];
-                        Node[] tempNewNodes = new Node[newNodes.Length + 1];
-                        for (int r = 0; r < gotNodes.Length; r++)
-                            tempGotNodes[r] = gotNodes[r];
-                        for (int s = 0; s < newNodes.Length; s++)
-                            tempNewNodes[s] = newNodes[s];
-                        tempGotNodes[tempGotNodes.Length - 1] = currentBond.nodeB;
-                        tempNewNodes[tempNewNodes.Length - 1] = currentBond.nodeB;
-                        gotNodes = tempGotNodes;
-                        newNodes = tempNewNodes;
-                    }
-                }
-            }
-        }
-
-        // Assign node indices
-        for(int i = 0; i < gotNodes.Length; i++)
-            gotNodes[i].assemblyIndex = i;
-
-        // Create the new assembly.
-        Assembly newAssembly = new Assembly();
-        newAssembly.nodes = gotNodes;
-        newAssembly.callsign = GameManager.names[Random.Range(0, GameManager.names.Length)].Trim();
-
-        // Assign assembly to all nodes.
-        for(int i = 0; i < gotNodes.Length; i++)
-            gotNodes[i].myAssembly = newAssembly;
-
-        return newAssembly;
-    } // End of GetAssembly().
-	
 
     // Create an assembly from a file.
     public static Assembly GetAssembly(string path) {
