@@ -31,6 +31,10 @@ public class Bond{
 
 
     public Bond(Node newNodeA, Node newNodeB){
+        if (newNodeA == newNodeB) {
+            Debug.LogError("Trying to bond node with itself!");
+            return;
+        }
         nodeA = newNodeA;
         nodeB = newNodeB;
 

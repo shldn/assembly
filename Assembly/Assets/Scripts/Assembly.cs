@@ -174,6 +174,10 @@ public class Assembly {
         for (int i = 0; i < nodes.Length; i++)
         {
             Node currentNode = nodes[i];
+            if (currentNode.bonds.Length == 0) {
+                Debug.LogError("Node in assembly has no bonds!");
+                continue;
+            }
             // First part of the DNA is the node's index and node characteristics.
             newDNA += i + "_" + currentNode.GetDNAInfo();
 
