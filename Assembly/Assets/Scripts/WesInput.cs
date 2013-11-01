@@ -9,6 +9,7 @@ public class WesInput : MonoBehaviour{
 
     public static float forwardThrottle;
     public static float horizontalThrottle;
+    public static float verticalThrottle;
     public static float rotationThrottle;
 
     public static bool active = true;
@@ -16,6 +17,8 @@ public class WesInput : MonoBehaviour{
     void Awake(){
 	    keys[ "Forward" ] = KeyCode.W;
 	    keys[ "Backward" ] = KeyCode.S;
+        keys[ "Up" ] = KeyCode.LeftShift;
+        keys[ "Down" ] = KeyCode.LeftControl;
 	    keys[ "Left" ] = KeyCode.A;
 	    keys[ "Right" ] = KeyCode.D;
 	    keys[ "Roll Left" ] = KeyCode.Q;
@@ -25,7 +28,7 @@ public class WesInput : MonoBehaviour{
 
         keys[ "Disband Assembly" ] = KeyCode.Delete;
 
-	    keys[ "Open Console" ] = KeyCode.C;
+	    keys[ "Open Console" ] = KeyCode.Return;
     } // End of Awake().
 
 
@@ -41,11 +44,17 @@ public class WesInput : MonoBehaviour{
 		    horizontalThrottle += 1;
 	    if(WesInput.GetKey("Left"))
 		    horizontalThrottle -= 1;
+
+        verticalThrottle = 0;
+	    if(WesInput.GetKey("Up"))
+		    verticalThrottle += 1;
+	    if(WesInput.GetKey("Down"))
+		    verticalThrottle -= 1;
 		
 	    rotationThrottle = 0;
-	    if(WesInput.GetKey("Turn Right"))
+	    if(WesInput.GetKey("Roll Right"))
 		    rotationThrottle += 1;
-	    if(WesInput.GetKey("Turn Left"))
+	    if(WesInput.GetKey("Roll Left"))
 		    rotationThrottle -= 1;
     } // End of Update().
 

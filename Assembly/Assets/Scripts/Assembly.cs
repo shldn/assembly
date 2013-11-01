@@ -130,29 +130,10 @@ public class Assembly {
 				otherNode.rigidbody.AddForce(-repulsiveForce);
             }
         }
-
-        
-        // TEMP
-        // 'Fitness Function'... sort of.
-        // Disband an assembly when it gets too big.
-        /*
-        if(nodes.Length > 5){
-            for(int i = 0; i < nodes.Length; i++){
-                Node currentNode = nodes[i];
-
-                Vector3 burstVector = currentNode.transform.position - GetCenter();
-                Vector3 burstForce = burstVector.normalized * (10f / burstVector.magnitude);
-
-                currentNode.rigidbody.AddForce(burstForce, ForceMode.Impulse);
-                currentNode.bondCooldown = 3f;
-            }
-            Disband();
-        }
-        */
-        
     } // End of Update().
 
 
+    // Returns the average position of all nodes.
     public Vector3 GetCenter(){
         Vector3 totalPos = Vector3.zero;
         for(int i = 0; i < nodes.Length; i++) {
@@ -163,6 +144,7 @@ public class Assembly {
     } // End of GetCenter().
 
 
+    // Returns the greatest distance between the center and a node.
     public float GetRadius(){
         float greatestRad = 0;
         Vector3 center = GetCenter();
@@ -175,14 +157,12 @@ public class Assembly {
     } // End of GetRadius().
 
 
-    // Save assembly to a file.
-    public void Save()
-    {        
+    // Save assembly to a file. Returns the filepath.
+    public string Save(){        
         DirectoryInfo dir = new DirectoryInfo("C:/Assembly/saves");
         FileInfo[] info = dir.GetFiles("*.*");
         int lastFileNum = 0;
-        for (int t = 0; t < info.Length; t++)
-        {
+        for (int t = 0; t < info.Length; t++){
             FileInfo currentFile = info[t];
             int currentFileNum = int.Parse(currentFile.Name.Substring(0, 3));
             if (currentFileNum >= lastFileNum)
@@ -191,14 +171,13 @@ public class Assembly {
         string filename = "C:/Assembly/saves/" + (lastFileNum + 1).ToString("000") + "_" + name + ".txt";
         Debug.Log("Saving " + filename);
         System.IO.File.WriteAllText(filename, GetDNA());
+        return filename;
     } // End of Save().
 
 
-    private string GetDNA()
-    {
+    private string GetDNA(){
         string newDNA = "";
-        for (int i = 0; i < nodes.Length; i++)
-        {
+        for (int i = 0; i < nodes.Length; i++){
             Node currentNode = nodes[i];
             if (currentNode.bonds.Length == 0) {
                 Debug.LogError("Node in assembly has no bonds!");
@@ -207,8 +186,7 @@ public class Assembly {
             // First part of the DNA is the node's index and node characteristics.
             newDNA += i + "_" + currentNode.GetDNAInfo();
 
-            for (int j = 0; j < currentNode.bonds.Length; j++)
-            {
+            for (int j = 0; j < currentNode.bonds.Length; j++){
                 Bond currentBond = currentNode.bonds[j];
                 if (currentBond.nodeA == currentNode)
                     newDNA += "-" + currentBond.nodeB.assemblyIndex;
@@ -238,6 +216,12 @@ public class Assembly {
 
         return mergedAssembly;
     } // End of Merge().
+
+
+    // Splits an assembly into two smaller assemblies.
+    public void Split(Bond splittingBond){
+        // Remove the bond and regenerate two assemblies.
+    }
     
 
     // Attaches a new node to this assembly.

@@ -6,7 +6,7 @@ using System.IO;
 public class GameManager : MonoBehaviour {
 	
     // Up-to-date arrays of all world elements.
-	public static FoodPellet[] allFoodPellets;
+	public static FoodPellet[] allFoodPellets = new FoodPellet[0];
 	
     public static Prefabs prefabs; // Contains prefab transforms.
     public static GraphicsManager graphics; // Contains graphical information.
@@ -61,17 +61,6 @@ public class GameManager : MonoBehaviour {
 	void Update(){
         numFrames++;
 
-        // Delete all elements if 'L' pressed...
-        if(Input.GetKeyDown(KeyCode.L)){
-            while (Node.GetAll().Count > 0)
-                Node.GetAll()[Node.GetAll().Count - 1].Destroy();
-            while (Bond.GetAll().Count > 0)
-                Bond.GetAll()[Bond.GetAll().Count - 1].Destroy();
-            while (Assembly.GetAll().Count > 0)
-                Assembly.GetAll()[Assembly.GetAll().Count - 1].Destroy();
-            foreach(FoodPellet aPellet in allFoodPellets)
-                aPellet.Destroy();
-        }
 
         // Update() functions in abstract classes.
         for(int i = 0; i < Assembly.GetAll().Count; i++){
@@ -80,14 +69,6 @@ public class GameManager : MonoBehaviour {
         for(int i = 0; i < Bond.GetAll().Count; i++){
             Bond.GetAll()[i].Update();
         }
-
-
-
-        // Add more elements if 'g' is pressed..
-        if(Input.GetKeyDown(KeyCode.G)){
-            Start();
-        }
-
 	} // End of Update().
 
 
@@ -163,4 +144,16 @@ public class GameManager : MonoBehaviour {
 
         return (newNodes.Count == 0) ? null : new Assembly(newNodes[0]);
     } // End of GetAssembly().
+
+
+    public static void ClearAll(){
+        while(Node.GetAll().Count > 0)
+                Node.GetAll()[Node.GetAll().Count - 1].Destroy();
+        while(Bond.GetAll().Count > 0)
+            Bond.GetAll()[Bond.GetAll().Count - 1].Destroy();
+        while(Assembly.GetAll().Count > 0)
+            Assembly.GetAll()[Assembly.GetAll().Count - 1].Destroy();
+        foreach(FoodPellet aPellet in allFoodPellets)
+            aPellet.Destroy();
+    }
 } // End of GameManager.

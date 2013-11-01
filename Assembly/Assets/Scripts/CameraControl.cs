@@ -17,7 +17,7 @@ public class CameraControl : MonoBehaviour {
     public float translateSmoothTime = 0.1f;
     float orbitDist = 10.0f; // Distance the camera will orbit from focusedPos.
 
-    Quaternion autoOrbit = Quaternion.identity;
+    public static Quaternion autoOrbit = Quaternion.identity;
 	
 	[HideInInspector] public static GameObject lookedAtObject;
 
@@ -56,7 +56,7 @@ public class CameraControl : MonoBehaviour {
         transform.rotation = tempRot;
 
         // Toggle camera lock/free movement with Spacebar.
-        if (Input.GetKey(KeyCode.Space) && !spacePressed){
+        if (WesInput.GetKey("Camera Lock") && !spacePressed){
             spacePressed = true;
             cameraLock = !cameraLock;
         }
@@ -138,16 +138,19 @@ public class CameraControl : MonoBehaviour {
                 }
             }
 
-            if((selectedAssembly != null) && Input.GetKeyDown(KeyCode.Delete))
+            if((selectedAssembly != null) && WesInput.GetKey("Disband Assembly"))
                 selectedAssembly.Disband();
 
 
             // Create a new bond.
-            if(mouseClickedNode && mouseReleasedNode && !mouseClickedNode.BondedTo(mouseReleasedNode) && (mouseClickedNode != mouseReleasedNode) && (mouseClickedNode.BondCount() < 3) && (mouseReleasedNode.BondCount() < 3))
+            if(mouseClickedNode && mouseReleasedNode && !mouseClickedNode.BondedTo(mouseReleasedNode) && (mouseClickedNode != mouseReleasedNode) && (mouseClickedNode.BondCount() < 3) && (mouseReleasedNode.BondCount() < 3)){
                 new Bond(mouseClickedNode, mouseReleasedNode);
+                ConsoleScript.NewLine("Manually created a bond.");
+            }
             // Destroy an existing bond.
             else if(mouseClickedNode && mouseReleasedNode && mouseClickedNode.BondedTo(mouseReleasedNode)){
                 mouseClickedNode.GetBondTo(mouseReleasedNode).Destroy();
+                ConsoleScript.NewLine("Manually removed a bond.");
             }
             
             
@@ -165,28 +168,14 @@ public class CameraControl : MonoBehaviour {
         }
 
         // Roll camera using Q and E
-        if (Input.GetKey(KeyCode.Q))
-            targetRot *= Quaternion.AngleAxis(1f * cameraRotateSpeed, Vector3.forward);
-        if (Input.GetKey(KeyCode.E))
-            targetRot *= Quaternion.AngleAxis(1f * cameraRotateSpeed, -Vector3.forward);
+        targetRot *= Quaternion.AngleAxis(WesInput.rotationThrottle * -cameraRotateSpeed, Vector3.forward);
 
         if(!cameraFocused){
             // Navigation
             // Translate position with keyboard input.
-            if (Input.GetKey(KeyCode.W))
-                targetPos += transform.forward * cameraMoveSpeed * Time.deltaTime;
-            if (Input.GetKey(KeyCode.S))
-                targetPos -= transform.forward * cameraMoveSpeed * Time.deltaTime;
-
-            if (Input.GetKey(KeyCode.A))
-                targetPos -= transform.right * cameraMoveSpeed * Time.deltaTime;
-            if (Input.GetKey(KeyCode.D))
-                targetPos += transform.right * cameraMoveSpeed * Time.deltaTime;
-
-            if (Input.GetKey(KeyCode.LeftShift))
-                targetPos += transform.up * cameraMoveSpeed * Time.deltaTime;
-            if (Input.GetKey(KeyCode.LeftControl))
-                targetPos -= transform.up * cameraMoveSpeed * Time.deltaTime;
+            targetPos += WesInput.forwardThrottle * transform.forward * cameraMoveSpeed * Time.deltaTime;
+            targetPos += WesInput.horizontalThrottle * transform.right * cameraMoveSpeed * Time.deltaTime;
+            targetPos += WesInput.verticalThrottle * transform.up * cameraMoveSpeed * Time.deltaTime;
         }
 
         // Save assembly based on the selected assembly when Return is pressed.
@@ -198,13 +187,7 @@ public class CameraControl : MonoBehaviour {
         }
 
 
-        // Auto-random-orbit toggled by 'O' key.
-        if(Input.GetKeyDown(KeyCode.O)){
-            if(autoOrbit == Quaternion.identity)
-                autoOrbit = Random.rotation;
-            else
-                autoOrbit = Quaternion.identity;
-        }
+        // Auto-orbit
         targetRot = Quaternion.RotateTowards(targetRot, targetRot * autoOrbit, Time.deltaTime * 2.5f);
 
 
@@ -228,6 +211,16 @@ public class CameraControl : MonoBehaviour {
             }
         }
     } // End of Update(). 
+
+
+    public static void OrbitOn(){
+        autoOrbit = Random.rotation;
+    }
+
+
+    public static void OrbitOff(){
+        autoOrbit = Quaternion.identity;
+    }
 
 
     void OnGUI(){
