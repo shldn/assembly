@@ -1,0 +1,11 @@
+C:\UCSD Genomics\Genomics\Assembly\Temp\bin\Debug\Assembly-CSharp.dll
+C:\UCSD Genomics\Genomics\Assembly\Temp\bin\Debug\Assembly-CSharp.pdb
+C:\UCSD Genomics\Genomics\Assembly\Temp\bin\Debug\UnityEditor.dll
+C:\UCSD Genomics\Genomics\Assembly\Temp\bin\Debug\UnityEngine.dll
+C:\UCSD Genomics\Genomics\Assembly\Temp\bin\Debug\Mono.Cecil.dll
+C:\UCSD Genomics\Genomics\Assembly\Temp\bin\Debug\nunit.framework.dll
+C:\UCSD Genomics\Genomics\Assembly\Temp\bin\Debug\ICSharpCode.NRefactory.dll
+C:\UCSD Genomics\Genomics\Assembly\Temp\bin\Debug\Assembly-CSharp-firstpass.pdb
+C:\UCSD Genomics\Genomics\Assembly\obj\Debug\ResolveAssemblyReference.cache
+C:\UCSD Genomics\Genomics\Assembly\obj\Debug\Assembly-CSharp.dll
+C:\UCSD Genomics\Genomics\Assembly\obj\Debug\Assembly-CSharp.pdb
