@@ -3,14 +3,18 @@ using System.Collections;
 using System.IO;
 using System.Collections.Generic;
 
+public enum LifeStage { connect, function, reproduce, die }
+
 public class Assembly {
 
     private static List<Assembly> allAssemblies = new List<Assembly>();
     public static List<Assembly> GetAll() { return allAssemblies; }
 
-    public string callsign;
+    public string name;
     public Node[] nodes;
 
+    public LifeStage lifeStage = LifeStage.connect;
+    public float age = 0f;
 
     // Creates a new assembly off of a root node.
     public Assembly(Node rootNode){
@@ -89,7 +93,7 @@ public class Assembly {
 
         // Create the new assembly.
         nodes = gotNodes;
-        callsign = GameManager.names[Random.Range(0, GameManager.names.Length)].Trim();
+        name = GameManager.names[Random.Range(0, GameManager.names.Length)].Trim();
 
         // Assign assembly to all nodes.
         for(int i = 0; i < gotNodes.Length; i++)
@@ -106,6 +110,8 @@ public class Assembly {
 
 
     public void Update(){
+        age += Time.deltaTime;
+
         // Repulsive force between nodes within assembly.
         for( int i = 0; i < nodes.Length; i++ ){
 			Node currentNode = nodes[i];
@@ -129,6 +135,7 @@ public class Assembly {
         // TEMP
         // 'Fitness Function'... sort of.
         // Disband an assembly when it gets too big.
+        /*
         if(nodes.Length > 5){
             for(int i = 0; i < nodes.Length; i++){
                 Node currentNode = nodes[i];
@@ -141,6 +148,7 @@ public class Assembly {
             }
             Disband();
         }
+        */
         
     } // End of Update().
 
@@ -180,7 +188,7 @@ public class Assembly {
             if (currentFileNum >= lastFileNum)
                 lastFileNum = currentFileNum;
         }
-        string filename = "C:/Assembly/saves/" + (lastFileNum + 1).ToString("000") + "_" + callsign + ".txt";
+        string filename = "C:/Assembly/saves/" + (lastFileNum + 1).ToString("000") + "_" + name + ".txt";
         Debug.Log("Saving " + filename);
         System.IO.File.WriteAllText(filename, GetDNA());
     } // End of Save().
@@ -214,10 +222,15 @@ public class Assembly {
         Assembly mergedAssembly = new Assembly(nodes[0]);
 
         // Combine assembly names. John + Abbey = Jobey, etc.
-        mergedAssembly.callsign = callsign.Substring(0, Mathf.RoundToInt(callsign.Length * 0.5f)) + mergingAssembly.callsign.Substring(0, Mathf.RoundToInt(mergingAssembly.callsign.Length * 0.5f));
+        mergedAssembly.name = name.Substring(0, Mathf.RoundToInt(name.Length * 0.5f)) + mergingAssembly.name.Substring(0, Mathf.RoundToInt(mergingAssembly.name.Length * 0.5f));
 
         allAssemblies.Remove(this);
         allAssemblies.Remove(mergingAssembly);
+
+        if((CameraControl.selectedAssembly == this) || (CameraControl.selectedAssembly == mergingAssembly))
+            CameraControl.selectedAssembly = mergedAssembly;
+
+        mergedAssembly.age = ((this.age * this.nodes.Length) + (mergingAssembly.age * mergingAssembly.nodes.Length)) / (this.nodes.Length + mergingAssembly.nodes.Length);
 
         return mergedAssembly;
     } // End of Merge().

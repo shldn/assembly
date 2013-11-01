@@ -13,6 +13,9 @@ public class GraphicsManager : MonoBehaviour {
     public Texture2D synapseFlare;
     public Texture2D muscleFlare;
 
+    // Texture (crosshair) shown around selected ndoes.
+    public Texture2D nodeSelectTex;
+    public Texture2D nodeModifyTex;
 
     void Awake(){
         // Set up line types.

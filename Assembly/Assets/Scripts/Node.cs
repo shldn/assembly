@@ -10,6 +10,7 @@ public class Node : MonoBehaviour {
 	public NodeType nodeType = NodeType.bone;
 
     public Bond[] bonds = new Bond[0];
+    public int BondCount() { return bonds.Length; }
 
     public float calories;
 	public float caloriesDelta;
@@ -47,6 +48,7 @@ public class Node : MonoBehaviour {
     private static List<Node> allNodes = new List<Node>();
     public static List<Node> GetAll() { return allNodes; }
 	
+
 	void Awake(){
 		nodeType = (NodeType) Random.Range(0, 4);
         calories = Random.Range(0.5f, 1.0f);
@@ -158,18 +160,10 @@ public class Node : MonoBehaviour {
             for(int i = 0; i < allNodes.Count; i++){
                 Node otherNode = allNodes[i];
 
-                bool bondedToNode = false;
-                for(int j = 0; j < bonds.Length; j++){
-                    Bond currentBond = bonds[j];
-                    if((currentBond.nodeA == otherNode) || (currentBond.nodeB == otherNode))
-                        bondedToNode = true;
-                }
-
-                if(!bondedToNode && (otherNode != this) && (myAssembly == null || (myAssembly != otherNode.myAssembly)) && (otherNode.bonds.Length < 3)){
+                if(!BondedTo(otherNode) && (otherNode != this) && (myAssembly == null || (myAssembly != otherNode.myAssembly)) && (otherNode.bonds.Length < 3)){
 
                     // Attractive force
 		            Vector3 vectorAtoB = otherNode.transform.position - transform.position;
-                    Vector3 dirAtoB = vectorAtoB.normalized;
                     float distToNode = vectorAtoB.magnitude;
 		
                     if(distToNode < 20){
@@ -207,4 +201,24 @@ public class Node : MonoBehaviour {
         allNodes.Remove(this);
     } // End of DestroyNode().
 
+
+    public bool BondedTo(Node otherNode){
+        bool bondedToNode = false;
+        for(int j = 0; j < bonds.Length; j++){
+            Bond currentBond = bonds[j];
+            if(((currentBond.nodeA == otherNode) || (currentBond.nodeB == otherNode)) && (otherNode != this))
+                bondedToNode = true;
+        }
+        return bondedToNode;
+    }
+
+    public Bond GetBondTo(Node otherNode){
+        Bond sharedBond = null;
+        for(int j = 0; j < bonds.Length; j++){
+            Bond currentBond = bonds[j];
+            if(((currentBond.nodeA == otherNode) || (currentBond.nodeB == otherNode)) && (otherNode != this))
+                sharedBond = currentBond;
+        }
+        return sharedBond;
+    }
 } // End of Node.

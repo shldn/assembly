@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-// erik was here
-// Wes was here
-// Wes was here AGAIN
 public class GameManager : MonoBehaviour {
 	
     // Up-to-date arrays of all world elements.
@@ -21,7 +18,6 @@ public class GameManager : MonoBehaviour {
 
     public int numNodes = 30;
     public float nodeGenSpread = 30; // How far the nodes will be initially scattered.
-	public float bondRatio = 0.02f; // The chance that a bond will form between any two nodes.
     public int numFoodPellets = 5;
 
     public int numFrames = 0;
@@ -45,39 +41,7 @@ public class GameManager : MonoBehaviour {
             Instantiate(prefabs.foodPellet, randomPos, Random.rotation);
         }
 
-        List<Node> allNodes = Node.GetAll();
 
-        /*
-		// Randomly assign bonds.
-        List<Bond> allBonds = Bond.GetAll();
-		// Loop through all nodes...
-		for(int i = 0; i < allNodes.Count; i++){
-			Node currentNode = allNodes[i];
-			// Check against all other nodes.
-			for(int j = 0; j < allNodes.Count; j++){
-				Node otherNode = allNodes[j];
-                // Random chance of bond being created.
-				if(Random.Range(0.0f, 1.0f) <= bondRatio){
-                    // Make sure the bond doesn't already exist.
-					bool bondExists = false;
-					for(int k = 0; k < allBonds.Count; k++){
-						Bond currentBond = allBonds[k];
-						if(((currentBond.nodeA == currentNode) && (currentBond.nodeB == otherNode)) || ((currentBond.nodeA == otherNode) && (currentBond.nodeB == currentNode)))
-							bondExists = true;
-					}
-
-                    int bondLimit = 3;
-                    if (!bondExists && (i != j) && (currentNode.bonds.Length < bondLimit) && (otherNode.bonds.Length < bondLimit)){
-						new Bond(currentNode, otherNode);
-					}
-				}
-			}
-		}
-        */
-
-
-
-		
         // Initialize 'names' array for random Assembly names to be pulled from.
         names = namesText.text.Split('\n');
 
@@ -124,10 +88,6 @@ public class GameManager : MonoBehaviour {
             Start();
         }
 
-
-
-        if(Input.GetKeyDown(KeyCode.P))
-            GetAssembly("C:/Assembly/saves/123_Faviola.txt");
 	} // End of Update().
 
 

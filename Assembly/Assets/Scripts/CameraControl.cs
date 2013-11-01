@@ -26,21 +26,19 @@ public class CameraControl : MonoBehaviour {
     Vector3 focusedPos; // Position of the focused element.
 
     // Currently selected element.
-    Node selectedNode;
-    public Assembly selectedAssembly;
+    public static Node selectedNode;
+    public static Assembly selectedAssembly;
 
-    // Texture (crosshair) shown around selected ndoes.
-    public Texture2D nodeSelectTex;
+    
 
     bool spacePressed;
 
+    Node lookedAtNode = null;
     Node mouseClickedNode = null;
     Node mouseReleasedNode = null;
 
-    public VectorLine dragLine;
-    public Material dragLineMaterial;
-    public Vector3[] dragLineEndPoints = new Vector3[] { Vector3.zero, Vector3.zero };
 
+    public LineRenderer dragLineRenderer = null;
 
 
 
@@ -64,7 +62,7 @@ public class CameraControl : MonoBehaviour {
         }
 
         // Toggle freelook/camera lock.
-        if(!Input.GetKey(KeyCode.Space))
+        if(!WesInput.GetKey("Camera Lock"))
             spacePressed = false;
 
         // Camera defaults to unfocused, but if an element is selected this will become true.
@@ -73,8 +71,11 @@ public class CameraControl : MonoBehaviour {
         // Determine what the user is looking at.
         Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 		RaycastHit cameraLookHit;
-		if( Physics.Raycast( mouseRay, out cameraLookHit ))
+        lookedAtNode = null;
+		if( Physics.Raycast( mouseRay, out cameraLookHit )){
 			lookedAtObject = cameraLookHit.transform.gameObject;
+            lookedAtNode = lookedAtObject.GetComponent<Node>();
+        }
 		else
 			lookedAtObject = null;
 
@@ -87,17 +88,23 @@ public class CameraControl : MonoBehaviour {
                 focusedPos = selectedAssembly.GetCenter();
             }
 
+            if (selectedNode != null) {
+                cameraFocused = true;
+                focusedPos = selectedNode.transform.position;
+            }
+
+            // Rotate orbit via directional input.
+            if (Input.GetMouseButton(1)){
+                targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * cameraRotateSpeed, -Vector3.right);
+                targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * cameraRotateSpeed, Vector3.up);
+            }
+
             // If we are focusing on some object...
             if(cameraFocused){
                 // Zoom orbit with mousewheel.
                 orbitDist -= (orbitDist * 0.3f) * Input.GetAxis("Mouse ScrollWheel") * orbitZoomSpeed;
                 orbitDist = Mathf.Clamp(orbitDist, 3f, Mathf.Infinity);
 
-                // Rotate orbit via directional input.
-                if (Input.GetMouseButton(1)){
-                    targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * cameraRotateSpeed, -Vector3.right);
-                    targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * cameraRotateSpeed, Vector3.up);
-                }
                 targetPos = focusedPos - (targetRot * (Vector3.forward * orbitDist));
             }
             // If camera is locked but not focused...
@@ -108,7 +115,7 @@ public class CameraControl : MonoBehaviour {
 
 
             if(lookedAtObject){
-                Node lookedAtNode = lookedAtObject.GetComponent<Node>();
+                
                 if(lookedAtNode && Input.GetMouseButtonDown(0))
                     mouseClickedNode = lookedAtNode;
                 else if(lookedAtNode && Input.GetMouseButtonUp(0))
@@ -134,9 +141,15 @@ public class CameraControl : MonoBehaviour {
             if((selectedAssembly != null) && Input.GetKeyDown(KeyCode.Delete))
                 selectedAssembly.Disband();
 
-            
-            if(mouseClickedNode && mouseReleasedNode && (mouseClickedNode != mouseReleasedNode))
+
+            // Create a new bond.
+            if(mouseClickedNode && mouseReleasedNode && !mouseClickedNode.BondedTo(mouseReleasedNode) && (mouseClickedNode != mouseReleasedNode) && (mouseClickedNode.BondCount() < 3) && (mouseReleasedNode.BondCount() < 3))
                 new Bond(mouseClickedNode, mouseReleasedNode);
+            // Destroy an existing bond.
+            else if(mouseClickedNode && mouseReleasedNode && mouseClickedNode.BondedTo(mouseReleasedNode)){
+                mouseClickedNode.GetBondTo(mouseReleasedNode).Destroy();
+            }
+            
             
         }
         // If we're in free-look mode...
@@ -194,9 +207,25 @@ public class CameraControl : MonoBehaviour {
         }
         targetRot = Quaternion.RotateTowards(targetRot, targetRot * autoOrbit, Time.deltaTime * 2.5f);
 
+
         if(Input.GetMouseButtonUp(0)){
             mouseClickedNode = null;
             mouseReleasedNode = null;
+        }
+
+        dragLineRenderer.enabled = false;
+        if(mouseClickedNode && lookedAtNode){
+            dragLineRenderer.SetPosition(0, mouseClickedNode.transform.position);
+            dragLineRenderer.SetPosition(1, lookedAtNode.transform.position);
+
+            if(mouseClickedNode.BondedTo(lookedAtNode)){
+                dragLineRenderer.SetColors(Color.yellow, Color.red);
+                dragLineRenderer.enabled = true;
+            }
+            else if((mouseClickedNode.BondCount() < 3) && (lookedAtNode.BondCount() < 3)){
+                dragLineRenderer.SetColors(Color.green, Color.white);
+                dragLineRenderer.enabled = true;
+            }
         }
     } // End of Update(). 
 
@@ -209,11 +238,22 @@ public class CameraControl : MonoBehaviour {
 
         // Camera settings
         if(!cameraLock)
-            viewInfo += "FREE CAMERA\n(Spacebar to lock)\n\nWASD, Shift, Ctrl to navigate.\nMouse to look around.";
-        if(cameraLock && !cameraFocused)
-            viewInfo += "LOCKED CAMERA\n(Spacebar to unlock)\n\nMousewheel to move in/out.\nClick node to focus.";
-        if (cameraLock && selectedNode)
-            viewInfo += "ORBIT CAMERA\n(Spacebar to unlock)\n\nMousewheel to zoom in/out.\nRight click and drag mouse to rotate.\n\nRight click to generate signal.\nUp/Down arrows to input/siphon calories.\nClick another node to focus.";
+            viewInfo += "FREE CAMERA\n(Spacebar to lock)\n\nWASD, Shift, Ctrl to move around.\nMouse rotates the camera.";
+        if(cameraLock){
+            if(!cameraFocused)
+                viewInfo += "LOCKED CAMERA\n(Spacebar to unlock)\n\nMousewheel to move forward/back.\nRight click and drag to rotate.\nClick an entity to focus on it.";
+            else{
+                viewInfo += "ORBIT CAMERA\n(Spacebar to unlock)\n\nMousewheel to zoom in/out.\nRight click and drag to orbit.\n\n";
+                if(selectedNode){
+                    viewInfo += "Click another node to select it.\n";
+                    if(selectedNode.myAssembly != null)
+                        viewInfo += "Click the selected node to select its assembly.";
+                }
+                if(selectedAssembly != null)
+                    viewInfo += "Click a node to select it.\n";
+            }
+            viewInfo += "\n\nClick and drag between nodes to create a bond.";
+        }
 		
         GUI.Label(new Rect(0, 0, Screen.width, Screen.height), viewInfo);
 
@@ -223,22 +263,37 @@ public class CameraControl : MonoBehaviour {
             selectedNodeScreenPos.y = Screen.height - selectedNodeScreenPos.y;
             float selectionBoxWidth = 650.0f / Vector3.Distance(Camera.main.transform.position, selectedNode.transform.position);
             Rect selectionBoxRect = new Rect(selectedNodeScreenPos.x - (selectionBoxWidth * 0.5f), selectedNodeScreenPos.y - (selectionBoxWidth * 0.5f), selectionBoxWidth, selectionBoxWidth);
-            GUI.Label(selectionBoxRect, nodeSelectTex);
-
-            // Show node details.
-            Rect nodeInfoRect = new Rect(0, 0, Screen.width - 5, Screen.height);
-            GUI.skin.label.alignment = TextAnchor.UpperRight;
-            string nodeInfo = "";
-            nodeInfo += selectedNode.nodeName + " [" + selectedNode.nodeType.ToString() + "]\n";
-            if(selectedNode.myAssembly != null){
-                nodeInfo += "Part of '" + selectedNode.myAssembly.callsign + "'\n";
-                nodeInfo += "Index " + selectedNode.assemblyIndex + "\n";
-            }
-            nodeInfo += "\n";
-            nodeInfo += selectedNode.signal + "[signal]\n";
-            nodeInfo += selectedNode.synapse + "[synapse]\n";
-            GUI.Label(nodeInfoRect, nodeInfo);
+            GUI.Label(selectionBoxRect, GameManager.graphics.nodeSelectTex);
         }
+
+        // Indicate dragging node.
+        if(mouseClickedNode){
+            Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(mouseClickedNode.transform.position);
+            selectedNodeScreenPos.y = Screen.height - selectedNodeScreenPos.y;
+            float selectionBoxWidth = 700.0f / Vector3.Distance(Camera.main.transform.position, mouseClickedNode.transform.position);
+            Rect selectionBoxRect = new Rect(selectedNodeScreenPos.x - (selectionBoxWidth * 0.5f), selectedNodeScreenPos.y - (selectionBoxWidth * 0.5f), selectionBoxWidth, selectionBoxWidth);
+            GUI.Label(selectionBoxRect, GameManager.graphics.nodeModifyTex);
+        }
+
+        // Indicate dragging node.
+        if(mouseReleasedNode){
+            Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(mouseReleasedNode.transform.position);
+            selectedNodeScreenPos.y = Screen.height - selectedNodeScreenPos.y;
+            float selectionBoxWidth = 700.0f / Vector3.Distance(Camera.main.transform.position, mouseReleasedNode.transform.position);
+            Rect selectionBoxRect = new Rect(selectedNodeScreenPos.x - (selectionBoxWidth * 0.5f), selectedNodeScreenPos.y - (selectionBoxWidth * 0.5f), selectionBoxWidth, selectionBoxWidth);
+            GUI.Label(selectionBoxRect, GameManager.graphics.nodeModifyTex);
+        }
+
+        // Indicate dragging node.
+        if(lookedAtNode){
+            Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(lookedAtNode.transform.position);
+            selectedNodeScreenPos.y = Screen.height - selectedNodeScreenPos.y;
+            float selectionBoxWidth = 700.0f / Vector3.Distance(Camera.main.transform.position, lookedAtNode.transform.position);
+            Rect selectionBoxRect = new Rect(selectedNodeScreenPos.x - (selectionBoxWidth * 0.5f), selectedNodeScreenPos.y - (selectionBoxWidth * 0.5f), selectionBoxWidth, selectionBoxWidth);
+            GUI.Label(selectionBoxRect, GameManager.graphics.nodeModifyTex);
+        }
+
+        
 
         // Label assemblies.
         for(int i = 0; i < Assembly.GetAll().Count; i++){
@@ -254,7 +309,7 @@ public class CameraControl : MonoBehaviour {
                         selectedNodeScreenPos.y = Screen.height - selectedNodeScreenPos.y;
                         float selectionBoxWidth = 750.0f / Vector3.Distance(Camera.main.transform.position, assemblyNode.transform.position);
                         Rect selectionBoxRect = new Rect(selectedNodeScreenPos.x - (selectionBoxWidth * 0.5f), selectedNodeScreenPos.y - (selectionBoxWidth * 0.5f), selectionBoxWidth, selectionBoxWidth);
-                        GUI.Label(selectionBoxRect, nodeSelectTex);
+                        GUI.Label(selectionBoxRect, GameManager.graphics.nodeSelectTex);
                     }
                 }
             }
@@ -267,12 +322,41 @@ public class CameraControl : MonoBehaviour {
                 currentAssemblyScreenPos.y = Screen.height - currentAssemblyScreenPos.y;
                 int holdFontSize = GUI.skin.label.fontSize;
                 GUI.skin.label.fontSize = (int) Mathf.Clamp((550.0f / Vector3.Distance(Camera.main.transform.position, currentAssembly.GetCenter())), 10, Mathf.Infinity);
-                Rect currentAssemblyNametagRect = new Rect(currentAssemblyScreenPos.x - 2000, currentAssemblyScreenPos.y, 4000, 2000);
-                GUI.Label(currentAssemblyNametagRect, currentAssembly.callsign);
+                Rect currentAssemblyNametagRect = new Rect(currentAssemblyScreenPos.x - 2000, currentAssemblyScreenPos.y - 1000, 4000, 2000);
+                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(currentAssemblyNametagRect, currentAssembly.name);
                 GUI.skin.label.fontSize = holdFontSize;
                 GUI.skin.label.fontSize = 10;
             }
         }
+
+
+        // Selected entity details.
+        Rect entityDetailRect = new Rect(0, 0, Screen.width - 5, Screen.height);
+        GUI.skin.label.alignment = TextAnchor.UpperRight;
+        GUI.color = Color.white;
+        string entityInfo = "";
+
+        if(selectedNode){
+            entityInfo += selectedNode.nodeName + "\n";
+            entityInfo += "\n";
+            entityInfo += "Type: " + selectedNode.nodeType.ToString() + "\n";
+            if(selectedNode.myAssembly != null){
+                entityInfo += "Part of '" + selectedNode.myAssembly.name + ",' index " + selectedNode.assemblyIndex + "\n";
+            }
+            entityInfo += "\n";
+            entityInfo += selectedNode.signal + " signal\n";
+            entityInfo += selectedNode.synapse + " synapse\n";
+        }
+        else if(selectedAssembly != null){
+            entityInfo += selectedAssembly.name + "\n";
+            entityInfo += "\n";
+            entityInfo += "Number of nodes: " + selectedAssembly.nodes.Length + "\n";
+            entityInfo += "Age: " + Mathf.FloorToInt(selectedAssembly.age) + " sec\n";
+            entityInfo += "Stage: " + selectedAssembly.lifeStage.ToString() + "\n";
+        }
+
+        GUI.Label(entityDetailRect, entityInfo);
 
     } // End of OnGUI().
 
