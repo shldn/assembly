@@ -26,6 +26,9 @@ public class WesInput : MonoBehaviour{
 	
 	    keys[ "Camera Lock" ] = KeyCode.Space;
 
+	    keys[ "Add Node" ] = KeyCode.Alpha1;
+	    keys[ "Remove Node" ] = KeyCode.Alpha2;
+
         keys[ "Disband Assembly" ] = KeyCode.Delete;
 
 	    keys[ "Open Console" ] = KeyCode.Return;
