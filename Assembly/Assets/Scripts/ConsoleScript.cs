@@ -124,6 +124,17 @@ public class ConsoleScript : MonoBehaviour {
                         NewLine("No assembly selected!");
                 }
 
+                else if (command == "mutate") {
+                // Mutate the selected assembly...
+                    Assembly selectedAssembly = CameraControl.selectedAssembly;
+                    if (selectedAssembly != null) {
+                        selectedAssembly.Mutate();
+                        NewLine("Assembly " + selectedAssembly.name + " mutated!");
+                    }
+                    else
+                        NewLine("No assembly selected!");
+                }
+
                 else if(command == "quit"){
                 // Quit the game...
                     Application.Quit();
