@@ -203,22 +203,15 @@ public class Node : MonoBehaviour {
 
 
     public bool BondedTo(Node otherNode){
-        bool bondedToNode = false;
-        for(int j = 0; j < bonds.Length; j++){
-            Bond currentBond = bonds[j];
-            if(((currentBond.nodeA == otherNode) || (currentBond.nodeB == otherNode)) && (otherNode != this))
-                bondedToNode = true;
-        }
-        return bondedToNode;
+        return GetBondTo(otherNode) != null;
     }
 
     public Bond GetBondTo(Node otherNode){
-        Bond sharedBond = null;
         for(int j = 0; j < bonds.Length; j++){
             Bond currentBond = bonds[j];
             if(((currentBond.nodeA == otherNode) || (currentBond.nodeB == otherNode)) && (otherNode != this))
-                sharedBond = currentBond;
+                return currentBond;
         }
-        return sharedBond;
+        return null;
     }
 } // End of Node.
