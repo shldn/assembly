@@ -15,8 +15,7 @@ public class BatchModeManager {
     private bool inBatchMode = false;
 
     // Accessors
-    public bool InBatchMode { get{ return InBatchMode; } }
-
+    public bool InBatchMode { get{ return inBatchMode; } }
 
     private BatchModeManager() {
         HandleCommandLineArgs();
@@ -24,7 +23,7 @@ public class BatchModeManager {
 
     private void HandleCommandLineArgs() {
         string[] cmdLnArgs = System.Environment.GetCommandLineArgs();
-        for (int i = 0; i < cmdLnArgs.Length; i++) {
+        for (int i = 1; i < cmdLnArgs.Length; i++) { // skip exe name
             switch (cmdLnArgs[i]) {
                 case "-batchmode":
                     inBatchMode = true;
