@@ -214,4 +214,26 @@ public class Node : MonoBehaviour {
         }
         return null;
     }
+    /*
+    public int NumNodesAttachedTo() {
+
+        HashSet<Node> visited = new HashSet<Node>();
+        int count = 0;
+        // dfs - depth first search
+        NumNodesAttachedTo(visited, ref count);
+        return count;
+    }
+
+    private void NumNodesAttachedTo(Dictionary<Node, bool> visited, ref int count) {
+        count++;
+        visited[this] = true;
+        for (int i = 0; i < bonds.Length; ++i) {
+            if( !visited.ContainsKey(bonds[i].nodeA) )
+                bonds[i].nodeA.NumNodesAttachedTo(visited, ref count);
+            if( !visited.ContainsKey(bonds[i].nodeB) )
+                bonds[i].nodeB.NumNodesAttachedTo(visited, ref count);
+        }
+
+    }
+     */
 } // End of Node.

@@ -138,9 +138,6 @@ public class CameraControl : MonoBehaviour {
                 }
             }
 
-            if((selectedAssembly != null) && WesInput.GetKey("Disband Assembly"))
-                selectedAssembly.Disband();
-
 
             // Create a new bond.
             if(mouseClickedNode && mouseReleasedNode && !mouseClickedNode.BondedTo(mouseReleasedNode) && (mouseClickedNode != mouseReleasedNode) && (mouseClickedNode.BondCount() < 3) && (mouseReleasedNode.BondCount() < 3)){
@@ -176,14 +173,6 @@ public class CameraControl : MonoBehaviour {
             targetPos += WesInput.forwardThrottle * transform.forward * cameraMoveSpeed * Time.deltaTime;
             targetPos += WesInput.horizontalThrottle * transform.right * cameraMoveSpeed * Time.deltaTime;
             targetPos += WesInput.verticalThrottle * transform.up * cameraMoveSpeed * Time.deltaTime;
-        }
-
-        // Save assembly based on the selected assembly when Return is pressed.
-        if ((selectedNode != null || selectedAssembly != null) && Input.GetKeyDown(KeyCode.Return)) {
-            if( selectedNode && selectedNode.myAssembly != null )
-                selectedNode.myAssembly.Save();
-            else if(selectedAssembly != null)
-                selectedAssembly.Save();
         }
 
 
@@ -246,6 +235,15 @@ public class CameraControl : MonoBehaviour {
                     viewInfo += "Click a node to select it.\n";
             }
             viewInfo += "\n\nClick and drag between nodes to create a bond.";
+
+            // Indicate dragging node.
+            if(lookedAtNode){
+                Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(lookedAtNode.transform.position);
+                selectedNodeScreenPos.y = Screen.height - selectedNodeScreenPos.y;
+                float selectionBoxWidth = 700.0f / Vector3.Distance(Camera.main.transform.position, lookedAtNode.transform.position);
+                Rect selectionBoxRect = new Rect(selectedNodeScreenPos.x - (selectionBoxWidth * 0.5f), selectedNodeScreenPos.y - (selectionBoxWidth * 0.5f), selectionBoxWidth, selectionBoxWidth);
+                GUI.Label(selectionBoxRect, GameManager.graphics.nodeModifyTex);
+            }
         }
 		
         GUI.Label(new Rect(0, 0, Screen.width, Screen.height), viewInfo);
@@ -273,15 +271,6 @@ public class CameraControl : MonoBehaviour {
             Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(mouseReleasedNode.transform.position);
             selectedNodeScreenPos.y = Screen.height - selectedNodeScreenPos.y;
             float selectionBoxWidth = 700.0f / Vector3.Distance(Camera.main.transform.position, mouseReleasedNode.transform.position);
-            Rect selectionBoxRect = new Rect(selectedNodeScreenPos.x - (selectionBoxWidth * 0.5f), selectedNodeScreenPos.y - (selectionBoxWidth * 0.5f), selectionBoxWidth, selectionBoxWidth);
-            GUI.Label(selectionBoxRect, GameManager.graphics.nodeModifyTex);
-        }
-
-        // Indicate dragging node.
-        if(lookedAtNode){
-            Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(lookedAtNode.transform.position);
-            selectedNodeScreenPos.y = Screen.height - selectedNodeScreenPos.y;
-            float selectionBoxWidth = 700.0f / Vector3.Distance(Camera.main.transform.position, lookedAtNode.transform.position);
             Rect selectionBoxRect = new Rect(selectedNodeScreenPos.x - (selectionBoxWidth * 0.5f), selectedNodeScreenPos.y - (selectionBoxWidth * 0.5f), selectionBoxWidth, selectionBoxWidth);
             GUI.Label(selectionBoxRect, GameManager.graphics.nodeModifyTex);
         }
@@ -337,6 +326,8 @@ public class CameraControl : MonoBehaviour {
             if(selectedNode.myAssembly != null){
                 entityInfo += "Part of '" + selectedNode.myAssembly.name + ",' index " + selectedNode.assemblyIndex + "\n";
             }
+            entityInfo += "\n";
+            entityInfo += "Number of bonds: " + selectedNode.bonds.Length;
             entityInfo += "\n";
             entityInfo += selectedNode.signal + " signal\n";
             entityInfo += selectedNode.synapse + " synapse\n";

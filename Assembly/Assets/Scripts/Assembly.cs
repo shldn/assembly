@@ -18,8 +18,8 @@ public class Assembly {
 
     // Creates a new assembly off of a root node.
     public Assembly(Node rootNode){
-        Node[] gotNodes = new Node[1] {rootNode};
-        Node[] newNodes = gotNodes;
+        Node[] gotNodes = new Node[0];
+        Node[] newNodes = new Node[1] {rootNode};
 
         int nodeNum = 0;
 
@@ -50,22 +50,25 @@ public class Assembly {
                     bool gotAlreadyB = false;
                     // See if we already got the node at either end.
                     for (int k = 0; k < gotNodes.Length; k++){
-                        if (currentBond.nodeA == gotNodes[k])
+                        Node checkingNode = gotNodes[k];
+                        if (currentBond.nodeA == checkingNode)
                             gotAlreadyA = true;
-                        if (currentBond.nodeB == gotNodes[k])
+                        if (currentBond.nodeB == checkingNode)
                             gotAlreadyB = true;
                     }
 
                     // Add A if it's new.
                     if(!gotAlreadyA){
                         Node[] tempGotNodes = new Node[gotNodes.Length + 1];
-                        Node[] tempNewNodes = new Node[newNodes.Length + 1];
                         for (int m = 0; m < gotNodes.Length; m++)
                             tempGotNodes[m] = gotNodes[m];
+                        tempGotNodes[tempGotNodes.Length - 1] = currentBond.nodeA;
+
+                        Node[] tempNewNodes = new Node[newNodes.Length + 1];
                         for (int n = 0; n < newNodes.Length; n++)
                             tempNewNodes[n] = newNodes[n];
-                        tempGotNodes[tempGotNodes.Length - 1] = currentBond.nodeA;
                         tempNewNodes[tempNewNodes.Length - 1] = currentBond.nodeA;
+
                         gotNodes = tempGotNodes;
                         newNodes = tempNewNodes;
                     }
@@ -73,13 +76,15 @@ public class Assembly {
                     // Add B if it's new.
                     if(!gotAlreadyB){
                         Node[] tempGotNodes = new Node[gotNodes.Length + 1];
-                        Node[] tempNewNodes = new Node[newNodes.Length + 1];
                         for (int r = 0; r < gotNodes.Length; r++)
                             tempGotNodes[r] = gotNodes[r];
+                        tempGotNodes[tempGotNodes.Length - 1] = currentBond.nodeB;
+
+                        Node[] tempNewNodes = new Node[newNodes.Length + 1];
                         for (int s = 0; s < newNodes.Length; s++)
                             tempNewNodes[s] = newNodes[s];
-                        tempGotNodes[tempGotNodes.Length - 1] = currentBond.nodeB;
                         tempNewNodes[tempNewNodes.Length - 1] = currentBond.nodeB;
+
                         gotNodes = tempGotNodes;
                         newNodes = tempNewNodes;
                     }
@@ -100,7 +105,72 @@ public class Assembly {
             gotNodes[i].myAssembly = this;
 
         allAssemblies.Add(this);
-    } // End of Assembly() constructor.
+    } // End of Assembly constructor.
+
+
+    // Create an assembly from a file.
+    public Assembly(string path) {
+        // Create the new assembly.
+        // Prepare an array to load up with nodes.
+        List<Node> newNodes = new List<Node>();
+
+
+        int nameSeparator = path.IndexOf("_");
+        string assemblyName = path.Substring(nameSeparator + 1, (path.Length - 4) - (nameSeparator + 1));
+        name = assemblyName;
+
+        // Load individual node data, separated by ','.
+        string newAssemDna = System.IO.File.ReadAllText(path);
+        string[] rawNodes = newAssemDna.Split(',');
+
+        // DNA looks like this:
+        //    <index>_<type>,<index>_<type>-<bond 1>-<bond 2>, etc.
+
+        // Last node is a 'junk' node picked up by the trailing ',' so we just delete it.
+        string[] tempRawNodes = new string[rawNodes.Length - 1];
+        for (int j = 0; j < (rawNodes.Length - 1); j++)
+            tempRawNodes[j] = rawNodes[j];
+        rawNodes = tempRawNodes;
+
+        // First pass: Loop through all loaded nodes.
+        for(int i = 0; i < rawNodes.Length; i++){
+            string currentNode = rawNodes[i];
+
+            // Create the node in the game environment (at a random position).
+            float halfNodeGenSpread = 10;
+            Vector3 randomPos = new Vector3(Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread));
+            GameObject newNodeTrans = Object.Instantiate(GameManager.prefabs.node, randomPos, Quaternion.identity) as GameObject;
+            Node newNode = newNodeTrans.GetComponent<Node>();
+            newNodes.Add(newNode);
+            newNode.myAssembly = this;
+        }
+
+        // Second pass: Loop back through all nodes to assign bonds
+        for(int i = 0; i < rawNodes.Length; i++) {
+            string currentNode = rawNodes[i];
+            Node currentRealNode = newNodes[i];
+
+            // Find the point at which the node's index stops being defined.
+            int idIndex = currentNode.IndexOf("_");
+
+            // Get bonds for all nodes that have not been tested..
+            if (currentNode.Length > idIndex + 2){
+                // Parse the bond information for the node.
+                string[] rawBondNum = currentNode.Substring(idIndex + 3).Split('-');
+                for (int k = 0; k < rawBondNum.Length; k++) {
+                    // Create the new bond.
+                    // Find the other node we are going to bond to, based on the given index.
+                    Node currentBondNode = newNodes[int.Parse(rawBondNum[k])];
+
+                    // new Bond adds itself to the Node bond lists
+                    Bond newBond = new Bond(currentRealNode, currentBondNode);
+                }
+            }
+        }
+
+        nodes = newNodes.ToArray();
+        allAssemblies.Add(this);
+    } // End of Assembly constructor.
 
 
     // Constructs a new empty assembly.
@@ -212,6 +282,7 @@ public class Assembly {
 
     private string GetDNA(){
         string newDNA = "";
+        // Loop through all nodes in assembly.
         for (int i = 0; i < nodes.Length; i++){
             Node currentNode = nodes[i];
             if (currentNode.bonds.Length == 0) {
@@ -262,9 +333,12 @@ public class Assembly {
     // Attaches a new node to this assembly.
     public void AddNode(Node newNode){
         Node[] tempNodes = new Node[nodes.Length + 1];
-        for(int i = 0; i < nodes.Length; i++)
+        for(int i = 0; i < nodes.Length; i++){
             tempNodes[i] = nodes[i];
+            nodes[i].assemblyIndex = i;
+        }
         tempNodes[nodes.Length] = newNode;
+        newNode.assemblyIndex = nodes.Length;
         nodes = tempNodes;
 
         newNode.myAssembly = this;

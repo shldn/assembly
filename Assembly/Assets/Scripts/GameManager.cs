@@ -91,71 +91,13 @@ public class GameManager : MonoBehaviour {
 	} // End of OnGUI().
 
 
-    // Create an assembly from a file.
-    public static Assembly GetAssembly(string path) {
-        // Create the new assembly.
-        // Prepare an array to load up with nodes.
-        List<Node> newNodes = new List<Node>();
-
-        // Load individual node data, separated by ','.
-        string newAssemDna = System.IO.File.ReadAllText(path);
-        string[] rawNodes = newAssemDna.Split(',');
-
-        // DNA looks like this:
-        //    <index>_<type>,<index>_<type>-<bond 1>-<bond 2>, etc.
-
-        // Last node is a 'junk' node picked up by the trailing ',' so we just delete it.
-        string[] tempRawNodes = new string[rawNodes.Length - 1];
-        for (int j = 0; j < (rawNodes.Length - 1); j++)
-            tempRawNodes[j] = rawNodes[j];
-        rawNodes = tempRawNodes;
-
-        // First pass: Loop through all loaded nodes.
-        for(int i = 0; i < rawNodes.Length; i++){
-            string currentNode = rawNodes[i];
-
-            // Create the node in the game environment (at a random position).
-            float halfNodeGenSpread = 10;
-            Vector3 randomPos = new Vector3(Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread));
-            GameObject newNodeTrans = Instantiate(GameManager.prefabs.node, randomPos, Quaternion.identity) as GameObject;
-            Node newNode = newNodeTrans.GetComponent<Node>();
-            newNodes.Add(newNode);
-        }
-
-        // Second pass: Loop back through all nodes to assign bonds
-        for(int i = 0; i < rawNodes.Length; i++) {
-            string currentNode = rawNodes[i];
-            Node currentRealNode = newNodes[i];
-
-            // Find the point at which the node's index stops being defined.
-            int idIndex = currentNode.IndexOf("_");
-
-            // Get bonds for all nodes that have not been tested..
-            if (currentNode.Length > idIndex + 2){
-                // Parse the bond information for the node.
-                string[] rawBondNum = currentNode.Substring(idIndex + 3).Split('-');
-                for (int k = 0; k < rawBondNum.Length; k++) {
-                    // Create the new bond.
-                    // Find the other node we are going to bond to, based on the given index.
-                    Node currentBondNode = newNodes[int.Parse(rawBondNum[k])];
-
-                    // new Bond adds itself to the Node bond lists
-                    Bond newBond = new Bond(currentRealNode, currentBondNode);
-                }
-            }
-        }
-
-        return (newNodes.Count == 0) ? null : new Assembly(newNodes[0]);
-    } // End of GetAssembly().
-
-
     public static void ClearAll(){
+        while(Assembly.GetAll().Count > 0)
+            Assembly.GetAll()[Assembly.GetAll().Count - 1].Destroy();
         while(Node.GetAll().Count > 0)
                 Node.GetAll()[Node.GetAll().Count - 1].Destroy();
         while(Bond.GetAll().Count > 0)
             Bond.GetAll()[Bond.GetAll().Count - 1].Destroy();
-        while(Assembly.GetAll().Count > 0)
-            Assembly.GetAll()[Assembly.GetAll().Count - 1].Destroy();
         foreach(FoodPellet aPellet in allFoodPellets)
             aPellet.Destroy();
     }
