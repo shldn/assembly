@@ -42,7 +42,11 @@ public class ConsoleScript : MonoBehaviour {
             if(Input.GetKeyDown(KeyCode.Backspace) && (inputText.Length > 0))
                 inputText = inputText.Substring(0, inputText.Length - 1);
 
-	        inputText += Input.inputString;
+            foreach(char aChar in Input.inputString){
+	            if(aChar != '\b'){
+                    inputText += aChar;
+                }
+            }
 
             if(!consoleKeyCleared){
                 inputText = "";
