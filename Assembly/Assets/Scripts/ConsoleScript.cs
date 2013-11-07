@@ -40,7 +40,7 @@ public class ConsoleScript : MonoBehaviour {
         }
         else if(active){
             if(Input.GetKeyDown(KeyCode.Backspace) && (inputText.Length > 0))
-                inputText = inputText.Substring(0, inputText.Length - 2);
+                inputText = inputText.Substring(0, inputText.Length - 1);
 
 	        inputText += Input.inputString;
 

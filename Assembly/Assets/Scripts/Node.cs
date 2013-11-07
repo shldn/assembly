@@ -100,7 +100,8 @@ public class Node : MonoBehaviour {
             billboard.material.SetTexture("_MainTex", GameManager.graphics.senseFlare);
 
             glowColor = renderer.material.color;
-            glowColor.a = signal;
+            //glowColor.a = signal;
+            glowColor.a = 1f;
         }
         else if(nodeType == NodeType.control){
             renderer.material.color = controlColor;
@@ -117,6 +118,7 @@ public class Node : MonoBehaviour {
             }
             glowColor.a = Mathf.Abs(synapse);
             //glowColor.a = signal;
+            glowColor.a = 1f;
         }
         billboard.material.SetColor("_TintColor", glowColor);
         
