@@ -242,4 +242,8 @@ public class Bond{
 
         allBonds.Remove(this);
     } // End of DestroyBond().
+
+    public Node GetOtherNode(Node notThisNode) {
+        return (nodeA == notThisNode) ? nodeB : nodeA;
+    }
 } // End of Bond.

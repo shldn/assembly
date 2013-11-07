@@ -54,9 +54,12 @@ public class GameManager : MonoBehaviour {
             System.IO.Directory.CreateDirectory("C:/Assembly/saves");
         }
         // Create README file.
-        System.IO.File.WriteAllText("C:/Assembly/README.txt", "This is an automatically-generated directory for Assembly.\r\nUCSD Arthur C. Clarke Center 2013"); 
+        System.IO.File.WriteAllText("C:/Assembly/README.txt", "This is an automatically-generated directory for Assembly.\r\nUCSD Arthur C. Clarke Center 2013");
+
+        if (BatchModeManager.Inst.InBatchMode) {
+            Debug.Log("Batch Mode!");
+        }
     } // End of Awake().
-	
 
 	void Update(){
         numFrames++;

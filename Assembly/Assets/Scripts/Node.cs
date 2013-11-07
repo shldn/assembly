@@ -205,22 +205,37 @@ public class Node : MonoBehaviour {
 
 
     public bool BondedTo(Node otherNode){
-        bool bondedToNode = false;
-        for(int j = 0; j < bonds.Length; j++){
-            Bond currentBond = bonds[j];
-            if(((currentBond.nodeA == otherNode) || (currentBond.nodeB == otherNode)) && (otherNode != this))
-                bondedToNode = true;
-        }
-        return bondedToNode;
+        return GetBondTo(otherNode) != null;
     }
 
     public Bond GetBondTo(Node otherNode){
-        Bond sharedBond = null;
         for(int j = 0; j < bonds.Length; j++){
             Bond currentBond = bonds[j];
             if(((currentBond.nodeA == otherNode) || (currentBond.nodeB == otherNode)) && (otherNode != this))
-                sharedBond = currentBond;
+                return currentBond;
         }
-        return sharedBond;
+        return null;
     }
+    /*
+    public int NumNodesAttachedTo() {
+
+        HashSet<Node> visited = new HashSet<Node>();
+        int count = 0;
+        // dfs - depth first search
+        NumNodesAttachedTo(visited, ref count);
+        return count;
+    }
+
+    private void NumNodesAttachedTo(Dictionary<Node, bool> visited, ref int count) {
+        count++;
+        visited[this] = true;
+        for (int i = 0; i < bonds.Length; ++i) {
+            if( !visited.ContainsKey(bonds[i].nodeA) )
+                bonds[i].nodeA.NumNodesAttachedTo(visited, ref count);
+            if( !visited.ContainsKey(bonds[i].nodeB) )
+                bonds[i].nodeB.NumNodesAttachedTo(visited, ref count);
+        }
+
+    }
+     */
 } // End of Node.

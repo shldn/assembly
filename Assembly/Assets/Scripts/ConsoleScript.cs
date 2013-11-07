@@ -153,13 +153,6 @@ public class ConsoleScript : MonoBehaviour {
                 Clear();
             }
 
-            else if(command == "quit"){
-            // Quit the game...
-                Application.Quit();
-                NewLine("Quitting...");
-                Clear();
-            }
-
 /*                else if(command == "controls"){
             // Show all keyboard controls.
                 for(int i = 0; i < WesInput.keys.Count; i++){
@@ -167,23 +160,40 @@ public class ConsoleScript : MonoBehaviour {
                 }
             }
 */
-            else if(command == "addnode"){
-            // Other command...
+            else if (command == "addnode") {
+                // Other command...
                 GameObject newNode = Object.Instantiate(GameManager.prefabs.node, Camera.main.transform.position + (Camera.main.transform.forward * 3.0f), Quaternion.identity) as GameObject;
                 Node nodeScript = newNode.GetComponent<Node>();
                 lines.Add("Created a new node.");
-
-                if(selectedNode){
-                    if(selectedNode.bonds.Length < 3)
+                if (selectedNode) {
+                    if (selectedNode.bonds.Length < 3)
                         new Bond(CameraControl.selectedNode, nodeScript);
                 }
 
                 CameraControl.selectedNode = nodeScript;
                 Clear();
+
+            }
+            else if (command == "mutate") {
+                // Mutate the selected assembly...
+                if (selectedAssembly != null) {
+                    selectedAssembly.Mutate();
+                    NewLine("Assembly " + selectedAssembly.name + " mutated!");
+                }
+                else
+                    NewLine("No assembly selected!");
+                Clear();
             }
 
-            else if(command == "remnode"){
-                if(selectedNode){
+            else if (command == "quit") {
+                // Quit the game...
+                Application.Quit();
+                NewLine("Quitting...");
+                Clear();
+            }
+
+            else if (command == "remnode") {
+                if (selectedNode) {
                     selectedNode.Destroy();
                     lines.Add("Removed a node.");
                 }
@@ -191,8 +201,8 @@ public class ConsoleScript : MonoBehaviour {
                     lines.Add("Select a node first!");
             }
 
-            else if(command == "disband"){
-                if(selectedAssembly != null){
+            else if (command == "disband") {
+                if (selectedAssembly != null) {
                     lines.Add("Disbanded " + selectedAssembly.name + ".");
                     selectedAssembly.Disband();
                 }
@@ -201,36 +211,36 @@ public class ConsoleScript : MonoBehaviour {
                 Clear();
             }
 
-            else if(command == "rename"){
-                if(selectedAssembly == null)
+            else if (command == "rename") {
+                if (selectedAssembly == null)
                     lines.Add("Select an assembly first!");
-                else if((commandArgs.Length < 2) || (commandArgs[1] == ""))
+                else if ((commandArgs.Length < 2) || (commandArgs[1] == ""))
                     lines.Add("Please enter a name for the assembly.");
-                else if(selectedAssembly != null){
+                else if (selectedAssembly != null) {
                     lines.Add("Renamed " + selectedAssembly.name + " to " + commandArgs[1] + ".");
                     selectedAssembly.name = commandArgs[1];
                 }
                 Clear();
             }
 
-            else if(command == "controls"){
-                foreach(KeyValuePair<string, KeyCode> item in WesInput.keys){
+            else if (command == "controls") {
+                foreach (KeyValuePair<string, KeyCode> item in WesInput.keys) {
                     lines.Add(item.Key + " [" + item.Value + "]");
                 }
                 Clear();
             }
 
-            else if(command == "other"){
-            // Other command...
+            else if (command == "other") {
+                // Other command...
                 // Other command code...
                 Clear();
             }
 
-                    
+
             // More commands go here!
 
-            else if(inputText != ""){
-            // If command is not recognized, say so and do nothing.
+            else if (inputText != "") {
+                // If command is not recognized, say so and do nothing.
                 NewLine("Unknown command '" + command + "'");
                 Clear();
             }

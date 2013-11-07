@@ -29,7 +29,7 @@ public class BatchModeManager {
                     inBatchMode = true;
                     break;
                 default:
-                    Debug.LogError("Unknown command line arg: " + cmdLnArgs[i]);
+                    Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);
                     break;
             }
         }

@@ -227,6 +227,41 @@ public class Assembly {
     } // End of GetRadius().
 
 
+    public void Mutate() {
+        if (nodes.Length <= 2)
+            return;
+
+        // Choose some random bonds and change their destination node.
+        // in this first pass it is possible for a bond to change the secondary node and then change back in another iteration.
+        int attemptCount = 0; // fail safe from an infinite loop
+        int numBondsToChange = Random.Range(1, 5);
+        while (numBondsToChange > 0 && attemptCount < (numBondsToChange + 100)) {
+            ++attemptCount;
+            Node node = nodes[Random.Range(0, nodes.Length)];
+            int newBondBuddyIdx = (node.assemblyIndex + Random.Range(1, nodes.Length)) % nodes.Length; // make sure it doesn't bond to itself
+            if (node.BondedTo(nodes[newBondBuddyIdx]))
+                continue;
+
+            // Destroy a Random bond and create a new one in its place.
+            Bond bond = node.bonds[Random.Range(0, node.bonds.Length)];
+
+            // Make sure we don't cut a node off of the assembly by breaking it's only bond.
+            Node otherNode = bond.GetOtherNode(node);
+            if (otherNode.BondCount() <= 1)
+                new Bond(otherNode, nodes[newBondBuddyIdx]);
+            else
+                new Bond(node, nodes[newBondBuddyIdx]);
+            bond.Destroy();
+            --numBondsToChange;
+        }
+    }
+
+    public static void SaveAll() {
+        foreach(Assembly a in GetAll())
+            a.Save();
+    }
+
+
     // Save assembly to a file. Returns the filepath.
     public string Save(){        
         DirectoryInfo dir = new DirectoryInfo("C:/Assembly/saves");
