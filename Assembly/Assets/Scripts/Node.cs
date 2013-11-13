@@ -9,8 +9,8 @@ public class Node : MonoBehaviour {
 	public string nodeName = "Node";
 	public NodeType nodeType = NodeType.bone;
 
-    public Bond[] bonds = new Bond[0];
-    public int BondCount() { return bonds.Length; }
+    public List<Bond> bonds = new List<Bond>();
+    public int BondCount() { return bonds.Count; }
 
     public float calories;
 	public float caloriesDelta;
@@ -75,11 +75,11 @@ public class Node : MonoBehaviour {
 		caloriesDelta = 0.0f;
 
         // Determine node type.
-        if (bonds.Length == 1)
+        if (bonds.Count == 1)
             nodeType = NodeType.sense;
-        else if (bonds.Length == 2)
+        else if (bonds.Count == 2)
             nodeType = NodeType.muscle;
-        else if (bonds.Length == 3)
+        else if (bonds.Count == 3)
             nodeType = NodeType.control;
         else
             nodeType = NodeType.bone;
@@ -117,6 +117,14 @@ public class Node : MonoBehaviour {
                 glowColor = new Color(1f - renderer.material.color.r, 1f - renderer.material.color.g, 1f - renderer.material.color.b);
             }
             glowColor.a = Mathf.Abs(synapse);
+            //glowColor.a = signal;
+            glowColor.a = 1f;
+        }
+        else if(nodeType == NodeType.muscle){
+            renderer.material.color = muscleColor;
+            billboard.material.SetTexture("_MainTex", GameManager.graphics.muscleFlare);
+
+            glowColor = renderer.material.color;
             //glowColor.a = signal;
             glowColor.a = 1f;
         }
@@ -158,11 +166,11 @@ public class Node : MonoBehaviour {
 
         // TEMP
         // Un-bonded nodes are attracted to other nodes.
-        if((bondCooldown <= 0f) && (bonds.Length < 3)){
+        if((bondCooldown <= 0f) && (bonds.Count < 3)){
             for(int i = 0; i < allNodes.Count; i++){
                 Node otherNode = allNodes[i];
 
-                if(!BondedTo(otherNode) && (otherNode != this) && (myAssembly == null || (myAssembly != otherNode.myAssembly)) && (otherNode.bonds.Length < 3)){
+                if(!BondedTo(otherNode) && (otherNode != this) && (myAssembly == null || (myAssembly != otherNode.myAssembly)) && (otherNode.bonds.Count < 3)){
 
                     // Attractive force
 		            Vector3 vectorAtoB = otherNode.transform.position - transform.position;
@@ -209,7 +217,7 @@ public class Node : MonoBehaviour {
     }
 
     public Bond GetBondTo(Node otherNode){
-        for(int j = 0; j < bonds.Length; j++){
+        for(int j = 0; j < bonds.Count; j++){
             Bond currentBond = bonds[j];
             if(((currentBond.nodeA == otherNode) || (currentBond.nodeB == otherNode)) && (otherNode != this))
                 return currentBond;

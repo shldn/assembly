@@ -6,7 +6,7 @@ public class Environment {
 
     public static bool IsFit(Assembly assembly)
     {
-        return assembly.nodes.Length > 20;
+        return assembly.nodes.Count > 20;
     }
 
     // Accessors

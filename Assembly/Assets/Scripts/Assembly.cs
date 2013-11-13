@@ -11,45 +11,38 @@ public class Assembly {
     public static List<Assembly> GetAll() { return allAssemblies; }
 
     public string name;
-    public Node[] nodes;
+    public List<Node> nodes;
 
     public LifeStage lifeStage = LifeStage.connect;
     public float age = 0f;
 
     // Creates a new assembly off of a root node.
     public Assembly(Node rootNode){
-        Node[] gotNodes = new Node[0];
-        Node[] newNodes = new Node[1] {rootNode};
+        List<Node> gotNodes = new List<Node>();
+        List<Node> newNodes = new List<Node>() {rootNode};
 
         int nodeNum = 0;
 
         // First pass; finds all nodes through their bonds.
         // Go until we run out of new nodes.
-        while(newNodes.Length > 0){
+        while(newNodes.Count > 0){
             // Run through all of our new nodes to test.
-            for(int i = 0; i < newNodes.Length; i++){
+            for(int i = 0; i < newNodes.Count; i++){
                 Node currentNode = newNodes[i];
                 currentNode.assemblyIndex = nodeNum;
                 nodeNum++;
 
                 // Remove this node from newNodes; we're gonna check it soon and won't need it anymore.
-                Node[] subbedNewNodes = new Node[newNodes.Length - 1];
-                for(int h = 0; h < subbedNewNodes.Length; h++){
-                    if (h < i)
-                        subbedNewNodes[h] = newNodes[h];
-                    else
-                        subbedNewNodes[h] = newNodes[h + 1];
-                }
-                newNodes = subbedNewNodes;
+                newNodes.RemoveAt(i);
 
                 // Run through each new node's bonds.
-                for(int j = 0; j < currentNode.bonds.Length; j++){
+                for(int j = 0; j < currentNode.bonds.Count; j++){
                     Bond currentBond = currentNode.bonds[j];
                     // We're gonna test the node at both ends; we don't know which direction the bond goes.
                     bool gotAlreadyA = false;
                     bool gotAlreadyB = false;
                     // See if we already got the node at either end.
-                    for (int k = 0; k < gotNodes.Length; k++){
+                    for (int k = 0; k < gotNodes.Count; k++){
                         Node checkingNode = gotNodes[k];
                         if (currentBond.nodeA == checkingNode)
                             gotAlreadyA = true;
@@ -59,41 +52,21 @@ public class Assembly {
 
                     // Add A if it's new.
                     if(!gotAlreadyA){
-                        Node[] tempGotNodes = new Node[gotNodes.Length + 1];
-                        for (int m = 0; m < gotNodes.Length; m++)
-                            tempGotNodes[m] = gotNodes[m];
-                        tempGotNodes[tempGotNodes.Length - 1] = currentBond.nodeA;
-
-                        Node[] tempNewNodes = new Node[newNodes.Length + 1];
-                        for (int n = 0; n < newNodes.Length; n++)
-                            tempNewNodes[n] = newNodes[n];
-                        tempNewNodes[tempNewNodes.Length - 1] = currentBond.nodeA;
-
-                        gotNodes = tempGotNodes;
-                        newNodes = tempNewNodes;
+                        gotNodes.Add(currentBond.nodeA);
+                        newNodes.Add(currentBond.nodeA);
                     }
 
                     // Add B if it's new.
                     if(!gotAlreadyB){
-                        Node[] tempGotNodes = new Node[gotNodes.Length + 1];
-                        for (int r = 0; r < gotNodes.Length; r++)
-                            tempGotNodes[r] = gotNodes[r];
-                        tempGotNodes[tempGotNodes.Length - 1] = currentBond.nodeB;
-
-                        Node[] tempNewNodes = new Node[newNodes.Length + 1];
-                        for (int s = 0; s < newNodes.Length; s++)
-                            tempNewNodes[s] = newNodes[s];
-                        tempNewNodes[tempNewNodes.Length - 1] = currentBond.nodeB;
-
-                        gotNodes = tempGotNodes;
-                        newNodes = tempNewNodes;
+                        gotNodes.Add(currentBond.nodeB);
+                        newNodes.Add(currentBond.nodeB);
                     }
                 }
             }
         }
 
         // Assign node indices
-        for(int i = 0; i < gotNodes.Length; i++)
+        for(int i = 0; i < gotNodes.Count; i++)
             gotNodes[i].assemblyIndex = i;
 
         // Create the new assembly.
@@ -101,7 +74,7 @@ public class Assembly {
         name = GameManager.names[Random.Range(0, GameManager.names.Length)].Trim();
 
         // Assign assembly to all nodes.
-        for(int i = 0; i < gotNodes.Length; i++)
+        for(int i = 0; i < gotNodes.Count; i++)
             gotNodes[i].myAssembly = this;
 
         allAssemblies.Add(this);
@@ -143,6 +116,7 @@ public class Assembly {
             Node newNode = newNodeTrans.GetComponent<Node>();
             newNodes.Add(newNode);
             newNode.myAssembly = this;
+            newNode.assemblyIndex = i;
         }
 
         // Second pass: Loop back through all nodes to assign bonds
@@ -168,7 +142,7 @@ public class Assembly {
             }
         }
 
-        nodes = newNodes.ToArray();
+        nodes = newNodes;
         allAssemblies.Add(this);
     } // End of Assembly constructor.
 
@@ -183,11 +157,11 @@ public class Assembly {
         age += Time.deltaTime;
 
         // Repulsive force between nodes within assembly.
-        for( int i = 0; i < nodes.Length; i++ ){
+        for( int i = 0; i < nodes.Count; i++ ){
 			Node currentNode = nodes[i];
 			
 			// Kinetic nteraction with other nodes...
-			for( int j = (i + 1); j < nodes.Length; j++ ){
+			for( int j = (i + 1); j < nodes.Count; j++ ){
 				Node otherNode = nodes[j];
 
                 Vector3 vectorToNode = ( otherNode.transform.position - currentNode.transform.position ).normalized;
@@ -206,10 +180,10 @@ public class Assembly {
     // Returns the average position of all nodes.
     public Vector3 GetCenter(){
         Vector3 totalPos = Vector3.zero;
-        for(int i = 0; i < nodes.Length; i++) {
+        for(int i = 0; i < nodes.Count; i++) {
             totalPos += nodes[i].transform.position;
         }
-        totalPos /= nodes.Length;
+        totalPos /= nodes.Count;
         return totalPos;
     } // End of GetCenter().
 
@@ -218,7 +192,7 @@ public class Assembly {
     public float GetRadius(){
         float greatestRad = 0;
         Vector3 center = GetCenter();
-        for(int i = 0; i < nodes.Length; i++){
+        for(int i = 0; i < nodes.Count; i++){
             float radius = Vector3.Distance(center, nodes[i].transform.position);
             if(radius > greatestRad)
                 greatestRad = radius;
@@ -228,7 +202,7 @@ public class Assembly {
 
 
     public void Mutate() {
-        if (nodes.Length <= 2)
+        if (nodes.Count <= 2)
             return;
 
         // Choose some random bonds and change their destination node.
@@ -237,13 +211,13 @@ public class Assembly {
         int numBondsToChange = Random.Range(1, 5);
         while (numBondsToChange > 0 && attemptCount < (numBondsToChange + 100)) {
             ++attemptCount;
-            Node node = nodes[Random.Range(0, nodes.Length)];
-            int newBondBuddyIdx = (node.assemblyIndex + Random.Range(1, nodes.Length)) % nodes.Length; // make sure it doesn't bond to itself
+            Node node = nodes[Random.Range(0, nodes.Count)];
+            int newBondBuddyIdx = (node.assemblyIndex + Random.Range(1, nodes.Count)) % nodes.Count; // make sure it doesn't bond to itself
             if (node.BondedTo(nodes[newBondBuddyIdx]))
                 continue;
 
             // Destroy a Random bond and create a new one in its place.
-            Bond bond = node.bonds[Random.Range(0, node.bonds.Length)];
+            Bond bond = node.bonds[Random.Range(0, node.bonds.Count)];
 
             // Make sure we don't cut a node off of the assembly by breaking it's only bond.
             Node otherNode = bond.GetOtherNode(node);
@@ -283,16 +257,16 @@ public class Assembly {
     private string GetDNA(){
         string newDNA = "";
         // Loop through all nodes in assembly.
-        for (int i = 0; i < nodes.Length; i++){
+        for (int i = 0; i < nodes.Count; i++){
             Node currentNode = nodes[i];
-            if (currentNode.bonds.Length == 0) {
+            if (currentNode.bonds.Count == 0) {
                 Debug.LogError("Node in assembly has no bonds!");
                 continue;
             }
             // First part of the DNA is the node's index and node characteristics.
             newDNA += i + "_" + currentNode.GetDNAInfo();
 
-            for (int j = 0; j < currentNode.bonds.Length; j++){
+            for (int j = 0; j < currentNode.bonds.Count; j++){
                 Bond currentBond = currentNode.bonds[j];
                 if (currentBond.nodeA == currentNode)
                     newDNA += "-" + currentBond.nodeB.assemblyIndex;
@@ -318,7 +292,7 @@ public class Assembly {
         if((CameraControl.selectedAssembly == this) || (CameraControl.selectedAssembly == mergingAssembly))
             CameraControl.selectedAssembly = mergedAssembly;
 
-        mergedAssembly.age = ((this.age * this.nodes.Length) + (mergingAssembly.age * mergingAssembly.nodes.Length)) / (this.nodes.Length + mergingAssembly.nodes.Length);
+        mergedAssembly.age = ((this.age * this.nodes.Count) + (mergingAssembly.age * mergingAssembly.nodes.Count)) / (this.nodes.Count + mergingAssembly.nodes.Count);
 
         return mergedAssembly;
     } // End of Merge().
@@ -332,14 +306,8 @@ public class Assembly {
 
     // Attaches a new node to this assembly.
     public void AddNode(Node newNode){
-        Node[] tempNodes = new Node[nodes.Length + 1];
-        for(int i = 0; i < nodes.Length; i++){
-            tempNodes[i] = nodes[i];
-            nodes[i].assemblyIndex = i;
-        }
-        tempNodes[nodes.Length] = newNode;
-        newNode.assemblyIndex = nodes.Length;
-        nodes = tempNodes;
+        nodes.Add(newNode);
+        newNode.assemblyIndex = nodes.Count;
 
         newNode.myAssembly = this;
     } // End of AddNode().
@@ -347,7 +315,7 @@ public class Assembly {
 
     // Delete the assembly and all of its components.
     public void Destroy(){
-        for(int i = 0; i < nodes.Length; i++)
+        for(int i = 0; i < nodes.Count; i++)
             nodes[i].Destroy();
         allAssemblies.Remove(this);
     } // End of Destroy().
@@ -355,9 +323,9 @@ public class Assembly {
 
     // Deconstruct all bonds within the assembly.
     public void Disband(){
-        for(int i = 0; i < nodes.Length; i++){
+        for(int i = 0; i < nodes.Count; i++){
             Node currentNode = nodes[i];
-            while(currentNode.bonds.Length > 0)
+            while(currentNode.bonds.Count > 0)
                 currentNode.bonds[0].Destroy();
             currentNode.myAssembly = null;
         }

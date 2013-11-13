@@ -38,17 +38,8 @@ public class Bond{
         nodeA = newNodeA;
         nodeB = newNodeB;
 
-        Bond[] tempNodeABonds = new Bond[nodeA.bonds.Length + 1];
-        for(int i = 0; i < nodeA.bonds.Length; i++)
-            tempNodeABonds[i] = nodeA.bonds[i];
-        tempNodeABonds[nodeA.bonds.Length] = this;
-        nodeA.bonds = tempNodeABonds;
-
-        Bond[] tempnodeBBonds = new Bond[nodeB.bonds.Length + 1];
-        for(int i = 0; i < nodeB.bonds.Length; i++)
-            tempnodeBBonds[i] = nodeB.bonds[i];
-        tempnodeBBonds[nodeB.bonds.Length] = this;
-        nodeB.bonds = tempnodeBBonds;
+        nodeA.bonds.Add(this);
+        nodeB.bonds.Add(this);
 
         muscleLine = new VectorLine("muscleLine", muscleEndPoints, muscleLineMaterial, 3.0f);
         signalLine = new VectorLine("signalLine", signalEndPoints, signalLineMaterial, 3.0f);
@@ -220,25 +211,8 @@ public class Bond{
         VectorLine.Destroy(ref synapseLine);
         VectorLine.Destroy(ref motionLine);
 
-        Bond[] tempNodeABonds = new Bond[nodeA.bonds.Length - 1];
-        int nodeABondsCount = 0;
-        for(int i = 0; i < nodeA.bonds.Length; i++){
-            if(nodeA.bonds[i] != this){
-                tempNodeABonds[nodeABondsCount] = nodeA.bonds[i];
-                nodeABondsCount++;
-            }
-        }
-        nodeA.bonds = tempNodeABonds;
-
-        Bond[] tempNodeBBonds = new Bond[nodeB.bonds.Length - 1];
-        int nodeBBondsCount = 0;
-        for(int i = 0; i < nodeB.bonds.Length; i++){
-            if(nodeB.bonds[i] != this){
-                tempNodeBBonds[nodeBBondsCount] = nodeB.bonds[i];
-                nodeBBondsCount++;
-            }
-        }
-        nodeB.bonds = tempNodeBBonds;
+        nodeA.bonds.Remove(this);
+        nodeB.bonds.Remove(this);
 
         allBonds.Remove(this);
     } // End of DestroyBond().

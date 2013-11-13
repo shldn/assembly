@@ -70,7 +70,7 @@ public class ConsoleScript : MonoBehaviour {
                 }
             }
         }
-
+        
         if(command != ""){
             // Console commands --------------------------------------------------------
 
@@ -157,20 +157,13 @@ public class ConsoleScript : MonoBehaviour {
                 Clear();
             }
 
-/*                else if(command == "controls"){
-            // Show all keyboard controls.
-                for(int i = 0; i < WesInput.keys.Count; i++){
-                    lines.Add(
-                }
-            }
-*/
             else if (command == "addnode") {
                 // Other command...
                 GameObject newNode = Object.Instantiate(GameManager.prefabs.node, Camera.main.transform.position + (Camera.main.transform.forward * 3.0f), Quaternion.identity) as GameObject;
                 Node nodeScript = newNode.GetComponent<Node>();
                 lines.Add("Created a new node.");
                 if (selectedNode) {
-                    if (selectedNode.bonds.Length < 3)
+                    if (selectedNode.bonds.Count < 3)
                         new Bond(CameraControl.selectedNode, nodeScript);
                 }
 
@@ -203,6 +196,8 @@ public class ConsoleScript : MonoBehaviour {
                 }
                 else
                     lines.Add("Select a node first!");
+
+                Clear();
             }
 
             else if (command == "disband") {
@@ -212,6 +207,7 @@ public class ConsoleScript : MonoBehaviour {
                 }
                 else
                     lines.Add("Select an assembly first!");
+
                 Clear();
             }
 

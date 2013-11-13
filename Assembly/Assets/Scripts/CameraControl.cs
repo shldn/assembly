@@ -284,7 +284,7 @@ public class CameraControl : MonoBehaviour {
             GUI.color = Color.white;
             // Highlight all nodes in selected Assembly.
             if(currentAssembly == selectedAssembly){
-                for(int j = 0; j < selectedAssembly.nodes.Length; j++) {
+                for(int j = 0; j < selectedAssembly.nodes.Count; j++) {
                     Node assemblyNode = selectedAssembly.nodes[j];
                     if (Camera.main.transform.InverseTransformPoint(assemblyNode.transform.position).z > 0) {
                         Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(assemblyNode.transform.position);
@@ -327,7 +327,7 @@ public class CameraControl : MonoBehaviour {
                 entityInfo += "Part of '" + selectedNode.myAssembly.name + ",' index " + selectedNode.assemblyIndex + "\n";
             }
             entityInfo += "\n";
-            entityInfo += "Number of bonds: " + selectedNode.bonds.Length;
+            entityInfo += "Number of bonds: " + selectedNode.bonds.Count;
             entityInfo += "\n";
             entityInfo += selectedNode.signal + " signal\n";
             entityInfo += selectedNode.synapse + " synapse\n";
@@ -335,7 +335,7 @@ public class CameraControl : MonoBehaviour {
         else if(selectedAssembly != null){
             entityInfo += selectedAssembly.name + "\n";
             entityInfo += "\n";
-            entityInfo += "Number of nodes: " + selectedAssembly.nodes.Length + "\n";
+            entityInfo += "Number of nodes: " + selectedAssembly.nodes.Count + "\n";
             entityInfo += "Age: " + Mathf.FloorToInt(selectedAssembly.age) + " sec\n";
             entityInfo += "Stage: " + selectedAssembly.lifeStage.ToString() + "\n";
         }
