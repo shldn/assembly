@@ -209,11 +209,11 @@ public class Assembly {
         // in this first pass it is possible for a bond to change the secondary node and then change back in another iteration.
         int attemptCount = 0; // fail safe from an infinite loop
         int numBondsToChange = Random.Range(1, 5);
-        while (numBondsToChange > 0 && attemptCount < (numBondsToChange + 100)) {
+        while (numBondsToChange > 0 && nodes.Count > 1 && attemptCount < (numBondsToChange + 100)) {
             ++attemptCount;
             Node node = nodes[Random.Range(0, nodes.Count)];
             int newBondBuddyIdx = (node.assemblyIndex + Random.Range(1, nodes.Count)) % nodes.Count; // make sure it doesn't bond to itself
-            if (node.BondedTo(nodes[newBondBuddyIdx]))
+            if (node.BondedTo(nodes[newBondBuddyIdx]) || node.bonds.Count == 0)
                 continue;
 
             // Destroy a Random bond and create a new one in its place.
@@ -221,11 +221,19 @@ public class Assembly {
 
             // Make sure we don't cut a node off of the assembly by breaking it's only bond.
             Node otherNode = bond.GetOtherNode(node);
-            if (otherNode.BondCount() <= 1)
-                new Bond(otherNode, nodes[newBondBuddyIdx]);
-            else
-                new Bond(node, nodes[newBondBuddyIdx]);
+            new Bond(node, nodes[newBondBuddyIdx]);
             bond.Destroy();
+
+            // Check if the assembly was severed, if so delete the severed nodes.
+            HashSet<Node> otherAttachedNodes = otherNode.GetNodesAttached();
+            if (otherAttachedNodes.Count != nodes.Count) {
+                Debug.LogError("Detached from assembly: " + otherAttachedNodes.Count + " != " + (nodes.Count));
+                foreach (Node n in otherAttachedNodes) {
+                    n.DestroyBonds();
+                    nodes.Remove(n);
+                    n.Destroy();
+                }
+            }
             --numBondsToChange;
         }
     }

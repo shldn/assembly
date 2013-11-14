@@ -211,10 +211,16 @@ public class Node : MonoBehaviour {
         allNodes.Remove(this);
     } // End of DestroyNode().
 
+    public void DestroyBonds() {
+        for(int i=0; i < bonds.Count; ++i)
+            bonds[i].Destroy();
+    }
+
 
     public bool BondedTo(Node otherNode){
         return GetBondTo(otherNode) != null;
     }
+
 
     public Bond GetBondTo(Node otherNode){
         for(int j = 0; j < bonds.Count; j++){
@@ -224,26 +230,33 @@ public class Node : MonoBehaviour {
         }
         return null;
     }
-    /*
-    public int NumNodesAttachedTo() {
 
+
+    // This count includes the this node
+    public int NumNodesAttached() {
         HashSet<Node> visited = new HashSet<Node>();
-        int count = 0;
         // dfs - depth first search
-        NumNodesAttachedTo(visited, ref count);
-        return count;
+        NodesAttached(visited);
+        return visited.Count;
     }
 
-    private void NumNodesAttachedTo(Dictionary<Node, bool> visited, ref int count) {
-        count++;
-        visited[this] = true;
-        for (int i = 0; i < bonds.Length; ++i) {
-            if( !visited.ContainsKey(bonds[i].nodeA) )
-                bonds[i].nodeA.NumNodesAttachedTo(visited, ref count);
-            if( !visited.ContainsKey(bonds[i].nodeB) )
-                bonds[i].nodeB.NumNodesAttachedTo(visited, ref count);
+
+    // This includes the this node
+    public HashSet<Node> GetNodesAttached() {
+        HashSet<Node> visited = new HashSet<Node>();
+        NodesAttached(visited);
+        return visited;
+    }
+
+
+    // This includes the this node
+    private void NodesAttached(HashSet<Node> visited) {
+        visited.Add(this);
+        for (int i = 0; i < bonds.Count; ++i) {
+            if( !visited.Contains(bonds[i].nodeA) )
+                bonds[i].nodeA.NodesAttached(visited);
+            if( !visited.Contains(bonds[i].nodeB) )
+                bonds[i].nodeB.NodesAttached(visited);
         }
-
     }
-     */
 } // End of Node.
