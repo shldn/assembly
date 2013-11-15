@@ -237,15 +237,10 @@ public class Assembly {
         }
     }
 
-    public static void SaveAll() {
-        foreach(Assembly a in GetAll())
-            a.Save();
-    }
-
 
     // Save assembly to a file. Returns the filepath.
-    public string Save(){        
-        DirectoryInfo dir = new DirectoryInfo("C:/Assembly/saves");
+    public string Save(){
+        DirectoryInfo dir = new DirectoryInfo(IOHelper.defaultSaveDir);
         FileInfo[] info = dir.GetFiles("*.*");
         int lastFileNum = 0;
         for (int t = 0; t < info.Length; t++){
@@ -254,8 +249,12 @@ public class Assembly {
             if (currentFileNum >= lastFileNum)
                 lastFileNum = currentFileNum;
         }
-        string filename = "C:/Assembly/saves/" + (lastFileNum + 1).ToString("000") + "_" + name + ".txt";
-        Debug.Log("Saving " + filename);
+        string filename = IOHelper.defaultSaveDir + (lastFileNum + 1).ToString("000") + "_" + name + ".txt";
+        return Save(filename);
+    } // End of Save().
+
+
+    public string Save(string filename) {
         System.IO.File.WriteAllText(filename, GetDNA());
         return filename;
     } // End of Save().

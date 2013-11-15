@@ -45,14 +45,12 @@ public class GameManager : MonoBehaviour {
         // Initialize 'names' array for random Assembly names to be pulled from.
         names = namesText.text.Split('\n');
 
-        // Create Assembly directory.
-        if (!System.IO.Directory.Exists("C:/Assembly")) {
+        // Create default saved assemblies directory.
+        IOHelper.CreateDefaultDirectory();
+
+        if (!System.IO.Directory.Exists("C:/Assembly"))
             System.IO.Directory.CreateDirectory("C:/Assembly");
-        }
-        // Create saved assemblies directory.
-        if (!System.IO.Directory.Exists("C:/Assembly/saves")) {
-            System.IO.Directory.CreateDirectory("C:/Assembly/saves");
-        }
+
         // Create README file.
         System.IO.File.WriteAllText("C:/Assembly/README.txt", "This is an automatically-generated directory for Assembly.\r\nUCSD Arthur C. Clarke Center 2013");
 
@@ -91,14 +89,10 @@ public class GameManager : MonoBehaviour {
 	} // End of OnGUI().
 
 
-    public static void LoadDirectory(string dir) {
-        if (dir == "")
-            return;
-        ConsoleScript.NewLine("Loading directory " + dir);
-        string[] filePaths = Directory.GetFiles(dir);
-        foreach (string file in filePaths)
-            new Assembly(file);
-    } // End of LoadDirectory
+    public static void MutateAll() {
+        for (int i = 0; i < Assembly.GetAll().Count; ++i)
+            Assembly.GetAll()[i].Mutate();
+    } // End of MutateAll
 
 
     public static void ClearAll(){

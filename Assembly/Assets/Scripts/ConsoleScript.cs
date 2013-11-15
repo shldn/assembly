@@ -129,7 +129,7 @@ public class ConsoleScript : MonoBehaviour {
 
             else if (command == "loaddir") {
                 if (commandArgs.Length > 0)
-                    GameManager.LoadDirectory(commandArgs[1]);
+                    IOHelper.LoadDirectory(commandArgs[1]);
                 else
                     NewLine("No directory path found");
                 Clear();
