@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -25,6 +26,7 @@ public class BatchModeManager {
     private BatchModeManager() {
         HandleCommandLineArgs();
         if (inBatchMode) {
+            DateTime startTime = DateTime.Now;
             IOHelper.LoadDirectory(dirPathToLoad);
             string nextPathToLoad = dirPathToLoad;
             for (int i = 0; i < numIterations; ++i) {
@@ -33,6 +35,7 @@ public class BatchModeManager {
                 nextPathToLoad = IncrementPathName(nextPathToLoad);
                 IOHelper.SaveAllToFolder(nextPathToLoad);
             }
+            System.Console.WriteLine(numIterations + " Generations ran in " + DateTime.Now.Subtract(startTime).ToString());
             Application.Quit();
         }
     }
