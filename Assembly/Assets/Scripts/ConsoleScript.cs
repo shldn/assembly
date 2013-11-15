@@ -133,6 +133,14 @@ public class ConsoleScript : MonoBehaviour {
                 Clear();
             }
 
+            else if (command == "loaddir") {
+                if (commandArgs.Length > 0)
+                    GameManager.LoadDirectory(commandArgs[1]);
+                else
+                    NewLine("No directory path found");
+                Clear();
+            }
+
             else if(command == "clear"){
             // Clear entire simulation
                 GameManager.ClearAll();
