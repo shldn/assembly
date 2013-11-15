@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using Vectrosity;
 
 public class CameraControl : MonoBehaviour {
 	
@@ -125,9 +124,9 @@ public class CameraControl : MonoBehaviour {
                 if(mouseReleasedNode && (mouseClickedNode == mouseReleasedNode)){
                     Node clickAndReleaseNode = mouseReleasedNode;
                     // Select the assembly attached to the node, if applicable...
-                    if((clickAndReleaseNode.myAssembly != null) && (selectedAssembly != clickAndReleaseNode.myAssembly) && (!selectedNode || (selectedNode == clickAndReleaseNode) || (clickAndReleaseNode.myAssembly != selectedNode.myAssembly))){
+                    if((clickAndReleaseNode.assembly != null) && (selectedAssembly != clickAndReleaseNode.assembly) && (!selectedNode || (selectedNode == clickAndReleaseNode) || (clickAndReleaseNode.assembly != selectedNode.assembly))){
                         selectedNode = null;
-                        FocusOnAssembly(clickAndReleaseNode.myAssembly);
+                        FocusOnAssembly(clickAndReleaseNode.assembly);
                     }
                     // Otherwise just select the node.
                     else{
@@ -228,7 +227,7 @@ public class CameraControl : MonoBehaviour {
                 viewInfo += "ORBIT CAMERA\n(Spacebar to unlock)\n\nMousewheel to zoom in/out.\nRight click and drag to orbit.\n\n";
                 if(selectedNode){
                     viewInfo += "Click another node to select it.\n";
-                    if(selectedNode.myAssembly != null)
+                    if(selectedNode.assembly != null)
                         viewInfo += "Click the selected node to select its assembly.";
                 }
                 if(selectedAssembly != null)
@@ -323,12 +322,13 @@ public class CameraControl : MonoBehaviour {
             entityInfo += selectedNode.nodeName + "\n";
             entityInfo += "\n";
             entityInfo += "Type: " + selectedNode.nodeType.ToString() + "\n";
-            if(selectedNode.myAssembly != null){
-                entityInfo += "Part of '" + selectedNode.myAssembly.name + ",' index " + selectedNode.assemblyIndex + "\n";
+            if(selectedNode.assembly != null){
+                entityInfo += "Part of '" + selectedNode.assembly.name + ",' index " + selectedNode.assemblyIndex + "\n";
             }
             entityInfo += "\n";
             entityInfo += "Number of bonds: " + selectedNode.bonds.Count;
             entityInfo += "\n";
+            entityInfo += selectedNode.calories + " calories\n";
             entityInfo += selectedNode.signal + " signal\n";
             entityInfo += selectedNode.synapse + " synapse\n";
         }

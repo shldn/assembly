@@ -1,30 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using Vectrosity;
+
+public enum BondType {useless, signal, synapse, synapseShare}
+
 
 public class Bond{
 
     public Node nodeA;
     public Node nodeB;
-    public VectorLine muscleLine;
-    public VectorLine signalLine;
-    public VectorLine synapseLine;
-    public VectorLine motionLine;
-    public Vector3[] muscleEndPoints = new Vector3[] { Vector3.zero, Vector3.zero };
-    public Vector3[] signalEndPoints = new Vector3[] { Vector3.zero, Vector3.zero };
-    public Vector3[] synapseEndPoints = new Vector3[] { Vector3.zero, Vector3.zero };
-    public Vector3[] motionEndPoints = new Vector3[] { Vector3.zero, Vector3.zero };
 
+    public BondType bondType = BondType.useless;
 
-
-    public Material muscleLineMaterial;
-    public Material signalLineMaterial;
-    public Material synapseLineMaterial;
+    public Vector3 dirAtoB;
 
     public Material motionLineMaterial;
 
-    float signalLink;
+    float signalLink = 0f;
+
+    public Transform bondBillboard;
+    float bondWidth = 0.3f;
+
 
     private static List<Bond> allBonds = new List<Bond>();
     public static List<Bond> GetAll() { return allBonds; }
@@ -41,12 +37,36 @@ public class Bond{
         nodeA.bonds.Add(this);
         nodeB.bonds.Add(this);
 
-        muscleLine = new VectorLine("muscleLine", muscleEndPoints, muscleLineMaterial, 3.0f);
-        signalLine = new VectorLine("signalLine", signalEndPoints, signalLineMaterial, 3.0f);
-        synapseLine = new VectorLine("synapseLine", synapseEndPoints, synapseLineMaterial, 3.0f);
-        motionLine = new VectorLine("motionLine", motionEndPoints, motionLineMaterial, 3.0f);
 
+        // If neither node are in an assembly, create a new assembly.
+        if((nodeA.assembly == null) && (nodeB.assembly == null))
+            new Assembly(nodeA);
+
+        // If one of the nodes is in an assembly, add the other to it.
+        if((nodeA.assembly != null) && (nodeB.assembly == null))
+            nodeA.assembly.AddNode(nodeB);
+
+        if((nodeB.assembly != null) && (nodeA.assembly == null))
+            nodeB.assembly.AddNode(nodeA);
+
+        // If both are in assemblies, merge them.
+        if((nodeA.assembly != null) && (nodeB.assembly != null) && (nodeA.assembly != nodeB.assembly)){
+            nodeA.assembly.Merge(nodeB.assembly);
+        }
+
+
+        // Randomize direction of signalLink.
         signalLink = (Random.Range(0, 2) * 2) - 1;
+
+
+        // Create bond billboard.
+        GameObject bondBillboardGO = new GameObject();
+        bondBillboardGO.name = "BondBillboard";
+        bondBillboardGO.AddComponent<MeshFilter>();
+        bondBillboardGO.GetComponent<MeshFilter>().mesh = GameManager.graphics.twoPolyPlane;
+        bondBillboardGO.AddComponent<MeshRenderer>();
+        bondBillboard = bondBillboardGO.transform;
+
 
         allBonds.Add(this);
     } // End of Awake().
@@ -54,11 +74,28 @@ public class Bond{
 
     public void Update(){
 
-        // Attractive force
-		Vector3 vectorAtoB = nodeB.transform.position - nodeA.transform.position;
-        Vector3 dirAtoB = vectorAtoB.normalized;
-        float distToNode = vectorAtoB.magnitude;
-		
+        Vector3 vectorAtoB = nodeB.transform.position - nodeA.transform.position;
+        dirAtoB = vectorAtoB.normalized;
+        float bondLength = vectorAtoB.magnitude;
+
+
+        // The following billboards the bond graphic with the camera.
+        Quaternion bondDirection = Quaternion.LookRotation(nodeB.transform.position - nodeA.transform.position);
+        bondBillboard.rotation = bondDirection;
+        bondBillboard.position = nodeA.transform.position + (vectorAtoB * 0.5f);
+        bondBillboard.rotation *= Quaternion.AngleAxis(90, Vector3.up);
+
+        Vector3 camRelativePos = bondBillboard.InverseTransformPoint(Camera.main.transform.position);
+        float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
+
+        bondBillboard.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
+
+        Vector3 bondBillboardScale = new Vector3(bondLength * signalLink, bondWidth, 1f);
+        bondBillboard.localScale = bondBillboardScale;
+
+
+
+
         // DEBUG - attraction is a constant.
         float attraction = 12.0f;
 
@@ -66,151 +103,82 @@ public class Bond{
         nodeB.rigidbody.AddForce(-vectorAtoB.normalized * attraction);
 
 
-        // If neither node are in an assembly, create a new assembly.
-        if((nodeA.myAssembly == null) && (nodeB.myAssembly == null))
-            new Assembly(nodeA);
+        
 
-        // If one of the nodes is in an assembly, add the other to it.
-        if((nodeA.myAssembly != null) && (nodeB.myAssembly == null))
-            nodeA.myAssembly.AddNode(nodeB);
-
-        if((nodeB.myAssembly != null) && (nodeA.myAssembly == null))
-            nodeB.myAssembly.AddNode(nodeA);
-
-        // If both are in assemblies, merge them.
-        if((nodeA.myAssembly != null) && (nodeB.myAssembly != null) && (nodeA.myAssembly != nodeB.myAssembly)){
-            nodeA.myAssembly.Merge(nodeB.myAssembly);
-        }
-
-
-
-		// Determine synapse transfer.
+		// Determine calorie transfer.
 		float calorieTransferStrength = attraction * 0.03f;
 		float calorieTransfer = (nodeB.calories - nodeA.calories) * calorieTransferStrength;
 		nodeA.caloriesDelta += calorieTransfer;
 		nodeB.caloriesDelta += -calorieTransfer;
 		
+		
+		// Different effects based on bond type.
+        if((nodeA.nodeType == NodeType.sense) && (nodeB.nodeType == NodeType.control) ||
+           (nodeB.nodeType == NodeType.sense) && (nodeA.nodeType == NodeType.control)){
+            // Signal Bond
+            // Sense -> Control
+            bondType = BondType.signal;
+            bondBillboard.renderer.material = GameManager.graphics.signalBondMat;
 
-		// Render muscleLine ----------------------
-        // Muscle is the actual physical connection between two bonded nodes.
-		float muscleEndRadius = 0.6f;
-        // Line direction shows direction of calorie flow.
-		if(Mathf.Abs(nodeA.calories - nodeB.calories) >= 0.1)
-			muscleLine.endCap = "CalorieCaps";
-		else
-			muscleLine.endCap = null;
-        bool lineFlip = nodeB.calories > nodeA.calories;
-		muscleEndPoints[lineFlip ? 1 : 0] = nodeA.transform.position + (dirAtoB * muscleEndRadius);
-		muscleEndPoints[lineFlip ? 0 : 1] = nodeB.transform.position + (-dirAtoB * muscleEndRadius);
-        // Line color shows strength of connection.
-		Color muscleColor = Color.Lerp(Color.gray, Color.white, Mathf.Abs(calorieTransfer) * 3.0f);
-		muscleColor.a = 0.5f;
-        muscleLine.SetColor(muscleColor);
-        // Line width based on magnitude of calorie flow.
-        muscleLine.SetWidths(new float[] {2f});
-        muscleLine.Draw3D();
-		
-		
+            if(nodeA.nodeType == NodeType.sense){
+                signalLink = 1;
+                if(nodeA.signal > nodeB.synapse)
+                    nodeB.synapse = nodeA.signal;
+            }
+            else{
+                signalLink = -1;
+                if(nodeB.signal > nodeA.synapse)
+                    nodeA.synapse = nodeB.signal;
+            }
+        }
+        else
+        if((nodeA.nodeType == NodeType.control) && (nodeB.nodeType == NodeType.muscle) ||
+           (nodeB.nodeType == NodeType.control) && (nodeA.nodeType == NodeType.muscle)){
+            // Synapse bond
+            // Control -> Muscle
+            bondType = BondType.synapse;
+            bondBillboard.renderer.material = GameManager.graphics.synapseBondMat;
 
-        // Signal
-        // Ensure that if one node is a sense node and the other is not, signal travels out.
-        if((nodeA.nodeType == NodeType.sense) && (nodeB.nodeType != NodeType.sense))
-            signalLink = 1;
-        else if((nodeB.nodeType == NodeType.sense) && (nodeA.nodeType != NodeType.sense))
-            signalLink = -1;
-		// If one node is a 'sense' node...
-		// Render signalLine ----------------------
-        // Signal is the 'information' sent from sense nodes to control nodes.
-		signalLine.SetWidths(new float[] {0});
-		if((nodeA.signalRelay && (signalLink == 1)) || (nodeB.signalRelay && (signalLink == -1))){
+            if(nodeA.nodeType == NodeType.control){
+                signalLink = 1;
+                if(nodeA.synapse > nodeB.thrust)
+                    nodeB.thrust = nodeA.synapse;
 
-			if((signalLink < 0) && (nodeB.signal > nodeA.signal))
-				nodeA.signal = nodeB.signal;
-			else if((signalLink > 0) && (nodeB.signal < nodeA.signal))
-				nodeB.signal = nodeA.signal;
+                nodeB.thrust = Mathf.Clamp(nodeB.thrust, 0.1f, Mathf.Infinity);
+                nodeB.rigidbody.AddForce(-vectorAtoB * 10f * nodeB.thrust);
+            }
+            else{
+                signalLink = -1;
+                if(nodeB.synapse > nodeA.thrust)
+                    nodeA.thrust = nodeB.synapse;
 
-			signalLine.endCap = "CalorieCaps";
-			float signalEndRadius = 0.4f;
-			float signalOffset = 0.15f;
-			Vector3 signalEndOffset = Quaternion.LookRotation(dirAtoB, Camera.main.transform.forward) * -Vector3.right * signalOffset;
-			
-			nodeA.signalRelay = true;
-			nodeB.signalRelay = true;
-		
-			if(signalLink < 0){
-				signalEndPoints[0] = nodeB.transform.position + signalEndOffset + (-dirAtoB * signalEndRadius);
-				signalEndPoints[1] = nodeB.transform.position + signalEndOffset + (-dirAtoB * (signalEndRadius + ((distToNode - (2.0f * signalEndRadius)) * Mathf.Abs(signalLink * nodeB.signalDecay))));
-			}
-			else{
-				signalEndPoints[0] = nodeA.transform.position + signalEndOffset + (dirAtoB * signalEndRadius);
-				signalEndPoints[1] = nodeA.transform.position + signalEndOffset + (dirAtoB * (signalEndRadius + ((distToNode - (2.0f * signalEndRadius)) * Mathf.Abs(signalLink * nodeA.signalDecay))));
-			}
-	        // Line color shows strength of connection.
-			Color signalColor = nodeA.senseColor;
-			signalColor.a = 0.5f;
-	        signalLine.SetColor(signalColor);
-	        // Line width based on magnitude of signal flow.
-	        signalLine.SetWidths(new float[] {2.0f});
-		}
-	    signalLine.Draw3D();
-		
-		
-		// Render synapse/MotionLine ----------------------
-        // Synapse is the muscle-control signal sent from control nodes that makes them move.
-		synapseLine.SetWidths(new float[] {0});
-		motionLine.SetWidths(new float[] {0});
-		if(((nodeA.nodeType == NodeType.control) || (nodeB.nodeType == NodeType.control)) && 
-		   ((nodeA.nodeType == NodeType.muscle) || (nodeB.nodeType == NodeType.muscle))){
-			
-            
-			Vector3 forceToAdd;
-			float motionLineSize = 0.2f;
-			if(nodeA.nodeType == NodeType.muscle){
-				nodeA.synapse = nodeB.synapse;
-				
-				forceToAdd = nodeA.muscleStrength * nodeA.muscleDirection * nodeB.synapse;
-				nodeA.rigidbody.AddForce(forceToAdd);
-				motionEndPoints[0] = nodeA.transform.position;
-				motionEndPoints[1] = nodeA.transform.position + (forceToAdd * motionLineSize);
-			}
-			else{
-				nodeB.synapse = nodeA.synapse;
-				
-				forceToAdd = nodeB.muscleStrength * nodeB.muscleDirection * nodeA.synapse;
-				nodeB.rigidbody.AddForce(forceToAdd);
-				motionEndPoints[0] = nodeB.transform.position;
-				motionEndPoints[1] = nodeB.transform.position + (forceToAdd * motionLineSize);
-			}
-			motionLine.SetColor(nodeA.muscleColor);
-			motionLine.SetWidths(new float[] {4.0f});
-			
+                nodeA.thrust = Mathf.Clamp(nodeA.thrust, 0.1f, Mathf.Infinity);
+                nodeA.rigidbody.AddForce(vectorAtoB * 10f * nodeA.thrust);
 
-			float synapseEndRadius = 0.4f;
-			float synapseOffset = 0.15f;
-			Vector3 synapseEndOffset = Quaternion.LookRotation(dirAtoB, Camera.main.transform.forward) * Vector3.right * synapseOffset;
-			synapseEndPoints[0] = nodeA.transform.position + synapseEndOffset + (dirAtoB * synapseEndRadius);
-			synapseEndPoints[1] = nodeB.transform.position + synapseEndOffset + (-dirAtoB * synapseEndRadius);
-	        // Line color shows strength of connection.
-			Color synapseColor = Color.Lerp(nodeA.muscleColor, Color.white, 0f);
-	        synapseLine.SetColor(Color.Lerp(synapseColor, Color.white, Mathf.Abs(nodeA.synapse) + Mathf.Abs(nodeB.synapse)));
-            synapseColor.a = 0.5f;
-	        // Line width based on magnitude of signal flow.
-	        synapseLine.SetWidths(new float[] {1.0f});
-		}
-		motionLine.Draw3D();
-	    synapseLine.Draw3D();
-		
+            }
+        }
+        else
+        if((nodeA.nodeType == NodeType.control) && (nodeB.nodeType == NodeType.control)){
+            // Shared synapse bond
+            // Control <-> Control
+            bondType = BondType.synapseShare;
+            bondBillboard.renderer.material = GameManager.graphics.synapseShareBondMat;
+
+            if(nodeA.synapse > nodeB.synapse)
+                nodeB.synapse = nodeA.synapse;
+            else
+                nodeA.synapse = nodeB.synapse;
+        }
+        else{
+            // Not a functional bond.
+            bondBillboard.renderer.material = GameManager.graphics.uselessBondMat;
+            bondType = BondType.useless;
+        }
 
 	} // End of Update().
 
 
     public void Destroy() {
-        // Clear the vectorLine objects first, else they just float around.
-        VectorLine.Destroy(ref muscleLine);
-        VectorLine.Destroy(ref signalLine);
-        VectorLine.Destroy(ref synapseLine);
-        VectorLine.Destroy(ref motionLine);
-
         nodeA.bonds.Remove(this);
         nodeB.bonds.Remove(this);
 

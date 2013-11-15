@@ -75,7 +75,7 @@ public class Assembly {
 
         // Assign assembly to all nodes.
         for(int i = 0; i < gotNodes.Count; i++)
-            gotNodes[i].myAssembly = this;
+            gotNodes[i].assembly = this;
 
         allAssemblies.Add(this);
     } // End of Assembly constructor.
@@ -114,7 +114,7 @@ public class Assembly {
             GameObject newNodeTrans = Object.Instantiate(GameManager.prefabs.node, randomPos, Quaternion.identity) as GameObject;
             Node newNode = newNodeTrans.GetComponent<Node>();
             newNodes.Add(newNode);
-            newNode.myAssembly = this;
+            newNode.assembly = this;
             newNode.assemblyIndex = i;
         }
 
@@ -315,7 +315,7 @@ public class Assembly {
         nodes.Add(newNode);
         newNode.assemblyIndex = nodes.Count;
 
-        newNode.myAssembly = this;
+        newNode.assembly = this;
     } // End of AddNode().
     
 
@@ -333,7 +333,7 @@ public class Assembly {
             Node currentNode = nodes[i];
             while(currentNode.bonds.Count > 0)
                 currentNode.bonds[0].Destroy();
-            currentNode.myAssembly = null;
+            currentNode.assembly = null;
         }
         allAssemblies.Remove(this);
     } // End of Disband().

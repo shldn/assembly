@@ -29,14 +29,20 @@ public class ConsoleScript : MonoBehaviour {
             if(WesInput.GetKeyDown("Disband Assembly"))
                 command = "disband";
 
-            // Keyboard shortcuts
             if(WesInput.GetKeyDown("Add Node"))
                 command = "addnode";
 
-            // Keyboard shortcuts
             if(WesInput.GetKeyDown("Remove Node"))
                 command = "remnode";
 
+            if(WesInput.GetKeyDown("Auto Orbit"))
+                command = "orbit";
+
+            if(WesInput.GetKeyDown("Quit"))
+                command = "quit";
+
+            if(WesInput.GetKeyDown("Reload Application"))
+                command = "reload";
         }
         else if(active){
             if(Input.GetKeyDown(KeyCode.Backspace) && (inputText.Length > 0))
@@ -194,6 +200,13 @@ public class ConsoleScript : MonoBehaviour {
                 // Quit the game...
                 Application.Quit();
                 NewLine("Quitting...");
+                Clear();
+            }
+
+            else if (command == "reload") {
+                // Reload the game...
+                Application.LoadLevel(0);
+                NewLine("Reloading application...");
                 Clear();
             }
 
