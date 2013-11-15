@@ -16,6 +16,7 @@ public class BatchModeManager {
     // Member variables
     private bool inBatchMode = false;
     private bool mutateAll = false;
+    private int numIterations = 1; // number of generations to run.
     private string dirPathToLoad = "";
 
     // Accessors
@@ -25,9 +26,13 @@ public class BatchModeManager {
         HandleCommandLineArgs();
         if (inBatchMode) {
             IOHelper.LoadDirectory(dirPathToLoad);
-            if (mutateAll)
-                GameManager.MutateAll();
-            IOHelper.SaveAllToFolder(IncrementPathName(dirPathToLoad));
+            string nextPathToLoad = dirPathToLoad;
+            for (int i = 0; i < numIterations; ++i) {
+                if (mutateAll)
+                    GameManager.MutateAll();
+                nextPathToLoad = IncrementPathName(nextPathToLoad);
+                IOHelper.SaveAllToFolder(nextPathToLoad);
+            }
             Application.Quit();
         }
     }
@@ -41,10 +46,15 @@ public class BatchModeManager {
                     break;
                 case "-load":
                 case "-path":
-                    dirPathToLoad = (cmdLnArgs.Length > i+1) ? cmdLnArgs[i+1] : "";
+                    dirPathToLoad = (cmdLnArgs.Length > i+1) ? cmdLnArgs[++i] : "";
                     break;
                 case "-mutate":
                     mutateAll = true;
+                    break;
+                case "-loop":
+                case "-num":
+                    string nextArgStr = (cmdLnArgs.Length > i + 1) ? cmdLnArgs[++i] : "1";
+                    int.TryParse(nextArgStr, out numIterations);
                     break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);
