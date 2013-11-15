@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.IO;
 
 public class BatchModeManager {
 
@@ -13,12 +14,14 @@ public class BatchModeManager {
 
     // Member variables
     private bool inBatchMode = false;
+    private string dirPathToLoad = "";
 
     // Accessors
     public bool InBatchMode { get{ return inBatchMode; } }
 
     private BatchModeManager() {
         HandleCommandLineArgs();
+        GameManager.LoadDirectory(dirPathToLoad);
     }
 
     private void HandleCommandLineArgs() {
@@ -27,6 +30,10 @@ public class BatchModeManager {
             switch (cmdLnArgs[i]) {
                 case "-batchmode":
                     inBatchMode = true;
+                    break;
+                case "-load":
+                case "-path":
+                    dirPathToLoad = (cmdLnArgs.Length > i+1) ? cmdLnArgs[i+1] : "";
                     break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);

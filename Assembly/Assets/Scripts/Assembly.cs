@@ -107,7 +107,6 @@ public class Assembly {
 
         // First pass: Loop through all loaded nodes.
         for(int i = 0; i < rawNodes.Length; i++){
-            string currentNode = rawNodes[i];
 
             // Create the node in the game environment (at a random position).
             float halfNodeGenSpread = 10;

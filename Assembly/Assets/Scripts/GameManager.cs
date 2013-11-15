@@ -91,6 +91,16 @@ public class GameManager : MonoBehaviour {
 	} // End of OnGUI().
 
 
+    public static void LoadDirectory(string dir) {
+        if (dir == "")
+            return;
+        ConsoleScript.NewLine("Loading directory " + dir);
+        string[] filePaths = Directory.GetFiles(dir);
+        foreach (string file in filePaths)
+            new Assembly(file);
+    } // End of LoadDirectory
+
+
     public static void ClearAll(){
         while(Assembly.GetAll().Count > 0)
             Assembly.GetAll()[Assembly.GetAll().Count - 1].Destroy();
