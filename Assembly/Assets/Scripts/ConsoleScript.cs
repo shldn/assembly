@@ -11,7 +11,6 @@ public class ConsoleScript : MonoBehaviour {
     public static bool active = false;
     public bool consoleKeyCleared = false;
 
-
 	// Use this for initialization
 	void Update (){
         string command = "";
@@ -45,6 +44,8 @@ public class ConsoleScript : MonoBehaviour {
                 command = "reload";
         }
         else if(active){
+            /*
+
             if(Input.GetKeyDown(KeyCode.Backspace) && (inputText.Length > 0))
                 inputText = inputText.Substring(0, inputText.Length - 1);
 
@@ -58,6 +59,7 @@ public class ConsoleScript : MonoBehaviour {
                 inputText = "";
                 consoleKeyCleared = true;
             }
+            */
 
             // Enter a line.
             if(Input.GetKeyDown(KeyCode.Return)){
@@ -277,7 +279,15 @@ public class ConsoleScript : MonoBehaviour {
 
 	
 	// Update is called once per frame
-	void OnGUI () {
+	void OnGUI(){
+        // User input field
+        int inputTextRectHeight = 50;
+        if(active){
+            Rect inputTextRect = new Rect(5, Screen.height - (inputTextRectHeight + 5), Screen.width - 10, inputTextRectHeight);
+            GUI.SetNextControlName("userInputField");
+            inputText = GUI.TextField(inputTextRect, inputText);
+            GUI.FocusControl("userInputField");
+        }
 
         string consoleText = "";
 
@@ -286,13 +296,7 @@ public class ConsoleScript : MonoBehaviour {
             consoleText += currentLine + "\n";
         }
 
-        consoleText += "\n" + inputText;
-
-        bool blinker = ((Time.time % 0.5) <= 0.25);
-        if(active && blinker)
-            consoleText += "|";
-	
-        Rect consoleRect = new Rect(5, 0, Screen.width, Screen.height);
+        Rect consoleRect = new Rect(5, 0, Screen.width, Screen.height - (inputTextRectHeight + 5));
         GUI.skin.label.alignment = TextAnchor.LowerLeft;
         GUI.Label(consoleRect, consoleText);
 

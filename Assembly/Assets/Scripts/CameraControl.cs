@@ -39,8 +39,6 @@ public class CameraControl : MonoBehaviour {
 
     public LineRenderer dragLineRenderer = null;
 
-
-
 	void Start(){
 		targetRot = transform.rotation;
 		targetPos = transform.position;
