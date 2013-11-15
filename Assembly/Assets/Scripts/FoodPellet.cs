@@ -7,13 +7,15 @@ public class FoodPellet : MonoBehaviour {
     private static List<FoodPellet> allFoodPellets = new List<FoodPellet>();
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
 
-	void Start(){
+	void Awake(){
 		transform.rotation = Random.rotation;
 		
 		rigidbody.AddForce(new Vector3(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)));
 		rigidbody.AddTorque(new Vector3(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)));
+
+        allFoodPellets.Add(this);
 	}
-	
+
 	void Update(){
 		for(int i = 0; i < Node.GetAll().Count; i++){
             Node currentNode = Node.GetAll()[i];

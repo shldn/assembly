@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using Vectrosity;
 
 
 public class GraphicsManager : MonoBehaviour {
@@ -10,15 +9,20 @@ public class GraphicsManager : MonoBehaviour {
     public Texture2D endTex;
 
     public Texture2D senseFlare;
-    public Texture2D synapseFlare;
+    public Texture2D controlFlare;
     public Texture2D muscleFlare;
 
     // Texture (crosshair) shown around selected ndoes.
     public Texture2D nodeSelectTex;
     public Texture2D nodeModifyTex;
 
-    void Awake(){
-        // Set up line types.
-        VectorLine.SetEndCap("CalorieCaps", EndCap.Back, lineMaterial, endTex);
-    } // End of Awake().
+    public Mesh twoPolyPlane;
+    public Material senseArcMat;
+
+    // Bond textures
+    public Material signalBondMat;
+    public Material synapseBondMat;
+    public Material synapseShareBondMat;
+    public Material uselessBondMat;
+
 } // End of GraphicsManager.

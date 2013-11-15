@@ -61,17 +61,29 @@ public class GameManager : MonoBehaviour {
         }
     } // End of Awake().
 
+
 	void Update(){
         numFrames++;
 
 
-        // Update() functions in abstract classes.
-        for(int i = 0; i < Assembly.GetAll().Count; i++){
+        // Update assemblies
+        for(int i = 0; i < Assembly.GetAll().Count; i++)
             Assembly.GetAll()[i].Update();
-        }
-        for(int i = 0; i < Bond.GetAll().Count; i++){
+
+        // Update nodes
+        for(int i = 0; i < Node.GetAllSense().Count; i++)
+            Node.GetAllSense()[i].SenseUpdate();
+        for(int i = 0; i < Node.GetAllControl().Count; i++)
+            Node.GetAllControl()[i].ControlUpdate();
+        for(int i = 0; i < Node.GetAllMuscle().Count; i++)
+            Node.GetAllMuscle()[i].MuscleUpdate();
+        for(int i = 0; i < Node.GetAllStem().Count; i++)
+            Node.GetAllStem()[i].StemUpdate();
+
+        // Update bonds
+        for(int i = 0; i < Bond.GetAll().Count; i++)
             Bond.GetAll()[i].Update();
-        }
+
 	} // End of Update().
 
 

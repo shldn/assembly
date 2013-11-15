@@ -25,6 +25,7 @@ public class WesInput : MonoBehaviour{
 	    keys[ "Roll Right" ] = KeyCode.E;
 	
 	    keys[ "Camera Lock" ] = KeyCode.Space;
+	    keys[ "Auto Orbit" ] = KeyCode.O;
 
 	    keys[ "Add Node" ] = KeyCode.Alpha1;
 	    keys[ "Remove Node" ] = KeyCode.Alpha2;
@@ -32,6 +33,8 @@ public class WesInput : MonoBehaviour{
         keys[ "Disband Assembly" ] = KeyCode.Delete;
 
 	    keys[ "Open Console" ] = KeyCode.Return;
+	    keys[ "Quit" ] = KeyCode.Escape;
+	    keys[ "Reload Application" ] = KeyCode.F12;
     } // End of Awake().
 
 
