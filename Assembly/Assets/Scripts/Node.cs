@@ -254,25 +254,21 @@ public class Node : MonoBehaviour {
     public void StemUpdate(){
         // TEMP
         // Un-bonded nodes are attracted to other nodes.
+        float minSqDistForAttraction = 400; // 20 * 20
         bondCooldown -= Time.deltaTime;
         for(int i = 0; i < allNodes.Count; i++){
-            Node otherNode = allNodes[i];
+            Node otherNode = allNodes[i];            
+            if((otherNode != this) && (assembly == null) && (otherNode.bonds.Count < 3) && (otherNode.transform.position - transform.position).sqrMagnitude < minSqDistForAttraction ){
 
-            if(!BondedTo(otherNode) && (otherNode != this) && (assembly == null || (assembly != otherNode.assembly)) && (otherNode.bonds.Count < 3) && (bonds.Count < 3)){
-
-                // Attractive force
-		        Vector3 vectorAtoB = otherNode.transform.position - transform.position;
-                float distToNode = vectorAtoB.magnitude;
-		
-                if(distToNode < 20){
-                    // DEBUG - attraction is a constant.
-                    float attraction = 6f / (Mathf.Pow(distToNode, 2));
-
-                    rigidbody.AddForce(vectorAtoB.normalized * attraction);
-                }
+                // Attractive force		
+                // DEBUG - attraction is a constant.
+                Vector3 vectorAtoB = otherNode.transform.position - transform.position;
+                float sqrDistToNode = vectorAtoB.sqrMagnitude;
+                float attraction = 6f / sqrDistToNode;
+                rigidbody.AddForce(vectorAtoB.normalized * attraction);
 
                 // Attach if close enough.
-                if(distToNode <= 2f){
+                if (sqrDistToNode <= 4f) {
                     new Bond(this, otherNode);
                 }
             }
