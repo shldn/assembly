@@ -20,59 +20,65 @@ public class Octree<T>{
 
     int maxNodesPerLevel;
     Bounds boundary;
-    List<OctreeNode<T>> nodes;
+    List<T> nodes;
+    Octree<T> parent = null; // if null this is the root of the tree.
     Octree<T>[] children;
+    Func<T, Vector3> GetPosition; // TODO: optimization - grab function from the root instead of each node holding a pointer to it?
 
-    public Octree(Bounds bounds, int maxNodesPerLevel_ = 10)
+    public Octree(Bounds bounds, Func<T, Vector3> GetPosition_, int maxNodesPerLevel_ = 10, Octree<T> parent = null)
     {
-        maxNodesPerLevel = maxNodesPerLevel_;
         boundary = bounds;
-        nodes = new List<OctreeNode<T>>(maxNodesPerLevel);
+        GetPosition = GetPosition_;
+        maxNodesPerLevel = maxNodesPerLevel_;        
+        nodes = new List<T>(maxNodesPerLevel);
     }
 
 
-    public bool Insert(T elem, Vector3 position) {
-        return Insert(new OctreeNode<T>(elem, position));
+    public Octree<T> GetRoot() {
+        if (parent == null)
+            return this;
+        return parent.GetRoot();
     }
 
 
-    public bool Insert(OctreeNode<T> node)
+    public bool Insert(T elem)
     {
-        if (!boundary.Contains(node.position))
+        if (!boundary.Contains(GetPosition(elem)))
             return false;
         if (nodes.Count < maxNodesPerLevel) {
-            nodes.Add(node);
+            nodes.Add(elem);
             return true;
         }
         if (children == null)
             Subdivide();
         for (int i = 0; i < children.Length; ++i) {
-            if (children[i].Insert(node))
+            if (children[i].Insert(elem))
                 return true;
         }
         return false;
     }
 
-    public bool Remove(OctreeNode<T> node) {
-        if (!boundary.Contains(node.position))
+    public bool Remove(T elem) {
+        if (!boundary.Contains(GetPosition(elem)))
             return false;
-        if (nodes.Remove(node))
+        if (nodes.Remove(elem))
             return true;
         for (int i = 0; i < children.Length; ++i)
-            if (children[i].Remove(node))
+            if (children[i].Remove(elem))
                 return true;
         return false;
 
     }
 
-
+    /*
     // this is the slow part :(, add parent Octree to OctreeNode to speed it up. Change OctreeNodes to structs
     // can do a more efficient remove and insert, since the insert will be near the remove point.
-    public void Update(OctreeNode<T> node, Vector3 newPos) {
+    public void Update(T elem) {
         Remove(node);
         node.position = newPos;
         Insert(node);
     }
+    */
 
 
     // Runs a function on a subset of the elements in the tree, determined by what is inside subsetBounds
@@ -82,8 +88,8 @@ public class Octree<T>{
         if (!boundary.Intersects(subsetBounds))
             return;
         for (int i = 0; i < nodes.Count; ++i)
-            if (subsetBounds.Contains(nodes[i].position))
-                action(nodes[i].elem);
+            if (subsetBounds.Contains(GetPosition(nodes[i])))
+                action(nodes[i]);
         if (children == null)
             return;
         for (int i = 0; i < children.Length; ++i)
@@ -98,8 +104,8 @@ public class Octree<T>{
         if (!boundary.Intersects(subsetBounds))
             return;
         for (int i = 0; i < nodes.Count; ++i)
-            if (subsetBounds.Contains(nodes[i].position))
-                elements.Add(nodes[i].elem);
+            if (subsetBounds.Contains(GetPosition(nodes[i])))
+                elements.Add(nodes[i]);
         if (children == null)
             return;
         for (int i = 0; i < children.Length; ++i)
@@ -112,13 +118,13 @@ public class Octree<T>{
 
         Vector3 newSize = 0.5f * boundary.size;
         float hw = 0.5f * newSize.x;
-        children[0] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, hw, hw), newSize));
-        children[1] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, -hw, hw), newSize));
-        children[2] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, hw, -hw), newSize));
-        children[3] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, -hw, -hw), newSize));
-        children[4] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, hw, hw), newSize));
-        children[5] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, -hw, hw), newSize));
-        children[6] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, hw, -hw), newSize));
-        children[7] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, -hw, -hw), newSize));
+        children[0] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, hw, hw), newSize), GetPosition, maxNodesPerLevel, this);
+        children[1] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, -hw, hw), newSize), GetPosition, maxNodesPerLevel, this);
+        children[2] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, hw, -hw), newSize), GetPosition, maxNodesPerLevel, this);
+        children[3] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, -hw, -hw), newSize), GetPosition, maxNodesPerLevel, this);
+        children[4] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, hw, hw), newSize), GetPosition, maxNodesPerLevel, this);
+        children[5] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, -hw, hw), newSize), GetPosition, maxNodesPerLevel, this);
+        children[6] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, hw, -hw), newSize), GetPosition, maxNodesPerLevel, this);
+        children[7] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, -hw, -hw), newSize), GetPosition, maxNodesPerLevel, this);
     }
 }
