@@ -21,7 +21,7 @@ public class Octree<T>{
     int maxNodesPerLevel;
     Bounds boundary;
     List<OctreeNode<T>> nodes;
-    List<Octree<T>> children; //= new List<Octree<T>>(8);
+    Octree<T>[] children;
 
     public Octree(Bounds bounds, int maxNodesPerLevel_ = 10)
     {
@@ -46,7 +46,7 @@ public class Octree<T>{
         }
         if (children == null)
             Subdivide();
-        for (int i = 0; i < children.Count; ++i) {
+        for (int i = 0; i < children.Length; ++i) {
             if (children[i].Insert(node))
                 return true;
         }
@@ -58,7 +58,7 @@ public class Octree<T>{
             return false;
         if (nodes.Remove(node))
             return true;
-        for (int i = 0; i < children.Count; ++i)
+        for (int i = 0; i < children.Length; ++i)
             if (children[i].Remove(node))
                 return true;
         return false;
@@ -86,8 +86,8 @@ public class Octree<T>{
                 action(nodes[i].elem);
         if (children == null)
             return;
-        for (int i = 0; i < children.Count; ++i)
-            RunActionInRange(action, subsetBounds);
+        for (int i = 0; i < children.Length; ++i)
+            children[i].RunActionInRange(action, subsetBounds);
     }
 
 
@@ -102,16 +102,16 @@ public class Octree<T>{
                 elements.Add(nodes[i].elem);
         if (children == null)
             return;
-        for (int i = 0; i < children.Count; ++i)
-            GetElementsInRange(subsetBounds, ref elements);
+        for (int i = 0; i < children.Length; ++i)
+            children[i].GetElementsInRange(subsetBounds, ref elements);
     }
 
 
     void Subdivide() {
-        children = new List<Octree<T>>(8); // 8 children for octree
+        children = new Octree<T>[8]; // 8 children for octree
 
         Vector3 newSize = 0.5f * boundary.size;
-        float hw = newSize.x;
+        float hw = 0.5f * newSize.x;
         children[0] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, hw, hw), newSize));
         children[1] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, -hw, hw), newSize));
         children[2] = new Octree<T>(new Bounds(boundary.center + new Vector3(hw, hw, -hw), newSize));
