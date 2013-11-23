@@ -61,6 +61,8 @@ public class Node : MonoBehaviour {
     public static List<Node> GetAllMuscle() { return muscleNodes; }
     public static List<Node> GetAllControl() { return controlNodes; }
     public static List<Node> GetAllStem() { return stemNodes; }
+
+    public static Octree<Node> allNodeTree = new Octree<Node>(new Bounds(Vector3.zero, new Vector3(100, 100, 100)), (Node x) => x.transform.position, 20);
 	
 
 	void Awake(){
@@ -76,6 +78,7 @@ public class Node : MonoBehaviour {
 
         stemNodes.Add(this);
         allNodes.Add(this);
+        allNodeTree.Insert(this);
 	} // End of Awake().
 
 
@@ -252,32 +255,40 @@ public class Node : MonoBehaviour {
 
 
     public void StemUpdate(){
-        // TEMP
-        // Un-bonded nodes are attracted to other nodes.
-        float minSqDistForAttraction = 400; // 20 * 20
         bondCooldown -= Time.deltaTime;
-        for(int i = 0; i < allNodes.Count; i++){
-            Node otherNode = allNodes[i];            
-            if((otherNode != this) && (assembly == null) && (otherNode.bonds.Count < 3) && (otherNode.transform.position - transform.position).sqrMagnitude < minSqDistForAttraction ){
 
-                // Attractive force		
-                // DEBUG - attraction is a constant.
-                Vector3 vectorAtoB = otherNode.transform.position - transform.position;
-                float sqrDistToNode = vectorAtoB.sqrMagnitude;
-                float attraction = 6f / sqrDistToNode;
-                rigidbody.AddForce(vectorAtoB.normalized * attraction);
-
-                // Attach if close enough.
-                if (sqrDistToNode <= 4f) {
-                    new Bond(this, otherNode);
-                }
-            }
+        // TEMP
+        if (!GameManager.inst.useOctree) {
+            for (int i = 0; i < allNodes.Count; i++)
+                AddForceToOtherNode(allNodes[i]);
+        }
+        else {
+            Bounds boundary = new Bounds(this.transform.position, GameManager.inst.minDistForStemAttraction * (new Vector3(1,1,1)));
+            allNodeTree.RunActionInRange(new System.Action<Node>(AddForceToOtherNode), boundary);
         }
 
         billboardColor = Color.clear;
         BasicUpdate();
     }
 
+
+    private void AddForceToOtherNode(Node otherNode) {
+        float minSqDistForAttraction = GameManager.inst.minDistForStemAttraction * GameManager.inst.minDistForStemAttraction; // 20 * 20
+        if ((otherNode != this) && (assembly == null) && (otherNode.bonds.Count < 3) && (otherNode.transform.position - transform.position).sqrMagnitude < minSqDistForAttraction) {
+
+            // Attractive force		
+            // DEBUG - attraction is a constant.
+            Vector3 vectorAtoB = otherNode.transform.position - transform.position;
+            float sqrDistToNode = vectorAtoB.sqrMagnitude;
+            float attraction = 6f / sqrDistToNode;
+            rigidbody.AddForce(vectorAtoB.normalized * attraction);
+
+            // Attach if close enough.
+            if (sqrDistToNode <= 4f) {
+                new Bond(this, otherNode);
+            }
+        }
+    }
 
 
 
@@ -291,6 +302,11 @@ public class Node : MonoBehaviour {
     public void Destroy(){
         RemoveFromSpecificList();
         allNodes.Remove(this);
+        if (!allNodeTree.Remove(this)) {
+            allNodeTree.Maintain();
+            if (!allNodeTree.Remove(this))
+                Debug.LogError("Failed to remove Node");
+        }
 
         Destroy(gameObject);
     } // End of DestroyNode().

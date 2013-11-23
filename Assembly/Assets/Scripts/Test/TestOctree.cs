@@ -16,6 +16,9 @@ public class TestOctree {
             Debug.LogError("TestMultipleInsert Failed");
         if (!TestGetAllElements())
             Debug.LogError("TestGetAllElements Failed");
+        if (!TestMaintain())
+            Debug.LogError("TestMaintain Failed");
+        
     }
 
     static private bool TestMultipleInsert() {
@@ -38,5 +41,16 @@ public class TestOctree {
         List<TestClass> elems = new List<TestClass>();
         tree.GetElementsInRange(bounds, ref elems);
         return elems.Count == 4;
+    }
+
+    static private bool TestMaintain() {
+        Bounds bounds = new Bounds(Vector3.zero, new Vector3(100, 100, 100));
+        Octree<TestClass> tree = new Octree<TestClass>(bounds, (TestClass x) => x.pos, 1);
+        TestClass tc = new TestClass(new Vector3(1, 1, 1));
+        tree.Insert(tc);
+        tc.pos.x = -1;
+        List<TestClass> elems = new List<TestClass>();
+        tree.GetElementsInRange(new Bounds(new Vector3(-1,1,1), new Vector3(0.5f, 0.5f, 0.5f)), ref elems);
+        return elems.Count == 1;
     }
 }

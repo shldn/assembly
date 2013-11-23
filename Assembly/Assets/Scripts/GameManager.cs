@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
+
 public class GameManager : MonoBehaviour {
 	
     // Up-to-date arrays of all world elements.
@@ -10,7 +11,8 @@ public class GameManager : MonoBehaviour {
 	
     public static Prefabs prefabs; // Contains prefab transforms.
     public static GraphicsManager graphics; // Contains graphical information.
-	
+    public static GameManager inst; 
+
 	public static GUISkin readoutSkin;
 
     public TextAsset namesText;
@@ -18,12 +20,17 @@ public class GameManager : MonoBehaviour {
 
     public int numNodes = 30;
     public float nodeGenSpread = 30; // How far the nodes will be initially scattered.
+    public float minDistForStemAttraction = 10;
     public int numFoodPellets = 5;
+    public bool useOctree = true;
 
     public int numFrames = 0;
 
 
     void Start(){
+
+        inst = this;
+		
         prefabs = GetComponent<Prefabs>();
         graphics = GetComponent<GraphicsManager>();
 
@@ -63,6 +70,8 @@ public class GameManager : MonoBehaviour {
 	void Update(){
         numFrames++;
 
+        // Keep octree maintained so nodes that have moved are kept in their proper boundaries
+        Node.allNodeTree.Maintain();
 
         // Update assemblies
         for(int i = 0; i < Assembly.GetAll().Count; i++)
