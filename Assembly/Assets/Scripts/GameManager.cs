@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour {
 	
     public static Prefabs prefabs; // Contains prefab transforms.
     public static GraphicsManager graphics; // Contains graphical information.
-    public static GameManager inst; 
+    public static GameManager inst; // The current game manager instance
 
 	public static GUISkin readoutSkin;
 

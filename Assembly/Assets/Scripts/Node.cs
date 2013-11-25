@@ -62,7 +62,7 @@ public class Node : MonoBehaviour {
     public static List<Node> GetAllControl() { return controlNodes; }
     public static List<Node> GetAllStem() { return stemNodes; }
 
-    public static Octree<Node> allNodeTree = new Octree<Node>(new Bounds(Vector3.zero, new Vector3(100, 100, 100)), (Node x) => x.transform.position, 20);
+    public static Octree<Node> allNodeTree = new Octree<Node>(new Bounds(Vector3.zero, new Vector3(500, 500, 500)), (Node x) => x.transform.position, 20);
 	
 
 	void Awake(){
