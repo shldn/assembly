@@ -224,8 +224,8 @@ public class Assembly {
         // Choose some random bonds and change their destination node.
         // in this first pass it is possible for a bond to change the secondary node and then change back in another iteration.
         int attemptCount = 0; // fail safe from an infinite loop
-        int numBondsToChange = Random.Range(1, 5);
-        while (numBondsToChange > 0 && nodes.Count > 1 && attemptCount < (numBondsToChange + 100)) {
+        int numBondsToChange = 1;
+        while (numBondsToChange > 0 && nodes.Count > 2 && attemptCount < (numBondsToChange + 100)) {
             ++attemptCount;
             Node node = nodes[Random.Range(0, nodes.Count)];
             int newBondBuddyIdx = (node.assemblyIndex + Random.Range(1, nodes.Count)) % nodes.Count; // make sure it doesn't bond to itself
@@ -254,15 +254,10 @@ public class Assembly {
         }
     }
 
-    public static void SaveAll() {
-        foreach(Assembly a in GetAll())
-            a.Save();
-    }
-
 
     // Save assembly to a file. Returns the filepath.
-    public string Save(){        
-        DirectoryInfo dir = new DirectoryInfo("C:/Assembly/saves");
+    public string Save(){
+        DirectoryInfo dir = new DirectoryInfo(IOHelper.defaultSaveDir);
         FileInfo[] info = dir.GetFiles("*.*");
         int lastFileNum = 0;
         for (int t = 0; t < info.Length; t++){
@@ -271,8 +266,12 @@ public class Assembly {
             if (currentFileNum >= lastFileNum)
                 lastFileNum = currentFileNum;
         }
-        string filename = "C:/Assembly/saves/" + (lastFileNum + 1).ToString("000") + "_" + name + ".txt";
-        Debug.Log("Saving " + filename);
+        string filename = IOHelper.defaultSaveDir + (lastFileNum + 1).ToString("000") + "_" + name + ".txt";
+        return Save(filename);
+    } // End of Save().
+
+
+    public string Save(string filename) {
         System.IO.File.WriteAllText(filename, GetDNA());
         return filename;
     } // End of Save().

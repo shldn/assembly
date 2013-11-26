@@ -17,10 +17,10 @@ public class FoodPellet : MonoBehaviour {
 	}
 
 	void Update(){
-		for(int i = 0; i < Node.GetAll().Count; i++){
-            Node currentNode = Node.GetAll()[i];
-			currentNode.calories += Time.deltaTime * (3f / Mathf.Pow(Vector3.Distance(transform.position, currentNode.transform.position), 2));
-		}
+        //for(int i = 0; i < Node.GetAll().Count; i++){
+        //    Node currentNode = Node.GetAll()[i];
+        //    currentNode.calories += Time.deltaTime * (3f / Mathf.Pow(Vector3.Distance(transform.position, currentNode.transform.position), 2));
+        //}
 	}
 	
 	public void Burst(){

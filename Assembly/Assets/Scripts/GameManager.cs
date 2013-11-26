@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
+
 public class GameManager : MonoBehaviour {
 	
     // Up-to-date arrays of all world elements.
@@ -10,7 +11,8 @@ public class GameManager : MonoBehaviour {
 	
     public static Prefabs prefabs; // Contains prefab transforms.
     public static GraphicsManager graphics; // Contains graphical information.
-	
+    public static GameManager inst; // The current game manager instance
+
 	public static GUISkin readoutSkin;
 
     public TextAsset namesText;
@@ -18,12 +20,17 @@ public class GameManager : MonoBehaviour {
 
     public int numNodes = 30;
     public float nodeGenSpread = 30; // How far the nodes will be initially scattered.
+    public float minDistForStemAttraction = 10;
     public int numFoodPellets = 5;
+    public bool useOctree = true;
 
     public int numFrames = 0;
 
 
     void Start(){
+
+        inst = this;
+		
         Time.timeScale = 1f;
 
         prefabs = GetComponent<Prefabs>();
@@ -47,14 +54,12 @@ public class GameManager : MonoBehaviour {
         // Initialize 'names' array for random Assembly names to be pulled from.
         names = namesText.text.Split('\n');
 
-        // Create Assembly directory.
-        if (!System.IO.Directory.Exists("C:/Assembly")) {
+        // Create default saved assemblies directory.
+        IOHelper.CreateDefaultDirectory();
+
+        if (!System.IO.Directory.Exists("C:/Assembly"))
             System.IO.Directory.CreateDirectory("C:/Assembly");
-        }
-        // Create saved assemblies directory.
-        if (!System.IO.Directory.Exists("C:/Assembly/saves")) {
-            System.IO.Directory.CreateDirectory("C:/Assembly/saves");
-        }
+
         // Create README file.
         System.IO.File.WriteAllText("C:/Assembly/README.txt", "This is an automatically-generated directory for Assembly.\r\nUCSD Arthur C. Clarke Center 2013");
 
@@ -67,6 +72,8 @@ public class GameManager : MonoBehaviour {
 	void Update(){
         numFrames++;
 
+        // Keep octree maintained so nodes that have moved are kept in their proper boundaries
+        Node.allNodeTree.Maintain();
 
         // Update assemblies
         for(int i = 0; i < Assembly.GetAll().Count; i++)
@@ -105,14 +112,10 @@ public class GameManager : MonoBehaviour {
 	} // End of OnGUI().
 
 
-    public static void LoadDirectory(string dir) {
-        if (dir == "")
-            return;
-        ConsoleScript.NewLine("Loading directory " + dir);
-        string[] filePaths = Directory.GetFiles(dir);
-        foreach (string file in filePaths)
-            new Assembly(file);
-    } // End of LoadDirectory
+    public static void MutateAll() {
+        for (int i = 0; i < Assembly.GetAll().Count; ++i)
+            Assembly.GetAll()[i].Mutate();
+    } // End of MutateAll
 
 
     public static void ClearAll(){

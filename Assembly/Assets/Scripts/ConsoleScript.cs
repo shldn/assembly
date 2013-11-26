@@ -90,7 +90,7 @@ public class ConsoleScript : MonoBehaviour {
                 string loadAssemblyName = "";
                 int loadAssemblyNum = 0;
 
-                DirectoryInfo dir = new DirectoryInfo("C:/Assembly/saves");
+                DirectoryInfo dir = new DirectoryInfo(IOHelper.defaultSaveDir);
                 FileInfo[] info = dir.GetFiles("*.*");
                 bool foundFile = false;
 
@@ -103,14 +103,14 @@ public class ConsoleScript : MonoBehaviour {
                         string currentFileName = currentFile.Name;
                         int currentFileNum = int.Parse(currentFileName.Substring(0, 3));
                         if(currentFileNum == loadAssemblyNum){
-                            new Assembly("C:/Assembly/saves/" + currentFileName);
+                            new Assembly(IOHelper.defaultSaveDir + currentFileName);
                             NewLine("Done.");
                             foundFile = true;
                             break;
                         }
                     }
                     if(!foundFile) 
-                        NewLine("Assembly not found in C:/Assembly/saves/ at index " + loadAssemblyNum + ".");
+                        NewLine("Assembly not found in " + IOHelper.defaultSaveDir + " at index " + loadAssemblyNum + ".");
                 }
                 // Load assembly by name...
                 else if(commandArgs.Length > 0){
@@ -121,14 +121,14 @@ public class ConsoleScript : MonoBehaviour {
                         FileInfo currentFile = info[i];
                         string currentFileName = currentFile.Name;
                         if((currentFileName.Length > (loadAssemblyName.Length + 4)) && currentFileName.Substring((currentFileName.Length - loadAssemblyName.Length) - 4, loadAssemblyName.Length) == loadAssemblyName){
-                            new Assembly("C:/Assembly/saves/" + currentFileName);
+                            new Assembly(IOHelper.defaultSaveDir + currentFileName);
                             NewLine("Done.");
                             foundFile = true;
                             break;
                         }
                     }
                     if(!foundFile)
-                        NewLine("Assembly '" + loadAssemblyName + "' not found in C:/Assembly/saves/.");
+                        NewLine("Assembly '" + loadAssemblyName + "' not found in " + IOHelper.defaultSaveDir + ".");
                 }
                 else
                     NewLine("Enter a save index or Assembly name.");
@@ -137,7 +137,7 @@ public class ConsoleScript : MonoBehaviour {
 
             else if (command == "loaddir") {
                 if (commandArgs.Length > 0)
-                    GameManager.LoadDirectory(commandArgs[1]);
+                    IOHelper.LoadDirectory(commandArgs[1]);
                 else
                     NewLine("No directory path found");
                 Clear();
