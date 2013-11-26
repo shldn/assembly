@@ -16,6 +16,8 @@ public class Assembly {
     public LifeStage lifeStage = LifeStage.connect;
     public float age = 0f;
 
+    public float calories = 2f;
+
     // Creates a new assembly off of a root node.
     public Assembly(Node rootNode){
         List<Node> gotNodes = new List<Node>();
@@ -154,6 +156,9 @@ public class Assembly {
 
     public void Update(){
         age += Time.deltaTime;
+        
+        // Calorie limit is twice the number of nodes. When this point is reached, the assembly will multiply.
+        calories = Mathf.Clamp(calories, 0f, nodes.Count * 2f);
 
         // Repulsive force between nodes within assembly.
         for( int i = 0; i < nodes.Count; i++ ){
@@ -172,6 +177,18 @@ public class Assembly {
 				currentNode.rigidbody.AddForce(repulsiveForce);
 				otherNode.rigidbody.AddForce(-repulsiveForce);
             }
+        }
+
+        if(calories <= 0){
+            Vector3 centerPoint = GetCenter();
+            for(int i = 0; i < nodes.Count; i++){
+                Vector3 vecToCenter = nodes[i].transform.position - centerPoint;
+                // Bust-apart force is limited.
+                nodes[i].rigidbody.AddForce((vecToCenter.normalized * (Mathf.Clamp(5f / vecToCenter.magnitude, 0f, 5f))) * 100f);
+
+                nodes[i].bondCooldown = Random.Range(3f, 5f);
+            }
+            Disband();
         }
     } // End of Update().
 
@@ -303,18 +320,13 @@ public class Assembly {
 
         return mergedAssembly;
     } // End of Merge().
-
-
-    // Splits an assembly into two smaller assemblies.
-    public void Split(Bond splittingBond){
-        // Remove the bond and regenerate two assemblies.
-    }
     
 
     // Attaches a new node to this assembly.
     public void AddNode(Node newNode){
         nodes.Add(newNode);
         newNode.assemblyIndex = nodes.Count;
+        calories += newNode.calories;
 
         newNode.assembly = this;
     } // End of AddNode().

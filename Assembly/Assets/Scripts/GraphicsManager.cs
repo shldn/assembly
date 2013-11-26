@@ -22,7 +22,8 @@ public class GraphicsManager : MonoBehaviour {
     // Bond textures
     public Material signalBondMat;
     public Material synapseBondMat;
-    public Material synapseShareBondMat;
+    public Material synapsePropBondMat;
+    public Material thrustPropBondMat;
     public Material uselessBondMat;
 
 } // End of GraphicsManager.

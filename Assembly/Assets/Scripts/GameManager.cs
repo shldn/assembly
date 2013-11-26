@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour {
 
 
     void Start(){
+        Time.timeScale = 1f;
+
         prefabs = GetComponent<Prefabs>();
         graphics = GetComponent<GraphicsManager>();
 

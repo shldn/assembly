@@ -16,7 +16,6 @@ public class ConsoleScript : MonoBehaviour {
         string command = "";
         string[] commandArgs = new string[0];
 
-
         if(!active){
             consoleKeyCleared = false;
             if(WesInput.GetKeyDown("Open Console")){
@@ -62,6 +61,7 @@ public class ConsoleScript : MonoBehaviour {
             */
 
             // Enter a line.
+            Input.eatKeyPressOnTextFieldFocus = false;
             if(Input.GetKeyDown(KeyCode.Return)){
                 if(inputText != ""){
                     commandArgs = inputText.Split(' ');

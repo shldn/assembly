@@ -28,6 +28,7 @@ public class Node : MonoBehaviour {
 	public Vector3 muscleDirection;
 	
     // Standard colors
+    Color nodeColor = Color.clear;
 	public Color stemColor = Color.gray;
 	public Color senseColor = Color.cyan;
 	public Color controlColor = Color.blue;
@@ -74,6 +75,8 @@ public class Node : MonoBehaviour {
         // Store billboard scale so we can flip it.
         billboardTexScale = billboard.material.GetTextureScale("_MainTex");
 
+        // Default as stem node.
+        nodeColor = stemColor;
         stemNodes.Add(this);
         allNodes.Add(this);
 	} // End of Awake().
@@ -123,50 +126,59 @@ public class Node : MonoBehaviour {
     }
 
 	
-	void BasicUpdate(){
+    // Returns true if the type of the node changes.
+	bool BasicUpdate(){
+        bool nodeTypeChanged = false;
         billboard.material.SetColor("_TintColor", billboardColor);
 
+
+        // Natural calorie burn
+        if(assembly != null){
+            calories = assembly.calories / assembly.nodes.Count;
+            assembly.calories -= Time.deltaTime * 0.1f;
+        }
+        else
+            calories = 1f;
+        // Calories input/output
         calories += caloriesDelta * Time.deltaTime;
-		//calories = Mathf.Clamp(calories, 0.0f, 10.0f);
 		caloriesDelta = 0.0f;
 
         // Update node type.
         if((bonds.Count == 1) && (nodeType != NodeType.sense)){
-            renderer.material.color = senseColor;
+            nodeColor = senseColor;
             billboard.material.SetTexture("_MainTex", GameManager.graphics.senseFlare);
 
             RemoveFromSpecificList();
             nodeType = NodeType.sense;
             senseNodes.Add(this);
+            nodeTypeChanged = true;
         }
         else if((bonds.Count == 2) && (nodeType != NodeType.muscle)){
-			renderer.material.color = muscleColor;
+			nodeColor = muscleColor;
             billboard.material.SetTexture("_MainTex", GameManager.graphics.muscleFlare);
 
             RemoveFromSpecificList();
             nodeType = NodeType.muscle;
             muscleNodes.Add(this);
+            nodeTypeChanged = true;
         }
         else if((bonds.Count == 3) && (nodeType != NodeType.control)){
-            renderer.material.color = controlColor;
+            nodeColor = controlColor;
             billboard.material.SetTexture("_MainTex", GameManager.graphics.controlFlare);
 
             RemoveFromSpecificList();
             nodeType = NodeType.control;
             controlNodes.Add(this);
+            nodeTypeChanged = true;
         }
         else if(((bonds.Count == 0) || (bonds.Count > 3)) && (nodeType != NodeType.stem)){
-			renderer.material.color = stemColor;
+			nodeColor = stemColor;
 
             RemoveFromSpecificList();
             nodeType = NodeType.stem;
             stemNodes.Add(this);
+            nodeTypeChanged = true;
         }
-
-        // If calories run out, node dies.
-        if (calories <= 0.0f)
-            Destroy();
-
 
 
         // Update arc rotation and such.
@@ -188,13 +200,25 @@ public class Node : MonoBehaviour {
         }
 
 
+        // Show 'health' of the node based on calories.
+        renderer.material.color = Color.Lerp(Color.black, nodeColor, calories);
+
         // TEMP
         // Puts a limit on node speed.
         rigidbody.velocity = Vector3.ClampMagnitude(rigidbody.velocity, 10f);
-    }
+
+        // Washing machine effect
+        rigidbody.AddForce(Vector3.Cross(transform.position, Vector3.up));
+        rigidbody.AddForce(-transform.position * 0.1f);
+
+        return nodeTypeChanged;
+    } // End of BasicUpdate().
 
 
     public void SenseUpdate(){
+        if(BasicUpdate())
+            return;
+
         Vector3 viewDirection = Vector3.zero;
         if(bonds[0].nodeA == this)
             viewDirection = -bonds[0].dirAtoB;
@@ -206,6 +230,7 @@ public class Node : MonoBehaviour {
 
             for(int i = 0; i < FoodPellet.GetAll().Count; i++){
                 FoodPellet currentPellet = FoodPellet.GetAll()[i];
+                assembly.calories += (3f / Vector3.Distance(transform.position, currentPellet.transform.position)) * Time.deltaTime * 50f;
                 if(Vector3.Angle(viewDirection, currentPellet.transform.position - transform.position) < viewAngle)
                     signal += 3f / (Vector3.Distance(transform.position, currentPellet.transform.position) * 0.2f);
             }
@@ -223,11 +248,13 @@ public class Node : MonoBehaviour {
 
         // Sense node cone of vision is opposite to bond direction.
         arcDirection = Quaternion.LookRotation(viewDirection);
-        BasicUpdate();
     }
 
 
     public void ControlUpdate(){
+        if(BasicUpdate())
+            return;
+
         billboardColor = renderer.material.color;
 
         if(synapse > 0){
@@ -239,22 +266,25 @@ public class Node : MonoBehaviour {
         }
         billboardColor.a = synapse;
         synapse *= 0.9f;
-        BasicUpdate();
     }
 
 
     public void MuscleUpdate(){
+        if(BasicUpdate())
+            return;
+
         billboardColor = renderer.material.color;
         billboardColor.a = thrust;
         thrust *= 0.9f;
-        BasicUpdate();
     }
 
 
     public void StemUpdate(){
+        
         // TEMP
         // Un-bonded nodes are attracted to other nodes.
         bondCooldown -= Time.deltaTime;
+        // Eric -- here is where we need the octree optimization.
         for(int i = 0; i < allNodes.Count; i++){
             Node otherNode = allNodes[i];
 
@@ -279,6 +309,7 @@ public class Node : MonoBehaviour {
         }
 
         billboardColor = Color.clear;
+        
         BasicUpdate();
     }
 
@@ -295,6 +326,11 @@ public class Node : MonoBehaviour {
     public void Destroy(){
         RemoveFromSpecificList();
         allNodes.Remove(this);
+        if(assembly != null)
+            assembly.nodes.Remove(this);
+        DestroyBonds();
+        if(arcBillboard)
+            GameObject.Destroy(arcBillboard.gameObject);
 
         Destroy(gameObject);
     } // End of DestroyNode().

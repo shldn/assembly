@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public enum BondType {useless, signal, synapse, synapseShare}
+public enum BondType {useless, signal, synapse, synapsePropogate, thrustPropogate}
 
 
 public class Bond{
@@ -159,15 +159,27 @@ public class Bond{
         }
         else
         if((nodeA.nodeType == NodeType.control) && (nodeB.nodeType == NodeType.control)){
-            // Shared synapse bond
+            // Synapse propogation bond
             // Control <-> Control
-            bondType = BondType.synapseShare;
-            bondBillboard.renderer.material = GameManager.graphics.synapseShareBondMat;
+            bondType = BondType.synapsePropogate;
+            bondBillboard.renderer.material = GameManager.graphics.synapsePropBondMat;
 
             if(nodeA.synapse > nodeB.synapse)
                 nodeB.synapse = nodeA.synapse;
             else
                 nodeA.synapse = nodeB.synapse;
+        }
+        else
+        if((nodeA.nodeType == NodeType.muscle) && (nodeB.nodeType == NodeType.muscle)){
+            // Muscle propogation bond
+            // Muscle <-> Muscle
+            bondType = BondType.thrustPropogate;
+            bondBillboard.renderer.material = GameManager.graphics.thrustPropBondMat;
+
+            if(nodeA.thrust > nodeB.thrust)
+                nodeB.thrust = nodeA.thrust;
+            else
+                nodeA.thrust = nodeB.thrust;
         }
         else{
             // Not a functional bond.
@@ -181,8 +193,8 @@ public class Bond{
     public void Destroy() {
         nodeA.bonds.Remove(this);
         nodeB.bonds.Remove(this);
-
         allBonds.Remove(this);
+        GameObject.Destroy(bondBillboard.gameObject);
     } // End of DestroyBond().
 
     public Node GetOtherNode(Node notThisNode) {
