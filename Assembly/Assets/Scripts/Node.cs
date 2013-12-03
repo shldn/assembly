@@ -62,11 +62,13 @@ public class Node : MonoBehaviour {
     public static List<Node> GetAllMuscle() { return muscleNodes; }
     public static List<Node> GetAllControl() { return controlNodes; }
     public static List<Node> GetAllStem() { return stemNodes; }
-
-    public static Octree<Node> allNodeTree = new Octree<Node>(new Bounds(Vector3.zero, new Vector3(500, 500, 500)), (Node x) => x.transform.position, 20);
 	
+    public static Octree<Node> allNodeTree;
 
 	void Awake(){
+        if(allNodeTree == null)
+            allNodeTree = new Octree<Node>(new Bounds(Vector3.zero, new Vector3(GameManager.inst.worldSize, GameManager.inst.worldSize, GameManager.inst.worldSize)), (Node x) => x.transform.position, 20);
+
         calories = Random.Range(0.5f, 1.0f);
 		
 		// Muscle
@@ -126,6 +128,7 @@ public class Node : MonoBehaviour {
                 stemNodes.Remove(this);
                 break;
         }
+
     }
 
 	
@@ -138,7 +141,7 @@ public class Node : MonoBehaviour {
         // Natural calorie burn
         if(assembly != null){
             calories = assembly.calories / assembly.nodes.Count;
-            assembly.calories -= Time.deltaTime * 0.1f;
+            //assembly.calories -= Time.deltaTime * 0.1f;
         }
         else
             calories = 1f;
@@ -210,9 +213,43 @@ public class Node : MonoBehaviour {
         // Puts a limit on node speed.
         rigidbody.velocity = Vector3.ClampMagnitude(rigidbody.velocity, 10f);
 
-        // Washing machine effect
-        rigidbody.AddForce(Vector3.Cross(transform.position, Vector3.up));
-        rigidbody.AddForce(-transform.position * 0.1f);
+        // Bounce off of world sides.
+        Vector3 myVel = rigidbody.velocity;
+        Vector3 myPos = transform.position;
+        if((myVel.x < 0) && (transform.position.x < (GameManager.inst.worldSize * -0.5f))){
+            myVel.x *= -1;
+            myPos.x += (myPos.x - (GameManager.inst.worldSize * -0.5f)) * 2f;
+        }
+        else if((myVel.x > 0) && (transform.position.x > (GameManager.inst.worldSize * 0.5f))){
+            myVel.x *= -1;
+            myPos.x += (myPos.x - (GameManager.inst.worldSize * 0.5f)) * 2f;
+        }
+
+        if((myVel.y < 0) && (transform.position.y < (GameManager.inst.worldSize * -0.5f))){
+            myVel.y *= -1;
+            myPos.y += (myPos.y - (GameManager.inst.worldSize * -0.5f)) * 2f;
+        }
+        else if((myVel.y > 0) && (transform.position.y > (GameManager.inst.worldSize * 0.5f))){
+            myVel.y *= -1;
+            myPos.y += (myPos.y - (GameManager.inst.worldSize * 0.5f)) * 2f;
+        }
+
+        if((myVel.z < 0) && (transform.position.z < (GameManager.inst.worldSize * -0.5f))){
+            myVel.z *= -1;
+            myPos.z += (myPos.z - (GameManager.inst.worldSize * -0.5f)) * 2f;
+        }
+        else if((myVel.z > 0) && (transform.position.z > (GameManager.inst.worldSize * 0.5f))){
+            myVel.z *= -1;
+            myPos.z += (myPos.z - (GameManager.inst.worldSize * 0.5f)) * 2f;
+        }
+
+        myPos.x = Mathf.Clamp(myPos.x, GameManager.inst.worldSize * -0.5f, GameManager.inst.worldSize * 0.5f);
+        myPos.y = Mathf.Clamp(myPos.y, GameManager.inst.worldSize * -0.5f, GameManager.inst.worldSize * 0.5f);
+        myPos.z = Mathf.Clamp(myPos.z, GameManager.inst.worldSize * -0.5f, GameManager.inst.worldSize * 0.5f);
+
+        rigidbody.velocity = myVel;
+        transform.position = myPos;
+
 
         return nodeTypeChanged;
     } // End of BasicUpdate().

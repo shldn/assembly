@@ -26,4 +26,7 @@ public class GraphicsManager : MonoBehaviour {
     public Material thrustPropBondMat;
     public Material uselessBondMat;
 
+    // 'Terrarium'
+    public Transform terrariumBox;
+
 } // End of GraphicsManager.

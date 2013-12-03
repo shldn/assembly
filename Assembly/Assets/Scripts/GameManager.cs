@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour {
     public static string[] names;
 
     public int numNodes = 30;
-    public float nodeGenSpread = 30; // How far the nodes will be initially scattered.
+    public float worldSize = 100; // How far the nodes will be initially scattered.
     public float minDistForStemAttraction = 10;
     public int numFoodPellets = 5;
     public bool useOctree = true;
@@ -36,15 +36,17 @@ public class GameManager : MonoBehaviour {
         prefabs = GetComponent<Prefabs>();
         graphics = GetComponent<GraphicsManager>();
 
+        graphics.terrariumBox.localScale = Vector3.one * worldSize;
+
         // Create seeding nodes.
-        float halfNodeGenSpread = nodeGenSpread * 0.5f;
+        float halfNodeGenSpread = worldSize * 0.5f;
         for(int i = 0; i < numNodes; i++){
             Vector3 randomPos = new Vector3(Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread));
             Instantiate(prefabs.node, randomPos, Random.rotation);
         }
 
         // Create food pellets.
-        float foodPelletGenSpread = nodeGenSpread;
+        float foodPelletGenSpread = worldSize * 0.5f;
         for (int i = 0; i < numFoodPellets; i++) {
             Vector3 randomPos = new Vector3(Random.Range(-foodPelletGenSpread, foodPelletGenSpread), Random.Range(-foodPelletGenSpread, foodPelletGenSpread), Random.Range(-foodPelletGenSpread, foodPelletGenSpread));
             Instantiate(prefabs.foodPellet, randomPos, Random.rotation);
