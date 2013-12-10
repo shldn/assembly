@@ -29,6 +29,7 @@ public class WesInput : MonoBehaviour{
 
 	    keys[ "Add Node" ] = KeyCode.Alpha1;
 	    keys[ "Remove Node" ] = KeyCode.Alpha2;
+        keys[ "Replicate Assembly" ] = KeyCode.R;
 
         keys[ "Disband Assembly" ] = KeyCode.Delete;
 

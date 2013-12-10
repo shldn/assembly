@@ -336,6 +336,10 @@ public class CameraControl : MonoBehaviour {
             entityInfo += "Number of nodes: " + selectedAssembly.nodes.Count + "\n";
             entityInfo += "Age: " + Mathf.FloorToInt(selectedAssembly.age) + " sec\n";
             entityInfo += "Stage: " + selectedAssembly.lifeStage.ToString() + "\n";
+            entityInfo += "\n";
+            entityInfo += "Calories: " + selectedAssembly.calories.ToString("F2") + "\n";
+            entityInfo += "Health: " + ((selectedAssembly.calories / selectedAssembly.nodes.Count) * 100).ToString("F0") + "%\n";
+            entityInfo += "Calorie intake/burn: " + selectedAssembly.averageDeltaCalories.ToString("F2") + "/sec\n";
         }
 
         GUI.Label(entityDetailRect, entityInfo);

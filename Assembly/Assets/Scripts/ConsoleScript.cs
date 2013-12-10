@@ -41,6 +41,9 @@ public class ConsoleScript : MonoBehaviour {
 
             if(WesInput.GetKeyDown("Reload Application"))
                 command = "reload";
+
+            if(WesInput.GetKeyDown("Replicate Assembly"))
+                command = "replicate";
         }
         else if(active){
             /*
@@ -250,6 +253,17 @@ public class ConsoleScript : MonoBehaviour {
                 foreach (KeyValuePair<string, KeyCode> item in WesInput.keys) {
                     lines.Add(item.Key + " [" + item.Value + "]");
                 }
+                Clear();
+            }
+
+            else if (command == "replicate") {
+                if (selectedAssembly != null) {
+                    lines.Add("Replicated " + selectedAssembly.name + ".");
+                    selectedAssembly.Replicate();
+                }
+                else
+                    lines.Add("Select an assembly first!");
+
                 Clear();
             }
 

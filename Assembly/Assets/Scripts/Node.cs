@@ -65,6 +65,7 @@ public class Node : MonoBehaviour {
 	
     public static Octree<Node> allNodeTree;
 
+
 	void Awake(){
         if(allNodeTree == null)
             allNodeTree = new Octree<Node>(new Bounds(Vector3.zero, new Vector3(GameManager.inst.worldSize, GameManager.inst.worldSize, GameManager.inst.worldSize)), (Node x) => x.transform.position, 20);
@@ -141,7 +142,7 @@ public class Node : MonoBehaviour {
         // Natural calorie burn
         if(assembly != null){
             calories = assembly.calories / assembly.nodes.Count;
-            //assembly.calories -= Time.deltaTime * 0.1f;
+            assembly.calories -= Time.deltaTime * 0.1f;
         }
         else
             calories = 1f;
@@ -270,7 +271,7 @@ public class Node : MonoBehaviour {
 
             for(int i = 0; i < FoodPellet.GetAll().Count; i++){
                 FoodPellet currentPellet = FoodPellet.GetAll()[i];
-                assembly.calories += (3f / Vector3.Distance(transform.position, currentPellet.transform.position)) * Time.deltaTime * 50f;
+                assembly.calories += (0.5f / Mathf.Pow(Vector3.Distance(transform.position, currentPellet.transform.position), 2)) * Time.deltaTime * 50f;
                 if(Vector3.Angle(viewDirection, currentPellet.transform.position - transform.position) < viewAngle)
                     signal += 3f / (Vector3.Distance(transform.position, currentPellet.transform.position) * 0.2f);
             }

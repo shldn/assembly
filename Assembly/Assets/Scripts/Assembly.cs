@@ -11,12 +11,16 @@ public class Assembly {
     public static List<Assembly> GetAll() { return allAssemblies; }
 
     public string name;
-    public List<Node> nodes;
+    public List<Node> nodes = new List<Node>();
 
     public LifeStage lifeStage = LifeStage.connect;
     public float age = 0f;
 
     public float calories = 2f;
+    float lastCalories = 0f; // Calories from last frame; used to determine deltaCalories.
+
+    public float averageDeltaCalories = 0f;
+    
 
     // Creates a new assembly off of a root node.
     public Assembly(Node rootNode){
@@ -190,6 +194,15 @@ public class Assembly {
             }
             Disband();
         }
+
+
+        // Average calorie burn/intake
+        float deltaCalories = (calories - lastCalories) / Time.deltaTime;
+        averageDeltaCalories = (averageDeltaCalories + deltaCalories) * 0.5f;
+        lastCalories = calories;
+
+        // Reproduction
+
     } // End of Update().
 
 
@@ -319,12 +332,39 @@ public class Assembly {
 
         return mergedAssembly;
     } // End of Merge().
+
+
+    // Creates a copy of an assembly right on top of this one.
+    public Assembly Replicate(){
+        Assembly newAssembly = new Assembly();
+        for(int i = 0; i < nodes.Count; i++){
+            GameObject newNodeGO = Object.Instantiate(GameManager.prefabs.node, nodes[i].transform.position, Quaternion.identity) as GameObject;
+            Node newNode = newNodeGO.GetComponent<Node>();
+            newNode.assembly = newAssembly;
+            newNode.assemblyIndex = nodes[i].assemblyIndex;
+            MonoBehaviour.print(newAssembly);
+            MonoBehaviour.print(newNode);
+            newAssembly.nodes.Add(newNode);
+        }
+        for(int i = 0; i < nodes.Count; i++){
+            Node curNode = nodes[i];
+            Node curNewNode = newAssembly.nodes[i];
+            curNewNode.rigidbody.velocity = curNode.rigidbody.velocity;
+            for(int j = 0; j < curNode.bonds.Count; j++){
+                Bond curBond = curNode.bonds[j];
+                if(curBond.nodeA == curNode)
+                    new Bond(curNewNode, newAssembly.nodes[curBond.nodeB.assemblyIndex]);
+            }
+        }
+        newAssembly.calories = calories;
+        return newAssembly;
+    } // End of Replicate().
     
 
     // Attaches a new node to this assembly.
     public void AddNode(Node newNode){
         nodes.Add(newNode);
-        newNode.assemblyIndex = nodes.Count;
+        newNode.assemblyIndex = nodes.Count - 1;
         calories += newNode.calories;
 
         newNode.assembly = this;

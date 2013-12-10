@@ -26,7 +26,7 @@ public class FoodPellet : MonoBehaviour {
 	public void Burst(){
 		for(int i = 0; i < Node.GetAll().Count; i++){
             Node currentNode = Node.GetAll()[i];
-			currentNode.calories += 30f / Mathf.Pow(Vector3.Distance(transform.position, currentNode.transform.position), 2);
+			currentNode.calories += 10f / Mathf.Pow(Vector3.Distance(transform.position, currentNode.transform.position), 2);
 		}
 		Destroy(gameObject);
 	}
