@@ -196,6 +196,11 @@ public class Assembly {
         }
 
 
+        // This loops way too many times when something hits the doubling mark.
+        if(calories >= (nodes.Count * 2))
+            Replicate();
+
+
         // Average calorie burn/intake
         float deltaCalories = (calories - lastCalories) / Time.deltaTime;
         averageDeltaCalories = (averageDeltaCalories + deltaCalories) * 0.5f;
@@ -337,13 +342,14 @@ public class Assembly {
     // Creates a copy of an assembly right on top of this one.
     public Assembly Replicate(){
         Assembly newAssembly = new Assembly();
+
+        Vector3 randomSplitForce = Random.rotation * Vector3.forward * 50f;
+
         for(int i = 0; i < nodes.Count; i++){
             GameObject newNodeGO = Object.Instantiate(GameManager.prefabs.node, nodes[i].transform.position, Quaternion.identity) as GameObject;
             Node newNode = newNodeGO.GetComponent<Node>();
             newNode.assembly = newAssembly;
             newNode.assemblyIndex = nodes[i].assemblyIndex;
-            MonoBehaviour.print(newAssembly);
-            MonoBehaviour.print(newNode);
             newAssembly.nodes.Add(newNode);
         }
         for(int i = 0; i < nodes.Count; i++){
@@ -355,8 +361,15 @@ public class Assembly {
                 if(curBond.nodeA == curNode)
                     new Bond(curNewNode, newAssembly.nodes[curBond.nodeB.assemblyIndex]);
             }
+
+            // Propel old assembly and new assembly away from each other.
+            curNode.rigidbody.AddForce(randomSplitForce);
+            curNewNode.rigidbody.AddForce(-randomSplitForce);
         }
-        newAssembly.calories = calories;
+
+        newAssembly.calories = calories * 0.5f;
+        calories *= 0.5f;
+        AudioSource.PlayClipAtPoint(SoundManager.inst.replicate, newAssembly.GetCenter());
         return newAssembly;
     } // End of Replicate().
     

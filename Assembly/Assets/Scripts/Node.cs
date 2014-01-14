@@ -271,7 +271,9 @@ public class Node : MonoBehaviour {
 
             for(int i = 0; i < FoodPellet.GetAll().Count; i++){
                 FoodPellet currentPellet = FoodPellet.GetAll()[i];
-                assembly.calories += (0.5f / Mathf.Pow(Vector3.Distance(transform.position, currentPellet.transform.position), 2)) * Time.deltaTime * 50f;
+                float caloriesTaken = (0.5f / Mathf.Pow(Vector3.Distance(transform.position, currentPellet.transform.position), 2)) * Time.deltaTime * 50f;
+                assembly.calories += caloriesTaken;
+                currentPellet.calories -= caloriesTaken;
                 if(Vector3.Angle(viewDirection, currentPellet.transform.position - transform.position) < viewAngle)
                     signal += 3f / (Vector3.Distance(transform.position, currentPellet.transform.position) * 0.2f);
             }
