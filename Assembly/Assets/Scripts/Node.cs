@@ -2,434 +2,119 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public enum NodeType {stem, sense, control, muscle}
+public class Node {
 
-public class Node : MonoBehaviour {
+    public static List<Node> allNodes = new List<Node>();
 
-	public string nodeName = "Node";
-	public NodeType nodeType = NodeType.stem;
+    public Vector3 worldPosition = Vector3.zero;
+    public IntVector3 localHexPosition = IntVector3.zero;
+    public Quaternion orientation = Quaternion.identity;
 
-    public List<Bond> bonds = new List<Bond>();
-    public int BondCount() { return bonds.Count; }
+    public float sensitivity = 1f;
+    
+    public Assembly assembly = null;
+    public List<Node> bondedNodes = new List<Node>();
 
-    // Amount of 'energy' the node has.
-    public float calories;
-	public float caloriesDelta;
-	
-	// Attributes
-	public float signal;
-	public float synapse;
-    public float thrust;
+    public GameObject gameObject = null;
+    public GameObject senseFieldBillboard = null;
+    float arcScale = 5f;
 
-    float viewAngle = 25f;
-	
-	// Muscle attributes
-	public float muscleStrength;
-	public Vector3 muscleDirection;
-	
-    // Standard colors
-    Color nodeColor = Color.clear;
-	public Color stemColor = Color.gray;
-	public Color senseColor = Color.cyan;
-	public Color controlColor = Color.blue;
-	public Color muscleColor = Color.red;
+    public static Color stemColor = new Color(0.4f, 0.4f, 0.4f, 1f);
+    public static Color senseColor = new Color(0.64f, 0.8f, 0.44f, 1f);
+    public static Color actuatorColor = new Color(0.62f, 0.18f, 0.18f, 1f);
+    public static Color controlColor = new Color(0.35f, 0.59f, 0.84f, 1f);
 
-    public Assembly assembly;
-    public int assemblyIndex;
-	
-    Color billboardColor = Color.clear;
-    public Renderer billboard;
-    Vector2 billboardTexScale = Vector2.one;
-
-    float arcScale = 8f;
-    public Transform arcBillboard;
-    public Quaternion arcDirection = Random.rotation;
+    public int numNeighbors = 0;
 
 
-    // Prevents nodes from immediately re-bonding after being disbanded from an assembly.
-    public float bondCooldown = 0;
-
-    private static List<Node> allNodes = new List<Node>();
-
-    private static List<Node> senseNodes = new List<Node>();
-    private static List<Node> muscleNodes = new List<Node>();
-    private static List<Node> controlNodes = new List<Node>();
-    private static List<Node> stemNodes = new List<Node>();
-
-    public static List<Node> GetAll() { return allNodes; }
-
-    public static List<Node> GetAllSense() { return senseNodes; }
-    public static List<Node> GetAllMuscle() { return muscleNodes; }
-    public static List<Node> GetAllControl() { return controlNodes; }
-    public static List<Node> GetAllStem() { return stemNodes; }
-	
-    public static Octree<Node> allNodeTree;
+    public static implicit operator bool(Node exists){
+        return exists != null;
+    }
 
 
-	void Awake(){
-        if(allNodeTree == null)
-            allNodeTree = new Octree<Node>(new Bounds(Vector3.zero, new Vector3(GameManager.inst.worldSize, GameManager.inst.worldSize, GameManager.inst.worldSize)), (Node x) => x.transform.position, 20);
+    // Constructors
+	public Node(){
+        Initialize();
+    }
+	public Node(IntVector3 hexPos){
+        localHexPosition = hexPos;
+        worldPosition = HexUtilities.HexToWorld(localHexPosition);
+        Initialize();
+    }
+    public Node(Vector3 worldPos){
+        worldPosition = worldPos;
+        Initialize();
+    }
 
-        calories = Random.Range(0.5f, 1.0f);
-		
-		// Muscle
-		// Randomize the actuation direction
-		muscleStrength = Random.Range(1f, 5f);
-		muscleDirection = Random.rotation * Vector3.forward;
+    // Set-up of basic Node stuff.
+    private void Initialize(){
+        // Initialize graphic
+        gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
+        // Randomize attributes
+        orientation = Random.rotation;
+        sensitivity = Random.Range(0f, 1f);
 
-        // Store billboard scale so we can flip it.
-        billboardTexScale = billboard.material.GetTextureScale("_MainTex");
-
-        // Default as stem node.
-        nodeColor = stemColor;
-        stemNodes.Add(this);
         allNodes.Add(this);
-        allNodeTree.Insert(this);
-	} // End of Awake().
+    } // End of Initialize().
 
 
-    // Creates the 'arc billboard' for view cones, etc.
-    void MakeArcBillboard(){
-        if(!arcBillboard){
-            GameObject arcBillboardGO = new GameObject();
-            arcBillboardGO.name = "ArcBillboard";
-            arcBillboardGO.AddComponent<MeshFilter>();
-            arcBillboardGO.GetComponent<MeshFilter>().mesh = GameManager.graphics.twoPolyPlane;
-            arcBillboardGO.AddComponent<MeshRenderer>();
-            arcBillboardGO.renderer.material = GameManager.graphics.senseArcMat;
-            arcBillboard = arcBillboardGO.transform;
-            arcBillboard.position = transform.position;
-            arcBillboard.localScale = Vector3.one * arcScale;
-        }
-    }
+    public void UpdateTransform(){
+        if(assembly){
+            worldPosition = assembly.worldPosition + (assembly.worldRotation * HexUtilities.HexToWorld(localHexPosition));
 
-
-    // Gets rid of the 'arc billboard.'
-    void RemoveArcBillboard(){
-        if(arcBillboard){
-            Destroy(arcBillboard.gameObject);
-            arcBillboard = null;
-        }
-    }
-
-
-    // Removes the node from its type-specific array.
-    void RemoveFromSpecificList(){
-        switch(nodeType){
-            case NodeType.sense :
-                senseNodes.Remove(this);
-                break;
-            case NodeType.muscle :
-                muscleNodes.Remove(this);
-                break;
-            case NodeType.control :
-                controlNodes.Remove(this);
-                break;
-            case NodeType.stem :
-                stemNodes.Remove(this);
-                break;
+            // Update physical location
+            gameObject.transform.position = worldPosition;
         }
 
-    }
-
-	
-    // Returns true if the type of the node changes.
-	bool BasicUpdate(){
-        bool nodeTypeChanged = false;
-        billboard.material.SetColor("_TintColor", billboardColor);
+        // Update arc rotation and such. 
+        if(senseFieldBillboard){
+            senseFieldBillboard.transform.position = worldPosition + ((orientation * assembly.worldRotation) * (Vector3.forward * arcScale));
+            senseFieldBillboard.transform.localScale = Vector3.one * arcScale;
 
 
-        // Natural calorie burn
-        if(assembly != null){
-            calories = assembly.calories / assembly.nodes.Count;
-            assembly.calories -= Time.deltaTime * 0.1f;
-        }
-        else
-            calories = 1f;
-        // Calories input/output
-        calories += caloriesDelta * Time.deltaTime;
-		caloriesDelta = 0.0f;
+            Color tempColor = senseFieldBillboard.renderer.material.GetColor("_TintColor");
+            tempColor.a = sensitivity;
+            senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
 
-        // Update node type.
-        if((bonds.Count == 1) && (nodeType != NodeType.sense)){
-            nodeColor = senseColor;
-            billboard.material.SetTexture("_MainTex", GameManager.graphics.senseFlare);
-
-            RemoveFromSpecificList();
-            nodeType = NodeType.sense;
-            senseNodes.Add(this);
-            nodeTypeChanged = true;
-        }
-        else if((bonds.Count == 2) && (nodeType != NodeType.muscle)){
-			nodeColor = muscleColor;
-            billboard.material.SetTexture("_MainTex", GameManager.graphics.muscleFlare);
-
-            RemoveFromSpecificList();
-            nodeType = NodeType.muscle;
-            muscleNodes.Add(this);
-            nodeTypeChanged = true;
-        }
-        else if((bonds.Count == 3) && (nodeType != NodeType.control)){
-            nodeColor = controlColor;
-            billboard.material.SetTexture("_MainTex", GameManager.graphics.controlFlare);
-
-            RemoveFromSpecificList();
-            nodeType = NodeType.control;
-            controlNodes.Add(this);
-            nodeTypeChanged = true;
-        }
-        else if(((bonds.Count == 0) || (bonds.Count > 3)) && (nodeType != NodeType.stem)){
-			nodeColor = stemColor;
-
-            RemoveFromSpecificList();
-            nodeType = NodeType.stem;
-            stemNodes.Add(this);
-            nodeTypeChanged = true;
-        }
-
-
-        // Update arc rotation and such.
-        if(arcBillboard){
-            billboard.material.SetColor("_TintColor", billboardColor);
 
             // The following code billboards the arc with the main camera.
-            arcBillboard.rotation = arcDirection;
-            arcBillboard.position = transform.position + (arcDirection * (Vector3.forward * (0.5f * arcScale)));
-            arcBillboard.rotation *= Quaternion.AngleAxis(90, Vector3.up);
+            senseFieldBillboard.transform.rotation = orientation;
+            senseFieldBillboard.transform.position = worldPosition + (orientation * (Vector3.forward * (0.5f * arcScale)));
+            senseFieldBillboard.transform.rotation *= Quaternion.AngleAxis(90, Vector3.up);
 
-            Vector3 camRelativePos = arcBillboard.InverseTransformPoint(Camera.main.transform.position);
+            Vector3 camRelativePos = senseFieldBillboard.transform.InverseTransformPoint(Camera.main.transform.position);
             float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
 
-            arcBillboard.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
-
-            if(nodeType != NodeType.sense)
-                RemoveArcBillboard();
+            senseFieldBillboard.transform.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
         }
 
 
-        // Show 'health' of the node based on calories.
-        renderer.material.color = Color.Lerp(Color.black, nodeColor, calories);
-
-        // TEMP
-        // Puts a limit on node speed.
-        rigidbody.velocity = Vector3.ClampMagnitude(rigidbody.velocity, 10f);
-
-        // Bounce off of world sides.
-        Vector3 myVel = rigidbody.velocity;
-        Vector3 myPos = transform.position;
-        if((myVel.x < 0) && (transform.position.x < (GameManager.inst.worldSize * -0.5f))){
-            myVel.x *= -1;
-            myPos.x += (myPos.x - (GameManager.inst.worldSize * -0.5f)) * 2f;
-        }
-        else if((myVel.x > 0) && (transform.position.x > (GameManager.inst.worldSize * 0.5f))){
-            myVel.x *= -1;
-            myPos.x += (myPos.x - (GameManager.inst.worldSize * 0.5f)) * 2f;
-        }
-
-        if((myVel.y < 0) && (transform.position.y < (GameManager.inst.worldSize * -0.5f))){
-            myVel.y *= -1;
-            myPos.y += (myPos.y - (GameManager.inst.worldSize * -0.5f)) * 2f;
-        }
-        else if((myVel.y > 0) && (transform.position.y > (GameManager.inst.worldSize * 0.5f))){
-            myVel.y *= -1;
-            myPos.y += (myPos.y - (GameManager.inst.worldSize * 0.5f)) * 2f;
-        }
-
-        if((myVel.z < 0) && (transform.position.z < (GameManager.inst.worldSize * -0.5f))){
-            myVel.z *= -1;
-            myPos.z += (myPos.z - (GameManager.inst.worldSize * -0.5f)) * 2f;
-        }
-        else if((myVel.z > 0) && (transform.position.z > (GameManager.inst.worldSize * 0.5f))){
-            myVel.z *= -1;
-            myPos.z += (myPos.z - (GameManager.inst.worldSize * 0.5f)) * 2f;
-        }
-
-        myPos.x = Mathf.Clamp(myPos.x, GameManager.inst.worldSize * -0.5f, GameManager.inst.worldSize * 0.5f);
-        myPos.y = Mathf.Clamp(myPos.y, GameManager.inst.worldSize * -0.5f, GameManager.inst.worldSize * 0.5f);
-        myPos.z = Mathf.Clamp(myPos.z, GameManager.inst.worldSize * -0.5f, GameManager.inst.worldSize * 0.5f);
-
-        rigidbody.velocity = myVel;
-        transform.position = myPos;
 
 
-        return nodeTypeChanged;
-    } // End of BasicUpdate().
+        if((numNeighbors != 1) && senseFieldBillboard)
+            GameObject.Destroy(senseFieldBillboard);
 
-
-    public void SenseUpdate(){
-        if(BasicUpdate())
-            return;
-
-        Vector3 viewDirection = Vector3.zero;
-        if(bonds[0].nodeA == this)
-            viewDirection = -bonds[0].dirAtoB;
-        else
-            viewDirection = bonds[0].dirAtoB;
-
-        signal = 0f;
-        if(bonds[0].bondType == BondType.signal){
-
-            for(int i = 0; i < FoodPellet.GetAll().Count; i++){
-                FoodPellet currentPellet = FoodPellet.GetAll()[i];
-                float caloriesTaken = (0.5f / Mathf.Pow(Vector3.Distance(transform.position, currentPellet.transform.position), 2)) * Time.deltaTime * 50f;
-                assembly.calories += caloriesTaken;
-                currentPellet.calories -= caloriesTaken;
-                if(Vector3.Angle(viewDirection, currentPellet.transform.position - transform.position) < viewAngle)
-                    signal += 3f / (Vector3.Distance(transform.position, currentPellet.transform.position) * 0.2f);
-            }
-
-            if(!arcBillboard)
-                MakeArcBillboard();
-        }
-        else{
-            if(arcBillboard)
-                RemoveArcBillboard();
-        }
-
-        billboardColor = renderer.material.color;
-        billboardColor.a = signal;
-
-        // Sense node cone of vision is opposite to bond direction.
-        arcDirection = Quaternion.LookRotation(viewDirection);
-    }
-
-
-    public void ControlUpdate(){
-        if(BasicUpdate())
-            return;
-
-        billboardColor = renderer.material.color;
-
-        if(synapse > 0){
-            billboard.material.SetTextureScale("_MainTex", billboardTexScale);
-        }
-        // Invert billboard color and texture scale if synapse is negative.
-        else{
-            billboard.material.SetTextureScale("_MainTex", billboardTexScale * -1f);
-        }
-        billboardColor.a = synapse;
-        synapse *= 0.9f;
-    }
-
-
-    public void MuscleUpdate(){
-        if(BasicUpdate())
-            return;
-
-        billboardColor = renderer.material.color;
-        billboardColor.a = thrust;
-        thrust *= 0.9f;
-    }
-
-
-    public void StemUpdate(){
-        bondCooldown -= Time.deltaTime;
-
-        // TEMP
-        if (!GameManager.inst.useOctree) {
-            for (int i = 0; i < allNodes.Count; i++)
-                AddForceToOtherNode(allNodes[i]);
-        }
-        else {
-            Bounds boundary = new Bounds(this.transform.position, GameManager.inst.minDistForStemAttraction * (new Vector3(1,1,1)));
-            allNodeTree.RunActionInRange(new System.Action<Node>(AddForceToOtherNode), boundary);
-        }
-
-        billboardColor = Color.clear;
-        BasicUpdate();
-    }
-
-
-    private void AddForceToOtherNode(Node otherNode) {
-        float minSqDistForAttraction = GameManager.inst.minDistForStemAttraction * GameManager.inst.minDistForStemAttraction; // 20 * 20
-        if ((otherNode != this) && (assembly == null) && (otherNode.bonds.Count < 3) && (otherNode.transform.position - transform.position).sqrMagnitude < minSqDistForAttraction) {
-
-            // Attractive force		
-            // DEBUG - attraction is a constant.
-            Vector3 vectorAtoB = otherNode.transform.position - transform.position;
-            float sqrDistToNode = vectorAtoB.sqrMagnitude;
-            float attraction = 6f / sqrDistToNode;
-            rigidbody.AddForce(vectorAtoB.normalized * attraction);
-
-            // Attach if close enough.
-            if (sqrDistToNode <= 4f) {
-                new Bond(this, otherNode);
-            }
-        }
-    }
-
-
-
-    public string GetDNAInfo() {
-        string dnaInfo = "";
-        dnaInfo += nodeType.ToString()[0];
-        return dnaInfo;
-    }
+        if((numNeighbors == 1) && !senseFieldBillboard)
+            senseFieldBillboard = GameObject.Instantiate(PrefabManager.Inst.billboard, worldPosition, Quaternion.identity) as GameObject;
+    } // End of UpdateTransform(). 
 
 
     public void Destroy(){
-        RemoveFromSpecificList();
+        if(gameObject)
+            GameObject.Destroy(gameObject);
+        if(senseFieldBillboard)
+            GameObject.Destroy(senseFieldBillboard);
+        if(assembly)
+            assembly.RemoveNode(this);
+
         allNodes.Remove(this);
-        if (!allNodeTree.Remove(this)) {
-            allNodeTree.Maintain();
-            if (!allNodeTree.Remove(this))
-                Debug.LogError("Failed to remove Node");
-        }
-        if(assembly != null)
-            assembly.nodes.Remove(this);
-        DestroyBonds();
-        if(arcBillboard)
-            GameObject.Destroy(arcBillboard.gameObject);
-
-        Destroy(gameObject);
-    } // End of DestroyNode().
-
-    public void DestroyBonds() {
-        for(int i=0; i < bonds.Count; ++i)
-            bonds[i].Destroy();
-    }
+    } // End of Destroy().
 
 
-    public bool BondedTo(Node otherNode){
-        return GetBondTo(otherNode) != null;
-    }
-
-
-    public Bond GetBondTo(Node otherNode){
-        for(int j = 0; j < bonds.Count; j++){
-            Bond currentBond = bonds[j];
-            if(((currentBond.nodeA == otherNode) || (currentBond.nodeB == otherNode)) && (otherNode != this))
-                return currentBond;
-        }
-        return null;
-    }
-
-
-    // This count includes the this node
-    public int NumNodesAttached() {
-        HashSet<Node> visited = new HashSet<Node>();
-        // dfs - depth first search
-        NodesAttached(visited);
-        return visited.Count;
-    }
-
-
-    // This includes the this node
-    public HashSet<Node> GetNodesAttached() {
-        HashSet<Node> visited = new HashSet<Node>();
-        NodesAttached(visited);
-        return visited;
-    }
-
-
-    // This includes the this node
-    private void NodesAttached(HashSet<Node> visited) {
-        visited.Add(this);
-        for (int i = 0; i < bonds.Count; ++i) {
-            if( !visited.Contains(bonds[i].nodeA) )
-                bonds[i].nodeA.NodesAttached(visited);
-            if( !visited.Contains(bonds[i].nodeB) )
-                bonds[i].nodeB.NodesAttached(visited);
-        }
-    }
+    // Randomly 'mutates' the node's values. A deviation of 1 will completely randomize the node.
+    public void Mutate(float deviation){
+        orientation *= Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward);
+        sensitivity = Mathf.Lerp(sensitivity, Random.Range(0f, 1f), Random.Range(0f, deviation));
+    } // End of Mutate().
+    
 } // End of Node.

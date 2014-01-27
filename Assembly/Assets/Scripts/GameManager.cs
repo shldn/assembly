@@ -1,133 +1,84 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-
 
 public class GameManager : MonoBehaviour {
-	
-    // Up-to-date arrays of all world elements.
-	public static FoodPellet[] allFoodPellets = new FoodPellet[0];
-	
-    public static Prefabs prefabs; // Contains prefab transforms.
-    public static GraphicsManager graphics; // Contains graphical information.
-    public static GameManager inst; // The current game manager instance
 
-	public static GUISkin readoutSkin;
+    IntVector3 crawlerPos = IntVector3.zero;
 
-    public TextAsset namesText;
-    public static string[] names;
+    Node lastNode = null;
 
-    public int numNodes = 30;
-    public float worldSize = 100; // How far the nodes will be initially scattered.
-    public float minDistForStemAttraction = 10;
-    public int numFoodPellets = 5;
-    public bool useOctree = true;
+	void Start(){
+        // Generate random assemblies
+        int numAssemblies = 1;
+        for(int i = 0; i < numAssemblies; i++){
+            Assembly newAssembly = new Assembly();
+            newAssembly.worldPosition = MathUtilities.RandomVector3Sphere(20f);
 
-    public int numFrames = 0;
+            newAssembly.worldRotationVel = Random.rotation;
 
+            // Generate a random color for the assembly.
+            float colorMin = 0.3f;
+            float colorMax = 0.6f;
+            Color assemblyColor = new Color(Random.Range(colorMin, colorMax), Random.Range(colorMin, colorMax), Random.Range(colorMin, colorMax));
+            newAssembly.color = assemblyColor;
 
-    void Start(){
+            // Generate a random structure of nodes for the Assembly.
+            crawlerPos = IntVector3.zero;
+            int numNodes = 1;
+            for(int j = 0; j < numNodes; j++){
+                Node newNode = new Node();
 
-        inst = this;
-		
-        Time.timeScale = 1f;
+                newNode.localHexPosition = crawlerPos;
+                newAssembly.AddNode(newNode);
 
-        prefabs = GetComponent<Prefabs>();
-        graphics = GetComponent<GraphicsManager>();
+                newNode.gameObject.renderer.material.color = assemblyColor;
 
-        graphics.terrariumBox.localScale = Vector3.one * worldSize;
-
-        // Create seeding nodes.
-        float halfNodeGenSpread = worldSize * 0.5f;
-        for(int i = 0; i < numNodes; i++){
-            Vector3 randomPos = new Vector3(Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread));
-            Instantiate(prefabs.node, randomPos, Random.rotation);
+                crawlerPos += HexUtilities.RandomAdjacent();
+            }
         }
 
-        // Create food pellets.
-        float foodPelletGenSpread = worldSize * 0.5f;
-        for (int i = 0; i < numFoodPellets; i++) {
-            Vector3 randomPos = new Vector3(Random.Range(-foodPelletGenSpread, foodPelletGenSpread), Random.Range(-foodPelletGenSpread, foodPelletGenSpread), Random.Range(-foodPelletGenSpread, foodPelletGenSpread));
-            Instantiate(prefabs.foodPellet, randomPos, Random.rotation);
+	} // End of Start().
+
+    void Update(){
+
+        for(int i = 0; i < Assembly.allAssemblies.Count; i++){
+            // Only mutate nodes.
+            if(Input.GetKeyDown(KeyCode.B)){
+                for(int j = 0; j < Assembly.allAssemblies[i].nodes.Count; j++){
+                    Assembly.allAssemblies[i].nodes[j].Mutate(0.1f);
+                }
+            }
+
+            // Add a node.
+            if(Input.GetKeyDown(KeyCode.N))
+                Assembly.allAssemblies[i].AddRandomNode();
+
+            // Remove a node.
+            if(Input.GetKeyDown(KeyCode.M))
+                Assembly.allAssemblies[i].RemoveRandomNode();
+
+            if(Input.GetKeyDown(KeyCode.Space))
+                Assembly.allAssemblies[i].Mutate(0.1f);
+            
+
+            Assembly.allAssemblies[i].UpdateTransform();
         }
 
+        for(int i = 0; i < Node.allNodes.Count; i++)
+            Node.allNodes[i].UpdateTransform();
+        
 
-        // Initialize 'names' array for random Assembly names to be pulled from.
-        names = namesText.text.Split('\n');
 
-        // Create default saved assemblies directory.
-        IOHelper.CreateDefaultDirectory();
+        if(Input.GetKeyDown(KeyCode.C)){
+            List<Node> assemblyNodes = new List<Node>();
+            for(int i = 0; i < Assembly.allAssemblies[0].nodes.Count; i++)
+                assemblyNodes.Add(Assembly.allAssemblies[0].nodes[i]);
 
-        if (!System.IO.Directory.Exists("C:/Assembly"))
-            System.IO.Directory.CreateDirectory("C:/Assembly");
+            print(assemblyNodes.Count);
 
-        // Create README file.
-        System.IO.File.WriteAllText("C:/Assembly/README.txt", "This is an automatically-generated directory for Assembly.\r\nUCSD Arthur C. Clarke Center 2013");
-
-        if (BatchModeManager.Inst.InBatchMode) {
-            Debug.Log("Batch Mode!");
+            print(Assembly.allAssemblies[0].CountAllNeighborsRecursive(Node.allNodes[Random.Range(0, Node.allNodes.Count)], assemblyNodes));
         }
-    } // End of Awake().
 
-
-	void Update(){
-        numFrames++;
-
-        // Keep octree maintained so nodes that have moved are kept in their proper boundaries
-        Node.allNodeTree.Maintain();
-
-        // Update assemblies
-        for(int i = 0; i < Assembly.GetAll().Count; i++)
-            Assembly.GetAll()[i].Update();
-
-        // Update nodes
-        for(int i = 0; i < Node.GetAllSense().Count; i++)
-            Node.GetAllSense()[i].SenseUpdate();
-        for(int i = 0; i < Node.GetAllControl().Count; i++)
-            Node.GetAllControl()[i].ControlUpdate();
-        for(int i = 0; i < Node.GetAllMuscle().Count; i++)
-            Node.GetAllMuscle()[i].MuscleUpdate();
-        for(int i = 0; i < Node.GetAllStem().Count; i++)
-            Node.GetAllStem()[i].StemUpdate();
-
-        // Update bonds
-        for(int i = 0; i < Bond.GetAll().Count; i++)
-            Bond.GetAll()[i].Update();
-
-	} // End of Update().
-
-
-    void OnGUI(){
-		GUI.skin = readoutSkin;
-        GUI.skin.label.alignment = TextAnchor.UpperLeft;
-
-        // Header information.
-		string readout = "";
-        readout += "'Assembly'\n";
-		readout += "UCSD Arthur C. Clarke Center 2013\n";
-		readout += Node.GetAll().Count + " nodes\n";
-		readout += Bond.GetAll().Count+ " bonds\n";
-		readout += "\n";
-		readout += (1.0f / Time.deltaTime).ToString("F1") + "fps\n";
-		GUI.Label( new Rect( 5, 0, Screen.width, Screen.height ), readout );
-	} // End of OnGUI().
-
-
-    public static void MutateAll() {
-        for (int i = 0; i < Assembly.GetAll().Count; ++i)
-            Assembly.GetAll()[i].Mutate();
-    } // End of MutateAll
-
-
-    public static void ClearAll(){
-        while(Assembly.GetAll().Count > 0)
-            Assembly.GetAll()[Assembly.GetAll().Count - 1].Destroy();
-        while(Node.GetAll().Count > 0)
-                Node.GetAll()[Node.GetAll().Count - 1].Destroy();
-        while(Bond.GetAll().Count > 0)
-            Bond.GetAll()[Bond.GetAll().Count - 1].Destroy();
-        foreach(FoodPellet aPellet in allFoodPellets)
-            aPellet.Destroy();
-    }
-} // End of GameManager.
+    } // End of Update().
+}

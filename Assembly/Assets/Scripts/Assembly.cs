@@ -1,405 +1,242 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System.IO;
 using System.Collections.Generic;
-
-public enum LifeStage { connect, function, reproduce, die }
 
 public class Assembly {
 
-    private static List<Assembly> allAssemblies = new List<Assembly>();
-    public static List<Assembly> GetAll() { return allAssemblies; }
+    public static List<Assembly> allAssemblies = new List<Assembly>();
 
-    public string name;
-    public List<Node> nodes = new List<Node>();
+    // temp
+    public Color color = Color.white;
 
-    public LifeStage lifeStage = LifeStage.connect;
-    public float age = 0f;
+    public string name = "unnamed";
+	public List<Node> nodes = new List<Node>();
 
-    public float calories = 2f;
-    float lastCalories = 0f; // Calories from last frame; used to determine deltaCalories.
+    public Vector3 worldPosition = Vector3.zero;
+    public Quaternion worldRotation = Quaternion.identity;
+    public Quaternion worldRotationVel = Quaternion.identity;
 
-    public float averageDeltaCalories = 0f;
-    
-
-    // Creates a new assembly off of a root node.
-    public Assembly(Node rootNode){
-        List<Node> gotNodes = new List<Node>();
-        List<Node> newNodes = new List<Node>() {rootNode};
-
-        int nodeNum = 0;
-
-        // First pass; finds all nodes through their bonds.
-        // Go until we run out of new nodes.
-        while(newNodes.Count > 0){
-            // Run through all of our new nodes to test.
-            for(int i = 0; i < newNodes.Count; i++){
-                Node currentNode = newNodes[i];
-                currentNode.assemblyIndex = nodeNum;
-                nodeNum++;
-
-                // Remove this node from newNodes; we're gonna check it soon and won't need it anymore.
-                newNodes.RemoveAt(i);
-
-                // Run through each new node's bonds.
-                for(int j = 0; j < currentNode.bonds.Count; j++){
-                    Bond currentBond = currentNode.bonds[j];
-                    // We're gonna test the node at both ends; we don't know which direction the bond goes.
-                    bool gotAlreadyA = false;
-                    bool gotAlreadyB = false;
-                    // See if we already got the node at either end.
-                    for (int k = 0; k < gotNodes.Count; k++){
-                        Node checkingNode = gotNodes[k];
-                        if (currentBond.nodeA == checkingNode)
-                            gotAlreadyA = true;
-                        if (currentBond.nodeB == checkingNode)
-                            gotAlreadyB = true;
-                    }
-
-                    // Add A if it's new.
-                    if(!gotAlreadyA){
-                        gotNodes.Add(currentBond.nodeA);
-                        newNodes.Add(currentBond.nodeA);
-                    }
-
-                    // Add B if it's new.
-                    if(!gotAlreadyB){
-                        gotNodes.Add(currentBond.nodeB);
-                        newNodes.Add(currentBond.nodeB);
-                    }
-                }
-            }
-        }
-
-        // Assign node indices
-        for(int i = 0; i < gotNodes.Count; i++)
-            gotNodes[i].assemblyIndex = i;
-
-        // Create the new assembly.
-        nodes = gotNodes;
-        name = GameManager.names[Random.Range(0, GameManager.names.Length)].Trim();
-
-        // Assign assembly to all nodes.
-        for(int i = 0; i < gotNodes.Count; i++)
-            gotNodes[i].assembly = this;
-
-        allAssemblies.Add(this);
-    } // End of Assembly constructor.
-
-
-    // Create an assembly from a file.
-    public Assembly(string path) {
-        // Create the new assembly.
-        // Prepare an array to load up with nodes.
-        List<Node> newNodes = new List<Node>();
-
-
-        int nameSeparator = path.IndexOf("_");
-        string assemblyName = path.Substring(nameSeparator + 1, (path.Length - 4) - (nameSeparator + 1));
-        name = assemblyName;
-
-        // Load individual node data, separated by ','.
-        string newAssemDna = System.IO.File.ReadAllText(path);
-        string[] rawNodes = newAssemDna.Split(',');
-
-        // DNA looks like this:
-        //    <index>_<type>,<index>_<type>-<bond 1>-<bond 2>, etc.
-
-        // Last node is a 'junk' node picked up by the trailing ',' so we just delete it.
-        string[] tempRawNodes = new string[rawNodes.Length - 1];
-        for (int j = 0; j < (rawNodes.Length - 1); j++)
-            tempRawNodes[j] = rawNodes[j];
-        rawNodes = tempRawNodes;
-
-        // First pass: Loop through all loaded nodes.
-        for(int i = 0; i < rawNodes.Length; i++){
-
-            // Create the node in the game environment (at a random position).
-            float halfNodeGenSpread = 10;
-            Vector3 randomPos = new Vector3(Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread), Random.Range(-halfNodeGenSpread, halfNodeGenSpread));
-            GameObject newNodeTrans = Object.Instantiate(GameManager.prefabs.node, randomPos, Quaternion.identity) as GameObject;
-            Node newNode = newNodeTrans.GetComponent<Node>();
-            newNodes.Add(newNode);
-            newNode.assembly = this;
-            newNode.assemblyIndex = i;
-        }
-
-        // Second pass: Loop back through all nodes to assign bonds
-        for(int i = 0; i < rawNodes.Length; i++) {
-            string currentNode = rawNodes[i];
-            Node currentRealNode = newNodes[i];
-
-            // Find the point at which the node's index stops being defined.
-            int idIndex = currentNode.IndexOf("_");
-
-            // Get bonds for all nodes that have not been tested..
-            if (currentNode.Length > idIndex + 2){
-                // Parse the bond information for the node.
-                string[] rawBondNum = currentNode.Substring(idIndex + 3).Split('-');
-                for (int k = 0; k < rawBondNum.Length; k++) {
-                    // Create the new bond.
-                    // Find the other node we are going to bond to, based on the given index.
-                    Node currentBondNode = newNodes[int.Parse(rawBondNum[k])];
-
-                    // new Bond adds itself to the Node bond lists
-                    Bond newBond = new Bond(currentRealNode, currentBondNode);
-                }
-            }
-        }
-
-        nodes = newNodes;
-        allAssemblies.Add(this);
-    } // End of Assembly constructor.
-
-
-    // Constructs a new empty assembly.
-    public Assembly(){
-        allAssemblies.Add(this);
-    } // End of Assembly() constructor.
-
-
-    public void Update(){
-        age += Time.deltaTime;
-        
-        // Calorie limit is twice the number of nodes. When this point is reached, the assembly will multiply.
-        calories = Mathf.Clamp(calories, 0f, nodes.Count * 2f);
-
-        // Repulsive force between nodes within assembly.
-        for( int i = 0; i < nodes.Count; i++ ){
-			Node currentNode = nodes[i];
-			
-			// Kinetic nteraction with other nodes...
-			for( int j = (i + 1); j < nodes.Count; j++ ){
-				Node otherNode = nodes[j];
-
-                Vector3 vectorToNode = ( otherNode.transform.position - currentNode.transform.position ).normalized;
-				float distToNode = ( otherNode.transform.position - currentNode.transform.position ).magnitude;
-				
-				// Repulsive force
-				Vector3 repulsiveForce = 1000 * ( -vectorToNode / Mathf.Pow( distToNode, 5 ));
-
-				currentNode.rigidbody.AddForce(repulsiveForce);
-				otherNode.rigidbody.AddForce(-repulsiveForce);
-            }
-        }
-
-        if(calories <= 0){
-            Vector3 centerPoint = GetCenter();
-            for(int i = 0; i < nodes.Count; i++){
-                Vector3 vecToCenter = nodes[i].transform.position - centerPoint;
-                // Bust-apart force is limited.
-                nodes[i].rigidbody.AddForce((vecToCenter.normalized * (Mathf.Clamp(5f / vecToCenter.magnitude, 0f, 5f))) * 100f);
-
-                nodes[i].bondCooldown = Random.Range(3f, 5f);
-            }
-            Disband();
-        }
-
-
-        // This loops way too many times when something hits the doubling mark.
-        if(calories >= (nodes.Count * 2))
-            Replicate();
-
-
-        // Average calorie burn/intake
-        float deltaCalories = (calories - lastCalories) / Time.deltaTime;
-        averageDeltaCalories = (averageDeltaCalories + deltaCalories) * 0.5f;
-        lastCalories = calories;
-
-        // Reproduction
-
-    } // End of Update().
-
-
-    // Returns the average position of all nodes.
-    public Vector3 GetCenter(){
-        Vector3 totalPos = Vector3.zero;
-        for(int i = 0; i < nodes.Count; i++) {
-            totalPos += nodes[i].transform.position;
-        }
-        totalPos /= nodes.Count;
-        return totalPos;
-    } // End of GetCenter().
-
-
-    // Returns the greatest distance between the center and a node.
-    public float GetRadius(){
-        float greatestRad = 0;
-        Vector3 center = GetCenter();
-        for(int i = 0; i < nodes.Count; i++){
-            float radius = Vector3.Distance(center, nodes[i].transform.position);
-            if(radius > greatestRad)
-                greatestRad = radius;
-        }
-        return greatestRad;
-    } // End of GetRadius().
-
-
-    public void Mutate() {
-        if (nodes.Count <= 2)
-            return;
-
-        // Choose some random bonds and change their destination node.
-        // in this first pass it is possible for a bond to change the secondary node and then change back in another iteration.
-        int attemptCount = 0; // fail safe from an infinite loop
-        int numBondsToChange = 1;
-        while (numBondsToChange > 0 && nodes.Count > 2 && attemptCount < (numBondsToChange + 100)) {
-            ++attemptCount;
-            Node node = nodes[Random.Range(0, nodes.Count)];
-            int newBondBuddyIdx = (node.assemblyIndex + Random.Range(1, nodes.Count)) % nodes.Count; // make sure it doesn't bond to itself
-            if (node.BondedTo(nodes[newBondBuddyIdx]) || node.bonds.Count == 0)
-                continue;
-
-            // Destroy a Random bond and create a new one in its place.
-            Bond bond = node.bonds[Random.Range(0, node.bonds.Count)];
-
-            // Make sure we don't cut a node off of the assembly by breaking it's only bond.
-            Node otherNode = bond.GetOtherNode(node);
-            new Bond(node, nodes[newBondBuddyIdx]);
-            bond.Destroy();
-
-            // Check if the assembly was severed, if so delete the severed nodes.
-            HashSet<Node> otherAttachedNodes = otherNode.GetNodesAttached();
-            if (otherAttachedNodes.Count != nodes.Count) {
-                Debug.LogError("Detached from assembly: " + otherAttachedNodes.Count + " != " + (nodes.Count));
-                foreach (Node n in otherAttachedNodes) {
-                    n.DestroyBonds();
-                    nodes.Remove(n);
-                    n.Destroy();
-                }
-            }
-            --numBondsToChange;
-        }
+    public static implicit operator bool(Assembly exists){
+        return exists != null;
     }
 
 
-    // Save assembly to a file. Returns the filepath.
-    public string Save(){
-        DirectoryInfo dir = new DirectoryInfo(IOHelper.defaultSaveDir);
-        FileInfo[] info = dir.GetFiles("*.*");
-        int lastFileNum = 0;
-        for (int t = 0; t < info.Length; t++){
-            FileInfo currentFile = info[t];
-            int currentFileNum = int.Parse(currentFile.Name.Substring(0, 3));
-            if (currentFileNum >= lastFileNum)
-                lastFileNum = currentFileNum;
-        }
-        string filename = IOHelper.defaultSaveDir + (lastFileNum + 1).ToString("000") + "_" + name + ".txt";
-        return Save(filename);
-    } // End of Save().
+    // Constructors
+    public Assembly(){
+        allAssemblies.Add(this);
+    }
+    public Assembly(List<Node> nodes){
+        this.nodes = nodes;
+        allAssemblies.Add(this);
+    }
 
 
-    public string Save(string filename) {
-        System.IO.File.WriteAllText(filename, GetDNA());
-        return filename;
-    } // End of Save().
-
-
-    private string GetDNA(){
-        string newDNA = "";
-        // Loop through all nodes in assembly.
-        for (int i = 0; i < nodes.Count; i++){
-            Node currentNode = nodes[i];
-            if (currentNode.bonds.Count == 0) {
-                Debug.LogError("Node in assembly has no bonds!");
-                continue;
-            }
-            // First part of the DNA is the node's index and node characteristics.
-            newDNA += i + "_" + currentNode.GetDNAInfo();
-
-            for (int j = 0; j < currentNode.bonds.Count; j++){
-                Bond currentBond = currentNode.bonds[j];
-                if (currentBond.nodeA == currentNode)
-                    newDNA += "-" + currentBond.nodeB.assemblyIndex;
-            }
-
-            // This node is done, indicated by ','
-            newDNA += ",";
-        }
-        return newDNA;
-    } // End of GetDNA().
-
-
-    // Combines two Assemblies into one.
-    public Assembly Merge(Assembly mergingAssembly){
-        Assembly mergedAssembly = new Assembly(nodes[0]);
-
-        // Combine assembly names. John + Abbey = Jobey, etc.
-        mergedAssembly.name = name.Substring(0, Mathf.RoundToInt(name.Length * 0.5f)) + mergingAssembly.name.Substring(0, Mathf.RoundToInt(mergingAssembly.name.Length * 0.5f));
-
-        allAssemblies.Remove(this);
-        allAssemblies.Remove(mergingAssembly);
-
-        if((CameraControl.selectedAssembly == this) || (CameraControl.selectedAssembly == mergingAssembly))
-            CameraControl.selectedAssembly = mergedAssembly;
-
-        mergedAssembly.age = ((this.age * this.nodes.Count) + (mergingAssembly.age * mergingAssembly.nodes.Count)) / (this.nodes.Count + mergingAssembly.nodes.Count);
-
-        return mergedAssembly;
-    } // End of Merge().
-
-
-    // Creates a copy of an assembly right on top of this one.
-    public Assembly Replicate(){
-        Assembly newAssembly = new Assembly();
-
-        Vector3 randomSplitForce = Random.rotation * Vector3.forward * 50f;
-
-        for(int i = 0; i < nodes.Count; i++){
-            GameObject newNodeGO = Object.Instantiate(GameManager.prefabs.node, nodes[i].transform.position, Quaternion.identity) as GameObject;
-            Node newNode = newNodeGO.GetComponent<Node>();
-            newNode.assembly = newAssembly;
-            newNode.assemblyIndex = nodes[i].assemblyIndex;
-            newAssembly.nodes.Add(newNode);
-        }
-        for(int i = 0; i < nodes.Count; i++){
-            Node curNode = nodes[i];
-            Node curNewNode = newAssembly.nodes[i];
-            curNewNode.rigidbody.velocity = curNode.rigidbody.velocity;
-            for(int j = 0; j < curNode.bonds.Count; j++){
-                Bond curBond = curNode.bonds[j];
-                if(curBond.nodeA == curNode)
-                    new Bond(curNewNode, newAssembly.nodes[curBond.nodeB.assemblyIndex]);
-            }
-
-            // Propel old assembly and new assembly away from each other.
-            curNode.rigidbody.AddForce(randomSplitForce);
-            curNewNode.rigidbody.AddForce(-randomSplitForce);
-        }
-
-        newAssembly.calories = calories * 0.5f;
-        calories *= 0.5f;
-        AudioSource.PlayClipAtPoint(SoundManager.inst.replicate, newAssembly.GetCenter());
-        return newAssembly;
-    } // End of Replicate().
-    
-
-    // Attaches a new node to this assembly.
-    public void AddNode(Node newNode){
-        nodes.Add(newNode);
-        newNode.assemblyIndex = nodes.Count - 1;
-        calories += newNode.calories;
-
-        newNode.assembly = this;
+    public void AddNode(Node node){
+        node.assembly = this;
+        nodes.Add(node);
     } // End of AddNode().
-    
-
-    // Delete the assembly and all of its components.
-    public void Destroy(){
-        for(int i = 0; i < nodes.Count; i++)
-            nodes[i].Destroy();
-        allAssemblies.Remove(this);
-    } // End of Destroy().
 
 
-    // Deconstruct all bonds within the assembly.
-    public void Disband(){
+    public void RemoveNode(Node node){
+        nodes.Remove(node);
+    } // End of RemoveNode().
+
+
+    public void UpdateTransform(){
+        worldRotation = Quaternion.RotateTowards(worldRotation, worldRotation * worldRotationVel, Time.deltaTime * 2f);
+    } // End of UpdateTransform().
+
+
+    // Attaches a new randomized node to a random part of the assembly.
+    public void AddRandomNode(){
+
+        // Loop through all nodes, starting with a random one.
+        int nodeStartIndex = Random.Range(0, nodes.Count);
+        for(int i = 0; i < nodes.Count; i++){
+            Node currentNode = nodes[(nodeStartIndex + i) % nodes.Count];
+
+            // Skip this node if it already has 3 neighbors.
+            if(CountNeighbors(currentNode.localHexPosition) > 2)
+                continue;
+
+            // Loop through all directions, starting with a random one.
+            int dirStart = Random.Range(0, 12);
+            for(int j = 0; j < 12; j++){
+                int currentDir = (dirStart + j) % 12;
+
+                IntVector3 currentPos = currentNode.localHexPosition + HexUtilities.Adjacent(currentDir);
+
+                // Loop through all nodes, determine if any of them occupy currentPos.
+                bool occupied = false;
+                for(int k = 0; k < nodes.Count; k++){
+                    if(nodes[k].localHexPosition == currentPos){
+                        occupied = true;
+                        break;
+                    }
+                }
+
+                // If the spot is unoccupied...
+                if(!occupied){
+
+                    // Too many neighbors... bail out!
+                    List<Node> neighbors = GetNeighbors(currentPos);
+                    if(neighbors.Count > 2)
+                        continue;
+
+                    bool tooManyNeighborNeighbors = false;
+                    for(int k = 0; k < neighbors.Count; k++){
+                        if(CountNeighbors(neighbors[k].localHexPosition) > 2){
+                            tooManyNeighborNeighbors = true;
+                            break;
+                        }
+                    }
+
+                    // Clear spot... let's do it!
+                    if(!tooManyNeighborNeighbors){
+                        Node newNode = new Node(currentPos);
+                        AddNode(newNode);
+
+                        newNode.gameObject.renderer.material.color = color;
+                        UpdateNodes();
+                        return;
+                    }
+                }
+            }
+        }
+    } // End of Mutate().
+
+
+    // Removes a random single node (safely) from the assembly.
+    public void RemoveRandomNode(){
+        // Loop through all nodes, starting with a random one.
+        int nodeStartIndex = Random.Range(0, nodes.Count);
+        for(int i = 0; i < nodes.Count; i++){
+            Node currentNode = nodes[(nodeStartIndex + i) % nodes.Count];
+
+            List<Node> neighbors = GetNeighbors(currentNode.localHexPosition);
+
+            // If we have neighbors, test against each one to see if the assembly would be bisected if we
+            //   removed the current node.
+            // We do this by just counting how many nodes the neighbor 'leads to', that is, how many
+            //   it is connected to (vicariously.)
+            bool fail = false;
+            if(neighbors.Count > 1){
+                for(int j = 0; j < neighbors.Count; j++){
+                    List<Node> nodesOmitThis = new List<Node>(nodes);
+                    nodesOmitThis.Remove(currentNode);
+
+                    if(CountAllNeighborsRecursive(neighbors[j], nodesOmitThis) < (nodes.Count - 2)){
+                        // Removing this node would bisect the assembly; we can't remove it.
+                        fail = true;
+                        break;
+                    }
+                }
+                if(fail)
+                    continue;
+            }
+
+            // Success--this node is safe to remove.
+            currentNode.Destroy();
+            UpdateNodes();
+            return;
+        }
+    } // End of RemoveRandomNode(). 
+
+
+    public void UpdateNodes(){
         for(int i = 0; i < nodes.Count; i++){
             Node currentNode = nodes[i];
-            while(currentNode.bonds.Count > 0)
-                currentNode.bonds[0].Destroy();
-            currentNode.assembly = null;
+            int neighborCount = CountNeighbors(currentNode.localHexPosition);
+            currentNode.numNeighbors = neighborCount;
+            switch(neighborCount){
+                case 1:
+                    currentNode.gameObject.renderer.material.color = Node.senseColor;
+                    break;
+                case 2:
+                    currentNode.gameObject.renderer.material.color = Node.actuatorColor;
+                    break;
+                case 3:
+                    currentNode.gameObject.renderer.material.color = Node.controlColor;
+                    break;
+                default:
+                    currentNode.gameObject.renderer.material.color = Node.stemColor;
+                    break;
+            }
         }
-        allAssemblies.Remove(this);
-    } // End of Disband().
-} // End of Assembly.cs.
+    } // End of UpdateNodes(). 
+
+
+    int CountNeighbors(IntVector3 hexPos){
+        // Count number of neighbors for the new position. If 3 or more, move on.
+        int neighborCount = 0;
+        for(int k = 0; k < 12; k++){
+            IntVector3 currentNeighborPos = hexPos + HexUtilities.Adjacent(k);
+            for(int m = 0; m < nodes.Count; m++){
+                if(nodes[m].localHexPosition == currentNeighborPos){
+                    neighborCount++;
+                }
+            }
+        }
+        return neighborCount;
+    } // End of CountNeighbors().
+
+
+    List<Node> GetNeighbors(IntVector3 hexPos){
+        // Count number of neighbors for the new position. If 3 or more, move on.
+        List<Node> neighbors = new List<Node>();
+        for(int k = 0; k < 12; k++){
+            IntVector3 currentNeighborPos = hexPos + HexUtilities.Adjacent(k);
+            for(int m = 0; m < nodes.Count; m++){
+                if(nodes[m].localHexPosition == currentNeighborPos){
+                    neighbors.Add(nodes[m]);
+                }
+            }
+        }
+        return neighbors;
+    } // End of GetNeighbors().
+
+
+    public int CountAllNeighborsRecursive(Node node, List<Node> nodesToTest){
+        int neighborCount = 0;
+        nodesToTest.Remove(node);
+
+        List<Node> neighbors = GetNeighbors(node.localHexPosition);
+        List<Node> testableNeighbors = new List<Node>();
+
+        for(int i = 0; i < neighbors.Count; i++){
+            if(nodesToTest.Contains(neighbors[i])){
+                testableNeighbors.Add(neighbors[i]);
+            }
+        }
+
+        neighborCount = testableNeighbors.Count;
+
+        for(int i = 0; i < testableNeighbors.Count; i++)
+            nodesToTest.Remove(testableNeighbors[i]);
+
+        for(int i = 0; i < testableNeighbors.Count; i++){
+            neighborCount += CountAllNeighborsRecursive(testableNeighbors[i], nodesToTest);
+        }
+
+        return neighborCount;
+    } // End of CountAllNeighborsRecursive();
+
+
+
+    public void Mutate(float deviation){
+        // Mutate existing nodes.
+        for(int i = 0; i < nodes.Count; i++)
+            nodes[i].Mutate(deviation);
+
+        // Add/subtract entire nodes.
+        int numNodesModify = Mathf.RoundToInt(Random.Range(0f, deviation * nodes.Count));
+        for(int i = 0; i < numNodesModify; i++){
+            if(Random.Range(0f, 1f) < 0.5)
+                AddRandomNode();
+            else
+                RemoveRandomNode();
+        }
+
+
+    } // End of Mutate().
+} // End of Assembly.
