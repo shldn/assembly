@@ -89,8 +89,7 @@ public class Node {
         }
 
 
-
-
+        // Dynamically update existence of senseFieldBillboard.
         if((numNeighbors != 1) && senseFieldBillboard)
             GameObject.Destroy(senseFieldBillboard);
 

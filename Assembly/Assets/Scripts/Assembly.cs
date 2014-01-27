@@ -42,6 +42,7 @@ public class Assembly {
     } // End of RemoveNode().
 
 
+
     public void UpdateTransform(){
         worldRotation = Quaternion.RotateTowards(worldRotation, worldRotation * worldRotationVel, Time.deltaTime * 2f);
     } // End of UpdateTransform().
@@ -229,14 +230,19 @@ public class Assembly {
             nodes[i].Mutate(deviation);
 
         // Add/subtract entire nodes.
-        int numNodesModify = Mathf.RoundToInt(Random.Range(0f, deviation * nodes.Count));
-        for(int i = 0; i < numNodesModify; i++){
-            if(Random.Range(0f, 1f) < 0.5)
-                AddRandomNode();
-            else
-                RemoveRandomNode();
+        int numNodesModify = 0;//= Mathf.RoundToInt(Random.Range(0f, deviation * nodes.Count));
+
+        for(int i = 0; i < nodes.Count; i++){
+            if(Random.Range(0f, 1f) <= deviation)
+                numNodesModify++;
         }
 
+        for(int i = 0; i < numNodesModify; i++){
+            if(Random.Range(0f, 1f) <= 0.5)
+                AddRandomNode();
+            else if(nodes.Count > 1)
+                RemoveRandomNode();
+        }
 
     } // End of Mutate().
 } // End of Assembly.
