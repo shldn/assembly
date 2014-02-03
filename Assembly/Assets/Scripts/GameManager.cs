@@ -46,13 +46,14 @@ public class GameManager : MonoBehaviour {
             if(Input.GetKey(KeyCode.Return))
                 Assembly.allAssemblies[i].Mutate(0.01f);
             
+            if(Input.GetKeyDown(KeyCode.F))
+                FoodNode.AddNewFoodNode();
 
             Assembly.allAssemblies[i].UpdateTransform();
         }
 
         for(int i = 0; i < Node.allNodes.Count; i++)
             Node.allNodes[i].UpdateTransform();
-        
 
         float closestDistance = 9999f;
         for(int i = 0; i < Node.allNodes.Count; i++){
