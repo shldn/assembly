@@ -2,16 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 
+public enum NodeType {none, sense, actuate, control}
+
 public class Node {
 
     public static List<Node> allNodes = new List<Node>();
 
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
-    public Quaternion orientation = Quaternion.identity;
 
-    public float sensitivity = 1f;
-    
+    public Quaternion orientation = Quaternion.identity;
+    public float fieldOfView = 45f;
+
     public Assembly assembly = null;
     public List<Node> bondedNodes = new List<Node>();
 
@@ -24,7 +26,7 @@ public class Node {
     public static Color actuatorColor = new Color(0.62f, 0.18f, 0.18f, 1f);
     public static Color controlColor = new Color(0.35f, 0.59f, 0.84f, 1f);
 
-    public int numNeighbors = 0;
+    public NodeType nodeType = NodeType.none;
 
 
     public static implicit operator bool(Node exists){
@@ -52,7 +54,6 @@ public class Node {
         gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
         // Randomize attributes
         orientation = Random.rotation;
-        sensitivity = Random.Range(0f, 1f);
 
         allNodes.Add(this);
     } // End of Initialize().
@@ -73,7 +74,6 @@ public class Node {
 
 
             Color tempColor = senseFieldBillboard.renderer.material.GetColor("_TintColor");
-            tempColor.a = sensitivity;
             senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
 
 
@@ -90,10 +90,10 @@ public class Node {
 
 
         // Dynamically update existence of senseFieldBillboard.
-        if((numNeighbors != 1) && senseFieldBillboard)
+        if((nodeType != NodeType.sense) && senseFieldBillboard)
             GameObject.Destroy(senseFieldBillboard);
 
-        if((numNeighbors == 1) && !senseFieldBillboard)
+        if((nodeType == NodeType.sense) && !senseFieldBillboard)
             senseFieldBillboard = GameObject.Instantiate(PrefabManager.Inst.billboard, worldPosition, Quaternion.identity) as GameObject;
     } // End of UpdateTransform(). 
 
@@ -113,7 +113,6 @@ public class Node {
     // Randomly 'mutates' the node's values. A deviation of 1 will completely randomize the node.
     public void Mutate(float deviation){
         orientation *= Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward);
-        sensitivity = Mathf.Lerp(sensitivity, Random.Range(0f, 1f), Random.Range(0f, deviation));
     } // End of Mutate().
     
 } // End of Node.

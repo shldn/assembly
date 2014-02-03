@@ -36,7 +36,6 @@ public class Assembly {
         nodes.Add(node);
     } // End of AddNode().
 
-
     public void RemoveNode(Node node){
         nodes.Remove(node);
     } // End of RemoveNode().
@@ -148,18 +147,21 @@ public class Assembly {
         for(int i = 0; i < nodes.Count; i++){
             Node currentNode = nodes[i];
             int neighborCount = CountNeighbors(currentNode.localHexPosition);
-            currentNode.numNeighbors = neighborCount;
             switch(neighborCount){
                 case 1:
+                    currentNode.nodeType = NodeType.sense;
                     currentNode.gameObject.renderer.material.color = Node.senseColor;
                     break;
                 case 2:
+                    currentNode.nodeType = NodeType.actuate;
                     currentNode.gameObject.renderer.material.color = Node.actuatorColor;
                     break;
                 case 3:
+                    currentNode.nodeType = NodeType.control;
                     currentNode.gameObject.renderer.material.color = Node.controlColor;
                     break;
                 default:
+                    currentNode.nodeType = NodeType.none;
                     currentNode.gameObject.renderer.material.color = Node.stemColor;
                     break;
             }

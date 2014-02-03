@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour {
             Assembly newAssembly = new Assembly();
             newAssembly.worldPosition = MathUtilities.RandomVector3Sphere(20f);
 
-            newAssembly.worldRotationVel = Random.rotation;
+            //newAssembly.worldRotationVel = Random.rotation;
 
             // Generate a random color for the assembly.
             float colorMin = 0.3f;
@@ -71,17 +71,6 @@ public class GameManager : MonoBehaviour {
         for(int i = 0; i < Node.allNodes.Count; i++)
             Node.allNodes[i].UpdateTransform();
         
-
-
-        if(Input.GetKeyDown(KeyCode.C)){
-            List<Node> assemblyNodes = new List<Node>();
-            for(int i = 0; i < Assembly.allAssemblies[0].nodes.Count; i++)
-                assemblyNodes.Add(Assembly.allAssemblies[0].nodes[i]);
-
-            print(assemblyNodes.Count);
-
-            print(Assembly.allAssemblies[0].CountAllNeighborsRecursive(Node.allNodes[Random.Range(0, Node.allNodes.Count)], assemblyNodes));
-        }
 
     } // End of Update().
 }
