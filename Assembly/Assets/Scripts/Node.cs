@@ -21,7 +21,10 @@ public class Node : MonoBehaviour {
 	public float synapse;
     public float thrust;
 
+    // Sense attributes
     float viewAngle = 25f;
+    Vector3 viewDirection = Vector3.zero;
+
 	
 	// Muscle attributes
 	public float muscleStrength;
@@ -255,12 +258,16 @@ public class Node : MonoBehaviour {
         return nodeTypeChanged;
     } // End of BasicUpdate().
 
+    public bool CanSee(FoodPellet food)
+    {
+        return  (nodeType == NodeType.sense) && 
+                (Vector3.Angle(viewDirection, food.transform.position - transform.position) < viewAngle);
+    }
 
     public void SenseUpdate(){
         if(BasicUpdate())
             return;
 
-        Vector3 viewDirection = Vector3.zero;
         if(bonds[0].nodeA == this)
             viewDirection = -bonds[0].dirAtoB;
         else
@@ -274,7 +281,7 @@ public class Node : MonoBehaviour {
                 float caloriesTaken = (0.5f / Mathf.Pow(Vector3.Distance(transform.position, currentPellet.transform.position), 2)) * Time.deltaTime * 50f;
                 assembly.calories += caloriesTaken;
                 currentPellet.calories -= caloriesTaken;
-                if(Vector3.Angle(viewDirection, currentPellet.transform.position - transform.position) < viewAngle)
+                if(CanSee(currentPellet))
                     signal += 3f / (Vector3.Distance(transform.position, currentPellet.transform.position) * 0.2f);
             }
 
