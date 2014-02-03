@@ -73,9 +73,18 @@ public class Node {
             senseFieldBillboard.transform.localScale = Vector3.one * arcScale;
 
 
-            Color tempColor = senseFieldBillboard.renderer.material.GetColor("_TintColor");
-            senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
+            Color tempColor = senseColor;
 
+            //calling detect food on sense node
+            for(int j = 0; j < FoodNode.GetAll().Count; ++j){
+                bool detected = this.DetectFood(FoodNode.GetAll()[j] );
+                if( detected ){
+                    tempColor = Color.cyan;
+                    break;
+                }
+            }
+                               
+            senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
 
             // The following code billboards the arc with the main camera.
             senseFieldBillboard.transform.rotation = orientation;
@@ -115,4 +124,17 @@ public class Node {
         orientation *= Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward);
     } // End of Mutate().
     
+
+    //take sense node to detect foodnode
+    public bool DetectFood( FoodNode food){
+        if(this.nodeType != NodeType.sense)
+            return false;
+        Vector3 viewDir = this.orientation * Vector3.forward;
+        Vector3 foodDir = food.worldPosition - this.worldPosition;
+        float angle = Vector3.Angle( viewDir, foodDir);
+        if(angle < fieldOfView)
+            return true;
+        return false;
+    }
+
 } // End of Node.
