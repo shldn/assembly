@@ -114,5 +114,16 @@ public class Node {
     public void Mutate(float deviation){
         orientation *= Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward);
     } // End of Mutate().
+
+    // The string representation of this class for file saving (could use ToString, but want to be explicit)
+    public string ToFileString(int format)
+    {
+        return localHexPosition.ToString();
+    }
+
+    public static Node FromString(string str, int format=1)
+    {
+        return new Node(IOHelper.IntVector3FromString(str));
+    }
     
 } // End of Node.

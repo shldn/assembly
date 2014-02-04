@@ -26,8 +26,29 @@ public class Assembly {
         allAssemblies.Add(this);
     }
     public Assembly(List<Node> nodes){
-        this.nodes = nodes;
+        AddNodes(nodes);
         allAssemblies.Add(this);
+    }
+
+    public Assembly(string filePath)
+    {
+        List<Node> newNodes = new List<Node>();
+        IOHelper.LoadAssembly(filePath, ref name, ref worldPosition, ref newNodes);
+        AddNodes(newNodes);
+        allAssemblies.Add(this);
+    }
+
+
+    public void Save()
+    {
+        string path = "./saves/" + name + ".txt";
+        Save(path);
+    }
+
+
+    public void Save(string path)
+    {
+        IOHelper.SaveAssembly(path, this);
     }
 
 
@@ -36,10 +57,20 @@ public class Assembly {
         nodes.Add(node);
     } // End of AddNode().
 
-    public void RemoveNode(Node node){
+
+    public void AddNodes(List<Node> newNodes)
+    {
+        for (int i = 0; i < newNodes.Count; ++i)
+            newNodes[i].assembly = this;
+        nodes.AddRange(newNodes);
+        UpdateNodes();
+    }
+
+
+    public void RemoveNode(Node node)
+    {
         nodes.Remove(node);
     } // End of RemoveNode().
-
 
 
     public void UpdateTransform(){

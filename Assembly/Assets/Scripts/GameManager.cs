@@ -68,6 +68,12 @@ public class GameManager : MonoBehaviour {
             Assembly.allAssemblies[i].UpdateTransform();
         }
 
+        if (Input.GetKeyUp(KeyCode.P))
+            IOHelper.SaveAllToFolder("./saves/");
+
+        if (Input.GetKeyUp(KeyCode.L))
+            new Assembly("./saves/unnamed.txt");
+
         for(int i = 0; i < Node.allNodes.Count; i++)
             Node.allNodes[i].UpdateTransform();
         
