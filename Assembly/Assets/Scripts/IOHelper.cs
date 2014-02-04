@@ -14,6 +14,12 @@ public class IOHelper
         foreach (Assembly a in Assembly.allAssemblies)
         {
             string filename = folderPath + a.name + ext;
+            int count = 1;
+            while (File.Exists(filename))
+            {
+                string tempFileName = string.Format("{0}{1}", folderPath + a.name, count++);
+                filename = tempFileName + ext;
+            }
             a.Save(filename);
         }
     }
