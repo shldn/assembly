@@ -48,6 +48,7 @@ public class Assembly {
 
     public void Save(string path)
     {
+        Debug.Log("Saving " + path);
         IOHelper.SaveAssembly(path, this);
     }
 
@@ -124,7 +125,7 @@ public class Assembly {
 
                     // Clear spot... let's do it!
                     if(!tooManyNeighborNeighbors){
-                        Node newNode = new Node(currentPos);
+                        Node newNode = new Node(currentPos, Random.rotation);
                         AddNode(newNode);
 
                         newNode.gameObject.renderer.material.color = color;

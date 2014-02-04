@@ -36,24 +36,23 @@ public class Node {
 
     // Constructors
 	public Node(){
-        Initialize();
+        Initialize(Vector3.zero, Random.rotation);
     }
-	public Node(IntVector3 hexPos){
+	public Node(IntVector3 hexPos, Quaternion orient){
         localHexPosition = hexPos;
-        worldPosition = HexUtilities.HexToWorld(localHexPosition);
-        Initialize();
+        Initialize(HexUtilities.HexToWorld(localHexPosition), orient);
     }
-    public Node(Vector3 worldPos){
-        worldPosition = worldPos;
-        Initialize();
+    public Node(Vector3 worldPos, Quaternion orient){
+        Initialize(worldPos, orient);
     }
 
     // Set-up of basic Node stuff.
-    private void Initialize(){
+    private void Initialize(Vector3 worldPos, Quaternion rot){
+        worldPosition = worldPos;
+        orientation = rot;
+
         // Initialize graphic
         gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
-        // Randomize attributes
-        orientation = Random.rotation;
 
         allNodes.Add(this);
     } // End of Initialize().
@@ -118,12 +117,21 @@ public class Node {
     // The string representation of this class for file saving (could use ToString, but want to be explicit)
     public string ToFileString(int format)
     {
-        return localHexPosition.ToString();
+        return  localHexPosition.x + "," +
+                localHexPosition.y + "," +
+                localHexPosition.z + "," +
+                orientation.x + "," +
+                orientation.y + "," +
+                orientation.z + "," +
+                orientation.w; 
     }
 
     public static Node FromString(string str, int format=1)
     {
-        return new Node(IOHelper.IntVector3FromString(str));
+        string[] tok = str.Split(',');
+        IntVector3 pos = new IntVector3(int.Parse(tok[0]), int.Parse(tok[1]), int.Parse(tok[2]));
+        Quaternion rot = new Quaternion(float.Parse(tok[3]), float.Parse(tok[4]), float.Parse(tok[5]), float.Parse(tok[6]));
+        return new Node(pos, rot);
     }
     
 } // End of Node.
