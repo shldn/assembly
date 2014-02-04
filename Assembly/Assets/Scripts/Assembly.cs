@@ -217,7 +217,6 @@ public class Assembly {
 
 
     List<Node> GetNeighbors(IntVector3 hexPos){
-        // Count number of neighbors for the new position. If 3 or more, move on.
         List<Node> neighbors = new List<Node>();
         for(int k = 0; k < 12; k++){
             IntVector3 currentNeighborPos = hexPos + HexUtilities.Adjacent(k);
@@ -277,6 +276,37 @@ public class Assembly {
             else if(nodes.Count > 1)
                 RemoveRandomNode();
         }
-
     } // End of Mutate().
+
+
+    // Returns the assembly's sense nodes.
+    public List<Node> GetSenseNodes(){
+        List<Node> senseNodes = new List<Node>();
+        for(int i = 0; i < nodes.Count; i++)
+            if(nodes[i].nodeType == NodeType.sense)
+                senseNodes.Add(nodes[i]);
+
+        return senseNodes;
+    } // End of GetSenseNodes().
+
+    // Returns the assembly's actuate nodes.
+    public List<Node> GetActuateNodes(){
+        List<Node> actuateNodes = new List<Node>();
+        for(int i = 0; i < nodes.Count; i++)
+            if(nodes[i].nodeType == NodeType.actuate)
+                actuateNodes.Add(nodes[i]);
+
+        return actuateNodes;
+    } // End of GetActuateNodes().
+
+    // Returns the assembly's control nodes.
+    public List<Node> GetControlNodes(){
+        List<Node> controlNodes = new List<Node>();
+        for(int i = 0; i < nodes.Count; i++)
+            if(nodes[i].nodeType == NodeType.control)
+                controlNodes.Add(nodes[i]);
+
+        return controlNodes;
+    } // End of GetControlNodes().
+
 } // End of Assembly.

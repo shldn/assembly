@@ -4,9 +4,8 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 
-    IntVector3 crawlerPos = IntVector3.zero;
+    Node selectedNode = null;
 
-    Node lastNode = null;
 
 	void Start(){
         // Generate random assemblies
@@ -15,27 +14,10 @@ public class GameManager : MonoBehaviour {
             Assembly newAssembly = new Assembly();
             newAssembly.worldPosition = MathUtilities.RandomVector3Sphere(20f);
 
-            //newAssembly.worldRotationVel = Random.rotation;
-
-            // Generate a random color for the assembly.
-            float colorMin = 0.3f;
-            float colorMax = 0.6f;
-            Color assemblyColor = new Color(Random.Range(colorMin, colorMax), Random.Range(colorMin, colorMax), Random.Range(colorMin, colorMax));
-            newAssembly.color = assemblyColor;
-
-            // Generate a random structure of nodes for the Assembly.
-            crawlerPos = IntVector3.zero;
-            int numNodes = 1;
-            for(int j = 0; j < numNodes; j++){
-                Node newNode = new Node();
-
-                newNode.localHexPosition = crawlerPos;
-                newAssembly.AddNode(newNode);
-
-                newNode.gameObject.renderer.material.color = assemblyColor;
-
-                crawlerPos += HexUtilities.RandomAdjacent();
-            }
+            Node seedNode = new Node();
+            newAssembly.AddNode(seedNode);
+            for(int j = 0; j < 10; j++)
+                newAssembly.AddRandomNode();
         }
 
 	} // End of Start().
@@ -64,6 +46,8 @@ public class GameManager : MonoBehaviour {
             if(Input.GetKey(KeyCode.Return))
                 Assembly.allAssemblies[i].Mutate(0.01f);
             
+            if(Input.GetKeyDown(KeyCode.F))
+                FoodNode.AddNewFoodNode();
 
             Assembly.allAssemblies[i].UpdateTransform();
         }
@@ -76,7 +60,73 @@ public class GameManager : MonoBehaviour {
 
         for(int i = 0; i < Node.allNodes.Count; i++)
             Node.allNodes[i].UpdateTransform();
-        
+
+        float closestDistance = 9999f;
+        for(int i = 0; i < Node.allNodes.Count; i++){
+            Node currentNode = Node.allNodes[i];
+            float distToNode = Vector3.Distance(Camera.main.transform.position, currentNode.worldPosition);
+            if(distToNode < closestDistance){
+                closestDistance = distToNode;
+                selectedNode = currentNode;
+            }
+        }
 
     } // End of Update().
+
+
+    void OnGUI(){
+        if(selectedNode){
+            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+
+            Vector2 nodeScreenPos = Camera.main.WorldToScreenPoint(selectedNode.worldPosition);
+            nodeScreenPos.y = Screen.height - nodeScreenPos.y;
+            Rect labelRect = new Rect(nodeScreenPos.x - 150, nodeScreenPos.y - 150, 300, 300);
+            GUI.skin.label.fontSize = 25;
+            GUI.skin.label.fontStyle = FontStyle.Bold;
+            GUI.Label(labelRect, "Root");
+
+
+            // Show neighbors
+            List<Node> neighbors = selectedNode.GetNeighbors();
+            for(int i = 0; i < neighbors.Count; i++){
+                Node currentNode = neighbors[i];
+                Vector2 logNodeScreenPos = Camera.main.WorldToScreenPoint(currentNode.worldPosition);
+                logNodeScreenPos.y = Screen.height - logNodeScreenPos.y;
+                Rect logLabelRect = new Rect(logNodeScreenPos.x - 150, logNodeScreenPos.y - 150, 300, 300);
+                GUI.skin.label.fontSize = 15;
+                GUI.skin.label.fontStyle = FontStyle.Normal;
+                GUI.Label(logLabelRect, "neighbor");
+            }
+
+            // Show logic connections
+            List<Node> logicNodes = selectedNode.GetLogicConnections();
+            for(int i = 0; i < logicNodes.Count; i++){
+                Node currentNode = logicNodes[i];
+                Vector2 logNodeScreenPos = Camera.main.WorldToScreenPoint(currentNode.worldPosition);
+                logNodeScreenPos.y = Screen.height - logNodeScreenPos.y;
+                Rect logLabelRect = new Rect(logNodeScreenPos.x - 150, logNodeScreenPos.y - 135, 300, 300);
+                GUI.skin.label.fontSize = 15;
+                GUI.skin.label.fontStyle = FontStyle.Bold;
+                GUI.Label(logLabelRect, "logic");
+            }
+
+            
+            // Show full logic net
+            List<Node> logicNetNodes = selectedNode.GetFullLogicNet();
+            for(int i = 0; i < logicNetNodes.Count; i++){
+                Node currentNode = logicNetNodes[i];
+                if(logicNodes.Contains(currentNode))
+                    continue;
+
+                Vector2 logNodeScreenPos = Camera.main.WorldToScreenPoint(currentNode.worldPosition);
+                logNodeScreenPos.y = Screen.height - logNodeScreenPos.y;
+                Rect logLabelRect = new Rect(logNodeScreenPos.x - 150, logNodeScreenPos.y - 135, 300, 300);
+                GUI.skin.label.fontSize = 15;
+                GUI.skin.label.fontStyle = FontStyle.Italic;
+                GUI.Label(logLabelRect, "net");
+            }
+            
+        }
+    }
+
 }

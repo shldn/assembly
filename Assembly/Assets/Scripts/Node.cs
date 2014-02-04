@@ -6,7 +6,13 @@ public enum NodeType {none, sense, actuate, control}
 
 public class Node {
 
+    // Static ---------------------------------------------------------------------------- ||
     public static List<Node> allNodes = new List<Node>();
+
+    // Variables ------------------------------------------------------------------------- ||
+    public NodeType nodeType = NodeType.none;
+
+    public Assembly assembly = null;
 
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
@@ -14,19 +20,20 @@ public class Node {
     public Quaternion orientation = Quaternion.identity;
     public float fieldOfView = 45f;
 
-    public Assembly assembly = null;
-    public List<Node> bondedNodes = new List<Node>();
-
+    // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
+
     public GameObject senseFieldBillboard = null;
     float arcScale = 5f;
+
+    public GameObject actuateVectorBillboard = null;
+    float actuateVecScale = 5f;
 
     public static Color stemColor = new Color(0.4f, 0.4f, 0.4f, 1f);
     public static Color senseColor = new Color(0.64f, 0.8f, 0.44f, 1f);
     public static Color actuatorColor = new Color(0.62f, 0.18f, 0.18f, 1f);
     public static Color controlColor = new Color(0.35f, 0.59f, 0.84f, 1f);
 
-    public NodeType nodeType = NodeType.none;
 
 
     public static implicit operator bool(Node exists){
@@ -72,9 +79,18 @@ public class Node {
             senseFieldBillboard.transform.localScale = Vector3.one * arcScale;
 
 
-            Color tempColor = senseFieldBillboard.renderer.material.GetColor("_TintColor");
-            senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
+            Color tempColor = senseColor;
 
+            //calling detect food on sense node
+            for(int j = 0; j < FoodNode.GetAll().Count; ++j){
+                bool detected = this.DetectFood(FoodNode.GetAll()[j] );
+                if( detected ){
+                    tempColor = Color.cyan;
+                    break;
+                }
+            }
+                               
+            senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
 
             // The following code billboards the arc with the main camera.
             senseFieldBillboard.transform.rotation = orientation;
@@ -113,6 +129,110 @@ public class Node {
     public void Mutate(float deviation){
         orientation *= Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward);
     } // End of Mutate().
+
+
+    public List<Node> GetNeighbors(){
+        // No assembly... no neighbors!
+        if(!assembly)
+            return null;
+
+        List<Node> neighbors = new List<Node>();
+        // Loop through all adjacent positions and see if they are occupied.
+        for(int i = 0; i < 12; i++){
+            IntVector3 currentNeighborPos = localHexPosition + HexUtilities.Adjacent(i);
+            for(int j = 0; j < assembly.nodes.Count; j++){
+                if(assembly.nodes[j].localHexPosition == currentNeighborPos){
+                    neighbors.Add(assembly.nodes[j]);
+                }
+            }
+        }
+        return neighbors;
+    } // End of GetNeighbors().
+
+
+    // Returns neighbors that this node can send a signal to.
+    public List<Node> GetLogicConnections(){
+        // No assembly... no neighbors... no logic!
+        if(!assembly)
+            return null;
+
+        List<Node> logicNodes = new List<Node>();
+        List<Node> neighbors = GetNeighbors();
+
+        for(int i = 0; i < neighbors.Count; i++){
+            Node currentNeighbor = neighbors[i];
+
+            // Sense transmits to control
+            if(nodeType == NodeType.sense)
+                if(currentNeighbor.nodeType == NodeType.control)
+                    logicNodes.Add(currentNeighbor);
+
+            // Control transmits to actuate
+            if(nodeType == NodeType.control)
+                if(currentNeighbor.nodeType == NodeType.actuate)
+                    logicNodes.Add(currentNeighbor);
+
+            // Actuate transmits to other actuate
+            if(nodeType == NodeType.actuate)
+                if(currentNeighbor.nodeType == NodeType.actuate)
+                    logicNodes.Add(currentNeighbor);
+        }
+
+        return logicNodes;
+    } // End of GetLogicConnections().
+
+
+    // Returns all nodes 'down the line' that this node would propogate a signal to.
+    public List<Node> GetFullLogicNet(){
+        // No assembly... no neighbors... no logic!
+        if(!assembly)
+            return null;
+
+        List<Node> logicNodes = new List<Node>();
+
+        // Churn through (logical) nodes to test for new connections...
+        List<Node> nodesToTest = GetLogicConnections();
+
+        int logicDumpCatch = 0;
+
+        while(nodesToTest.Count > 0){
+            Node currentNode = nodesToTest[0];
+            logicNodes.Add(currentNode);
+            nodesToTest.Remove(currentNode);
+
+            // Test the node for logic neighbors.
+            List<Node> newNeighbors = currentNode.GetLogicConnections();
+            for(int i = 0; i < newNeighbors.Count; i++){
+                Node curNewNeighbor = newNeighbors[i];
+                // If a logic neighbor hasn't been captured, add it to logicNodes and the nodesToTest pile.
+                if((curNewNeighbor != this) && !logicNodes.Contains(curNewNeighbor)){
+                    nodesToTest.Add(curNewNeighbor);
+                }
+            }
+
+            // debug
+            logicDumpCatch++;
+            if(logicDumpCatch > 999){
+                MonoBehaviour.print("LogicNet while() loop is stuck!");
+                break;
+            }
+        }
+
+        return logicNodes;
+    } // End of GetFullLogicNet().
+
+    //take sense node to detect foodnode
+    public bool DetectFood( FoodNode food){
+        if(this.nodeType != NodeType.sense)
+            return false;
+        Vector3 viewDir = this.orientation * Vector3.forward;
+        Vector3 foodDir = food.worldPosition - this.worldPosition;
+        float angle = Vector3.Angle( viewDir, foodDir);
+        if(angle < fieldOfView)
+            return true;
+        return false;
+    }
+
 
     // The string representation of this class for file saving (could use ToString, but want to be explicit)
     public string ToFileString(int format)
