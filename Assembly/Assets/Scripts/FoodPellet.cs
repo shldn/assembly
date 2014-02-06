@@ -30,6 +30,7 @@ public class FoodPellet{
 
     public void Destroy()
     {
+        allFoodPellets.Remove(this);
         Object.Destroy(gameObject);
     }
 

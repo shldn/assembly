@@ -308,8 +308,17 @@ public class Assembly {
                 }
             }
         }
-        for(int i = 0; i < validActuateNodes.Count; i++)
-            validActuateNodes[i].jetEngine.GetComponentInChildren<ParticleEmitter>().emit = true;
+
+        for(int i = 0; i < validActuateNodes.Count; i++){
+            if(!validActuateNodes[i].jetEngine)
+                continue;
+
+            ParticleEmitter emitter = validActuateNodes[i].jetEngine.GetComponentInChildren<ParticleEmitter>();
+            if(!emitter)
+                continue;
+
+            emitter.emit = true;
+        }
 
         return propulsion;
     } // End of GetMaximumPropulsion().
@@ -335,8 +344,17 @@ public class Assembly {
                 }
             }
         }
-        for(int i = 0; i < validActuateNodes.Count; i++)
-            validActuateNodes[i].jetEngine.GetComponentInChildren<ParticleEmitter>().emit = true;
+        
+        for(int i = 0; i < validActuateNodes.Count; i++){
+            if(!validActuateNodes[i].jetEngine)
+                continue;
+
+            ParticleEmitter emitter = validActuateNodes[i].jetEngine.GetComponentInChildren<ParticleEmitter>();
+            if(!emitter)
+                continue;
+
+            emitter.emit = true;
+        }
 
         return propulsion;
     } // End of GetMaximumPropulsion().

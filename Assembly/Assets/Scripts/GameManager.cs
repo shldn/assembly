@@ -71,16 +71,10 @@ public class GameManager : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.U))
             EnvironmentManager.Load("./data/env.txt");
         if (Input.GetKeyUp(KeyCode.L))
-        {
-            for (int i = 0; i < Assembly.allAssemblies.Count; ++i)
-                Assembly.allAssemblies[i].Destroy();
-            for (int i = 0; i < FoodPellet.GetAll().Count; ++i)
-                FoodPellet.GetAll()[i].Destroy();
-        }
+            ClearAll();
         if (Input.GetKeyUp(KeyCode.K))
         {
-            for(int i=0; i < Assembly.allAssemblies.Count; ++i)
-                Assembly.allAssemblies[i].Destroy();
+            ClearAll();
             SimulationManager.Inst.Run();
         }
         if (Input.GetKeyUp(KeyCode.J))
@@ -93,7 +87,6 @@ public class GameManager : MonoBehaviour {
             }
         }
 
-        
 
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
@@ -107,6 +100,14 @@ public class GameManager : MonoBehaviour {
         }
 
     } // End of Update().
+
+
+    void ClearAll(){
+        for (int i = Assembly.allAssemblies.Count - 1; i >= 0; i--)
+            Assembly.GetAll()[i].Destroy();
+        for (int i = FoodPellet.GetAll().Count - 1; i >= 0; i--)
+            FoodPellet.GetAll()[i].Destroy();
+    } // End of ClearAll().
 
 
     void OnGUI(){
