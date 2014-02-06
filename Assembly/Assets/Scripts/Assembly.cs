@@ -20,6 +20,17 @@ public class Assembly {
         return exists != null;
     }
 
+    public static Assembly GetRandomAssembly(int numNodes)
+    {
+        Assembly newAssembly = new Assembly();
+        newAssembly.worldPosition = MathUtilities.RandomVector3Sphere(20f);
+
+        Node seedNode = new Node();
+        newAssembly.AddNode(seedNode);
+        for(int j = 0; j < numNodes; j++)
+            newAssembly.AddRandomNode();
+        return newAssembly;
+    }
 
     // Constructors
     public Assembly(){
@@ -308,5 +319,11 @@ public class Assembly {
 
         return controlNodes;
     } // End of GetControlNodes().
+
+    // returns the fitness of this assembly in the current environment
+    public float Fitness()
+    {
+        return 0.0f;
+    }
 
 } // End of Assembly.
