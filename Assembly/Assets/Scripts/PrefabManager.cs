@@ -10,6 +10,9 @@ public class PrefabManager : MonoBehaviour {
 	public GameObject billboard = null;
 	public GameObject foodPellet = null;
 
+    // debug
+    public GameObject jetEngine = null;
+
     void Awake(){
         Inst = this;
     } // End of Awake().
