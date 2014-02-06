@@ -90,6 +90,8 @@ public class GameManager : MonoBehaviour {
                 GUI.skin.label.fontSize = 15;
                 GUI.skin.label.fontStyle = FontStyle.Normal;
                 GUI.Label(logLabelRect, "neighbor");
+
+                GUI.Label(new Rect(10, 10, 100, 100), neighbors.Count + " neighbors");
             }
 
             // Show logic connections

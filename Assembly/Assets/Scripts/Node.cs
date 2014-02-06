@@ -66,6 +66,29 @@ public class Node {
     } // End of Initialize().
 
 
+    public void UpdateType(){
+        int neighborCount = GetNeighbors().Count;
+            switch(neighborCount){
+                case 1:
+                    nodeType = NodeType.sense;
+                    gameObject.renderer.material.color = Node.senseColor;
+                    break;
+                case 2:
+                    nodeType = NodeType.actuate;
+                    gameObject.renderer.material.color = Node.actuatorColor;
+                    break;
+                case 3:
+                    nodeType = NodeType.control;
+                    gameObject.renderer.material.color = Node.controlColor;
+                    break;
+                default:
+                    nodeType = NodeType.none;
+                    gameObject.renderer.material.color = Node.stemColor;
+                    break;
+            }
+    } // End of UpdateType().
+
+
     public void UpdateTransform(){
         if(assembly){
             worldPosition = assembly.worldPosition + (assembly.worldRotation * HexUtilities.HexToWorld(localHexPosition));
@@ -233,5 +256,53 @@ public class Node {
             return true;
         return false;
     }
+
+
+    public int CountNeighbors(){
+        // Count number of neighbors for the new position. If 3 or more, move on.
+        int neighborCount = 0;
+        for(int k = 0; k < 12; k++){
+            IntVector3 currentNeighborPos = localHexPosition + HexUtilities.Adjacent(k);
+            for(int m = 0; m < assembly.nodes.Count; m++){
+                if(assembly.nodes[m].localHexPosition == currentNeighborPos){
+                    neighborCount++;
+                }
+            }
+        }
+        return neighborCount;
+    } // End of CountNeighbors().
+
+
+    public int CountAllNeighborsRecursive(){
+        List<Node> nodesOmitThis = new List<Node>(assembly.nodes);
+        nodesOmitThis.Remove(this);
+        return CountAllNeighborsRecursive(this, nodesOmitThis);
+    } // End of CountAllNeighborsRecursive();
+
+
+    public static int CountAllNeighborsRecursive(Node node, List<Node> nodesToTest){
+        int neighborCount = 0;
+        nodesToTest.Remove(node);
+
+        List<Node> neighbors = node.GetNeighbors();
+        List<Node> testableNeighbors = new List<Node>();
+
+        for(int i = 0; i < neighbors.Count; i++){
+            if(nodesToTest.Contains(neighbors[i])){
+                testableNeighbors.Add(neighbors[i]);
+            }
+        }
+
+        neighborCount = testableNeighbors.Count;
+
+        for(int i = 0; i < testableNeighbors.Count; i++)
+            nodesToTest.Remove(testableNeighbors[i]);
+
+        for(int i = 0; i < testableNeighbors.Count; i++){
+            neighborCount += CountAllNeighborsRecursive(testableNeighbors[i], nodesToTest);
+        }
+
+        return neighborCount;
+    } // End of CountAllNeighborsRecursive();
 
 } // End of Node.

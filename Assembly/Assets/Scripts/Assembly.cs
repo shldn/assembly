@@ -56,7 +56,7 @@ public class Assembly {
             Node currentNode = nodes[(nodeStartIndex + i) % nodes.Count];
 
             // Skip this node if it already has 3 neighbors.
-            if(CountNeighbors(currentNode.localHexPosition) > 2)
+            if(currentNode.CountNeighbors() > 2)
                 continue;
 
             // Loop through all directions, starting with a random one.
@@ -79,13 +79,13 @@ public class Assembly {
                 if(!occupied){
 
                     // Too many neighbors... bail out!
-                    List<Node> neighbors = GetNeighbors(currentPos);
+                    List<Node> neighbors = GetNeighborsToPos(currentPos);
                     if(neighbors.Count > 2)
                         continue;
 
                     bool tooManyNeighborNeighbors = false;
                     for(int k = 0; k < neighbors.Count; k++){
-                        if(CountNeighbors(neighbors[k].localHexPosition) > 2){
+                        if(neighbors[k].CountNeighbors() > 2){
                             tooManyNeighborNeighbors = true;
                             break;
                         }
@@ -113,7 +113,7 @@ public class Assembly {
         for(int i = 0; i < nodes.Count; i++){
             Node currentNode = nodes[(nodeStartIndex + i) % nodes.Count];
 
-            List<Node> neighbors = GetNeighbors(currentNode.localHexPosition);
+            List<Node> neighbors = currentNode.GetNeighbors();
 
             // If we have neighbors, test against each one to see if the assembly would be bisected if we
             //   removed the current node.
@@ -124,8 +124,7 @@ public class Assembly {
                 for(int j = 0; j < neighbors.Count; j++){
                     List<Node> nodesOmitThis = new List<Node>(nodes);
                     nodesOmitThis.Remove(currentNode);
-
-                    if(CountAllNeighborsRecursive(neighbors[j], nodesOmitThis) < (nodes.Count - 2)){
+                    if(Node.CountAllNeighborsRecursive(neighbors[j], nodesOmitThis) < (nodes.Count - 2)){
                         // Removing this node would bisect the assembly; we can't remove it.
                         fail = true;
                         break;
@@ -145,46 +144,13 @@ public class Assembly {
 
     public void UpdateNodes(){
         for(int i = 0; i < nodes.Count; i++){
-            Node currentNode = nodes[i];
-            int neighborCount = CountNeighbors(currentNode.localHexPosition);
-            switch(neighborCount){
-                case 1:
-                    currentNode.nodeType = NodeType.sense;
-                    currentNode.gameObject.renderer.material.color = Node.senseColor;
-                    break;
-                case 2:
-                    currentNode.nodeType = NodeType.actuate;
-                    currentNode.gameObject.renderer.material.color = Node.actuatorColor;
-                    break;
-                case 3:
-                    currentNode.nodeType = NodeType.control;
-                    currentNode.gameObject.renderer.material.color = Node.controlColor;
-                    break;
-                default:
-                    currentNode.nodeType = NodeType.none;
-                    currentNode.gameObject.renderer.material.color = Node.stemColor;
-                    break;
-            }
+            nodes[i].UpdateTransform();
+            nodes[i].UpdateType();
         }
     } // End of UpdateNodes(). 
 
 
-    int CountNeighbors(IntVector3 hexPos){
-        // Count number of neighbors for the new position. If 3 or more, move on.
-        int neighborCount = 0;
-        for(int k = 0; k < 12; k++){
-            IntVector3 currentNeighborPos = hexPos + HexUtilities.Adjacent(k);
-            for(int m = 0; m < nodes.Count; m++){
-                if(nodes[m].localHexPosition == currentNeighborPos){
-                    neighborCount++;
-                }
-            }
-        }
-        return neighborCount;
-    } // End of CountNeighbors().
-
-
-    List<Node> GetNeighbors(IntVector3 hexPos){
+    List<Node> GetNeighborsToPos(IntVector3 hexPos){
         List<Node> neighbors = new List<Node>();
         for(int k = 0; k < 12; k++){
             IntVector3 currentNeighborPos = hexPos + HexUtilities.Adjacent(k);
@@ -196,33 +162,6 @@ public class Assembly {
         }
         return neighbors;
     } // End of GetNeighbors().
-
-
-    public int CountAllNeighborsRecursive(Node node, List<Node> nodesToTest){
-        int neighborCount = 0;
-        nodesToTest.Remove(node);
-
-        List<Node> neighbors = GetNeighbors(node.localHexPosition);
-        List<Node> testableNeighbors = new List<Node>();
-
-        for(int i = 0; i < neighbors.Count; i++){
-            if(nodesToTest.Contains(neighbors[i])){
-                testableNeighbors.Add(neighbors[i]);
-            }
-        }
-
-        neighborCount = testableNeighbors.Count;
-
-        for(int i = 0; i < testableNeighbors.Count; i++)
-            nodesToTest.Remove(testableNeighbors[i]);
-
-        for(int i = 0; i < testableNeighbors.Count; i++){
-            neighborCount += CountAllNeighborsRecursive(testableNeighbors[i], nodesToTest);
-        }
-
-        return neighborCount;
-    } // End of CountAllNeighborsRecursive();
-
 
 
     public void Mutate(float deviation){
