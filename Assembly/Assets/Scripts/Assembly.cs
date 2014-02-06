@@ -5,9 +5,7 @@ using System.Collections.Generic;
 public class Assembly {
 
     public static List<Assembly> allAssemblies = new List<Assembly>();
-
-    // temp
-    public Color color = Color.white;
+    public static List<Assembly> GetAll() { return allAssemblies; }
 
     public string name = "unnamed";
 	public List<Node> nodes = new List<Node>();
@@ -23,7 +21,6 @@ public class Assembly {
     public static Assembly GetRandomAssembly(int numNodes)
     {
         Assembly newAssembly = new Assembly();
-        newAssembly.worldPosition = MathUtilities.RandomVector3Sphere(20f);
 
         Node seedNode = new Node();
         newAssembly.AddNode(seedNode);
@@ -136,10 +133,8 @@ public class Assembly {
 
                     // Clear spot... let's do it!
                     if(!tooManyNeighborNeighbors){
-                        Node newNode = new Node(currentPos, Random.rotation);
+                        Node newNode = new Node(currentPos);
                         AddNode(newNode);
-
-                        newNode.gameObject.renderer.material.color = color;
                         UpdateNodes();
                         return;
                     }
@@ -259,10 +254,67 @@ public class Assembly {
         return controlNodes;
     } // End of GetControlNodes().
 
+
+    // Returns the assembly's propulsion if all of it's sense nodes fired at once.
+    public Vector3 GetFunctionalPropulsion(){
+        List<Node> senseNodes = GetSenseNodes();
+        List<Node> validActuateNodes = new List<Node>();
+        Vector3 propulsion = Vector3.zero;
+
+        // Loop through all sense nodes.
+        for(int i = 0; i < senseNodes.Count; i++){
+            if(!senseNodes[i].DetectFood())
+                continue;
+
+            // Get the sense node's functionally connected nodes.
+            List<Node> networkedNodes = senseNodes[i].GetFullLogicNet();
+            // Loop through those connected nodes.
+            for(int j = 0; j < networkedNodes.Count; j++){
+                Node currentNode = networkedNodes[j];
+                // If the node is an actuator and hasn't been accounted for, stash it and get it's actuateVector.
+                if((currentNode.nodeType == NodeType.actuate) && !validActuateNodes.Contains(currentNode)){
+                    validActuateNodes.Add(currentNode);
+                    propulsion += currentNode.worldAcuateVector;
+                }
+            }
+        }
+        return propulsion;
+    } // End of GetMaximumPropulsion().
+
+
+    // Returns the assembly's propulsion if all of it's sense nodes fired at once.
+    public Vector3 GetMaximumPropulsion(){
+        List<Node> senseNodes = GetSenseNodes();
+        List<Node> validActuateNodes = new List<Node>();
+        Vector3 propulsion = Vector3.zero;
+
+        // Loop through all sense nodes.
+        for(int i = 0; i < senseNodes.Count; i++){
+            // Get the sense node's functionally connected nodes.
+            List<Node> networkedNodes = senseNodes[i].GetFullLogicNet();
+            // Loop through those connected nodes.
+            for(int j = 0; j < networkedNodes.Count; j++){
+                Node currentNode = networkedNodes[j];
+                // If the node is an actuator and hasn't been accounted for, stash it and get it's actuateVector.
+                if((currentNode.nodeType == NodeType.actuate) && !validActuateNodes.Contains(currentNode)){
+                    validActuateNodes.Add(currentNode);
+                    propulsion += currentNode.worldAcuateVector;
+                }
+            }
+        }
+        return propulsion;
+    } // End of GetMaximumPropulsion().
+
+
     // returns the fitness of this assembly in the current environment
     public float Fitness()
     {
-        return 0.0f;
+        Vector3 functionalPropulsion = GetFunctionalPropulsion();
+
+        if(functionalPropulsion.Equals(Vector3.zero))
+            return(180);
+
+        return Vector3.Angle(FoodPellet.GetAll()[0].worldPosition - worldPosition, GetFunctionalPropulsion());
     }
 
 } // End of Assembly.

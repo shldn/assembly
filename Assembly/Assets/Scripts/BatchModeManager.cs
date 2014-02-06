@@ -38,9 +38,9 @@ public class BatchModeManager
             EnvironmentManager.Load(envPath);
             SortedDictionary<float, Assembly> assemblyScores = new SortedDictionary<float, Assembly>(); // mapping of fitness score --> assembly
 
-            for (int i = 0; i < Assembly.allAssemblies.Count; ++i)
+            for (int i = 0; i < Assembly.GetAll().Count; ++i)
             {
-                assemblyScores.Add(Assembly.allAssemblies[i].Fitness(), Assembly.allAssemblies[i]); 
+                assemblyScores.Add(Assembly.GetAll()[i].Fitness(), Assembly.GetAll()[i]); 
             }
 
             /*
