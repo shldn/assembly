@@ -75,6 +75,11 @@ public class Node {
         Initialize(worldPos);
     }
 
+    // Copy Constructor - Make new node with current node position and orientation
+    public Node Duplicate() {
+        return new Node(localHexPosition);
+    }
+
     // Set-up of basic Node stuff.
     private void Initialize(Vector3 worldPos){
         worldPosition = worldPos;

@@ -4,7 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-// assembly.exe -batchmode -environment filename -numtests int -keeppercent float -numgenerations int
+// Usage: assembly.exe -batchmode -environment filename -numtests int -keeppercent float -numgenerations int
 public class BatchModeManager
 {
 
@@ -21,10 +21,11 @@ public class BatchModeManager
 
     // Member variables
     private bool inBatchMode = false;
-    private int numTests = 1;           // number of tests with one environment
-    private int numGenerations = 1;     // number of generations to run.
-    private float keepPercent = 1.0f;   // max percentage of tests to keep that are successful in the environment and will mutate
-    private string envPath = "";
+    public int numTests = 1;               // number of tests with one environment
+    public int numGenerations = 1;         // number of generations to run.
+    public float keepPercent = 1.0f;       // max percentage of tests to keep that are successful in the environment and will mutate
+    public float maxFitnessToKeep = 1.0f;  // fitness an assembly must have to persist
+    public string envPath = "";
 
     // Accessors
     public bool InBatchMode { get { return inBatchMode; } }
@@ -33,30 +34,13 @@ public class BatchModeManager
     {
         HandleCommandLineArgs();
         if (inBatchMode)
-        {
-            DateTime startTime = DateTime.Now;
-            EnvironmentManager.Load(envPath);
-            SortedDictionary<float, Assembly> assemblyScores = new SortedDictionary<float, Assembly>(); // mapping of fitness score --> assembly
+            RunTest();
+    }
 
-            for (int i = 0; i < Assembly.GetAll().Count; ++i)
-            {
-                assemblyScores.Add(Assembly.GetAll()[i].Fitness(), Assembly.GetAll()[i]); 
-            }
-
-            /*
-            IOHelper.LoadDirectory(dirPathToLoad);
-            string nextPathToLoad = dirPathToLoad;
-            for (int i = 0; i < numIterations; ++i)
-            {
-                if (mutateAll)
-                    GameManager.MutateAll();
-                nextPathToLoad = IncrementPathName(nextPathToLoad);
-                IOHelper.SaveAllToFolder(nextPathToLoad);
-            }
-            */
-            System.Console.WriteLine(numGenerations + " Generations ran in " + DateTime.Now.Subtract(startTime).ToString());
-            //Application.Quit();
-        }
+    private void RunTest()
+    {
+        SimulationManager.Inst.Run();
+        Application.Quit();
     }
 
     private void HandleCommandLineArgs()
@@ -72,19 +56,19 @@ public class BatchModeManager
 
                 case "-environment":
                 case "-env":
-                    envPath = cmdLnArgs[++i];
+                    SimulationManager.Inst.envPath = cmdLnArgs[++i];
                     break;
                 case "-numtests":
-                    numTests = int.Parse(cmdLnArgs[++i]);
+                    SimulationManager.Inst.numTests = int.Parse(cmdLnArgs[++i]);
                     break;
                 case "-numGenerations":
                 case "-numGen":
                 case "-gen":
-                    numGenerations = int.Parse(cmdLnArgs[++i]);
+                    SimulationManager.Inst.numGenerations = int.Parse(cmdLnArgs[++i]);
                     break;
                 case "-keepPercent":
                 case "-percent":
-                    keepPercent = float.Parse(cmdLnArgs[++i]);
+                    SimulationManager.Inst.keepPercent = float.Parse(cmdLnArgs[++i]);
                     break;
                 default:
                     if( inBatchMode )   

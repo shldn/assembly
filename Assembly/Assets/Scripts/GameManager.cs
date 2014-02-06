@@ -62,14 +62,36 @@ public class GameManager : MonoBehaviour {
 
         // Save/load
         if (Input.GetKeyUp(KeyCode.P))
-            IOHelper.SaveAllToFolder("./saves/");
+            IOHelper.SaveAllToFolder("./data/");
 
-        if (Input.GetKeyUp(KeyCode.L))
-            new Assembly("./saves/unnamed.txt");
         if (Input.GetKeyUp(KeyCode.O))
-            EnvironmentManager.Save(IOHelper.GetValidFileName("./saves/", "env", ".txt"));
+            new Assembly("./data/unnamed.txt");
         if (Input.GetKeyUp(KeyCode.I))
-            EnvironmentManager.Load("./saves/env2.txt");
+            EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));
+        if (Input.GetKeyUp(KeyCode.U))
+            EnvironmentManager.Load("./data/env.txt");
+        if (Input.GetKeyUp(KeyCode.L))
+        {
+            for (int i = 0; i < Assembly.allAssemblies.Count; ++i)
+                Assembly.allAssemblies[i].Destroy();
+            for (int i = 0; i < FoodPellet.GetAll().Count; ++i)
+                FoodPellet.GetAll()[i].Destroy();
+        }
+        if (Input.GetKeyUp(KeyCode.K))
+        {
+            for(int i=0; i < Assembly.allAssemblies.Count; ++i)
+                Assembly.allAssemblies[i].Destroy();
+            SimulationManager.Inst.Run();
+        }
+        if (Input.GetKeyUp(KeyCode.J))
+        {
+            for (int i = 0; i < Assembly.allAssemblies.Count; ++i)
+            {
+                Assembly.allAssemblies[i].worldPosition.x += i * 5.0f;
+                for (int j = 0; j < Assembly.allAssemblies[i].nodes.Count; ++j)
+                    Assembly.allAssemblies[i].nodes[j].UpdateTransform();
+            }
+        }
 
         
 
@@ -88,7 +110,8 @@ public class GameManager : MonoBehaviour {
 
 
     void OnGUI(){
-        GUI.Label(new Rect(0, 0, 200, 200), Assembly.GetAll()[0].Fitness().ToString());
+        if( Assembly.GetAll().Count > 0 )
+            GUI.Label(new Rect(0, 0, 200, 200), Assembly.GetAll()[0].Fitness().ToString());
 
 
         if(selectedNode){

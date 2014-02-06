@@ -25,9 +25,6 @@ public class EnvironmentManager {
             foodPositions = IOHelper.Vector3ListFromString(sr.ReadLine());
             assemblyPositions = IOHelper.Vector3ListFromString(sr.ReadLine());
         }
-
-        InitializeFood();
-        InitializeAssemblies();
     }
 
     public static void Save(string file)
@@ -57,19 +54,23 @@ public class EnvironmentManager {
             Debug.LogError(file + " already exists, save aborted");
     }
 
-    private static void InitializeFood()
+    public static void InitializeFood()
     {
         for (int i = 0; foodPositions != null && i < foodPositions.Count; ++i)
             new FoodPellet(foodPositions[i]);
     }
 
-    private static void InitializeAssemblies()
+    // Places random assemblies at each assembly position in the assemblyPositions list
+    public static List<Assembly> InitializeAssemblies()
     {
+        List<Assembly> newAssemblies = new List<Assembly>();
         for (int i = 0; assemblyPositions != null && i < assemblyPositions.Count; ++i)
         {
             Assembly a = Assembly.GetRandomAssembly(assemblySize);
             a.worldPosition = assemblyPositions[i];
+            newAssemblies.Add(a);
         }
+        return newAssemblies;
     }
 
 }
