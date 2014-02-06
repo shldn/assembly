@@ -12,44 +12,55 @@ public class GameManager : MonoBehaviour {
         if (BatchModeManager.Inst.InBatchMode)
             return;
 
-        // Generate random assemblies
-        int numAssemblies = 1;
-        for(int i = 0; i < numAssemblies; i++){
-            Assembly.GetRandomAssembly(10);
-        }
+        // Generate a random assembly.
+        Assembly.GetRandomAssembly(10);
+
+        // Add a food pellet a short ways away.
+        new FoodPellet(new Vector3(10f, 0f, 0f));
 
 	} // End of Start().
 
+
     void Update(){
 
-        for(int i = 0; i < Assembly.allAssemblies.Count; i++){
-            // Only mutate nodes.
+        // Update assemblies.
+        for(int i = 0; i < Assembly.GetAll().Count; i++){
+            Assembly.GetAll()[i].UpdateTransform();
+
+            // User input -------------------------------------
+            // Mutate nodes.
             if(Input.GetKeyDown(KeyCode.B)){
-                for(int j = 0; j < Assembly.allAssemblies[i].nodes.Count; j++){
-                    Assembly.allAssemblies[i].nodes[j].Mutate(0.1f);
+                for(int j = 0; j < Assembly.GetAll()[i].nodes.Count; j++){
+                    Assembly.GetAll()[i].nodes[j].Mutate(0.1f);
                 }
             }
 
             // Add a node.
             if(Input.GetKeyDown(KeyCode.N))
-                Assembly.allAssemblies[i].AddRandomNode();
+                Assembly.GetAll()[i].AddRandomNode();
 
             // Remove a node.
             if(Input.GetKeyDown(KeyCode.M))
-                Assembly.allAssemblies[i].RemoveRandomNode();
+                Assembly.GetAll()[i].RemoveRandomNode();
 
+            // Mutate entire assembly by 1 tick.
             if(Input.GetKeyDown(KeyCode.Space))
-                Assembly.allAssemblies[i].Mutate(0.1f);
+                Assembly.GetAll()[i].Mutate(0.1f);
 
+            // Rapidly mutate entire assembly at full speed.
             if(Input.GetKey(KeyCode.Return))
-                Assembly.allAssemblies[i].Mutate(0.01f);
-            
-            if(Input.GetKeyDown(KeyCode.F))
-                FoodNode.AddNewFoodNode();
-
-            Assembly.allAssemblies[i].UpdateTransform();
+                Assembly.GetAll()[i].Mutate(0.01f);
+            // ------------------------------------------------
         }
 
+        // Update nodes.
+        for(int i = 0; i < Node.GetAll().Count; i++)
+            Node.GetAll()[i].UpdateTransform();
+
+
+
+
+        // Save/load
         if (Input.GetKeyUp(KeyCode.P))
             IOHelper.SaveAllToFolder("./saves/");
 
@@ -60,12 +71,12 @@ public class GameManager : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.I))
             EnvironmentManager.Load("./saves/env2.txt");
 
-        for(int i = 0; i < Node.allNodes.Count; i++)
-            Node.allNodes[i].UpdateTransform();
+        
 
+        // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
-        for(int i = 0; i < Node.allNodes.Count; i++){
-            Node currentNode = Node.allNodes[i];
+        for(int i = 0; i < Node.GetAll().Count; i++){
+            Node currentNode = Node.GetAll()[i];
             float distToNode = Vector3.Distance(Camera.main.transform.position, currentNode.worldPosition);
             if(distToNode < closestDistance){
                 closestDistance = distToNode;
@@ -77,6 +88,9 @@ public class GameManager : MonoBehaviour {
 
 
     void OnGUI(){
+        GUI.Label(new Rect(0, 0, 200, 200), Assembly.GetAll()[0].Fitness().ToString());
+
+
         if(selectedNode){
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 

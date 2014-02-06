@@ -24,7 +24,7 @@ public class IOHelper
     {
         string ext = ".txt";
         Directory.CreateDirectory(folderPath);
-        foreach (Assembly a in Assembly.allAssemblies)
+        foreach (Assembly a in Assembly.GetAll())
             a.Save(GetValidFileName(folderPath, a.name, ext));
     }
 

@@ -8,17 +8,16 @@ public class Node {
 
     // Static ---------------------------------------------------------------------------- ||
     public static List<Node> allNodes = new List<Node>();
+    public static List<Node> GetAll() { return allNodes; }
 
     // Variables ------------------------------------------------------------------------- ||
     public NodeType nodeType = NodeType.none;
+    public NodeProperties nodeProperties = NodeProperties.random;
 
     public Assembly assembly = null;
 
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
-
-    public Quaternion orientation = Quaternion.identity;
-    public float fieldOfView = 45f;
 
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
@@ -34,34 +33,53 @@ public class Node {
     public static Color actuatorColor = new Color(0.62f, 0.18f, 0.18f, 1f);
     public static Color controlColor = new Color(0.35f, 0.59f, 0.84f, 1f);
 
+    // Calculated properties ------------------------------------------------------------- ||
 
+    public Vector3 worldSenseVector {
+        get{
+            if(assembly)
+                return assembly.worldRotation * nodeProperties.senseVector;
+            else
+                return nodeProperties.senseVector;
+        }
+    }
+
+    public Vector3 worldAcuateVector {
+        get{
+            if(assembly)
+                return assembly.worldRotation * nodeProperties.actuateVector;
+            else
+                return nodeProperties.actuateVector;
+        }
+    }
 
     public static implicit operator bool(Node exists){
         return exists != null;
     }
 
 
+    // ------------------------------------------------------------------------------------ ||
+
     // Constructors
 	public Node(){
-        Initialize(Vector3.zero, Random.rotation);
+        Initialize(Vector3.zero);
     }
-	public Node(IntVector3 hexPos, Quaternion orient){
+	public Node(IntVector3 hexPos){
         localHexPosition = hexPos;
-        Initialize(HexUtilities.HexToWorld(localHexPosition), orient);
+        Initialize(HexUtilities.HexToWorld(localHexPosition));
     }
-    public Node(Vector3 worldPos, Quaternion orient){
-        Initialize(worldPos, orient);
+    public Node(Vector3 worldPos){
+        Initialize(worldPos);
     }
 
     // Copy Constructor - Make new node with current node position and orientation
     public Node Duplicate() {
-        return new Node(localHexPosition, orientation);
+        return new Node(localHexPosition);
     }
 
     // Set-up of basic Node stuff.
-    private void Initialize(Vector3 worldPos, Quaternion rot){
+    private void Initialize(Vector3 worldPos){
         worldPosition = worldPos;
-        orientation = rot;
 
         // Initialize graphic
         gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
@@ -103,15 +121,15 @@ public class Node {
 
         // Update arc rotation and such. 
         if(senseFieldBillboard){
-            senseFieldBillboard.transform.position = worldPosition + ((orientation * assembly.worldRotation) * (Vector3.forward * arcScale));
+            senseFieldBillboard.transform.position = worldPosition + (worldSenseVector * arcScale);
             senseFieldBillboard.transform.localScale = Vector3.one * arcScale;
 
 
             Color tempColor = senseColor;
 
             //calling detect food on sense node
-            for(int j = 0; j < FoodNode.GetAll().Count; ++j){
-                bool detected = this.DetectFood(FoodNode.GetAll()[j] );
+            for(int j = 0; j < FoodPellet.GetAll().Count; ++j){
+                bool detected = this.DetectFood(FoodPellet.GetAll()[j] );
                 if( detected ){
                     tempColor = Color.cyan;
                     break;
@@ -121,8 +139,8 @@ public class Node {
             senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
 
             // The following code billboards the arc with the main camera.
-            senseFieldBillboard.transform.rotation = orientation;
-            senseFieldBillboard.transform.position = worldPosition + (orientation * (Vector3.forward * (0.5f * arcScale)));
+            senseFieldBillboard.transform.rotation = Quaternion.LookRotation(worldSenseVector);
+            senseFieldBillboard.transform.position = worldPosition + (senseFieldBillboard.transform.rotation * (Vector3.forward * (0.5f * arcScale)));
             senseFieldBillboard.transform.rotation *= Quaternion.AngleAxis(90, Vector3.up);
 
             Vector3 camRelativePos = senseFieldBillboard.transform.InverseTransformPoint(Camera.main.transform.position);
@@ -155,7 +173,8 @@ public class Node {
 
     // Randomly 'mutates' the node's values. A deviation of 1 will completely randomize the node.
     public void Mutate(float deviation){
-        orientation *= Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward);
+        nodeProperties.senseVector = Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward) * nodeProperties.senseVector;
+        nodeProperties.actuateVector = Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward) * nodeProperties.actuateVector;
     } // End of Mutate().
 
 
@@ -249,17 +268,28 @@ public class Node {
         return logicNodes;
     } // End of GetFullLogicNet().
 
-    //take sense node to detect foodnode
-    public bool DetectFood( FoodNode food){
+
+    // Does this sense node detect a food node?
+    public bool DetectFood(FoodPellet food){
         if(this.nodeType != NodeType.sense)
-            return false;
-        Vector3 viewDir = this.orientation * Vector3.forward;
+            return false;;
         Vector3 foodDir = food.worldPosition - this.worldPosition;
-        float angle = Vector3.Angle( viewDir, foodDir);
-        if(angle < fieldOfView)
+        float angle = Vector3.Angle(worldSenseVector, foodDir);
+        if(angle < nodeProperties.fieldOfView)
             return true;
         return false;
     }
+
+
+    // 'General' detect food... returns true if node detects any food pellet.
+    public bool DetectFood(){
+        for(int i = 0; i < FoodPellet.GetAll().Count; i++)
+            if(DetectFood(FoodPellet.GetAll()[i]))
+                return true;
+
+        return false;
+    }
+
 
     public int CountNeighbors(){
         // Count number of neighbors for the new position. If 3 or more, move on.
@@ -314,19 +344,65 @@ public class Node {
     {
         return  localHexPosition.x + "," +
                 localHexPosition.y + "," +
+                localHexPosition.z;
+
+        /* old - removed orientation
+        return  localHexPosition.x + "," +
+                localHexPosition.y + "," +
                 localHexPosition.z + "," +
                 orientation.x + "," +
                 orientation.y + "," +
                 orientation.z + "," +
-                orientation.w; 
+                orientation.w;
+        */
     }
 
     public static Node FromString(string str, int format=1)
     {
         string[] tok = str.Split(',');
         IntVector3 pos = new IntVector3(int.Parse(tok[0]), int.Parse(tok[1]), int.Parse(tok[2]));
+        return new Node(pos);
+
+        /* old - removed orientation
+        string[] tok = str.Split(',');
+        IntVector3 pos = new IntVector3(int.Parse(tok[0]), int.Parse(tok[1]), int.Parse(tok[2]));
         Quaternion rot = new Quaternion(float.Parse(tok[3]), float.Parse(tok[4]), float.Parse(tok[5]), float.Parse(tok[6]));
         return new Node(pos, rot);
+        */
     }
-    
+
 } // End of Node.
+
+
+public struct NodeProperties {
+
+    // Sense
+    public Vector3 senseVector;
+    public float fieldOfView;
+
+    // Actuate
+    public Vector3 actuateVector;
+
+
+    // A fully randomly-seeded NodeProperties.
+    public static NodeProperties random{
+        get{
+            // Sense
+            Vector3 _senseVector = Random.rotation * Vector3.forward;
+            float _fieldOfView = 45f;
+
+            // Actuate
+            Vector3 _actuateVector = Random.rotation * Vector3.forward;
+
+            return new NodeProperties(Random.rotation * Vector3.forward, 45f, Random.rotation * Vector3.forward);
+        }
+    } // End of NodeProperties.random.
+
+    // Constructor
+    public NodeProperties(Vector3 _senseVector, float _fieldOfView, Vector3 _actuateVector){
+        senseVector = _senseVector;
+        fieldOfView = _fieldOfView;
+        actuateVector = _actuateVector;
+    } // End of NodeProperties constructor.
+
+} // End of NodeProperties.

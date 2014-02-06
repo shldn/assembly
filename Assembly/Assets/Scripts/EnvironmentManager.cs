@@ -38,15 +38,15 @@ public class EnvironmentManager {
                 sw.WriteLine(DateTime.UtcNow.ToBinary().ToString());
 
                 // write all food node positions
-                string foodStr = (FoodNode.GetAll().Count > 0) ? IOHelper.ToCommaString(FoodNode.GetAll()[0].worldPosition) : "";
-                for (int i = 1; i < FoodNode.GetAll().Count; ++i)
-                    foodStr += "," + IOHelper.ToCommaString(FoodNode.GetAll()[i].worldPosition);
+                string foodStr = (FoodPellet.GetAll().Count > 0) ? IOHelper.ToCommaString(FoodPellet.GetAll()[0].worldPosition) : "";
+                for (int i = 1; i < FoodPellet.GetAll().Count; ++i)
+                    foodStr += "," + IOHelper.ToCommaString(FoodPellet.GetAll()[i].worldPosition);
                 sw.WriteLine(foodStr);
 
                 // write all assembly positions
-                string aStr = (Assembly.allAssemblies.Count > 0) ? IOHelper.ToCommaString(Assembly.allAssemblies[0].worldPosition) : "";
-                for (int i = 1; i < Assembly.allAssemblies.Count; ++i)
-                    aStr += "," + IOHelper.ToCommaString(Assembly.allAssemblies[i].worldPosition);
+                string aStr = (Assembly.GetAll().Count > 0) ? IOHelper.ToCommaString(Assembly.GetAll()[0].worldPosition) : "";
+                for (int i = 1; i < Assembly.GetAll().Count; ++i)
+                    aStr += "," + IOHelper.ToCommaString(Assembly.GetAll()[i].worldPosition);
                 sw.WriteLine(aStr);
             }
         }
@@ -57,7 +57,7 @@ public class EnvironmentManager {
     public static void InitializeFood()
     {
         for (int i = 0; foodPositions != null && i < foodPositions.Count; ++i)
-            new FoodNode(foodPositions[i]);
+            new FoodPellet(foodPositions[i]);
     }
 
     // Places random assemblies at each assembly position in the assemblyPositions list

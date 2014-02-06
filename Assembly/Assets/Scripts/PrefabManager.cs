@@ -8,7 +8,7 @@ public class PrefabManager : MonoBehaviour {
     public GameObject node = null;
 	public GameObject bond = null;
 	public GameObject billboard = null;
-	public GameObject foodNode = null;
+	public GameObject foodPellet = null;
 
     void Awake(){
         Inst = this;
