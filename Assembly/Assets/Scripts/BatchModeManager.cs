@@ -1,11 +1,17 @@
-﻿using UnityEngine;
+﻿#define RUN_AS_MONOBEHAVIOR
+
+using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+
 // assembly.exe -batchmode -environment filename -numtests int -keeppercent float -numgenerations int
 public class BatchModeManager
+#if (RUN_AS_MONOBEHAVIOR)
+ : MonoBehaviour
+#endif
 {
 
     private static BatchModeManager mInstance = null;
@@ -21,42 +27,69 @@ public class BatchModeManager
 
     // Member variables
     private bool inBatchMode = false;
-    private int numTests = 1;           // number of tests with one environment
-    private int numGenerations = 1;     // number of generations to run.
-    private float keepPercent = 1.0f;   // max percentage of tests to keep that are successful in the environment and will mutate
-    private string envPath = "";
+    public int numTests = 1;               // number of tests with one environment
+    public int numGenerations = 1;         // number of generations to run.
+    public float keepPercent = 1.0f;       // max percentage of tests to keep that are successful in the environment and will mutate
+    public float maxFitnessToKeep = 1.0f;  // fitness an assembly must have to persist
+    public string envPath = "";
 
     // Accessors
     public bool InBatchMode { get { return inBatchMode; } }
 
+#if (RUN_AS_MONOBEHAVIOR)
+    void Awake(){
+        mInstance = this;
+    }
+#endif
+
     private BatchModeManager()
     {
+#if (RUN_AS_MONOBEHAVIOR)
+        return;
+#endif
         HandleCommandLineArgs();
         if (inBatchMode)
+            RunTest();
+    }
+
+    public void RunTest()
+    {
+        DateTime startTime = DateTime.Now;
+        EnvironmentManager.Load(envPath);
+        EnvironmentManager.InitializeFood();
+
+        List<KeyValuePair<float, Assembly>> assemblyScores = new List<KeyValuePair<float, Assembly>>();
+        for (int testCount = 0; testCount < numTests; ++testCount)
         {
-            DateTime startTime = DateTime.Now;
-            EnvironmentManager.Load(envPath);
-            SortedDictionary<float, Assembly> assemblyScores = new SortedDictionary<float, Assembly>(); // mapping of fitness score --> assembly
-
-            for (int i = 0; i < Assembly.allAssemblies.Count; ++i)
-            {
-                assemblyScores.Add(Assembly.allAssemblies[i].Fitness(), Assembly.allAssemblies[i]); 
-            }
-
-            /*
-            IOHelper.LoadDirectory(dirPathToLoad);
-            string nextPathToLoad = dirPathToLoad;
-            for (int i = 0; i < numIterations; ++i)
-            {
-                if (mutateAll)
-                    GameManager.MutateAll();
-                nextPathToLoad = IncrementPathName(nextPathToLoad);
-                IOHelper.SaveAllToFolder(nextPathToLoad);
-            }
-            */
-            System.Console.WriteLine(numGenerations + " Generations ran in " + DateTime.Now.Subtract(startTime).ToString());
-            //Application.Quit();
+            List<Assembly> assembliesToTest = EnvironmentManager.InitializeAssemblies();
+            for (int i = 0; i < assembliesToTest.Count; ++i)
+                assemblyScores.Add(new KeyValuePair<float, Assembly>(Assembly.allAssemblies[i].Fitness(), Assembly.allAssemblies[i]));
         }
+
+        int maxNumToKeep = (int)(keepPercent * (float)Assembly.allAssemblies.Count);
+        List<Assembly> assembliesToKeep = new List<Assembly>();
+        foreach (KeyValuePair<float, Assembly> kvp in assemblyScores)
+        {
+            if (kvp.Key < maxFitnessToKeep && assembliesToKeep.Count < maxNumToKeep)
+                assembliesToKeep.Add(kvp.Value);
+            else
+                kvp.Value.Destroy();
+        }
+
+
+        /*
+        IOHelper.LoadDirectory(dirPathToLoad);
+        string nextPathToLoad = dirPathToLoad;
+        for (int i = 0; i < numIterations; ++i)
+        {
+            if (mutateAll)
+                GameManager.MutateAll();
+            nextPathToLoad = IncrementPathName(nextPathToLoad);
+            IOHelper.SaveAllToFolder(nextPathToLoad);
+        }
+        */
+        Debug.LogError(numGenerations + " Generations ran in " + DateTime.Now.Subtract(startTime).ToString());
+        //Application.Quit();
     }
 
     private void HandleCommandLineArgs()

@@ -60,6 +60,12 @@ public class Assembly {
     } // End of Duplicate().
 
 
+    public void Destroy(){
+        for (int i = nodes.Count-1; i >= 0; --i)
+            nodes[i].Destroy();
+        allAssemblies.Remove(this);
+    }
+
     public void Save(){
         string path = "./saves/" + name + ".txt";
         Save(path);
