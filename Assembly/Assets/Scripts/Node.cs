@@ -53,6 +53,11 @@ public class Node {
         Initialize(worldPos, orient);
     }
 
+    // Copy Constructor - Make new node with current node position and orientation
+    public Node Duplicate() {
+        return new Node(localHexPosition, orientation);
+    }
+
     // Set-up of basic Node stuff.
     private void Initialize(Vector3 worldPos, Quaternion rot){
         worldPosition = worldPos;

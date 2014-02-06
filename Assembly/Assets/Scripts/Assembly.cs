@@ -20,8 +20,7 @@ public class Assembly {
         return exists != null;
     }
 
-    public static Assembly GetRandomAssembly(int numNodes)
-    {
+    public static Assembly GetRandomAssembly(int numNodes){
         Assembly newAssembly = new Assembly();
         newAssembly.worldPosition = MathUtilities.RandomVector3Sphere(20f);
 
@@ -40,28 +39,37 @@ public class Assembly {
         AddNodes(nodes);
         allAssemblies.Add(this);
     }
-
-    public Assembly(string filePath)
-    {
+    public Assembly(string filePath){
         List<Node> newNodes = new List<Node>();
         IOHelper.LoadAssembly(filePath, ref name, ref worldPosition, ref newNodes);
         AddNodes(newNodes);
         allAssemblies.Add(this);
     }
 
+    // Copy Constructor - return a copy of this assembly
+    public Assembly Duplicate(){
+        List<Node> newNodes = new List<Node>();
+        for (int i = 0; i < nodes.Count; ++i)
+            newNodes.Add(nodes[i].Duplicate());
 
-    public void Save()
-    {
+        Assembly a = new Assembly(newNodes);
+        a.worldPosition = worldPosition;
+        a.worldRotation = worldRotation;
+        a.worldRotationVel = worldRotationVel;
+        return a;
+    } // End of Duplicate().
+
+
+    public void Save(){
         string path = "./saves/" + name + ".txt";
         Save(path);
-    }
+    } // End of Save().
 
 
-    public void Save(string path)
-    {
+    public void Save(string path){
         Debug.Log("Saving " + path);
         IOHelper.SaveAssembly(path, this);
-    }
+    } // End of Save().
 
 
     public void AddNode(Node node){
@@ -76,7 +84,7 @@ public class Assembly {
             newNodes[i].assembly = this;
         nodes.AddRange(newNodes);
         UpdateNodes();
-    }
+    } // End of AddNode().
 
 
     public void RemoveNode(Node node)
