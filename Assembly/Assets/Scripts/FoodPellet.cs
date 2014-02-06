@@ -28,4 +28,9 @@ public class FoodPellet{
     	Debug.Log("New food added\n");
     }
 
+    public void Destroy()
+    {
+        Object.Destroy(gameObject);
+    }
+
 }

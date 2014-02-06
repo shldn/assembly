@@ -1,17 +1,11 @@
-﻿#define RUN_AS_MONOBEHAVIOR
-
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-
-// assembly.exe -batchmode -environment filename -numtests int -keeppercent float -numgenerations int
+// Usage: assembly.exe -batchmode -environment filename -numtests int -keeppercent float -numgenerations int
 public class BatchModeManager
-#if (RUN_AS_MONOBEHAVIOR)
- : MonoBehaviour
-#endif
 {
 
     private static BatchModeManager mInstance = null;
@@ -36,62 +30,17 @@ public class BatchModeManager
     // Accessors
     public bool InBatchMode { get { return inBatchMode; } }
 
-#if (RUN_AS_MONOBEHAVIOR)
-    void Awake(){
-        mInstance = this;
-    }
-#endif
-
     private BatchModeManager()
     {
-#if (RUN_AS_MONOBEHAVIOR)
-        return;
-#endif
         HandleCommandLineArgs();
         if (inBatchMode)
             RunTest();
     }
 
-    public void RunTest()
+    private void RunTest()
     {
-        DateTime startTime = DateTime.Now;
-        EnvironmentManager.Load(envPath);
-        EnvironmentManager.InitializeFood();
-
-        List<KeyValuePair<float, Assembly>> assemblyScores = new List<KeyValuePair<float, Assembly>>();
-        for (int testCount = 0; testCount < numTests; ++testCount)
-        {
-            List<Assembly> assembliesToTest = EnvironmentManager.InitializeAssemblies();
-            for (int i = 0; i < assembliesToTest.Count; ++i)
-                assemblyScores.Add(new KeyValuePair<float, Assembly>(assembliesToTest[i].Fitness(), assembliesToTest[i]));
-        }
-
-        int maxNumToKeep = (int)(keepPercent * (float)Assembly.GetAll().Count);
-        List<Assembly> assembliesToKeep = new List<Assembly>();
-        foreach (KeyValuePair<float, Assembly> kvp in assemblyScores)
-        {
-            if (kvp.Key < maxFitnessToKeep && assembliesToKeep.Count < maxNumToKeep)
-                assembliesToKeep.Add(kvp.Value);
-            else
-                kvp.Value.Destroy();
-        }
-
-        Debug.LogError("Found " + assembliesToKeep.Count + " assemblies");
-
-
-        /*
-        IOHelper.LoadDirectory(dirPathToLoad);
-        string nextPathToLoad = dirPathToLoad;
-        for (int i = 0; i < numIterations; ++i)
-        {
-            if (mutateAll)
-                GameManager.MutateAll();
-            nextPathToLoad = IncrementPathName(nextPathToLoad);
-            IOHelper.SaveAllToFolder(nextPathToLoad);
-        }
-        */
-        Debug.LogError(numGenerations + " Generations ran in " + DateTime.Now.Subtract(startTime).ToString());
-        //Application.Quit();
+        SimulationManager.Inst.Run();
+        Application.Quit();
     }
 
     private void HandleCommandLineArgs()
@@ -107,19 +56,19 @@ public class BatchModeManager
 
                 case "-environment":
                 case "-env":
-                    envPath = cmdLnArgs[++i];
+                    SimulationManager.Inst.envPath = cmdLnArgs[++i];
                     break;
                 case "-numtests":
-                    numTests = int.Parse(cmdLnArgs[++i]);
+                    SimulationManager.Inst.numTests = int.Parse(cmdLnArgs[++i]);
                     break;
                 case "-numGenerations":
                 case "-numGen":
                 case "-gen":
-                    numGenerations = int.Parse(cmdLnArgs[++i]);
+                    SimulationManager.Inst.numGenerations = int.Parse(cmdLnArgs[++i]);
                     break;
                 case "-keepPercent":
                 case "-percent":
-                    keepPercent = float.Parse(cmdLnArgs[++i]);
+                    SimulationManager.Inst.keepPercent = float.Parse(cmdLnArgs[++i]);
                     break;
                 default:
                     if( inBatchMode )   
