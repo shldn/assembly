@@ -8,16 +8,14 @@ public class GameManager : MonoBehaviour {
 
 
 	void Start(){
+
+        if (BatchModeManager.Inst.InBatchMode)
+            return;
+
         // Generate random assemblies
         int numAssemblies = 1;
         for(int i = 0; i < numAssemblies; i++){
-            Assembly newAssembly = new Assembly();
-            newAssembly.worldPosition = MathUtilities.RandomVector3Sphere(20f);
-
-            Node seedNode = new Node();
-            newAssembly.AddNode(seedNode);
-            for(int j = 0; j < 10; j++)
-                newAssembly.AddRandomNode();
+            Assembly.GetRandomAssembly(10);
         }
 
 	} // End of Start().
@@ -51,6 +49,16 @@ public class GameManager : MonoBehaviour {
 
             Assembly.allAssemblies[i].UpdateTransform();
         }
+
+        if (Input.GetKeyUp(KeyCode.P))
+            IOHelper.SaveAllToFolder("./saves/");
+
+        if (Input.GetKeyUp(KeyCode.L))
+            new Assembly("./saves/unnamed.txt");
+        if (Input.GetKeyUp(KeyCode.O))
+            EnvironmentManager.Save(IOHelper.GetValidFileName("./saves/", "env", ".txt"));
+        if (Input.GetKeyUp(KeyCode.I))
+            EnvironmentManager.Load("./saves/env2.txt");
 
         for(int i = 0; i < Node.allNodes.Count; i++)
             Node.allNodes[i].UpdateTransform();

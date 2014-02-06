@@ -15,6 +15,13 @@ public class FoodNode{
     	allFoodNodes.Add(this);
     }
 
+    public FoodNode(Vector3 pos)
+    {
+        gameObject = GameObject.Instantiate(PrefabManager.Inst.foodNode, pos, Quaternion.identity) as GameObject;
+        worldPosition = pos;
+        allFoodNodes.Add(this);
+    }
+
     //create new food node and add it to list - done through ctor
     public static void AddNewFoodNode(){
     	new FoodNode();

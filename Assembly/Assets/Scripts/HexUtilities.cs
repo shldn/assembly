@@ -48,6 +48,11 @@ public struct IntVector3 {
         this.y = y;
         this.z = z;
     }
+
+    public string ToString()
+    {
+        return "(" + x + "," + y + "," + z + ")";
+    }
  
     public static IntVector3 operator +(IntVector3 a, IntVector3 b){
         return new IntVector3(a.x + b.x, a.y + b.y, a.z + b.z);

@@ -20,14 +20,47 @@ public class Assembly {
         return exists != null;
     }
 
+    public static Assembly GetRandomAssembly(int numNodes)
+    {
+        Assembly newAssembly = new Assembly();
+        newAssembly.worldPosition = MathUtilities.RandomVector3Sphere(20f);
+
+        Node seedNode = new Node();
+        newAssembly.AddNode(seedNode);
+        for(int j = 0; j < numNodes; j++)
+            newAssembly.AddRandomNode();
+        return newAssembly;
+    }
 
     // Constructors
     public Assembly(){
         allAssemblies.Add(this);
     }
     public Assembly(List<Node> nodes){
-        this.nodes = nodes;
+        AddNodes(nodes);
         allAssemblies.Add(this);
+    }
+
+    public Assembly(string filePath)
+    {
+        List<Node> newNodes = new List<Node>();
+        IOHelper.LoadAssembly(filePath, ref name, ref worldPosition, ref newNodes);
+        AddNodes(newNodes);
+        allAssemblies.Add(this);
+    }
+
+
+    public void Save()
+    {
+        string path = "./saves/" + name + ".txt";
+        Save(path);
+    }
+
+
+    public void Save(string path)
+    {
+        Debug.Log("Saving " + path);
+        IOHelper.SaveAssembly(path, this);
     }
 
 
@@ -36,10 +69,20 @@ public class Assembly {
         nodes.Add(node);
     } // End of AddNode().
 
-    public void RemoveNode(Node node){
+
+    public void AddNodes(List<Node> newNodes)
+    {
+        for (int i = 0; i < newNodes.Count; ++i)
+            newNodes[i].assembly = this;
+        nodes.AddRange(newNodes);
+        UpdateNodes();
+    }
+
+
+    public void RemoveNode(Node node)
+    {
         nodes.Remove(node);
     } // End of RemoveNode().
-
 
 
     public void UpdateTransform(){
@@ -93,7 +136,7 @@ public class Assembly {
 
                     // Clear spot... let's do it!
                     if(!tooManyNeighborNeighbors){
-                        Node newNode = new Node(currentPos);
+                        Node newNode = new Node(currentPos, Random.rotation);
                         AddNode(newNode);
 
                         newNode.gameObject.renderer.material.color = color;
@@ -215,5 +258,11 @@ public class Assembly {
 
         return controlNodes;
     } // End of GetControlNodes().
+
+    // returns the fitness of this assembly in the current environment
+    public float Fitness()
+    {
+        return 0.0f;
+    }
 
 } // End of Assembly.
