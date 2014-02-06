@@ -63,7 +63,7 @@ public class BatchModeManager
         {
             List<Assembly> assembliesToTest = EnvironmentManager.InitializeAssemblies();
             for (int i = 0; i < assembliesToTest.Count; ++i)
-                assemblyScores.Add(new KeyValuePair<float, Assembly>(Assembly.GetAll()[i].Fitness(), Assembly.GetAll()[i]));
+                assemblyScores.Add(new KeyValuePair<float, Assembly>(assembliesToTest[i].Fitness(), assembliesToTest[i]));
         }
 
         int maxNumToKeep = (int)(keepPercent * (float)Assembly.GetAll().Count);
@@ -75,6 +75,8 @@ public class BatchModeManager
             else
                 kvp.Value.Destroy();
         }
+
+        Debug.LogError("Found " + assembliesToKeep.Count + " assemblies");
 
 
         /*

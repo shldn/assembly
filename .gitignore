@@ -1,5 +1,6 @@
 Assembly/Library/*
 Assembly/Temp/*
+bin/*
 *.csproj
 *.pidb
 *.unityproj
