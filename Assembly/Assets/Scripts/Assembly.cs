@@ -98,6 +98,22 @@ public class Assembly {
 
     public void UpdateTransform(){
         worldRotation = Quaternion.RotateTowards(worldRotation, worldRotation * worldRotationVel, Time.deltaTime * 2f);
+
+        //Propel assembly through the world based on activated nodes.
+        List<Node> allActuateNodes = GetActuateNodes();
+        for(int i = 0; i < allActuateNodes.Count; i++){
+            if(!allActuateNodes[i].jetEngine)
+                continue;
+
+            ParticleEmitter emitter = allActuateNodes[i].jetEngine.GetComponentInChildren<ParticleEmitter>();
+            if(!emitter)
+                continue;
+
+            emitter.emit = false;
+        }
+
+        worldPosition += GetFunctionalPropulsion() * Time.deltaTime;
+
     } // End of UpdateTransform().
 
 
@@ -292,6 +308,18 @@ public class Assembly {
                 }
             }
         }
+
+        for(int i = 0; i < validActuateNodes.Count; i++){
+            if(!validActuateNodes[i].jetEngine)
+                continue;
+
+            ParticleEmitter emitter = validActuateNodes[i].jetEngine.GetComponentInChildren<ParticleEmitter>();
+            if(!emitter)
+                continue;
+
+            emitter.emit = true;
+        }
+
         return propulsion;
     } // End of GetMaximumPropulsion().
 
@@ -316,6 +344,18 @@ public class Assembly {
                 }
             }
         }
+        
+        for(int i = 0; i < validActuateNodes.Count; i++){
+            if(!validActuateNodes[i].jetEngine)
+                continue;
+
+            ParticleEmitter emitter = validActuateNodes[i].jetEngine.GetComponentInChildren<ParticleEmitter>();
+            if(!emitter)
+                continue;
+
+            emitter.emit = true;
+        }
+
         return propulsion;
     } // End of GetMaximumPropulsion().
 

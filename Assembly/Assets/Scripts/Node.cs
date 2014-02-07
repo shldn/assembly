@@ -28,6 +28,9 @@ public class Node {
     public GameObject actuateVectorBillboard = null;
     float actuateVecScale = 5f;
 
+    // debug
+    public GameObject jetEngine = null;
+
     public static Color stemColor = new Color(0.4f, 0.4f, 0.4f, 1f);
     public static Color senseColor = new Color(0.64f, 0.8f, 0.44f, 1f);
     public static Color actuatorColor = new Color(0.62f, 0.18f, 0.18f, 1f);
@@ -123,6 +126,14 @@ public class Node {
             gameObject.transform.position = worldPosition;
         }
 
+        // Sense node view arc ---------------------------------------------------------- ||
+        // Dynamically update existence of senseFieldBillboard.
+        if((nodeType != NodeType.sense) && senseFieldBillboard)
+            GameObject.Destroy(senseFieldBillboard);
+
+        if((nodeType == NodeType.sense) && !senseFieldBillboard)
+            senseFieldBillboard = GameObject.Instantiate(PrefabManager.Inst.billboard, worldPosition, Quaternion.identity) as GameObject;
+
         // Update arc rotation and such. 
         if(senseFieldBillboard){
             senseFieldBillboard.transform.position = worldPosition + (worldSenseVector * arcScale);
@@ -154,12 +165,19 @@ public class Node {
         }
 
 
-        // Dynamically update existence of senseFieldBillboard.
-        if((nodeType != NodeType.sense) && senseFieldBillboard)
-            GameObject.Destroy(senseFieldBillboard);
+        // debug
+        // Actuate node jet engine prop ------------------------------------------------- ||
+        // Dynamically update existence of jetEngine.
+        if((nodeType != NodeType.actuate) && jetEngine)
+            GameObject.Destroy(jetEngine);
 
-        if((nodeType == NodeType.sense) && !senseFieldBillboard)
-            senseFieldBillboard = GameObject.Instantiate(PrefabManager.Inst.billboard, worldPosition, Quaternion.identity) as GameObject;
+        if((nodeType == NodeType.actuate) && !jetEngine)
+            jetEngine = GameObject.Instantiate(PrefabManager.Inst.jetEngine, worldPosition, Quaternion.identity) as GameObject;
+
+        if(jetEngine){
+            jetEngine.transform.position = worldPosition + worldAcuateVector.normalized * -0.5f;
+            jetEngine.transform.rotation = Quaternion.LookRotation(worldAcuateVector);
+        }
     } // End of UpdateTransform(). 
 
 
@@ -168,6 +186,8 @@ public class Node {
             GameObject.Destroy(gameObject);
         if(senseFieldBillboard)
             GameObject.Destroy(senseFieldBillboard);
+        if(jetEngine)
+            GameObject.Destroy(jetEngine);
         if(assembly)
             assembly.RemoveNode(this);
 
