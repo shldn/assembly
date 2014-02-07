@@ -60,13 +60,21 @@ public class EnvironmentManager {
             new FoodPellet(foodPositions[i]);
     }
 
-    // Places random assemblies at each assembly position in the assemblyPositions list
-    public static List<Assembly> InitializeAssemblies()
+    // If seed is supplied, places mutated assemblies of the seed assembly at each assembly position in the assemblyPositions list
+    // If seed == null, places random assemblies at each assembly position in the assemblyPositions list
+    public static List<Assembly> InitializeAssemblies(Assembly seed, float mutationDeviation = 0.01f)
     {
         List<Assembly> newAssemblies = new List<Assembly>();
         for (int i = 0; assemblyPositions != null && i < assemblyPositions.Count; ++i)
         {
-            Assembly a = Assembly.GetRandomAssembly(assemblySize);
+            Assembly a = null;
+            if( seed == null )
+                 a = Assembly.GetRandomAssembly(assemblySize);
+            else
+            {
+                a = seed.Duplicate();
+                a.Mutate(mutationDeviation);
+            }
             a.worldPosition = assemblyPositions[i];
             newAssemblies.Add(a);
         }

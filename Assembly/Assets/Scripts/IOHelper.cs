@@ -100,6 +100,14 @@ public class IOHelper
         return new Vector3(x, y, z);
     }
 
+    static public IntVector3 IntVector3FromString(string str)
+    {
+        string[] tok = str.Substring(1, str.Length - 2).Split(',');
+        int x = int.Parse(tok[0]);
+        int y = int.Parse(tok[1]);
+        int z = int.Parse(tok[2]);
+        return new IntVector3(x, y, z);
+    }
     static public string ToCommaString(Vector3 v)
     {
         return v.x + "," + v.y + "," + v.z;

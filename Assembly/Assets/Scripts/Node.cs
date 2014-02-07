@@ -68,8 +68,11 @@ public class Node {
         localHexPosition = hexPos;
         Initialize(HexUtilities.HexToWorld(localHexPosition));
     }
-    public Node(Vector3 worldPos){
-        Initialize(worldPos);
+    public Node(IntVector3 hexPos, NodeProperties props)
+    {
+        localHexPosition = hexPos;
+        nodeProperties = props;
+        Initialize(HexUtilities.HexToWorld(localHexPosition));
     }
 
     // Copy Constructor - Make new node with current node position and orientation
@@ -85,6 +88,7 @@ public class Node {
         gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
 
         allNodes.Add(this);
+
     } // End of Initialize().
 
 
@@ -342,33 +346,16 @@ public class Node {
     // The string representation of this class for file saving (could use ToString, but want to be explicit)
     public string ToFileString(int format)
     {
-        return  localHexPosition.x + "," +
-                localHexPosition.y + "," +
-                localHexPosition.z;
-
-        /* old - removed orientation
-        return  localHexPosition.x + "," +
-                localHexPosition.y + "," +
-                localHexPosition.z + "," +
-                orientation.x + "," +
-                orientation.y + "," +
-                orientation.z + "," +
-                orientation.w;
-        */
+        return localHexPosition.ToString() + nodeProperties.ToString();
     }
 
     public static Node FromString(string str, int format=1)
     {
-        string[] tok = str.Split(',');
-        IntVector3 pos = new IntVector3(int.Parse(tok[0]), int.Parse(tok[1]), int.Parse(tok[2]));
-        return new Node(pos);
-
-        /* old - removed orientation
-        string[] tok = str.Split(',');
-        IntVector3 pos = new IntVector3(int.Parse(tok[0]), int.Parse(tok[1]), int.Parse(tok[2]));
-        Quaternion rot = new Quaternion(float.Parse(tok[3]), float.Parse(tok[4]), float.Parse(tok[5]), float.Parse(tok[6]));
-        return new Node(pos, rot);
-        */
+        int splitIdx = str.IndexOf(')');
+        Debug.LogError("Substr: " + str.Substring(0, splitIdx+1));
+        IntVector3 pos = IOHelper.IntVector3FromString(str.Substring(0,splitIdx+1));
+        NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
+        return new Node(pos, props);
     }
 
 } // End of Node.
@@ -404,5 +391,40 @@ public struct NodeProperties {
         fieldOfView = _fieldOfView;
         actuateVector = _actuateVector;
     } // End of NodeProperties constructor.
+
+    public NodeProperties(string str){
+
+        senseVector = Vector3.zero;
+        fieldOfView = 45.0f;
+        actuateVector = Vector3.zero;
+
+        string[] tok = str.Split(';');
+        for(int i=0; i < tok.Length; ++i)
+        {
+            string[] pair = tok[i].Split(':');
+            switch(pair[0]){
+                case "sv":
+                    senseVector = IOHelper.Vector3FromString(pair[1]);
+                    break;
+                case "av":
+                    actuateVector = IOHelper.Vector3FromString(pair[1]);
+                    break;
+                case "fov":
+                    if(!float.TryParse(pair[1], out fieldOfView))
+                        Debug.LogError("fov failed to parse");
+                    break;
+                default:
+                    Debug.LogError("Unknown property: " + pair[0]);
+                    break;
+            }
+        }
+    } // End of NodeProperties constructor.
+
+    public string ToString()
+    {
+        return  "sv" + ":" + senseVector.ToString() + ";" +
+                "av" + ":" + actuateVector.ToString() + ";" +
+                "fov" + ":" + fieldOfView.ToString();
+    }
 
 } // End of NodeProperties.

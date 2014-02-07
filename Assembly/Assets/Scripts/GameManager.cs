@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -62,10 +63,10 @@ public class GameManager : MonoBehaviour {
 
         // Save/load
         if (Input.GetKeyUp(KeyCode.P))
-            IOHelper.SaveAllToFolder("./data/");
+            IOHelper.SaveAllToFolder("./data/" + DateTime.Now.ToString("MMddyyHHmmss") + "/");
 
         if (Input.GetKeyUp(KeyCode.O))
-            new Assembly("./data/unnamed.txt");
+            IOHelper.LoadDirectory("./data/test/");
         if (Input.GetKeyUp(KeyCode.I))
             EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));
         if (Input.GetKeyUp(KeyCode.U))

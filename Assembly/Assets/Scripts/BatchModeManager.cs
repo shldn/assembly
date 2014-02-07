@@ -40,6 +40,7 @@ public class BatchModeManager
     private void RunTest()
     {
         SimulationManager.Inst.Run();
+        IOHelper.SaveAllToFolder("./data/" + DateTime.Now.ToString("MMddyyHHmmss") + "/");
         Application.Quit();
     }
 

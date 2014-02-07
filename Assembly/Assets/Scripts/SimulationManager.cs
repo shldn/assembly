@@ -25,44 +25,61 @@ public class SimulationManager : MonoBehaviour {
         mInstance = this;
     }
 
+    private int CompareFitness(KeyValuePair<float, Assembly> lhs, KeyValuePair<float, Assembly> rhs)
+    {
+        return lhs.Key.CompareTo(rhs.Key);
+    }
+
     public void Run()
     {
         DateTime startTime = DateTime.Now;
         EnvironmentManager.Load(envPath);
         EnvironmentManager.InitializeFood();
 
+        // first pass -- random assemblies
         List<KeyValuePair<float, Assembly>> assemblyScores = new List<KeyValuePair<float, Assembly>>();
+        RunEnvironmentTest(null, ref assemblyScores);
+        int maxNumToKeep = (int)(keepPercent * (float)Assembly.GetAll().Count);
+        KeepTheBest(maxNumToKeep, ref assemblyScores);
+        Debug.Log("Found " + assemblyScores.Count + " successful random assemblies, mutating...");
+
+        // second pass -- mutations on successful assemblies
+        for(int i=0; i < numGenerations; ++i)
+        {
+            int lastGenerationCount = assemblyScores.Count;
+            for (int aIdx = 0; aIdx < lastGenerationCount; ++aIdx)
+                RunEnvironmentTest(assemblyScores[aIdx].Value, ref assemblyScores);
+            KeepTheBest(maxNumToKeep, ref assemblyScores);
+            Debug.Log("Generation " + (i+1) + " complete, " + assemblyScores.Count + " successful assemblies, best fitness: " + ((assemblyScores.Count > 0) ? assemblyScores[0].Key.ToString() : "null"));
+        }
+
+        Debug.Log(numGenerations + " Generations ran in " + DateTime.Now.Subtract(startTime).ToString());
+    }
+
+    void RunEnvironmentTest(Assembly seed, ref List<KeyValuePair<float, Assembly>> assemblyScores)
+    {
         for (int testCount = 0; testCount < numTests; ++testCount)
         {
-            List<Assembly> assembliesToTest = EnvironmentManager.InitializeAssemblies();
+            List<Assembly> assembliesToTest = EnvironmentManager.InitializeAssemblies(seed);
             for (int i = 0; i < assembliesToTest.Count; ++i)
-                assemblyScores.Add(new KeyValuePair<float, Assembly>(assembliesToTest[i].Fitness(), assembliesToTest[i]));
+            {
+                float fitness = assembliesToTest[i].Fitness();
+                if (fitness < maxFitnessToKeep)
+                    assemblyScores.Add(new KeyValuePair<float, Assembly>(fitness, assembliesToTest[i]));
+                else
+                    assembliesToTest[i].Destroy();
+            }
         }
-
-        int maxNumToKeep = (int)(keepPercent * (float)Assembly.GetAll().Count);
-        List<Assembly> assembliesToKeep = new List<Assembly>();
-        foreach (KeyValuePair<float, Assembly> kvp in assemblyScores)
-        {
-            if (kvp.Key < maxFitnessToKeep && assembliesToKeep.Count < maxNumToKeep)
-                assembliesToKeep.Add(kvp.Value);
-            else
-                kvp.Value.Destroy();
-        }
-
-        Debug.LogError("Found " + assembliesToKeep.Count + " assemblies");
-
-
-        /*
-        IOHelper.LoadDirectory(dirPathToLoad);
-        string nextPathToLoad = dirPathToLoad;
-        for (int i = 0; i < numIterations; ++i)
-        {
-            if (mutateAll)
-                GameManager.MutateAll();
-            nextPathToLoad = IncrementPathName(nextPathToLoad);
-            IOHelper.SaveAllToFolder(nextPathToLoad);
-        }
-        */
-        Debug.LogError(numGenerations + " Generations ran in " + DateTime.Now.Subtract(startTime).ToString());
     }
+
+    void KeepTheBest(int numToKeep, ref List<KeyValuePair<float, Assembly>> assemblyScores)
+    {
+        assemblyScores.Sort(CompareFitness);
+        for (int i = assemblyScores.Count - 1; i >= numToKeep; --i)
+        {
+            assemblyScores[i].Value.Destroy();
+            assemblyScores.RemoveAt(i);
+        }
+    }
+
 }
