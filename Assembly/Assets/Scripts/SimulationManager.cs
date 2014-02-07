@@ -33,13 +33,15 @@ public class SimulationManager : MonoBehaviour {
     public void Run()
     {
         DateTime startTime = DateTime.Now;
+        int maxNumToKeep = (int)(keepPercent * (float)numTests);
+
+        // setup environment
         EnvironmentManager.Load(envPath);
         EnvironmentManager.InitializeFood();
 
         // first pass -- random assemblies
         List<KeyValuePair<float, Assembly>> assemblyScores = new List<KeyValuePair<float, Assembly>>();
         RunEnvironmentTest(null, ref assemblyScores);
-        int maxNumToKeep = (int)(keepPercent * (float)Assembly.GetAll().Count);
         KeepTheBest(maxNumToKeep, ref assemblyScores);
         Debug.Log("Found " + assemblyScores.Count + " successful random assemblies, mutating...");
 
