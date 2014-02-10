@@ -44,6 +44,11 @@ public class SimulationManager : MonoBehaviour {
         List<KeyValuePair<float, Assembly>> assemblyScores = new List<KeyValuePair<float, Assembly>>();
         RunEnvironmentTest(null, ref assemblyScores);
         KeepTheBest(maxNumToKeep, ref assemblyScores);
+        if (assemblyScores.Count == 0)
+        {
+            Debug.Log("No assemblies fit the criteria, try again");
+            return;
+        }
         Debug.Log("Found " + assemblyScores.Count + " successful random assemblies, mutating...");
 
         // second pass -- mutations on successful assemblies
