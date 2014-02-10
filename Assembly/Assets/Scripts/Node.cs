@@ -87,9 +87,6 @@ public class Node {
     private void Initialize(Vector3 worldPos){
         worldPosition = worldPos;
 
-        // Initialize graphic
-        gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
-
         allNodes.Add(this);
 
     } // End of Initialize().
@@ -119,6 +116,11 @@ public class Node {
 
 
     public void UpdateTransform(){
+
+        // Initialize graphic
+        if( !gameObject )
+            gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
+
         if(assembly){
             worldPosition = assembly.worldPosition + (assembly.worldRotation * HexUtilities.HexToWorld(localHexPosition));
 

@@ -52,7 +52,14 @@ public class SimulationManager : MonoBehaviour {
             for (int aIdx = 0; aIdx < lastGenerationCount; ++aIdx)
                 RunEnvironmentTest(assemblyScores[aIdx].Value, ref assemblyScores);
             KeepTheBest(maxNumToKeep, ref assemblyScores);
-            Debug.Log("Generation " + (i+1) + " complete, " + assemblyScores.Count + " successful assemblies, best fitness: " + ((assemblyScores.Count > 0) ? assemblyScores[0].Key.ToString() : "null"));
+
+            float bestFitness = (assemblyScores.Count > 0) ? assemblyScores[0].Key : -1;
+            float worstFitness = (assemblyScores.Count > 0) ? assemblyScores[assemblyScores.Count-1].Key : -1;
+            Debug.Log("Generation " + (i + 1) + " complete, " + assemblyScores.Count + " successful assemblies, best fitness: " + bestFitness + " worst: " + worstFitness);
+
+            // optimization, don't keep ones we are going to throw away
+            if (assemblyScores.Count == maxNumToKeep)
+                maxFitnessToKeep = worstFitness;
         }
 
         Debug.Log(numGenerations + " Generations ran in " + DateTime.Now.Subtract(startTime).ToString());
