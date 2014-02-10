@@ -8,6 +8,7 @@ public class SimulationManager : MonoBehaviour {
     public int numGenerations = 1;         // number of generations to run.
     public float keepPercent = 1.0f;       // max percentage of tests to keep that are successful in the environment and will mutate
     public float maxFitnessToKeep = 45.0f;  // fitness an assembly must have to persist
+    public float mutationDeviation = 0.01f; // amount of mutation for each test on the secondary generations
     public string envPath = "./data/env.txt";             // path to the file that defines the environment, positions of food and assemblies
 
     private static SimulationManager mInstance = null;
@@ -69,7 +70,7 @@ public class SimulationManager : MonoBehaviour {
     {
         for (int testCount = 0; testCount < numTests; ++testCount)
         {
-            List<Assembly> assembliesToTest = EnvironmentManager.InitializeAssemblies(seed);
+            List<Assembly> assembliesToTest = EnvironmentManager.InitializeAssemblies(seed, mutationDeviation);
             for (int i = 0; i < assembliesToTest.Count; ++i)
             {
                 float fitness = assembliesToTest[i].Fitness();
