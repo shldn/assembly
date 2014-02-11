@@ -35,7 +35,7 @@ public class EnvironmentManager {
             using (StreamWriter sw = File.CreateText(file))
             {
                 sw.WriteLine(envFileFormatVersion);
-                sw.WriteLine(DateTime.UtcNow.ToBinary().ToString());
+                sw.WriteLine(DateTime.Now.ToString("MMddyyHHmmssff"));
 
                 // write all food node positions
                 string foodStr = (FoodPellet.GetAll().Count > 0) ? IOHelper.ToCommaString(FoodPellet.GetAll()[0].worldPosition) : "";

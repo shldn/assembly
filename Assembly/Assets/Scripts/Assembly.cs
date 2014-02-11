@@ -7,7 +7,7 @@ public class Assembly {
     public static List<Assembly> allAssemblies = new List<Assembly>();
     public static List<Assembly> GetAll() { return allAssemblies; }
 
-    public string name = "unnamed";
+    public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
 
     public Vector3 worldPosition = Vector3.zero;
