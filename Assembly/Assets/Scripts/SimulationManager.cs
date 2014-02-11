@@ -44,6 +44,11 @@ public class SimulationManager : MonoBehaviour {
         List<KeyValuePair<float, Assembly>> assemblyScores = new List<KeyValuePair<float, Assembly>>();
         RunEnvironmentTest(null, ref assemblyScores);
         KeepTheBest(maxNumToKeep, ref assemblyScores);
+        if (assemblyScores.Count == 0)
+        {
+            Debug.Log("No assemblies fit the criteria, try again");
+            return;
+        }
         Debug.Log("Found " + assemblyScores.Count + " successful random assemblies, mutating...");
 
         // second pass -- mutations on successful assemblies
@@ -51,7 +56,13 @@ public class SimulationManager : MonoBehaviour {
         {
             int lastGenerationCount = assemblyScores.Count;
             for (int aIdx = 0; aIdx < lastGenerationCount; ++aIdx)
+            {
                 RunEnvironmentTest(assemblyScores[aIdx].Value, ref assemblyScores);
+
+                // keep memory usage under control
+                if (assemblyScores.Count > 10 * maxNumToKeep)
+                    KeepTheBest(maxNumToKeep, ref assemblyScores);
+            }
             KeepTheBest(maxNumToKeep, ref assemblyScores);
 
             float bestFitness = (assemblyScores.Count > 0) ? assemblyScores[0].Key : -1;
