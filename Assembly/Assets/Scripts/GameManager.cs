@@ -59,6 +59,10 @@ public class GameManager : MonoBehaviour {
             Node.GetAll()[i].UpdateTransform();
 
 
+        if(Input.GetKeyDown(KeyCode.G))
+            transform.rotation = Quaternion.LookRotation(MathUtilities.SkewVector(transform.forward, 90));
+
+
 
 
         // Save/load

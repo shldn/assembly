@@ -14,6 +14,11 @@ public class Assembly {
     public Quaternion worldRotation = Quaternion.identity;
     public Quaternion worldRotationVel = Quaternion.identity;
 
+    public float Mass {
+        get{ return nodes.Count; }
+    }
+
+
     public static implicit operator bool(Assembly exists){
         return exists != null;
     }
@@ -78,6 +83,8 @@ public class Assembly {
     public void AddNode(Node node){
         node.assembly = this;
         nodes.Add(node);
+        UpdateNodes();
+        UpdateNodeValidities();
     } // End of AddNode().
 
 
@@ -87,12 +94,15 @@ public class Assembly {
             newNodes[i].assembly = this;
         nodes.AddRange(newNodes);
         UpdateNodes();
+        UpdateNodeValidities();
     } // End of AddNode().
 
 
     public void RemoveNode(Node node)
     {
         nodes.Remove(node);
+        UpdateNodes();
+        UpdateNodeValidities();
     } // End of RemoveNode().
 
 
@@ -112,7 +122,7 @@ public class Assembly {
             emitter.emit = false;
         }
 
-        worldPosition += GetFunctionalPropulsion() * Time.deltaTime;
+        worldPosition += (GetFunctionalPropulsion() / Mass) * Time.deltaTime;
 
     } // End of UpdateTransform().
 
@@ -165,7 +175,6 @@ public class Assembly {
                     if(!tooManyNeighborNeighbors){
                         Node newNode = new Node(currentPos);
                         AddNode(newNode);
-                        UpdateNodes();
                         return;
                     }
                 }
@@ -203,8 +212,8 @@ public class Assembly {
             }
 
             // Success--this node is safe to remove.
+            RemoveNode(currentNode);
             currentNode.Destroy();
-            UpdateNodes();
             return;
         }
     } // End of RemoveRandomNode(). 
@@ -344,6 +353,8 @@ public class Assembly {
                 }
             }
         }
+
+
         
         for(int i = 0; i < validActuateNodes.Count; i++){
             if(!validActuateNodes[i].jetEngine)
@@ -358,6 +369,34 @@ public class Assembly {
 
         return propulsion;
     } // End of GetMaximumPropulsion().
+
+
+    // Returns the assembly's propulsion if all of it's sense nodes fired at once.
+    public void UpdateNodeValidities(){
+        for(int i = 0; i < nodes.Count; i++)
+            nodes[i].validLogic = false;
+
+        List<Node> senseNodes = GetSenseNodes();
+        List<Node> validActuateNodes = new List<Node>();
+
+        // Loop through all sense nodes.
+        for(int i = 0; i < senseNodes.Count; i++){
+
+            // Get the sense node's functionally connected nodes.
+            List<Node> networkedNodes = senseNodes[i].GetFullLogicNet();
+            // Loop through those connected nodes.
+            for(int j = 0; j < networkedNodes.Count; j++){
+                Node currentNode = networkedNodes[j];
+                // If the node is an actuator and hasn't been accounted for, stash it and get it's actuateVector.
+                if((currentNode.nodeType == NodeType.actuate) && !validActuateNodes.Contains(currentNode)){
+                    validActuateNodes.Add(currentNode);
+
+                    currentNode.validLogic = true;
+                    senseNodes[i].validLogic = true;
+                }
+            }
+        }
+    } // End of UpdateNodeValidities().
 
 
     // returns the fitness of this assembly in the current environment

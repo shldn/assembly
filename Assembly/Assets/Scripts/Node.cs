@@ -28,6 +28,8 @@ public class Node {
     public GameObject actuateVectorBillboard = null;
     float actuateVecScale = 5f;
 
+    public bool validLogic = false;
+
     // debug
     public GameObject jetEngine = null;
 
@@ -130,10 +132,10 @@ public class Node {
 
         // Sense node view arc ---------------------------------------------------------- ||
         // Dynamically update existence of senseFieldBillboard.
-        if((nodeType != NodeType.sense) && senseFieldBillboard)
+        if(((nodeType != NodeType.sense) || !validLogic) && senseFieldBillboard)
             GameObject.Destroy(senseFieldBillboard);
 
-        if((nodeType == NodeType.sense) && !senseFieldBillboard)
+        if((nodeType == NodeType.sense) && validLogic && !senseFieldBillboard)
             senseFieldBillboard = GameObject.Instantiate(PrefabManager.Inst.billboard, worldPosition, Quaternion.identity) as GameObject;
 
         // Update arc rotation and such. 
@@ -170,10 +172,10 @@ public class Node {
         // debug
         // Actuate node jet engine prop ------------------------------------------------- ||
         // Dynamically update existence of jetEngine.
-        if((nodeType != NodeType.actuate) && jetEngine)
+        if(((nodeType != NodeType.actuate) || !validLogic) && jetEngine)
             GameObject.Destroy(jetEngine);
 
-        if((nodeType == NodeType.actuate) && !jetEngine)
+        if((nodeType == NodeType.actuate) && validLogic && !jetEngine)
             jetEngine = GameObject.Instantiate(PrefabManager.Inst.jetEngine, worldPosition, Quaternion.identity) as GameObject;
 
         if(jetEngine){
@@ -199,8 +201,8 @@ public class Node {
 
     // Randomly 'mutates' the node's values. A deviation of 1 will completely randomize the node.
     public void Mutate(float deviation){
-        nodeProperties.senseVector = Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward) * nodeProperties.senseVector;
-        nodeProperties.actuateVector = Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward) * nodeProperties.actuateVector;
+        nodeProperties.senseVector = MathUtilities.SkewVector(nodeProperties.senseVector, Random.Range(0f, deviation * 180f));
+        nodeProperties.actuateVector = MathUtilities.SkewVector(nodeProperties.actuateVector, Random.Range(0f, deviation * 180f));
     } // End of Mutate().
 
 
