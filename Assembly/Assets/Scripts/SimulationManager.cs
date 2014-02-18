@@ -58,13 +58,7 @@ public class SimulationManager : MonoBehaviour {
         {
             int lastGenerationCount = assemblyScores.Count;
             for (int aIdx = 0; aIdx < lastGenerationCount; ++aIdx)
-            {
                 RunEnvironmentTest(assemblyScores[aIdx].Value, ref assemblyScores);
-
-                // keep memory usage under control
-                if (assemblyScores.Count > 10 * maxNumToKeep)
-                    KeepTheBest(maxNumToKeep, ref assemblyScores);
-            }
             KeepTheBest(maxNumToKeep, ref assemblyScores);
 
             float bestFitness = (assemblyScores.Count > 0) ? assemblyScores[0].Key : -1;
