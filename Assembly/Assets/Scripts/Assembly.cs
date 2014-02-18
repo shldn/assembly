@@ -11,6 +11,7 @@ public class Assembly {
 	public List<Node> nodes = new List<Node>();
 
     public Vector3 worldPosition = Vector3.zero;
+    public Vector3 worldVelocity = Vector3.zero;
     public Quaternion worldRotation = Quaternion.identity;
     public Quaternion worldRotationVel = Quaternion.identity;
 
@@ -122,7 +123,8 @@ public class Assembly {
             emitter.emit = false;
         }
 
-        worldPosition += (GetFunctionalPropulsion() / Mass) * Time.deltaTime;
+        worldVelocity += (GetFunctionalPropulsion() / Mass) * Time.deltaTime;
+        worldPosition += worldVelocity;
 
     } // End of UpdateTransform().
 

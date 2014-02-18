@@ -8,7 +8,8 @@ public class EnvironmentManager {
     private static int envFileFormatVersion = 1;
     public static List<Vector3> foodPositions;
     public static List<Vector3> assemblyPositions;
-    public static int assemblySize = 10;
+    public static int assemblyMinSize = 5;
+    public static int assemblyMaxSize = 15;
 
     public static void Load(string file)
     {
@@ -69,7 +70,7 @@ public class EnvironmentManager {
         {
             Assembly a = null;
             if( seed == null )
-                 a = Assembly.GetRandomAssembly(assemblySize);
+                 a = Assembly.GetRandomAssembly(UnityEngine.Random.Range(assemblyMinSize, assemblyMaxSize));
             else
             {
                 a = seed.Duplicate();
