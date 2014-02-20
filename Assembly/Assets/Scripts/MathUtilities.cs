@@ -16,10 +16,10 @@ public class MathUtilities {
 
 
     // Rotates a vector in a random direction by the deviation.
-    public static Vector3 SkewVector(Vector3 vector, float deviation){
+    public static Quaternion SkewRot(Quaternion rot, float deviation){
         Vector3 randomVect = Random.rotation * Vector3.forward;
-        Vector3 randomPerpVect = Vector3.Cross(vector, randomVect);
-        return Quaternion.LookRotation(vector) * Quaternion.AngleAxis(deviation, randomPerpVect) * Vector3.forward * vector.magnitude;
+        Vector3 randomPerpVect = Vector3.Cross(rot * Vector3.forward, randomVect);
+        return rot * Quaternion.AngleAxis(deviation, randomPerpVect);
     } // End of DeviateVector().
 
 } // End of MathUtilities.

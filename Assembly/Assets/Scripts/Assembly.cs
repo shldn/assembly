@@ -10,10 +10,7 @@ public class Assembly {
     public string name = "unnamed";
 	public List<Node> nodes = new List<Node>();
 
-    public Vector3 worldPosition = Vector3.zero;
-    public Vector3 worldVelocity = Vector3.zero;
-    public Quaternion worldRotation = Quaternion.identity;
-    public Quaternion worldRotationVel = Quaternion.identity;
+    public GameObject physicsObject = null;
 
     public float Mass {
         get{ return nodes.Count; }
@@ -26,6 +23,7 @@ public class Assembly {
 
     public static Assembly GetRandomAssembly(int numNodes){
         Assembly newAssembly = new Assembly();
+        newAssembly.InitPhysicsObject();
 
         Node seedNode = new Node();
         newAssembly.AddNode(seedNode);
@@ -37,17 +35,23 @@ public class Assembly {
     // Constructors
     public Assembly(){
         allAssemblies.Add(this);
+        InitPhysicsObject();
     }
     public Assembly(List<Node> nodes){
         AddNodes(nodes);
         allAssemblies.Add(this);
+        InitPhysicsObject();
     }
+
+    /*
     public Assembly(string filePath){
         List<Node> newNodes = new List<Node>();
         IOHelper.LoadAssembly(filePath, ref name, ref worldPosition, ref newNodes);
         AddNodes(newNodes);
         allAssemblies.Add(this);
+        InitPhysicsObject();
     }
+    */
 
     // Copy Constructor - return a copy of this assembly
     public Assembly Duplicate(){
@@ -56,11 +60,33 @@ public class Assembly {
             newNodes.Add(nodes[i].Duplicate());
 
         Assembly a = new Assembly(newNodes);
-        a.worldPosition = worldPosition;
-        a.worldRotation = worldRotation;
-        a.worldRotationVel = worldRotationVel;
         return a;
     } // End of Duplicate().
+
+
+    // Generates and initializes the Unity-driven physics object for the Assembly.
+    public void InitPhysicsObject(){
+        physicsObject = new GameObject(name);
+        physicsObject.AddComponent<Rigidbody>();
+        physicsObject.rigidbody.useGravity = false;
+        physicsObject.rigidbody.angularDrag = 0.2f;
+        physicsObject.rigidbody.drag = 0.001f;
+
+        RecomputeRigidbody();
+    } // End of InitPhysicsObject().
+
+    // Sets up center of mass, mass, etc. for the assembly based on current structure.
+    public void RecomputeRigidbody(){
+        physicsObject.rigidbody.mass = nodes.Count;
+
+        Vector3 centerOfMass = Vector3.zero;
+        for(int i = 0; i < nodes.Count; i++){
+            centerOfMass += nodes[i].worldPosition;
+        }
+        centerOfMass /= (float)nodes.Count;
+
+        physicsObject.rigidbody.centerOfMass = physicsObject.transform.InverseTransformPoint(centerOfMass);
+    } // End of ComputerPhysics().
 
 
     public void Destroy(){
@@ -108,8 +134,6 @@ public class Assembly {
 
 
     public void UpdateTransform(){
-        worldRotation = Quaternion.RotateTowards(worldRotation, worldRotation * worldRotationVel, Time.deltaTime * 2f);
-
         //Propel assembly through the world based on activated nodes.
         List<Node> allActuateNodes = GetActuateNodes();
         for(int i = 0; i < allActuateNodes.Count; i++){
@@ -121,11 +145,8 @@ public class Assembly {
                 continue;
 
             emitter.emit = false;
+            GetFunctionalPropulsion();
         }
-
-        worldVelocity += (GetFunctionalPropulsion() / Mass) * Time.deltaTime;
-        worldPosition += worldVelocity;
-
     } // End of UpdateTransform().
 
 
@@ -226,6 +247,8 @@ public class Assembly {
             nodes[i].UpdateTransform();
             nodes[i].UpdateType();
         }
+
+        RecomputeRigidbody();
     } // End of UpdateNodes(). 
 
 
@@ -315,7 +338,7 @@ public class Assembly {
                 // If the node is an actuator and hasn't been accounted for, stash it and get it's actuateVector.
                 if((currentNode.nodeType == NodeType.actuate) && !validActuateNodes.Contains(currentNode)){
                     validActuateNodes.Add(currentNode);
-                    propulsion += currentNode.worldAcuateVector;
+                    physicsObject.rigidbody.AddForceAtPosition(currentNode.worldAcuateRot * Vector3.forward * 0.1f, currentNode.worldPosition);
                 }
             }
         }
@@ -351,7 +374,7 @@ public class Assembly {
                 // If the node is an actuator and hasn't been accounted for, stash it and get it's actuateVector.
                 if((currentNode.nodeType == NodeType.actuate) && !validActuateNodes.Contains(currentNode)){
                     validActuateNodes.Add(currentNode);
-                    propulsion += currentNode.worldAcuateVector;
+                    propulsion += currentNode.worldAcuateRot * Vector3.forward;
                 }
             }
         }
@@ -404,12 +427,11 @@ public class Assembly {
     // returns the fitness of this assembly in the current environment
     public float Fitness()
     {
-        Vector3 functionalPropulsion = GetFunctionalPropulsion();
 
-        if(functionalPropulsion.Equals(Vector3.zero))
+        //if(functionalPropulsion.Equals(Vector3.zero))
             return(180);
 
-        return Vector3.Angle(FoodPellet.GetAll()[0].worldPosition - worldPosition, GetFunctionalPropulsion());
+        //return Vector3.Angle(FoodPellet.GetAll()[0].worldPosition - physicsObject.transform.position, GetFunctionalPropulsion());
     }
 
 } // End of Assembly.

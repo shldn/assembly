@@ -45,10 +45,10 @@ public class EnvironmentManager {
                 sw.WriteLine(foodStr);
 
                 // write all assembly positions
-                string aStr = (Assembly.GetAll().Count > 0) ? IOHelper.ToCommaString(Assembly.GetAll()[0].worldPosition) : "";
-                for (int i = 1; i < Assembly.GetAll().Count; ++i)
-                    aStr += "," + IOHelper.ToCommaString(Assembly.GetAll()[i].worldPosition);
-                sw.WriteLine(aStr);
+                //string aStr = (Assembly.GetAll().Count > 0) ? IOHelper.ToCommaString(Assembly.GetAll()[0].worldPosition) : "";
+                //for (int i = 1; i < Assembly.GetAll().Count; ++i)
+                    //aStr += "," + IOHelper.ToCommaString(Assembly.GetAll()[i].worldPosition);
+                //sw.WriteLine(aStr);
             }
         }
         else
@@ -76,7 +76,7 @@ public class EnvironmentManager {
                 a = seed.Duplicate();
                 a.Mutate(mutationDeviation);
             }
-            a.worldPosition = assemblyPositions[i];
+            //a.worldPosition = assemblyPositions[i];
             newAssemblies.Add(a);
         }
         return newAssemblies;

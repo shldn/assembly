@@ -59,9 +59,6 @@ public class GameManager : MonoBehaviour {
             Node.GetAll()[i].UpdateTransform();
 
 
-        if(Input.GetKeyDown(KeyCode.G))
-            transform.rotation = Quaternion.LookRotation(MathUtilities.SkewVector(transform.forward, 90));
-
 
 
 
@@ -86,7 +83,7 @@ public class GameManager : MonoBehaviour {
         {
             for (int i = 0; i < Assembly.allAssemblies.Count; ++i)
             {
-                Assembly.allAssemblies[i].worldPosition.x += i * 5.0f;
+                //Assembly.allAssemblies[i].worldPosition.x += i * 5.0f;
                 for (int j = 0; j < Assembly.allAssemblies[i].nodes.Count; ++j)
                     Assembly.allAssemblies[i].nodes[j].UpdateTransform();
             }

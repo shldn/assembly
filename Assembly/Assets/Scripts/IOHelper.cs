@@ -37,8 +37,8 @@ public class IOHelper
         {
             Debug.Log("Loading directory " + dir);
             string[] filePaths = Directory.GetFiles(dir);
-            foreach (string file in filePaths)
-                new Assembly(file);
+            //foreach (string file in filePaths)
+                //new Assembly(file);
         }
         catch (Exception e)
         {
@@ -67,7 +67,7 @@ public class IOHelper
             {
                 sw.WriteLine(assemblyFileFormatVersion);
                 sw.WriteLine(assembly.name);
-                sw.WriteLine(assembly.worldPosition);
+                //sw.WriteLine(assembly.worldPosition);
                 for (int i = 0; i < assembly.nodes.Count; ++i)
                     sw.WriteLine(assembly.nodes[i].ToFileString(assemblyFileFormatVersion));
             }
