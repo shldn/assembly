@@ -23,7 +23,6 @@ public class Assembly {
 
     public static Assembly GetRandomAssembly(int numNodes){
         Assembly newAssembly = new Assembly();
-        newAssembly.InitPhysicsObject();
 
         Node seedNode = new Node();
         newAssembly.AddNode(seedNode);
