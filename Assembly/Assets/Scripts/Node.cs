@@ -124,7 +124,7 @@ public class Node {
             gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
 
         if(assembly){
-            worldPosition = assembly.physicsObject.transform.position + (assembly.physicsObject.transform.rotation * HexUtilities.HexToWorld(localHexPosition));
+            worldPosition = assembly.WorldPosition + (assembly.physicsObject.transform.rotation * HexUtilities.HexToWorld(localHexPosition));
 
             // Update physical location
             gameObject.transform.position = worldPosition;
@@ -376,7 +376,6 @@ public class Node {
     public static Node FromString(string str, int format=1)
     {
         int splitIdx = str.IndexOf(')');
-        Debug.LogError("Substr: " + str.Substring(0, splitIdx+1));
         IntVector3 pos = IOHelper.IntVector3FromString(str.Substring(0,splitIdx+1));
         NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
         return new Node(pos, props);
@@ -428,10 +427,10 @@ public struct NodeProperties {
             string[] pair = tok[i].Split(':');
             switch(pair[0]){
                 case "sv":
-                    //senseVector = IOHelper.Vector3FromString(pair[1]);
+                    senseVector = IOHelper.QuaternionFromString(pair[1]);
                     break;
                 case "av":
-                    //actuateVector = IOHelper.Vector3FromString(pair[1]);
+                    actuateVector = IOHelper.QuaternionFromString(pair[1]);
                     break;
                 case "fov":
                     if(!float.TryParse(pair[1], out fieldOfView))

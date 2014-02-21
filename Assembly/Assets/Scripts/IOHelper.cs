@@ -37,8 +37,8 @@ public class IOHelper
         {
             Debug.Log("Loading directory " + dir);
             string[] filePaths = Directory.GetFiles(dir);
-            //foreach (string file in filePaths)
-                //new Assembly(file);
+            foreach (string file in filePaths)
+                new Assembly(file);
         }
         catch (Exception e)
         {
@@ -67,7 +67,7 @@ public class IOHelper
             {
                 sw.WriteLine(assemblyFileFormatVersion);
                 sw.WriteLine(assembly.name);
-                //sw.WriteLine(assembly.worldPosition);
+                sw.WriteLine(assembly.WorldPosition);
                 for (int i = 0; i < assembly.nodes.Count; ++i)
                     sw.WriteLine(assembly.nodes[i].ToFileString(assemblyFileFormatVersion));
             }
@@ -98,6 +98,16 @@ public class IOHelper
         float y = float.Parse(tok[1]);
         float z = float.Parse(tok[2]);
         return new Vector3(x, y, z);
+    }
+
+    static public Quaternion QuaternionFromString(string str)
+    {
+        string[] tok = str.Substring(1, str.Length - 2).Split(',');
+        float x = float.Parse(tok[0]);
+        float y = float.Parse(tok[1]);
+        float z = float.Parse(tok[2]);
+        float w = float.Parse(tok[3]);
+        return new Quaternion(x, y, z, w);
     }
 
     static public IntVector3 IntVector3FromString(string str)

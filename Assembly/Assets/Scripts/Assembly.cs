@@ -12,6 +12,11 @@ public class Assembly {
 
     public GameObject physicsObject = null;
 
+    public Vector3 WorldPosition{
+        get { return physicsObject.transform.position; }
+        set { physicsObject.transform.position = value; }
+    }
+
     public float Mass {
         get{ return nodes.Count; }
     }
@@ -42,15 +47,20 @@ public class Assembly {
         InitPhysicsObject();
     }
 
-    /*
+    
     public Assembly(string filePath){
         List<Node> newNodes = new List<Node>();
-        IOHelper.LoadAssembly(filePath, ref name, ref worldPosition, ref newNodes);
-        AddNodes(newNodes);
-        allAssemblies.Add(this);
+        Vector3 worldPos = new Vector3();
+        IOHelper.LoadAssembly(filePath, ref name, ref worldPos, ref newNodes);
+
+        // ordering a little tricky at the moment, multiple interdependencies
         InitPhysicsObject();
+        WorldPosition = worldPos;
+        AddNodes(newNodes);
+        RecomputeRigidbody();
+        allAssemblies.Add(this);
     }
-    */
+    
 
     // Copy Constructor - return a copy of this assembly
     public Assembly Duplicate(){
@@ -91,6 +101,7 @@ public class Assembly {
     public void Destroy(){
         for (int i = nodes.Count-1; i >= 0; --i)
             nodes[i].Destroy();
+        Object.Destroy(physicsObject);
         allAssemblies.Remove(this);
     }
 
@@ -427,10 +438,11 @@ public class Assembly {
     public float Fitness()
     {
 
-        //if(functionalPropulsion.Equals(Vector3.zero))
+        Vector3 functionalPropulsion = GetFunctionalPropulsion();
+        if(functionalPropulsion.Equals(Vector3.zero))
             return(180);
 
-        //return Vector3.Angle(FoodPellet.GetAll()[0].worldPosition - physicsObject.transform.position, GetFunctionalPropulsion());
+        return Vector3.Angle(FoodPellet.GetAll()[0].worldPosition - WorldPosition, functionalPropulsion);
     }
 
 } // End of Assembly.

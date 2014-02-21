@@ -79,16 +79,6 @@ public class GameManager : MonoBehaviour {
             ClearAll();
             SimulationManager.Inst.Run();
         }
-        if (Input.GetKeyUp(KeyCode.J))
-        {
-            for (int i = 0; i < Assembly.allAssemblies.Count; ++i)
-            {
-                //Assembly.allAssemblies[i].worldPosition.x += i * 5.0f;
-                for (int j = 0; j < Assembly.allAssemblies[i].nodes.Count; ++j)
-                    Assembly.allAssemblies[i].nodes[j].UpdateTransform();
-            }
-        }
-
 
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
