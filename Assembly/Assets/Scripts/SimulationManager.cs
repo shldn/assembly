@@ -40,7 +40,6 @@ public class SimulationManager : MonoBehaviour {
 
         // setup environment
         EnvironmentManager.Load(envPath);
-        EnvironmentManager.InitializeFood();
 
         // first pass -- random assemblies
         List<KeyValuePair<float, Assembly>> assemblyScores = new List<KeyValuePair<float, Assembly>>();
