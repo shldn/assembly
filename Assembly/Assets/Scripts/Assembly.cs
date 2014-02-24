@@ -177,6 +177,7 @@ public class Assembly {
                 continue;
 
             emitter.emit = false;
+            allActuateNodes[i].propelling = false;
             GetFunctionalPropulsion();
         }
 
@@ -367,6 +368,7 @@ public class Assembly {
             if(!senseNodes[i].DetectFood())
                 continue;
 
+
             // Get the sense node's functionally connected nodes.
             List<Node> networkedNodes = senseNodes[i].GetFullLogicNet();
             // Loop through those connected nodes.
@@ -389,48 +391,12 @@ public class Assembly {
                 continue;
 
             emitter.emit = true;
+            validActuateNodes[i].propelling = true;
         }
 
         return propulsion;
     } // End of GetMaximumPropulsion().
 
-
-    // Returns the assembly's propulsion if all of it's sense nodes fired at once.
-    public Vector3 GetMaximumPropulsion(){
-        List<Node> senseNodes = GetSenseNodes();
-        List<Node> validActuateNodes = new List<Node>();
-        Vector3 propulsion = Vector3.zero;
-
-        // Loop through all sense nodes.
-        for(int i = 0; i < senseNodes.Count; i++){
-            // Get the sense node's functionally connected nodes.
-            List<Node> networkedNodes = senseNodes[i].GetFullLogicNet();
-            // Loop through those connected nodes.
-            for(int j = 0; j < networkedNodes.Count; j++){
-                Node currentNode = networkedNodes[j];
-                // If the node is an actuator and hasn't been accounted for, stash it and get it's actuateVector.
-                if((currentNode.nodeType == NodeType.actuate) && !validActuateNodes.Contains(currentNode)){
-                    validActuateNodes.Add(currentNode);
-                    propulsion += currentNode.worldAcuateRot * Vector3.forward;
-                }
-            }
-        }
-
-
-        
-        for(int i = 0; i < validActuateNodes.Count; i++){
-            if(!validActuateNodes[i].jetEngine)
-                continue;
-
-            ParticleEmitter emitter = validActuateNodes[i].jetEngine.GetComponentInChildren<ParticleEmitter>();
-            if(!emitter)
-                continue;
-
-            emitter.emit = true;
-        }
-
-        return propulsion;
-    } // End of GetMaximumPropulsion().
 
 
     // Returns the assembly's propulsion if all of it's sense nodes fired at once.
