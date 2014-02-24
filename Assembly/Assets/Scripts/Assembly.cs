@@ -187,7 +187,7 @@ public class Assembly {
         }
 
         //print debug
-        Debug.Log( "The current energy for this assembly: " +currentEnergy );
+        //Debug.Log( "The current energy for this assembly: " +currentEnergy );
         if( needBurnRateUpdate ){
             needBurnRateUpdate = false;
             UpdateEnergyBurnRate();
@@ -458,7 +458,7 @@ public class Assembly {
     //consume food within range
     public void Consume(FoodPellet food){
         float realConsumeRate = (consumeRate* Time.deltaTime); 
-        food.currentEnergy -= realConsumeRate;
+        //food.currentEnergy -= realConsumeRate;
         if( food.currentEnergy < 0){
             currentEnergy += ( food.currentEnergy + realConsumeRate);
             //destroy food

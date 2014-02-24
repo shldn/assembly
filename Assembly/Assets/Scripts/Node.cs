@@ -43,7 +43,7 @@ public class Node {
 
     public static Color stemColor = new Color(0.4f, 0.4f, 0.4f, 1f);
     public static Color senseColor = new Color(0.64f, 0.8f, 0.44f, 1f);
-    public static Color actuatorColor = new Color(0.62f, 0.18f, 0.18f, 1f);
+    public static Color actuatorColor = new Color(0.67f, 0.22f, 0.22f, 1f);
     public static Color controlColor = new Color(0.35f, 0.59f, 0.84f, 1f);
 
     // Calculated properties ------------------------------------------------------------- ||
