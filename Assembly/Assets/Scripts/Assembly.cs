@@ -120,8 +120,11 @@ public class Assembly {
         currentEnergy = nodes.Count * Node.MAX_ENERGY;
     }
     //need to calibrate energy through mutation as well
+    //energy decrease only when the new max is less than current
     public void CalibrateEnergy(){
-
+        float newEnergy = nodes.Count * Node.MAX_ENERGY;
+        if( newEnergy < currentEnergy)
+            currentEnergy = newEnergy; 
     }
 
     public void Destroy(){
@@ -148,6 +151,7 @@ public class Assembly {
         nodes.Add(node);
         UpdateNodes();
         UpdateNodeValidities();
+        needBurnRateUpdate = true;
     } // End of AddNode().
 
 
@@ -158,6 +162,7 @@ public class Assembly {
         nodes.AddRange(newNodes);
         UpdateNodes();
         UpdateNodeValidities();
+        needBurnRateUpdate = true;
     } // End of AddNode().
 
 
@@ -166,6 +171,7 @@ public class Assembly {
         nodes.Remove(node);
         UpdateNodes();
         UpdateNodeValidities();
+        needBurnRateUpdate = true;
     } // End of RemoveNode().
 
 
@@ -194,6 +200,9 @@ public class Assembly {
         }
         //assembly consume energy
         CalculateEnergyUse();
+        if( currentEnergy < 0.0f){
+            Debug.Log("0 energy reached! Should be distroyed!");
+        }
     } // End of UpdateTransform().
 
 
@@ -250,7 +259,7 @@ public class Assembly {
                 }
             }
         }
-    } // End of Mutate().
+    } // End of AddRandomNode().
 
 
     // Removes a random single node (safely) from the assembly.
@@ -332,6 +341,8 @@ public class Assembly {
             else if(nodes.Count > 1)
                 RemoveRandomNode();
         }
+
+        CalibrateEnergy();
     } // End of Mutate().
 
 
@@ -466,6 +477,7 @@ public class Assembly {
         }else {
             currentEnergy += realConsumeRate;
         }
+        Debug.Log("Food Energy left: " + food.currentEnergy);
     }
 
     //energy that is being used

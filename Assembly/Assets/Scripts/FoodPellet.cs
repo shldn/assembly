@@ -8,24 +8,25 @@ public class FoodPellet{
 	private static List<FoodPellet> allFoodPellets = new List<FoodPellet>();
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
 
-    public static float MAX_ENERGY = 10.0f;
+    public static float MAX_ENERGY = 100.0f;
     public float currentEnergy = MAX_ENERGY;
     
     //random number generator
     private static System.Random random = new System.Random();
+    //not needed for now
 
     public GameObject gameObject = null;
 
     public FoodPellet(){
 	gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Quaternion.identity) as GameObject;
-    	currentEnergy = random.Next(0,10); //not all food are created equal
+    	//currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
     }
 
     public FoodPellet(Vector3 pos){
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, pos, Quaternion.identity) as GameObject;
         worldPosition = pos;
-        currentEnergy = random.Next(0,10); //not all food are created equal
+        //currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
     }
 
