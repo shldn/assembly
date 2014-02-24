@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour {
 
     Node selectedNode = null;
 
+    public int numberOfFood = 10;
 
 	void Start(){
 
@@ -16,8 +17,11 @@ public class GameManager : MonoBehaviour {
         // Generate a random assembly.
         Assembly.GetRandomAssembly(10);
 
+        //Generate random food pellet
+        for(int i = 0; i< numberOfFood; ++i)
+            FoodPellet.AddRandomFoodPellet();
         // Add a food pellet a short ways away.
-        new FoodPellet(new Vector3(10f, 0f, 0f));
+        //new FoodPellet(new Vector3(10f, 0f, 0f));
 
 	} // End of Start().
 

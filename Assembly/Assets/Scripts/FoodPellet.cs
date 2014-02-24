@@ -8,7 +8,7 @@ public class FoodPellet{
 	private static List<FoodPellet> allFoodPellets = new List<FoodPellet>();
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
 
-    public static float MAX_ENERGY = 100.0f;
+    public static float MAX_ENERGY = 20.0f;
     public float currentEnergy = MAX_ENERGY;
     
     //random number generator
@@ -38,20 +38,17 @@ public class FoodPellet{
 
     //create random food node
     public static void AddRandomFoodPellet(){
-        int min = -25, max = 25; //range, can be chnaged later
+        int min = -50, max = 50; //range, can be chnaged later
         Vector3 pos = new Vector3(random.Next(min, max), random.Next(min, max) ,random.Next(min, max) );
         new FoodPellet(pos);
         Debug.Log("New food added\n");
     }
 
-
     public void UpdateTransform(){
         gameObject.transform.position = worldPosition;
     }
 
-
-    public void Destroy()
-    {
+    public void Destroy(){
         allFoodPellets.Remove(this);
         Object.Destroy(gameObject);
     }

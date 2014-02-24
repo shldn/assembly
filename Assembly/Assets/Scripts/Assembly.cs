@@ -22,11 +22,12 @@ public class Assembly {
     }
 
 
-    /* energy ///////////////////////////////////////////////////////////// */
+    /* energy --------------------------------------------------- */
     public float currentEnergy = 0; //should be sum of nodes
-    public float consumeRate = 10f; //rate asm consume food
+    public float consumeRate = 10.0f; //rate asm consume food
     public float energyBurnRate = 0; //rate asm burn energy
     public bool  needBurnRateUpdate = true;
+
 
     public static implicit operator bool(Assembly exists){
         return exists != null;
@@ -48,7 +49,6 @@ public class Assembly {
         allAssemblies.Add(this);
         InitPhysicsObject();
         InitEnergyData();
-        Debug.Log( "Initial energy : " +currentEnergy );
     }
     public Assembly(List<Node> nodes){
         AddNodes(nodes);
@@ -193,7 +193,7 @@ public class Assembly {
         }
 
         //print debug
-        Debug.Log( "The current energy for this assembly: " +currentEnergy );
+        
         if( needBurnRateUpdate ){
             needBurnRateUpdate = false;
             UpdateEnergyBurnRate();
@@ -201,7 +201,6 @@ public class Assembly {
         //assembly consume energy
         CalculateEnergyUse();
         if( currentEnergy < 0.0f){
-            Debug.Log("0 energy reached! Should be distroyed!");
         }
     } // End of UpdateTransform().
 
@@ -459,10 +458,8 @@ public class Assembly {
         }
     } // End of UpdateNodeValidities().
 
-
     // returns the fitness of this assembly in the current environment
-    public float Fitness()
-    {
+    public float Fitness(){
         return 1;
     }
 
@@ -472,12 +469,12 @@ public class Assembly {
         food.currentEnergy -= realConsumeRate;
         if( food.currentEnergy < 0){
             currentEnergy += ( food.currentEnergy + realConsumeRate);
-            //destroy food
+            //destroy and create
             food.Destroy();
+            FoodPellet.AddRandomFoodPellet();
         }else {
             currentEnergy += realConsumeRate;
         }
-        Debug.Log("Food Energy left: " + food.currentEnergy);
     }
 
     //energy that is being used
