@@ -60,7 +60,6 @@ public class GameManager : MonoBehaviour {
 
 
 
-
         // Save/load
         if (Input.GetKeyUp(KeyCode.P))
             EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));

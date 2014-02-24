@@ -22,6 +22,12 @@ public class Assembly {
     }
 
 
+    /* energy ///////////////////////////////////////////////////////////// */
+    public float currentEnergy = 0; //should be sum of nodes
+    public float consumeRate = 10f; //rate asm consume food
+    public float energyBurnRate = 0; //rate asm burn energy
+    public bool  needBurnRateUpdate = true;
+
     public static implicit operator bool(Assembly exists){
         return exists != null;
     }
@@ -33,6 +39,7 @@ public class Assembly {
         newAssembly.AddNode(seedNode);
         for(int j = 0; j < numNodes; j++)
             newAssembly.AddRandomNode();
+        newAssembly.InitEnergyData();
         return newAssembly;
     }
 
@@ -40,11 +47,14 @@ public class Assembly {
     public Assembly(){
         allAssemblies.Add(this);
         InitPhysicsObject();
+        InitEnergyData();
+        Debug.Log( "Initial energy : " +currentEnergy );
     }
     public Assembly(List<Node> nodes){
         AddNodes(nodes);
         allAssemblies.Add(this);
         InitPhysicsObject();
+        InitEnergyData();
     }
 
     
@@ -59,6 +69,7 @@ public class Assembly {
         AddNodes(newNodes);
         RecomputeRigidbody();
         allAssemblies.Add(this);
+        InitEnergyData();
     }
     
 
@@ -86,7 +97,11 @@ public class Assembly {
 
     // Sets up center of mass, mass, etc. for the assembly based on current structure.
     public void RecomputeRigidbody(){
-        physicsObject.rigidbody.mass = nodes.Count;
+        if(nodes.Count > 0)
+            physicsObject.rigidbody.mass = nodes.Count;
+        else
+            physicsObject.rigidbody.mass = 1f;
+
 
         Vector3 centerOfMass = Vector3.zero;
         for(int i = 0; i < nodes.Count; i++){
@@ -99,6 +114,15 @@ public class Assembly {
         physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
     } // End of ComputerPhysics().
 
+
+    //initialize energy for the assembly
+    public void InitEnergyData(){
+        currentEnergy = nodes.Count * Node.MAX_ENERGY;
+    }
+    //need to calibrate energy through mutation as well
+    public void CalibrateEnergy(){
+
+    }
 
     public void Destroy(){
         for (int i = nodes.Count-1; i >= 0; --i)
@@ -158,8 +182,18 @@ public class Assembly {
 
             emitter.emit = false;
             allActuateNodes[i].propelling = false;
+            needBurnRateUpdate = true;
             GetFunctionalPropulsion();
         }
+
+        //print debug
+        Debug.Log( "The current energy for this assembly: " +currentEnergy );
+        if( needBurnRateUpdate ){
+            needBurnRateUpdate = false;
+            UpdateEnergyBurnRate();
+        }
+        //assembly consume energy
+        CalculateEnergyUse();
     } // End of UpdateTransform().
 
 
@@ -379,6 +413,7 @@ public class Assembly {
                     }
                 }
             }
+            needBurnRateUpdate = true;
         }
 
         return propulsion;
@@ -418,6 +453,33 @@ public class Assembly {
     public float Fitness()
     {
         return 1;
+    }
+
+    //consume food within range
+    public void Consume(FoodPellet food){
+        float realConsumeRate = (consumeRate* Time.deltaTime); 
+        food.currentEnergy -= realConsumeRate;
+        if( food.currentEnergy < 0){
+            currentEnergy += ( food.currentEnergy + realConsumeRate);
+            //destroy food
+            food.Destroy();
+        }else {
+            currentEnergy += realConsumeRate;
+        }
+    }
+
+    //energy that is being used
+    public void CalculateEnergyUse(){
+        currentEnergy -= (energyBurnRate * Time.deltaTime );
+    }
+
+    //update burn rate for asmbly
+    public void UpdateEnergyBurnRate(){
+        float totalBurn = 0.0f;
+        foreach( var node in nodes){
+            totalBurn += node.GetBurnRate();
+        }
+        energyBurnRate = totalBurn;
     }
 
 } // End of Assembly.
