@@ -20,11 +20,11 @@ public class Node {
     public IntVector3 localHexPosition = IntVector3.zero;
 
     // Metabolism ------------------------------------------------------------------------ ||
-    public static float[] burnRate = new float[5]{0.0f, 0.1f, 0.4f, 0.4f, 0.3f};
+    public static float[] burnRate = new float[5]{0.0f, 0.1f, 0.2f, 0.4f, 0.3f};
     //burn rate for different types: none, sense, actuate- static, actuate- woring, control
     public static float MAX_ENERGY = 10.0f;
     public float energy = MAX_ENERGY;
-    public float consumeRange = 2; //how far away can it consume?
+    public float consumeRange = 10; //how far away can it consume?
 
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
@@ -164,7 +164,6 @@ public class Node {
                     if(SenseDetectFoodRange(FoodPellet.GetAll()[j]) ){
                         //sense node consume food source
                         assembly.Consume( FoodPellet.GetAll()[j] );
-
                     }
                     break;
                 }
@@ -412,7 +411,10 @@ public class Node {
             case NodeType.sense:
                 return burnRate[1];
             case NodeType.actuate:
-                return burnRate[2];
+                if(propelling) //if red moving
+                    return burnRate[3];
+                else //if red not moving
+                    return burnRate[2];
             case NodeType.control:
                 return burnRate[4];
         }

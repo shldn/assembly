@@ -24,7 +24,9 @@ public class Assembly {
 
     /* energy ///////////////////////////////////////////////////////////// */
     public float currentEnergy = 0; //should be sum of nodes
-    public float consumeRate = 0.1f; //rate asm consume food
+    public float consumeRate = 10f; //rate asm consume food
+    public float energyBurnRate = 0; //rate asm burn energy
+    public bool  needBurnRateUpdate = true;
 
     public static implicit operator bool(Assembly exists){
         return exists != null;
@@ -178,11 +180,16 @@ public class Assembly {
 
             emitter.emit = false;
             allActuateNodes[i].propelling = false;
+            needBurnRateUpdate = true;
             GetFunctionalPropulsion();
         }
 
         //print debug
         Debug.Log( "The current energy for this assembly: " +currentEnergy );
+        if( needBurnRateUpdate ){
+            needBurnRateUpdate = false;
+            UpdateEnergyBurnRate();
+        }
         //assembly consume energy
         CalculateEnergyUse();
     } // End of UpdateTransform().
@@ -392,6 +399,7 @@ public class Assembly {
 
             emitter.emit = true;
             validActuateNodes[i].propelling = true;
+            needBurnRateUpdate = true;
         }
 
         return propulsion;
@@ -453,11 +461,16 @@ public class Assembly {
 
     //energy that is being used
     public void CalculateEnergyUse(){
+        currentEnergy -= (energyBurnRate * Time.deltaTime );
+    }
+
+    //update burn rate for asmbly
+    public void UpdateEnergyBurnRate(){
         float totalBurn = 0.0f;
         foreach( var node in nodes){
             totalBurn += node.GetBurnRate();
         }
-        currentEnergy -= (totalBurn * Time.deltaTime );
+        energyBurnRate = totalBurn;
     }
 
 } // End of Assembly.
