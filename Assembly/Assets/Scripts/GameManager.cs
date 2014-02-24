@@ -62,13 +62,10 @@ public class GameManager : MonoBehaviour {
 
         // Save/load
         if (Input.GetKeyUp(KeyCode.P))
-            IOHelper.SaveAllToFolder("./data/" + DateTime.Now.ToString("MMddyyHHmmss") + "/");
-
-        if (Input.GetKeyUp(KeyCode.O))
-            IOHelper.LoadDirectory("./data/test/");
-        if (Input.GetKeyUp(KeyCode.I))
             EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));
-        if (Input.GetKeyUp(KeyCode.U))
+        if (Input.GetKeyUp(KeyCode.O))
+            EnvironmentManager.SavePositionsOnly(IOHelper.GetValidFileName("./data/", "env", ".txt"));
+        if (Input.GetKeyUp(KeyCode.I))
             EnvironmentManager.Load("./data/env.txt");
         if (Input.GetKeyUp(KeyCode.L))
             ClearAll();
@@ -77,16 +74,6 @@ public class GameManager : MonoBehaviour {
             ClearAll();
             SimulationManager.Inst.Run();
         }
-        if (Input.GetKeyUp(KeyCode.J))
-        {
-            for (int i = 0; i < Assembly.allAssemblies.Count; ++i)
-            {
-                Assembly.allAssemblies[i].worldPosition.x += i * 5.0f;
-                for (int j = 0; j < Assembly.allAssemblies[i].nodes.Count; ++j)
-                    Assembly.allAssemblies[i].nodes[j].UpdateTransform();
-            }
-        }
-
 
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;

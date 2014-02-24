@@ -5,10 +5,12 @@ using System.Collections.Generic;
 
 public class EnvironmentManager {
 
-    private static int envFileFormatVersion = 1;
+    private static int envFileFormatVersion = 2;
+    private static int envFilePositionOnlyFormatVersion = 1;
     public static List<Vector3> foodPositions;
     public static List<Vector3> assemblyPositions;
-    public static int assemblySize = 10;
+    public static int assemblyMinSize = 5;
+    public static int assemblyMaxSize = 15;
 
     public static void Load(string file)
     {
@@ -23,41 +25,66 @@ public class EnvironmentManager {
             int fileFormat = int.Parse(sr.ReadLine());
             string id = sr.ReadLine();
             foodPositions = IOHelper.Vector3ListFromString(sr.ReadLine());
-            assemblyPositions = IOHelper.Vector3ListFromString(sr.ReadLine());
+
+            if (fileFormat == envFilePositionOnlyFormatVersion)
+                assemblyPositions = IOHelper.Vector3ListFromString(sr.ReadLine());
+            else if (fileFormat == envFileFormatVersion)
+                IOHelper.LoadDirectory(sr.ReadLine());
+            else
+                Debug.LogError("Unsupported environment file version: " + fileFormat);
         }
+
+        InitializeFood();
     }
 
     public static void Save(string file)
+    {
+        if (!File.Exists(file) && !string.IsNullOrEmpty(file))
+        {
+            string nowStr = DateTime.Now.ToString("MMddyyHHmmssff");
+            string path = file.Substring(0,file.LastIndexOfAny("/\\".ToCharArray())+1);
+            string aDir = path + nowStr + "/";
+
+            // Create a file to write to. 
+            using (StreamWriter sw = File.CreateText(file))
+            {
+                sw.WriteLine(envFileFormatVersion);
+                sw.WriteLine(nowStr);
+
+                // write all food node positions
+                WriteFoodPositions(sw);
+
+                // write path to directory with all assemblies  
+                sw.WriteLine(aDir);
+            }
+            IOHelper.SaveAllToFolder(aDir);
+        }
+        else
+            Debug.LogError(file + " already exists, save aborted");
+    }
+
+    public static void SavePositionsOnly(string file)
     {
         if (!File.Exists(file))
         {
             // Create a file to write to. 
             using (StreamWriter sw = File.CreateText(file))
             {
-                sw.WriteLine(envFileFormatVersion);
-                sw.WriteLine(DateTime.UtcNow.ToBinary().ToString());
+                sw.WriteLine(envFilePositionOnlyFormatVersion);
+                sw.WriteLine(DateTime.Now.ToString("MMddyyHHmmssff"));
 
                 // write all food node positions
-                string foodStr = (FoodPellet.GetAll().Count > 0) ? IOHelper.ToCommaString(FoodPellet.GetAll()[0].worldPosition) : "";
-                for (int i = 1; i < FoodPellet.GetAll().Count; ++i)
-                    foodStr += "," + IOHelper.ToCommaString(FoodPellet.GetAll()[i].worldPosition);
-                sw.WriteLine(foodStr);
+                WriteFoodPositions(sw);
 
                 // write all assembly positions
-                string aStr = (Assembly.GetAll().Count > 0) ? IOHelper.ToCommaString(Assembly.GetAll()[0].worldPosition) : "";
+                string aStr = (Assembly.GetAll().Count > 0) ? IOHelper.ToCommaString(Assembly.GetAll()[0].WorldPosition) : "";
                 for (int i = 1; i < Assembly.GetAll().Count; ++i)
-                    aStr += "," + IOHelper.ToCommaString(Assembly.GetAll()[i].worldPosition);
+                    aStr += "," + IOHelper.ToCommaString(Assembly.GetAll()[i].WorldPosition);
                 sw.WriteLine(aStr);
             }
         }
         else
             Debug.LogError(file + " already exists, save aborted");
-    }
-
-    public static void InitializeFood()
-    {
-        for (int i = 0; foodPositions != null && i < foodPositions.Count; ++i)
-            new FoodPellet(foodPositions[i]);
     }
 
     // If seed is supplied, places mutated assemblies of the seed assembly at each assembly position in the assemblyPositions list
@@ -69,16 +96,30 @@ public class EnvironmentManager {
         {
             Assembly a = null;
             if( seed == null )
-                 a = Assembly.GetRandomAssembly(assemblySize);
+                 a = Assembly.GetRandomAssembly(UnityEngine.Random.Range(assemblyMinSize, assemblyMaxSize));
             else
             {
                 a = seed.Duplicate();
                 a.Mutate(mutationDeviation);
             }
-            a.worldPosition = assemblyPositions[i];
+            a.WorldPosition = assemblyPositions[i];
             newAssemblies.Add(a);
         }
         return newAssemblies;
+    }
+
+    private static void InitializeFood()
+    {
+        for (int i = 0; foodPositions != null && i < foodPositions.Count; ++i)
+            new FoodPellet(foodPositions[i]);
+    }
+
+    private static void WriteFoodPositions(StreamWriter sw)
+    {
+        string foodStr = (FoodPellet.GetAll().Count > 0) ? IOHelper.ToCommaString(FoodPellet.GetAll()[0].worldPosition) : "";
+        for (int i = 1; i < FoodPellet.GetAll().Count; ++i)
+            foodStr += "," + IOHelper.ToCommaString(FoodPellet.GetAll()[i].worldPosition);
+        sw.WriteLine(foodStr);
     }
 
 }

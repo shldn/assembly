@@ -46,6 +46,7 @@ public class BatchModeManager
 
     private void HandleCommandLineArgs()
     {
+
         string[] cmdLnArgs = System.Environment.GetCommandLineArgs();
         for (int i = 1; i < cmdLnArgs.Length; i++)
         { // skip exe name
@@ -70,6 +71,18 @@ public class BatchModeManager
                 case "-keepPercent":
                 case "-percent":
                     SimulationManager.Inst.keepPercent = float.Parse(cmdLnArgs[++i]);
+                    break;
+                case "-maxFitness":
+                case "-maxFit":
+                    SimulationManager.Inst.maxFitnessToKeep = float.Parse(cmdLnArgs[++i]);
+                    break;
+                case "-mutation":
+                case "-mutationDev":
+                    SimulationManager.Inst.mutationDeviation = float.Parse(cmdLnArgs[++i]);
+                    break;
+                case "assemblySize":
+                case "numNodes":
+                    Debug.LogError("assemblySize not hooked up yet");
                     break;
                 default:
                     if( inBatchMode )   

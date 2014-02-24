@@ -34,6 +34,8 @@ public class Node {
     public GameObject actuateVectorBillboard = null;
     float actuateVecScale = 5f;
 
+    public bool validLogic = false;
+
     // debug
     public GameObject jetEngine = null;
 
@@ -44,19 +46,19 @@ public class Node {
 
     // Calculated properties ------------------------------------------------------------- ||
 
-    public Vector3 worldSenseVector {
+    public Quaternion worldSenseRot {
         get{
             if(assembly)
-                return assembly.worldRotation * nodeProperties.senseVector;
+                return assembly.physicsObject.transform.rotation * nodeProperties.senseVector;
             else
                 return nodeProperties.senseVector;
         }
     }
 
-    public Vector3 worldAcuateVector {
+    public Quaternion worldAcuateRot {
         get{
             if(assembly)
-                return assembly.worldRotation * nodeProperties.actuateVector;
+                return assembly.physicsObject.transform.rotation * nodeProperties.actuateVector;
             else
                 return nodeProperties.actuateVector;
         }
@@ -128,7 +130,7 @@ public class Node {
             gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
 
         if(assembly){
-            worldPosition = assembly.worldPosition + (assembly.worldRotation * HexUtilities.HexToWorld(localHexPosition));
+            worldPosition = assembly.WorldPosition + (assembly.physicsObject.transform.rotation * HexUtilities.HexToWorld(localHexPosition));
 
             // Update physical location
             gameObject.transform.position = worldPosition;
@@ -136,15 +138,15 @@ public class Node {
 
         // Sense node view arc ---------------------------------------------------------- ||
         // Dynamically update existence of senseFieldBillboard.
-        if((nodeType != NodeType.sense) && senseFieldBillboard)
+        if(((nodeType != NodeType.sense) || !validLogic) && senseFieldBillboard)
             GameObject.Destroy(senseFieldBillboard);
 
-        if((nodeType == NodeType.sense) && !senseFieldBillboard)
+        if((nodeType == NodeType.sense) && validLogic && !senseFieldBillboard)
             senseFieldBillboard = GameObject.Instantiate(PrefabManager.Inst.billboard, worldPosition, Quaternion.identity) as GameObject;
 
         // Update arc rotation and such. 
         if(senseFieldBillboard){
-            senseFieldBillboard.transform.position = worldPosition + (worldSenseVector * arcScale);
+            senseFieldBillboard.transform.position = worldPosition + (worldSenseRot * Vector3.forward * arcScale);
             senseFieldBillboard.transform.localScale = Vector3.one * arcScale;
 
 
@@ -162,7 +164,7 @@ public class Node {
             senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
 
             // The following code billboards the arc with the main camera.
-            senseFieldBillboard.transform.rotation = Quaternion.LookRotation(worldSenseVector);
+            senseFieldBillboard.transform.rotation = worldSenseRot;
             senseFieldBillboard.transform.position = worldPosition + (senseFieldBillboard.transform.rotation * (Vector3.forward * (0.5f * arcScale)));
             senseFieldBillboard.transform.rotation *= Quaternion.AngleAxis(90, Vector3.up);
 
@@ -176,15 +178,15 @@ public class Node {
         // debug
         // Actuate node jet engine prop ------------------------------------------------- ||
         // Dynamically update existence of jetEngine.
-        if((nodeType != NodeType.actuate) && jetEngine)
+        if(((nodeType != NodeType.actuate) || !validLogic) && jetEngine)
             GameObject.Destroy(jetEngine);
 
-        if((nodeType == NodeType.actuate) && !jetEngine)
+        if((nodeType == NodeType.actuate) && validLogic && !jetEngine)
             jetEngine = GameObject.Instantiate(PrefabManager.Inst.jetEngine, worldPosition, Quaternion.identity) as GameObject;
 
         if(jetEngine){
-            jetEngine.transform.position = worldPosition + worldAcuateVector.normalized * -0.5f;
-            jetEngine.transform.rotation = Quaternion.LookRotation(worldAcuateVector);
+            jetEngine.transform.position = worldPosition + (worldAcuateRot * Vector3.forward) * -0.5f;
+            jetEngine.transform.rotation = worldAcuateRot;
         }
     } // End of UpdateTransform(). 
 
@@ -205,8 +207,8 @@ public class Node {
 
     // Randomly 'mutates' the node's values. A deviation of 1 will completely randomize the node.
     public void Mutate(float deviation){
-        nodeProperties.senseVector = Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward) * nodeProperties.senseVector;
-        nodeProperties.actuateVector = Quaternion.AngleAxis(Random.Range(0f, deviation) * 180f, Random.rotation * Vector3.forward) * nodeProperties.actuateVector;
+        nodeProperties.senseVector = MathUtilities.SkewRot(nodeProperties.senseVector, Random.Range(0f, deviation * 180f));
+        nodeProperties.actuateVector = MathUtilities.SkewRot(nodeProperties.actuateVector, Random.Range(0f, deviation * 180f));
     } // End of Mutate().
 
 
@@ -306,7 +308,7 @@ public class Node {
         if(this.nodeType != NodeType.sense)
             return false;;
         Vector3 foodDir = food.worldPosition - this.worldPosition;
-        float angle = Vector3.Angle(worldSenseVector, foodDir);
+        float angle = Vector3.Angle(worldSenseRot * Vector3.forward, foodDir);
         if(angle < nodeProperties.fieldOfView)
             return true;
         return false;
@@ -380,7 +382,6 @@ public class Node {
     public static Node FromString(string str, int format=1)
     {
         int splitIdx = str.IndexOf(')');
-        Debug.LogError("Substr: " + str.Substring(0, splitIdx+1));
         IntVector3 pos = IOHelper.IntVector3FromString(str.Substring(0,splitIdx+1));
         NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
         return new Node(pos, props);
@@ -406,29 +407,29 @@ public class Node {
 public struct NodeProperties {
 
     // Sense
-    public Vector3 senseVector;
+    public Quaternion senseVector;
     public float fieldOfView;
 
     // Actuate
-    public Vector3 actuateVector;
+    public Quaternion actuateVector;
 
 
     // A fully randomly-seeded NodeProperties.
     public static NodeProperties random{
         get{
             // Sense
-            Vector3 _senseVector = Random.rotation * Vector3.forward;
+            Quaternion _senseVector = Random.rotation;
             float _fieldOfView = 45f;
 
             // Actuate
-            Vector3 _actuateVector = Random.rotation * Vector3.forward;
+            Quaternion _actuateVector = Random.rotation;
 
-            return new NodeProperties(Random.rotation * Vector3.forward, 45f, Random.rotation * Vector3.forward);
+            return new NodeProperties(Random.rotation, 45f, Random.rotation);
         }
     } // End of NodeProperties.random.
 
     // Constructor
-    public NodeProperties(Vector3 _senseVector, float _fieldOfView, Vector3 _actuateVector){
+    public NodeProperties(Quaternion _senseVector, float _fieldOfView, Quaternion _actuateVector){
         senseVector = _senseVector;
         fieldOfView = _fieldOfView;
         actuateVector = _actuateVector;
@@ -436,9 +437,9 @@ public struct NodeProperties {
 
     public NodeProperties(string str){
 
-        senseVector = Vector3.zero;
+        senseVector = Quaternion.identity;
         fieldOfView = 45.0f;
-        actuateVector = Vector3.zero;
+        actuateVector = Quaternion.identity;
 
         string[] tok = str.Split(';');
         for(int i=0; i < tok.Length; ++i)
@@ -446,10 +447,10 @@ public struct NodeProperties {
             string[] pair = tok[i].Split(':');
             switch(pair[0]){
                 case "sv":
-                    senseVector = IOHelper.Vector3FromString(pair[1]);
+                    senseVector = IOHelper.QuaternionFromString(pair[1]);
                     break;
                 case "av":
-                    actuateVector = IOHelper.Vector3FromString(pair[1]);
+                    actuateVector = IOHelper.QuaternionFromString(pair[1]);
                     break;
                 case "fov":
                     if(!float.TryParse(pair[1], out fieldOfView))
