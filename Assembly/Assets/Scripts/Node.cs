@@ -19,6 +19,12 @@ public class Node {
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
 
+    // Metabolism ------------------------------------------------------------------------ ||
+    public static float[] burnRate = new float[5]{0.0f, 0.1f, 0.4f, 0.4f, 0.3f};
+    //burn rate for different types: none, sense, actuate- static, actuate- woring, control
+    public static float MAX_ENERGY = 10.0f;
+    public float energy = MAX_ENERGY;
+
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
 
@@ -380,6 +386,20 @@ public class Node {
         return new Node(pos, props);
     }
 
+    public float GetBurnRate(){
+        switch(nodeType){
+            case NodeType.none:
+                return burnRate[0];
+            case NodeType.sense:
+                return burnRate[1];
+            case NodeType.actuate:
+                return burnRate[2];
+            case NodeType.control:
+                return burnRate[4];
+        }
+        return burnRate[0];
+    }
+
 } // End of Node.
 
 
@@ -442,7 +462,7 @@ public struct NodeProperties {
         }
     } // End of NodeProperties constructor.
 
-    public string ToString()
+    public override string ToString()
     {
         return  "sv" + ":" + senseVector.ToString() + ";" +
                 "av" + ":" + actuateVector.ToString() + ";" +

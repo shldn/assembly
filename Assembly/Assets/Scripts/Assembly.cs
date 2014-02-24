@@ -14,6 +14,9 @@ public class Assembly {
     public Quaternion worldRotation = Quaternion.identity;
     public Quaternion worldRotationVel = Quaternion.identity;
 
+    public float currentEnergy; //should be sum of nodes
+    public float consumeRate; //rate asm consume food
+
     public static implicit operator bool(Assembly exists){
         return exists != null;
     }
@@ -369,6 +372,26 @@ public class Assembly {
             return(180);
 
         return Vector3.Angle(FoodPellet.GetAll()[0].worldPosition - worldPosition, GetFunctionalPropulsion());
+    }
+
+    //consume food within range
+    public void Consume(FoodPellet food){
+        food.currentEnergy -= consumeRate;
+        if( food.currentEnergy < 0){
+            currentEnergy += ( food.currentEnergy + consumeRate);
+            //destroy food
+            food.Destroy();
+        }else {
+            currentEnergy += consumeRate;
+        }
+    }
+
+    public void CalculateEnergyUse(){
+        float totalBurn = 0.0f;
+        foreach( var node in nodes){
+            totalBurn += node.GetBurnRate();
+        }
+        currentEnergy -= totalBurn;
     }
 
 } // End of Assembly.
