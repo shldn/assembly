@@ -20,8 +20,6 @@ public class Node {
     public IntVector3 localHexPosition = IntVector3.zero;
 
     // Metabolism ------------------------------------------------------------------------ ||
-    public static float[] burnRate = new float[5]{0.0f, 0.1f, 0.2f, 0.4f, 0.3f};
-    //burn rate for different types: none, sense, actuate- static, actuate- woring, control
     public static float MAX_ENERGY = 10.0f;
     public float energy = MAX_ENERGY;
     public float consumeRange = 10; //how far away can it consume?
@@ -35,8 +33,8 @@ public class Node {
     public GameObject actuateVectorBillboard = null;
     float actuateVecScale = 5f;
 
-    public bool validLogic = false;
-    public bool propelling = false;
+    public bool validLogic = false; //sense - control 
+    public bool propelling = false; //red node moving
 
     // debug
     public GameObject jetEngine = null;
@@ -407,18 +405,24 @@ public class Node {
     public float GetBurnRate(){
         switch(nodeType){
             case NodeType.none:
-                return burnRate[0];
+                return BurnRate.none;
             case NodeType.sense:
-                return burnRate[1];
+                if(validLogic) //if green light
+                    return BurnRate.senseValid;
+                else //no green light
+                    return BurnRate.sense;
             case NodeType.actuate:
                 if(propelling) //if red moving
-                    return burnRate[3];
+                    return BurnRate.actuateValid;
                 else //if red not moving
-                    return burnRate[2];
+                    return BurnRate.actuate;
             case NodeType.control:
-                return burnRate[4];
+                if(validLogic) //if control logic set
+                    return BurnRate.controlValid;
+                else // no connection
+                    return BurnRate.control;
         }
-        return burnRate[0];
+        return BurnRate.none;
     }
 
     //check if food is within consumption range
@@ -501,3 +505,14 @@ public struct NodeProperties {
     }
 
 } // End of NodeProperties.
+
+//burn rate for different types: none, sense, actuate- static, actuate- woring, control
+public static class BurnRate{
+    public static float none = 0.0f;
+    public static float sense = 0.1f;
+    public static float actuate = 0.2f;
+    public static float control = 0.3f;
+    public static float actuateValid = 0.4f;
+    public static float senseValid = 0.15f;
+    public static float controlValid = 0.5f;
+} // End of BurnRate
