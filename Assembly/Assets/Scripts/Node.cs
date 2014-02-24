@@ -29,6 +29,7 @@ public class Node {
     float actuateVecScale = 5f;
 
     public bool validLogic = false;
+    public bool propelling = false;
 
     // debug
     public GameObject jetEngine = null;
@@ -298,14 +299,23 @@ public class Node {
 
 
     // Does this sense node detect a food node?
-    public bool DetectFood(FoodPellet food){
+    public bool DetectFood(FoodPellet food, ref Quaternion rotToFood){
         if(this.nodeType != NodeType.sense)
             return false;;
         Vector3 foodDir = food.worldPosition - this.worldPosition;
         float angle = Vector3.Angle(worldSenseRot * Vector3.forward, foodDir);
+
+        // Get rotation to food
+        Quaternion quatToFood = Quaternion.LookRotation(foodDir, worldSenseRot * Vector3.up);
+        rotToFood = Quaternion.RotateTowards(worldSenseRot, quatToFood, 180f);
+
         if(angle < nodeProperties.fieldOfView)
             return true;
         return false;
+    }
+    public bool DetectFood(FoodPellet food){
+        Quaternion tempQuat = Quaternion.identity;
+        return DetectFood(food, ref tempQuat);
     }
 
 
