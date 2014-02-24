@@ -90,7 +90,7 @@ public class Assembly {
         physicsObject.AddComponent<Rigidbody>();
         physicsObject.rigidbody.useGravity = false;
         physicsObject.rigidbody.angularDrag = 0.2f;
-        physicsObject.rigidbody.drag = 0.001f;
+        physicsObject.rigidbody.drag = 0.2f;
 
         RecomputeRigidbody();
     } // End of InitPhysicsObject().
@@ -109,7 +109,9 @@ public class Assembly {
         }
         centerOfMass /= (float)nodes.Count;
 
+
         physicsObject.rigidbody.centerOfMass = physicsObject.transform.InverseTransformPoint(centerOfMass);
+        physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
     } // End of ComputerPhysics().
 
 
@@ -375,7 +377,6 @@ public class Assembly {
     } // End of GetControlNodes().
 
 
-    // Returns the assembly's propulsion if all of it's sense nodes fired at once.
     public Vector3 GetFunctionalPropulsion(){
         List<Node> senseNodes = GetSenseNodes();
         List<Node> validActuateNodes = new List<Node>();
@@ -383,33 +384,46 @@ public class Assembly {
 
         // Loop through all sense nodes.
         for(int i = 0; i < senseNodes.Count; i++){
-            if(!senseNodes[i].DetectFood())
-                continue;
+            Node currentSenseNode = senseNodes[i];
+            List<FoodPellet> detectedFood = new List<FoodPellet>();
 
+            if(!currentSenseNode.DetectFood(ref detectedFood))
+                // If no food pellet detected, ignore this sense node.
+                continue;
 
             // Get the sense node's functionally connected nodes.
             List<Node> networkedNodes = senseNodes[i].GetFullLogicNet();
             // Loop through those connected nodes.
             for(int j = 0; j < networkedNodes.Count; j++){
-                Node currentNode = networkedNodes[j];
+                Node currentActuateNode = networkedNodes[j];
                 // If the node is an actuator and hasn't been accounted for, stash it and get it's actuateVector.
-                if((currentNode.nodeType == NodeType.actuate) && !validActuateNodes.Contains(currentNode)){
-                    validActuateNodes.Add(currentNode);
-                    physicsObject.rigidbody.AddForceAtPosition(currentNode.worldAcuateRot * Vector3.forward * 0.1f, currentNode.worldPosition);
+                if((currentActuateNode.nodeType == NodeType.actuate) && !validActuateNodes.Contains(currentActuateNode)){
+                    validActuateNodes.Add(currentActuateNode);
+
+                    // For each food pellet, calculate signal to send to actuator node.
+                    for(int k = 0; k < detectedFood.Count; k++){
+                        FoodPellet currentFood = detectedFood[k];
+
+                        Vector3 actuateVector = currentActuateNode.worldAcuateRot * currentSenseNode.RotToFood(currentFood) * Vector3.forward;
+
+
+                        Debug.DrawRay(currentActuateNode.worldPosition, actuateVector * 3f);
+
+                        physicsObject.rigidbody.AddForceAtPosition(actuateVector * 10f, currentActuateNode.worldPosition);
+
+                        if(!currentActuateNode.jetEngine)
+                            continue;
+
+                        ParticleEmitter emitter = currentActuateNode.jetEngine.GetComponentInChildren<ParticleEmitter>();
+                        if(!emitter)
+                            continue;
+
+                        emitter.gameObject.transform.rotation = currentActuateNode.worldAcuateRot * currentSenseNode.RotToFood(currentFood);
+                        emitter.emit = true;
+                        currentActuateNode.propelling = true;
+                    }
                 }
             }
-        }
-
-        for(int i = 0; i < validActuateNodes.Count; i++){
-            if(!validActuateNodes[i].jetEngine)
-                continue;
-
-            ParticleEmitter emitter = validActuateNodes[i].jetEngine.GetComponentInChildren<ParticleEmitter>();
-            if(!emitter)
-                continue;
-
-            emitter.emit = true;
-            validActuateNodes[i].propelling = true;
             needBurnRateUpdate = true;
         }
 
@@ -449,12 +463,7 @@ public class Assembly {
     // returns the fitness of this assembly in the current environment
     public float Fitness()
     {
-
-        Vector3 functionalPropulsion = GetFunctionalPropulsion();
-        if(functionalPropulsion.Equals(Vector3.zero))
-            return(180);
-
-        return Vector3.Angle(FoodPellet.GetAll()[0].worldPosition - WorldPosition, functionalPropulsion);
+        return 1;
     }
 
     //consume food within range

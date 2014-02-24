@@ -44,6 +44,12 @@ public class FoodPellet{
         Debug.Log("New food added\n");
     }
 
+
+    public void UpdateTransform(){
+        gameObject.transform.position = worldPosition;
+    }
+
+
     public void Destroy()
     {
         allFoodPellets.Remove(this);

@@ -136,7 +136,7 @@ public class Node {
             gameObject.transform.position = worldPosition;
         }
 
-        // Sense node view arc ---------------------------------------------------------- ||
+        // Sense node view arc ----------------------------------------------------------
         // Dynamically update existence of senseFieldBillboard.
         if(((nodeType != NodeType.sense) || !validLogic) && senseFieldBillboard)
             GameObject.Destroy(senseFieldBillboard);
@@ -149,6 +149,7 @@ public class Node {
             senseFieldBillboard.transform.position = worldPosition + (worldSenseRot * Vector3.forward * arcScale);
             senseFieldBillboard.transform.localScale = Vector3.one * arcScale;
 
+            Debug.DrawRay(worldPosition, worldSenseRot * Vector3.forward * 3f, Color.green);
 
             Color tempColor = senseColor;
 
@@ -191,6 +192,8 @@ public class Node {
             jetEngine = GameObject.Instantiate(PrefabManager.Inst.jetEngine, worldPosition, Quaternion.identity) as GameObject;
 
         if(jetEngine){
+            Debug.DrawRay(worldPosition, worldAcuateRot * Vector3.forward * 3f, Color.red);
+
             jetEngine.transform.position = worldPosition + (worldAcuateRot * Vector3.forward) * -0.5f;
             jetEngine.transform.rotation = worldAcuateRot;
         }
@@ -218,24 +221,7 @@ public class Node {
     } // End of Mutate().
 
 
-    public List<Node> GetNeighbors(){
-        // No assembly... no neighbors!
-        if(!assembly)
-            return null;
-
-        List<Node> neighbors = new List<Node>();
-        // Loop through all adjacent positions and see if they are occupied.
-        for(int i = 0; i < 12; i++){
-            IntVector3 currentNeighborPos = localHexPosition + HexUtilities.Adjacent(i);
-            for(int j = 0; j < assembly.nodes.Count; j++){
-                if(assembly.nodes[j].localHexPosition == currentNeighborPos){
-                    neighbors.Add(assembly.nodes[j]);
-                }
-            }
-        }
-        return neighbors;
-    } // End of GetNeighbors().
-
+    // Logic ---------------------------------------------------------------------------------||
 
     // Returns neighbors that this node can send a signal to.
     public List<Node> GetLogicConnections(){
@@ -309,36 +295,80 @@ public class Node {
     } // End of GetFullLogicNet().
 
 
-    // Does this sense node detect a food node?
-    public bool DetectFood(FoodPellet food, ref Quaternion rotToFood){
+    // Food Pellets ---------------------------------------------------------------------------||
+
+    // Does this sense node detect a certain food node?
+    public bool DetectFood(FoodPellet food){
         if(this.nodeType != NodeType.sense)
-            return false;;
+            return false;
         Vector3 foodDir = food.worldPosition - this.worldPosition;
         float angle = Vector3.Angle(worldSenseRot * Vector3.forward, foodDir);
 
-        // Get rotation to food
-        Quaternion quatToFood = Quaternion.LookRotation(foodDir, worldSenseRot * Vector3.up);
-        rotToFood = Quaternion.RotateTowards(worldSenseRot, quatToFood, 180f);
-
         if(angle < nodeProperties.fieldOfView)
             return true;
+        // Return false if no food pellets found.
         return false;
     }
-    public bool DetectFood(FoodPellet food){
-        Quaternion tempQuat = Quaternion.identity;
-        return DetectFood(food, ref tempQuat);
-    }
-
 
     // 'General' detect food... returns true if node detects any food pellet.
     public bool DetectFood(){
         for(int i = 0; i < FoodPellet.GetAll().Count; i++)
             if(DetectFood(FoodPellet.GetAll()[i]))
                 return true;
-
+        // Return false if no food pellets found.
         return false;
     }
 
+    // Same as general DetectFood() but references a list of all detected food pellets.
+    public bool DetectFood(ref List<FoodPellet> allFood){
+        bool sensedFood = false;
+        for(int i = 0; i < FoodPellet.GetAll().Count; i++)
+            if(DetectFood(FoodPellet.GetAll()[i])){
+                allFood.Add(FoodPellet.GetAll()[i]);
+                sensedFood = true;
+            }
+        // Return false if no food pellets found.
+        return sensedFood;
+    }
+
+
+    // Gets the rotation from the node to a certain foodPellet.
+    public Quaternion RotToFood(FoodPellet food){
+        // Get rotation to food
+        Quaternion quatToFood = Quaternion.LookRotation(food.worldPosition - worldPosition, worldSenseRot * Vector3.up);
+
+        Quaternion relativeQuatToFood = Quaternion.Inverse(worldSenseRot) * quatToFood;
+
+        Debug.DrawRay(worldPosition, (worldSenseRot * relativeQuatToFood) * Vector3.forward * 3f);
+
+
+        return relativeQuatToFood;
+    }
+
+    public float FoodSignalStrength(FoodPellet food){
+        return 1f / Vector3.Distance(worldPosition, food.worldPosition);
+    }
+
+    
+    // Neighbors ---------------------------------------------------------------------------||
+
+    public List<Node> GetNeighbors(){
+        // No assembly... no neighbors!
+        if(!assembly)
+            return null;
+
+        List<Node> neighbors = new List<Node>();
+        // Loop through all adjacent positions and see if they are occupied.
+        for(int i = 0; i < 12; i++){
+            IntVector3 currentNeighborPos = localHexPosition + HexUtilities.Adjacent(i);
+            for(int j = 0; j < assembly.nodes.Count; j++){
+                if(assembly.nodes[j].localHexPosition == currentNeighborPos){
+                    neighbors.Add(assembly.nodes[j]);
+                }
+            }
+        }
+        return neighbors;
+    } // End of GetNeighbors().
 
     public int CountNeighbors(){
         // Count number of neighbors for the new position. If 3 or more, move on.
@@ -387,6 +417,8 @@ public class Node {
         return neighborCount;
     } // End of CountAllNeighborsRecursive();
 
+
+    // Save/load -------------------------------------------------------------------------||
 
     // The string representation of this class for file saving (could use ToString, but want to be explicit)
     public string ToFileString(int format)
