@@ -87,6 +87,21 @@ public class GameManager : MonoBehaviour {
             }
         }
 
+
+        for(int i = 0; i < FoodPellet.GetAll().Count; i++){
+            FoodPellet.GetAll()[i].UpdateTransform();
+
+            if(Input.GetKey(KeyCode.RightArrow))
+                FoodPellet.GetAll()[i].worldPosition += new Vector3(5f * Time.deltaTime, 0f, 0f);
+            if(Input.GetKey(KeyCode.LeftArrow))
+                FoodPellet.GetAll()[i].worldPosition += new Vector3(-5f * Time.deltaTime, 0f, 0f);
+            if(Input.GetKey(KeyCode.UpArrow))
+                FoodPellet.GetAll()[i].worldPosition += new Vector3(0f, 5f * Time.deltaTime, 0f);
+            if(Input.GetKey(KeyCode.DownArrow))
+                FoodPellet.GetAll()[i].worldPosition += new Vector3(0f, -5f * Time.deltaTime, 0f);
+        }
+
+
     } // End of Update().
 
 
@@ -99,6 +114,7 @@ public class GameManager : MonoBehaviour {
 
 
     void OnGUI(){
+        /*
         if( Assembly.GetAll().Count > 0 )
             GUI.Label(new Rect(0, 0, 200, 200), Assembly.GetAll()[0].Fitness().ToString());
 
@@ -157,6 +173,7 @@ public class GameManager : MonoBehaviour {
             }
             
         }
-    }
+        */
+    } // End of OnGUI().
 
 }
