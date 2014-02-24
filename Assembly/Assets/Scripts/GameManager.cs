@@ -105,6 +105,14 @@ public class GameManager : MonoBehaviour {
         }
 
 
+        if(Input.GetKeyDown(KeyCode.P)){
+            for(int i = 0; i < 10; i++){
+                Assembly newAssembly = Assembly.GetRandomAssembly(10);
+                newAssembly.physicsObject.transform.position = MathUtilities.RandomVector3Sphere(30f);
+            }
+        }
+
+
     } // End of Update().
 
 
