@@ -24,6 +24,7 @@ public class Node {
     //burn rate for different types: none, sense, actuate- static, actuate- woring, control
     public static float MAX_ENERGY = 10.0f;
     public float energy = MAX_ENERGY;
+    public float consumeRange = 2; //how far away can it consume?
 
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
@@ -156,7 +157,14 @@ public class Node {
             for(int j = 0; j < FoodPellet.GetAll().Count; ++j){
                 bool detected = this.DetectFood(FoodPellet.GetAll()[j] );
                 if( detected ){
+                    //change detection color
                     tempColor = Color.cyan;
+
+                    if(SenseDetectFoodRange(FoodPellet.GetAll()[j]) ){
+                        //sense node consume food source
+                        assembly.Consume( FoodPellet.GetAll()[j] );
+
+                    }
                     break;
                 }
             }
@@ -399,6 +407,16 @@ public class Node {
                 return burnRate[4];
         }
         return burnRate[0];
+    }
+
+    //check if food is within consumption range
+    public bool SenseDetectFoodRange(FoodPellet food){
+        Vector3 foodDist = food.worldPosition - this.worldPosition;
+        //if mag^2 < consume^2
+        if(foodDist.sqrMagnitude < consumeRange*consumeRange ){
+            return true;
+        }
+        return false;
     }
 
 } // End of Node.
