@@ -21,7 +21,7 @@ public class ConsoleScript : MonoBehaviour {
     public static List<string> lines = new List<string>();
     string inputText = "";
 
-    public static bool active = true;
+    public static bool active = false;
     public bool consoleKeyCleared = false;
 
     public List<ConsoleCommand> commands = new List<ConsoleCommand>();
@@ -38,7 +38,6 @@ public class ConsoleScript : MonoBehaviour {
 
 
 	void Update(){
-        string command = "";
         string[] commandArgs = new string[0];
 
 
@@ -52,7 +51,6 @@ public class ConsoleScript : MonoBehaviour {
             }
             else
                 active = false;
-
         }
 
         // Enter a line.
@@ -74,9 +72,14 @@ public class ConsoleScript : MonoBehaviour {
 
     void InterperetCommand(string input){
         
+        lines.Add(input);
         // Console stuff here!
 
     } // End of InterperetCommand().
+
+    public static void WriteToLog(string text){
+        lines.Add(text);
+    } // End of WriteToConsoleLog().
 
 
     void Clear(){
