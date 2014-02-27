@@ -137,6 +137,7 @@ public class Assembly {
         for (int i = nodes.Count-1; i >= 0; --i)
             nodes[i].Destroy();
         Object.Destroy(physicsObject);
+        physicsObject = null;
         allAssemblies.Remove(this);
         destroyAssemblies.Remove(this);
     }

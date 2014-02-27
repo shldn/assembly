@@ -41,6 +41,10 @@ public class MainCameraControl : MonoBehaviour {
         tempRot = Quaternion.Slerp(tempRot, targetRot, 5 * Time.deltaTime);
         transform.rotation = tempRot;
 
+        // check if selectedAssembly has been destroyed
+        if (selectedAssembly && selectedAssembly.physicsObject == null)
+            selectedAssembly = null;
+
         if(selectedNode || selectedAssembly)
             camType = CamType.ORBIT;
 
