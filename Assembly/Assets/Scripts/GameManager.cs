@@ -62,8 +62,12 @@ public class GameManager : MonoBehaviour {
             // ------------------------------------------------
         }
 
+        //destroy assemblies out side of update
+        for(int i = 0; i < Assembly.GetToDestroy().Count; ++i)
+            Assembly.GetToDestroy()[i].Destroy();
+        
         // Update nodes.
-        for(int i = 0; i < Node.GetAll().Count; i++)
+        for(int i = 0; i < Node.GetAll().Count; ++i)
             Node.GetAll()[i].UpdateTransform();
 
 

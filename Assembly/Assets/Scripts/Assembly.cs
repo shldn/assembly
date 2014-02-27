@@ -7,6 +7,10 @@ public class Assembly {
     public static List<Assembly> allAssemblies = new List<Assembly>();
     public static List<Assembly> GetAll() { return allAssemblies; }
 
+    //stores assemblies to be deleted for the frame update
+    public static List<Assembly> destroyAssemblies = new List<Assembly>();
+    public static List<Assembly> GetToDestroy() { return destroyAssemblies; }
+
     public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
 
@@ -97,11 +101,13 @@ public class Assembly {
 
     // Sets up center of mass, mass, etc. for the assembly based on current structure.
     public void RecomputeRigidbody(){
-        if(nodes.Count > 0)
+        if(nodes.Count > 0){
+            physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
             physicsObject.rigidbody.mass = nodes.Count;
-        else
+        } else {
             physicsObject.rigidbody.mass = 1f;
-
+            physicsObject.rigidbody.inertiaTensor = Vector3.one;
+        }
 
         Vector3 centerOfMass = Vector3.zero;
         for(int i = 0; i < nodes.Count; i++){
@@ -111,7 +117,7 @@ public class Assembly {
 
 
         physicsObject.rigidbody.centerOfMass = physicsObject.transform.InverseTransformPoint(centerOfMass);
-        physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
+        
     } // End of ComputerPhysics().
 
 
@@ -132,6 +138,7 @@ public class Assembly {
             nodes[i].Destroy();
         Object.Destroy(physicsObject);
         allAssemblies.Remove(this);
+        destroyAssemblies.Remove(this);
     }
 
     public void Save(){
@@ -200,6 +207,8 @@ public class Assembly {
         //assembly consume energy
         CalculateEnergyUse();
         if( currentEnergy < 0.0f){
+            destroyAssemblies.Add(this);
+            //mark assembly for destruction
         }
     } // End of UpdateTransform().
 
@@ -465,7 +474,7 @@ public class Assembly {
     //consume food within range
     public void Consume(FoodPellet food){
         float realConsumeRate = (consumeRate* Time.deltaTime); 
-        //food.currentEnergy -= realConsumeRate;
+        food.currentEnergy -= realConsumeRate;
         if( food.currentEnergy < 0){
             currentEnergy += ( food.currentEnergy + realConsumeRate);
             //destroy and create
@@ -487,7 +496,7 @@ public class Assembly {
         foreach( var node in nodes){
             totalBurn += node.GetBurnRate();
         }
-        energyBurnRate = totalBurn;
+        energyBurnRate = totalBurn;///nodes.Count;
     }
 
 } // End of Assembly.
