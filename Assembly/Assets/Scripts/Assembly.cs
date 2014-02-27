@@ -109,9 +109,10 @@ public class Assembly {
         }
         centerOfMass /= (float)nodes.Count;
 
-
-        physicsObject.rigidbody.centerOfMass = physicsObject.transform.InverseTransformPoint(centerOfMass);
-        physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
+        if(nodes.Count > 0){
+            physicsObject.rigidbody.centerOfMass = physicsObject.transform.InverseTransformPoint(centerOfMass);
+            physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
+        }
     } // End of ComputerPhysics().
 
 
@@ -141,7 +142,7 @@ public class Assembly {
 
 
     public void Save(string path){
-        Debug.Log("Saving " + path);
+        ConsoleScript.Inst.WriteToLog("Saving " + path);
         IOHelper.SaveAssembly(path, this);
     } // End of Save().
 

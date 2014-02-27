@@ -42,18 +42,19 @@ public class GameManager : MonoBehaviour {
                 for(int j = 0; j < Assembly.GetAll()[i].nodes.Count; j++){
                     Assembly.GetAll()[i].nodes[j].Mutate(0.1f);
                 }
+                ConsoleScript.Inst.WriteToLog("Mutated all assembly genes.");
             }
 
             // Add a node.
             if(Input.GetKeyDown(KeyCode.N)){
                 Assembly.GetAll()[i].AddRandomNode();
-                ConsoleScript.WriteToLog("Added a random node to all assemblies.");
+                ConsoleScript.Inst.WriteToLog("Added a random node to all assemblies.");
             }
 
             // Remove a node.
             if(Input.GetKeyDown(KeyCode.M)){
                 Assembly.GetAll()[i].RemoveRandomNode();
-                ConsoleScript.WriteToLog("Removed a random node from all assemblies.");
+                ConsoleScript.Inst.WriteToLog("Removed a random node from all assemblies.");
             }
 
             // Mutate entire assembly by 1 tick.
@@ -104,6 +105,7 @@ public class GameManager : MonoBehaviour {
                 Assembly newAssembly = Assembly.GetRandomAssembly(UnityEngine.Random.Range(5, 30));
                 newAssembly.physicsObject.transform.position = MathUtilities.RandomVector3Sphere(30f);
             }
+            ConsoleScript.Inst.WriteToLog("Created random assemblies.");
         }
 
 
