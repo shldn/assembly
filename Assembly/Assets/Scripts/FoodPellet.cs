@@ -8,7 +8,7 @@ public class FoodPellet{
 	private static List<FoodPellet> allFoodPellets = new List<FoodPellet>();
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
 
-    public static float MAX_ENERGY = 20.0f;
+    public static float MAX_ENERGY = 10.0f;
     public float currentEnergy = MAX_ENERGY;
     
     //random number generator

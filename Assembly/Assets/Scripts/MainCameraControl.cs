@@ -53,6 +53,10 @@ public class MainCameraControl : MonoBehaviour {
         transform.eulerAngles = tempEulers;
 
 
+        // check if selectedAssembly has been destroyed
+        if (selectedAssembly && selectedAssembly.physicsObject == null)
+            selectedAssembly = null;
+
         if(selectedNode || selectedAssembly)
             camType = CamType.ORBIT;
 
