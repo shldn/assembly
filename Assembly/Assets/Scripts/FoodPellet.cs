@@ -33,7 +33,6 @@ public class FoodPellet{
     //create new food node and add it to list
     public static void AddNewFoodPellet(){
     	new FoodPellet();
-    	Debug.Log("New food added\n");
     }
 
     //create random food node
@@ -41,7 +40,6 @@ public class FoodPellet{
         int min = -50, max = 50; //range, can be chnaged later
         Vector3 pos = new Vector3(random.Next(min, max), random.Next(min, max) ,random.Next(min, max) );
         new FoodPellet(pos);
-        Debug.Log("New food added\n");
     }
 
     public void UpdateTransform(){
