@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+public enum CamType {LOCKED, FREELOOK, ORBIT}
+
 public class MainCameraControl : MonoBehaviour {
 
     Quaternion targetRot;
@@ -11,6 +13,17 @@ public class MainCameraControl : MonoBehaviour {
 
     float cameraMoveSpeed = 4f;
     float cameraRotateSpeed = 2f;
+
+    Node hoveredNode = null;
+    Node selectedNode = null;
+    Assembly selectedAssembly = null;
+
+    CamType camType = CamType.FREELOOK;
+    float camOrbitDist = 15f;
+
+
+    public Texture2D nodeSelectTex = null;
+    public Texture2D assemblySelectTex = null;
 
 
 	// Use this for initialization
@@ -28,18 +41,158 @@ public class MainCameraControl : MonoBehaviour {
         tempRot = Quaternion.Slerp(tempRot, targetRot, 5 * Time.deltaTime);
         transform.rotation = tempRot;
 
-        // Pitch/yaw camera via mouse movement.
-        targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * cameraRotateSpeed, -Vector3.right);
-        targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * cameraRotateSpeed, Vector3.up);
+        if(selectedNode || selectedAssembly)
+            camType = CamType.ORBIT;
 
-        // Translate position with keyboard input.
-        targetPos += WesInput.forwardThrottle * transform.forward * cameraMoveSpeed * Time.deltaTime;
-        targetPos += WesInput.horizontalThrottle * transform.right * cameraMoveSpeed * Time.deltaTime;
-        targetPos += WesInput.verticalThrottle * transform.up * cameraMoveSpeed * Time.deltaTime;
+        if((camType == CamType.ORBIT) && (!selectedNode && !selectedAssembly))
+            camType = CamType.FREELOOK;
+
+        // Orbit a selected object
+        if(camType == CamType.ORBIT){
+            Vector3 orbitTarget = Vector3.zero;
+            if(selectedAssembly)
+                orbitTarget = selectedAssembly.WorldPosition;
+            else
+                orbitTarget = selectedNode.worldPosition;
+
+            targetPos = orbitTarget + transform.forward * -camOrbitDist;
+
+            camOrbitDist += camOrbitDist * -Input.GetAxis("Mouse ScrollWheel");
+
+            if(Input.GetKeyDown(KeyCode.Space)){
+                selectedAssembly = null;
+                selectedNode = null;
+                camType = CamType.FREELOOK;
+            }
+        }
+        // Toggle camera lock.
+        else if(Input.GetKeyDown(KeyCode.Space)){
+            if(camType == CamType.FREELOOK)
+                camType = CamType.LOCKED;
+            else if(camType == CamType.LOCKED)
+                camType = CamType.FREELOOK;
+        }
+
+        // Rotate selected assembly
+        if(selectedAssembly){
+            selectedAssembly.physicsObject.transform.rotation *= Quaternion.AngleAxis(WesInput.editHorizontalThrottle * 90f * Time.deltaTime, Camera.main.transform.up);
+            selectedAssembly.physicsObject.transform.rotation *= Quaternion.AngleAxis(WesInput.editVerticalThrottle * 90f * Time.deltaTime, Camera.main.transform.right);
+        }
+
+
+
+        // Pitch/yaw camera via mouse movement.
+        if((camType == CamType.FREELOOK) || (Input.GetMouseButton(1) && ((camType == CamType.ORBIT) || (camType == CamType.LOCKED)))){
+            targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * cameraRotateSpeed, -Vector3.right);
+            targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * cameraRotateSpeed, Vector3.up);
+        }
+
+        // Translate camera with arrow keys/wasd.
+        if(camType == CamType.FREELOOK){
+            // Translate position with keyboard input.
+            targetPos += WesInput.forwardThrottle * transform.forward * cameraMoveSpeed * Time.deltaTime;
+            targetPos += WesInput.horizontalThrottle * transform.right * cameraMoveSpeed * Time.deltaTime;
+            targetPos += WesInput.verticalThrottle * transform.up * cameraMoveSpeed * Time.deltaTime;
+        }
 
         // Roll camera using Q and E
         targetRot *= Quaternion.AngleAxis(WesInput.rotationThrottle * -cameraRotateSpeed, Vector3.forward);
 
+        hoveredNode = null;
+        RaycastHit mouseRayHit = new RaycastHit();
+        if(Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f)), out mouseRayHit)){
+            for(int i = 0; i < Node.GetAll().Count; i++){
+                Node currentNode = Node.GetAll()[i];
+                if(currentNode.gameObject == mouseRayHit.collider.gameObject){
+                    hoveredNode = currentNode;
+                    break;
+                }
+            }
+        }
+            // If clicking on 'nothing', deselect all.
+        else if(Input.GetMouseButtonDown(0)){
+            selectedNode = null;
+            selectedAssembly = null;
+        }
+
+        // When clicking on a node...
+        if(Input.GetMouseButtonDown(0) && hoveredNode){
+            // If nothing is selected currently...
+            if(!selectedNode && !selectedAssembly){
+                selectedAssembly = hoveredNode.assembly;
+            }
+            // If a node is selected currently...
+            else if(selectedNode){
+                // If you click again on the selected node, select it's assembly.
+                if(hoveredNode == selectedNode){
+                    selectedAssembly = hoveredNode.assembly;
+                    selectedNode = null;
+                }
+                // If clicking on a node in the same assembly, select that node.
+                else if(hoveredNode.assembly == selectedNode.assembly){
+                    selectedNode = hoveredNode;
+                }
+                // Otherwise it's a node in a different assembly... so select that one.
+                else{
+                    selectedAssembly = hoveredNode.assembly;
+                    selectedNode = null;
+                }
+            }
+            // If an assembly is selected...
+            else{
+                // If clicking on a node in the selected assembly, select that.
+                if(hoveredNode.assembly == selectedAssembly){
+                    selectedNode = hoveredNode;
+                    selectedAssembly = null;
+                }
+                // Otherwise, select the hovered node's assembly.
+                else
+                    selectedAssembly = hoveredNode.assembly;
+            }
+        }
+
 	} // End of Update().
+
+
+    void OnGUI(){
+        if(hoveredNode){
+            GUI.color = Color.white;
+            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+            GUI.Label(CenteredSquare(hoveredNode), nodeSelectTex);
+        }
+
+        if(selectedNode){
+            GUI.color = Color.white;
+            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+            GUI.Label(CenteredSquare(selectedNode), nodeSelectTex);
+        }
+
+        if(selectedAssembly){
+            GUI.color = Color.white;
+            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+            GUI.Label(CenteredSquare(selectedAssembly), assemblySelectTex);
+
+            GUI.color = new Color(1f, 1f, 1f, 0.2f);
+            for(int i = 0; i < selectedAssembly.nodes.Count; i++){
+                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(CenteredSquare(selectedAssembly.nodes[i]), nodeSelectTex);
+            }
+        }
+
+    } // End of OnGUI().
+
+
+    private Rect CenteredSquare(float x, float y, float size){
+        return new Rect(x - (size * 0.5f), Screen.height - (y + (size * 0.5f)), size, size);
+    }
+    private Rect CenteredSquare(Node node){
+        Vector3 nodeScreenPos = Camera.main.WorldToScreenPoint(node.worldPosition);
+        return CenteredSquare(nodeScreenPos.x, nodeScreenPos.y, 2000f / Vector3.Distance(Camera.main.transform.position, node.worldPosition));
+    }
+    private Rect CenteredSquare(Assembly assembly){
+        Vector3 assemblyScreenPos = Camera.main.WorldToScreenPoint(assembly.physicsObject.transform.position);
+        return CenteredSquare(assemblyScreenPos.x, assemblyScreenPos.y, 12000f / Vector3.Distance(Camera.main.transform.position, assembly.physicsObject.transform.position));
+    }// End of CenteredSquare().
+
 } // End of MainCameraControl.
  

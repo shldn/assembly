@@ -12,9 +12,13 @@ public class WesInput : MonoBehaviour{
     public static float verticalThrottle;
     public static float rotationThrottle;
 
+    public static float editHorizontalThrottle;
+    public static float editVerticalThrottle;
+
     public static bool active = true;
 
     void Awake(){
+
 	    keys[ "Forward" ] = KeyCode.W;
 	    keys[ "Backward" ] = KeyCode.S;
         keys[ "Up" ] = KeyCode.LeftShift;
@@ -23,6 +27,11 @@ public class WesInput : MonoBehaviour{
 	    keys[ "Right" ] = KeyCode.D;
 	    keys[ "Roll Left" ] = KeyCode.Q;
 	    keys[ "Roll Right" ] = KeyCode.E;
+
+        keys[ "Edit Up" ] = KeyCode.UpArrow;
+        keys[ "Edit Down" ] = KeyCode.DownArrow;
+	    keys[ "Edit Left" ] = KeyCode.LeftArrow;
+	    keys[ "Edit Right" ] = KeyCode.RightArrow;
 	
 	    keys[ "Camera Lock" ] = KeyCode.Space;
 	    keys[ "Auto Orbit" ] = KeyCode.O;
@@ -36,10 +45,13 @@ public class WesInput : MonoBehaviour{
 	    keys[ "Open Console" ] = KeyCode.Return;
 	    keys[ "Quit" ] = KeyCode.Escape;
 	    keys[ "Reload Application" ] = KeyCode.F12;
+
     } // End of Awake().
 
 
     void Update(){
+
+        // Camera throttle
 	    forwardThrottle = 0;
 	    if(WesInput.GetKey("Forward"))
 		    forwardThrottle += 1;
@@ -63,6 +75,20 @@ public class WesInput : MonoBehaviour{
 		    rotationThrottle += 1;
 	    if(WesInput.GetKey("Roll Left"))
 		    rotationThrottle -= 1;
+
+        // Editor throttle
+        editHorizontalThrottle = 0;
+	    if(WesInput.GetKey("Edit Right"))
+		    editHorizontalThrottle  += 1;
+	    if(WesInput.GetKey("Edit Left"))
+		    editHorizontalThrottle  -= 1;
+
+        editVerticalThrottle = 0;
+	    if(WesInput.GetKey("Edit Up"))
+		    editVerticalThrottle += 1;
+	    if(WesInput.GetKey("Edit Down"))
+		    editVerticalThrottle -= 1;
+
     } // End of Update().
 
 
