@@ -6,10 +6,18 @@ using System.IO;
 // A single command that can be put into the console.
 public class ConsoleCommand {
 
-    string name = "";
+    public string name = "";
+    public delegate void CmdFunc(string[] args);
+    public CmdFunc func;
 
     public ConsoleCommand(string _name){
         name = _name;
+    } // End of constructor.
+
+    public ConsoleCommand(string _name, CmdFunc _func)
+    {
+        name = _name;
+        func = _func;
     } // End of constructor.
 
 } // End of ConsoleCommand.*/
@@ -27,7 +35,7 @@ public class ConsoleScript : MonoBehaviour {
     public static bool active = false;
     public bool consoleKeyCleared = false;
 
-    public List<ConsoleCommand> commands = new List<ConsoleCommand>();
+    public Dictionary<string, ConsoleCommand> commands = new Dictionary<string, ConsoleCommand>();
 
     public static ConsoleScript Inst = null;
 
@@ -35,15 +43,83 @@ public class ConsoleScript : MonoBehaviour {
     void Awake(){
         Inst = this;
 
-        commands.Add(new ConsoleCommand("disband"));
-        commands.Add(new ConsoleCommand("orbit"));
-        commands.Add(new ConsoleCommand("quit"));
-        commands.Add(new ConsoleCommand("reload"));
+        List<ConsoleCommand> cmdList = new List<ConsoleCommand>();
+        cmdList.Add(new ConsoleCommand("clear"));
+        cmdList.Add(new ConsoleCommand("disband"));
+        cmdList.Add(new ConsoleCommand("help"));
+        cmdList.Add(new ConsoleCommand("load"));
+        cmdList.Add(new ConsoleCommand("orbit"));
+        cmdList.Add(new ConsoleCommand("quit"));
+        cmdList.Add(new ConsoleCommand("reload"));
+        cmdList.Add(new ConsoleCommand("save"));
+
+        RegisterCommands(cmdList);
 
     } // End of Awake().
 
+    void RegisterCommands(List<ConsoleCommand> cmdList)
+    {
+        for (int i = 0; i < cmdList.Count; ++i)
+            commands.Add(cmdList[i].name, cmdList[i]);
 
-	void Update(){
+        commands["clear"].func = delegate(string[] args)
+        {
+            GameManager.ClearAll();
+        };
+
+        commands["disband"].func = delegate(string[] args)
+        {
+
+        };
+
+        commands["help"].func = delegate(string[] args)
+        {
+            WriteToLog("Available Commands:");
+            foreach(KeyValuePair<string,ConsoleCommand> cmd in commands)
+                WriteToLog("\t" + cmd.Key);
+        };
+
+        commands["load"].func = delegate(string[] args)
+        {
+            if (args.Length <= 1)
+                WriteToLog("Please specify a file to load");
+            else
+            {
+                string path = args[1];
+                for (int i = 2; i < args.Length; ++i)
+                    path += " " + args[i];
+                EnvironmentManager.Load(path);
+            }
+        };
+
+        commands["orbit"].func = delegate(string[] args)
+        {
+
+        };
+
+        commands["quit"].func = delegate(string[] args)
+        {
+            Application.Quit();
+        };
+
+        commands["reload"].func = delegate(string[] args)
+        {
+
+        };
+
+        commands["save"].func = delegate(string[] args)
+        {
+            if( args.Length > 1 && (args[1] == "pos" || args[1] == "position") )
+                EnvironmentManager.SavePositionsOnly(IOHelper.GetValidFileName("./data/", "env", ".txt"));
+            else
+                EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));
+        };
+
+
+    } // End of RegisterCommands().
+
+    void Update()
+    {
         string[] commandArgs = new string[0];
 
         // Log visibility/fade out.
@@ -91,7 +167,16 @@ public class ConsoleScript : MonoBehaviour {
         
         lines.Add(input);
         logVisibleTime = 5f;
+
         // Console stuff here!
+        // Combat virbela habit
+        if( input.StartsWith("/") )
+            input = input.TrimStart(new char[]{'/'});
+
+        // Call command if it is in the command list
+        string[] tok = input.Split(' ');
+        if (tok.Length > 0 && commands.ContainsKey(tok[0]))
+            commands[tok[0]].func(tok);
 
     } // End of InterperetCommand().
 
