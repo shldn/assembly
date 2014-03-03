@@ -10,6 +10,7 @@ public class Assembly {
     //stores assemblies to be deleted for the frame update
     public static List<Assembly> destroyAssemblies = new List<Assembly>();
     public static List<Assembly> GetToDestroy() { return destroyAssemblies; }
+    public bool removed = false; 
 
     public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
@@ -206,6 +207,8 @@ public class Assembly {
         }
         //assembly consume energy
         CalculateEnergyUse();
+        //ConsoleScript.Inst.WriteToLog(currentEnergy+ " remains");
+            Debug.Log(currentEnergy+ " remains");
         if( currentEnergy < 0.0f){
             destroyAssemblies.Add(this);
             //mark assembly for destruction
@@ -428,10 +431,12 @@ public class Assembly {
                         emitter.gameObject.transform.rotation = currentActuateNode.worldAcuateRot * currentSenseNode.RotToFood(currentFood);
                         emitter.emit = true;
                         currentActuateNode.propelling = true;
+                        needBurnRateUpdate = true;
                     }
                 }
             }
-            needBurnRateUpdate = true;
+            //needBurnRateUpdate = true;
+
         }
 
         return propulsion;
@@ -496,7 +501,22 @@ public class Assembly {
         foreach( var node in nodes){
             totalBurn += node.GetBurnRate();
         }
-        energyBurnRate = totalBurn;///nodes.Count;
+        energyBurnRate = totalBurn*10;///nodes.Count;
     }
 
+    //public IEnumerator  SplitOff(){
+    public void SplitOff(){
+        allAssemblies.Remove(this);
+        Object.Destroy(physicsObject);
+        //for(int i = 100; i > 0; ++i){
+        foreach( var node in nodes){
+            //node.worldPosition += new Vector3(Random.Range(-10.0F, 10.0F), 0, Random.Range(-10.0F, 10.0F));
+            node.toSplit = true;
+            node.nodeType = none;
+            node.sendOff = new Vector3(Random.Range(-10.0F, 10.0F), Random.Range(-10.0F, 10.0F), Random.Range(-10.0F, 10.0F));
+        }        
+        destroyAssemblies.Remove(this);
+        //yield return 0;
+        //}
+    }
 } // End of Assembly.

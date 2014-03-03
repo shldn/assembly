@@ -19,6 +19,11 @@ public class Node {
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
 
+
+    public bool toSplit = false;
+    public Vector3 sendOff = Vector3.zero;
+    public int counter = 0;
+
     // Metabolism ------------------------------------------------------------------------ ||
     public static float MAX_ENERGY = 10.0f;
     public float energy = MAX_ENERGY;
@@ -129,10 +134,21 @@ public class Node {
         if( !gameObject )
             gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
 
+        if(!toSplit){
         if(assembly){
             worldPosition = assembly.WorldPosition + (assembly.physicsObject.transform.rotation * HexUtilities.HexToWorld(localHexPosition));
 
             // Update physical location
+            gameObject.transform.position = worldPosition;
+        }
+        }else{
+            counter++;
+            if(counter > 100 ){Destroy();
+                return;
+            }
+
+
+            worldPosition += sendOff * Time.deltaTime;
             gameObject.transform.position = worldPosition;
         }
 
