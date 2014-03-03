@@ -19,10 +19,11 @@ public class Node {
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
 
-
     public bool toSplit = false;
     public Vector3 sendOff = Vector3.zero;
     public int counter = 0;
+
+    public Quaternion worldRotation = Quaternion.identity;
 
     // Metabolism ------------------------------------------------------------------------ ||
     public static float MAX_ENERGY = 10.0f;
@@ -99,6 +100,7 @@ public class Node {
     // Set-up of basic Node stuff.
     private void Initialize(Vector3 worldPos){
         worldPosition = worldPos;
+        worldRotation = Random.rotation;
 
         allNodes.Add(this);
 
@@ -131,8 +133,11 @@ public class Node {
     public void UpdateTransform(){
 
         // Initialize graphic
-        if( !gameObject )
+        if( !gameObject ){
             gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
+        }
+
+        
 
         if(!toSplit){
         if(assembly){
@@ -140,6 +145,7 @@ public class Node {
 
             // Update physical location
             gameObject.transform.position = worldPosition;
+            gameObject.transform.rotation = assembly.physicsObject.transform.rotation * worldRotation;
         }
         }else{
             counter++;

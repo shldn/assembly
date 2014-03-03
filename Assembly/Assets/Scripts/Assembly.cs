@@ -116,9 +116,10 @@ public class Assembly {
         }
         centerOfMass /= (float)nodes.Count;
 
-
-        physicsObject.rigidbody.centerOfMass = physicsObject.transform.InverseTransformPoint(centerOfMass);
-        
+        if(nodes.Count > 0){
+            physicsObject.rigidbody.centerOfMass = physicsObject.transform.InverseTransformPoint(centerOfMass);
+            physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
+        }
     } // End of ComputerPhysics().
 
 
@@ -138,6 +139,7 @@ public class Assembly {
         for (int i = nodes.Count-1; i >= 0; --i)
             nodes[i].Destroy();
         Object.Destroy(physicsObject);
+        physicsObject = null;
         allAssemblies.Remove(this);
         destroyAssemblies.Remove(this);
     }
@@ -149,7 +151,7 @@ public class Assembly {
 
 
     public void Save(string path){
-        Debug.Log("Saving " + path);
+        ConsoleScript.Inst.WriteToLog("Saving " + path);
         IOHelper.SaveAssembly(path, this);
     } // End of Save().
 
@@ -512,7 +514,7 @@ public class Assembly {
         foreach( var node in nodes){
             //node.worldPosition += new Vector3(Random.Range(-10.0F, 10.0F), 0, Random.Range(-10.0F, 10.0F));
             node.toSplit = true;
-            node.nodeType = none;
+            node.nodeType = NodeType.none;
             node.sendOff = new Vector3(Random.Range(-10.0F, 10.0F), Random.Range(-10.0F, 10.0F), Random.Range(-10.0F, 10.0F));
         }        
         destroyAssemblies.Remove(this);

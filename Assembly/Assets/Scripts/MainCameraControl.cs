@@ -9,6 +9,8 @@ public class MainCameraControl : MonoBehaviour {
 
     Vector3 targetPos = Vector3.zero;
     Vector3 smoothVelTranslate = Vector3.zero;
+    Vector3 smoothVelRotate = Vector3.zero;
+
     float translateSmoothTime = 0.2f;
 
     float cameraMoveSpeed = 4f;
@@ -25,6 +27,12 @@ public class MainCameraControl : MonoBehaviour {
     public Texture2D nodeSelectTex = null;
     public Texture2D assemblySelectTex = null;
 
+    public DepthOfField34 depthOfField = null;
+
+
+    void Awake(){
+        depthOfField = Camera.main.GetComponent("DepthOfField34") as DepthOfField34;
+    } // End of Awake().
 
 	// Use this for initialization
 	void Start(){
@@ -37,9 +45,17 @@ public class MainCameraControl : MonoBehaviour {
 
         // Smoothly interpolate camera position/rotation.
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime);
-        Quaternion tempRot = transform.rotation;
-        tempRot = Quaternion.Slerp(tempRot, targetRot, 5 * Time.deltaTime);
-        transform.rotation = tempRot;
+
+        Vector3 tempEulers = transform.rotation.eulerAngles;
+        tempEulers.x = Mathf.SmoothDampAngle(tempEulers.x, targetRot.eulerAngles.x, ref smoothVelRotate.x, translateSmoothTime);
+        tempEulers.y = Mathf.SmoothDampAngle(tempEulers.y, targetRot.eulerAngles.y, ref smoothVelRotate.y, translateSmoothTime);
+        tempEulers.z = Mathf.SmoothDampAngle(tempEulers.z, targetRot.eulerAngles.z, ref smoothVelRotate.z, translateSmoothTime);
+        transform.eulerAngles = tempEulers;
+
+
+        // check if selectedAssembly has been destroyed
+        if (selectedAssembly && selectedAssembly.physicsObject == null)
+            selectedAssembly = null;
 
         if(selectedNode || selectedAssembly)
             camType = CamType.ORBIT;
@@ -55,7 +71,7 @@ public class MainCameraControl : MonoBehaviour {
             else
                 orbitTarget = selectedNode.worldPosition;
 
-            targetPos = orbitTarget + transform.forward * -camOrbitDist;
+            targetPos = orbitTarget + (targetRot * Vector3.forward) * -camOrbitDist;
 
             camOrbitDist += camOrbitDist * -Input.GetAxis("Mouse ScrollWheel");
 
@@ -64,6 +80,9 @@ public class MainCameraControl : MonoBehaviour {
                 selectedNode = null;
                 camType = CamType.FREELOOK;
             }
+
+            depthOfField.focalPoint = Mathf.Lerp(depthOfField.focalPoint, Vector3.Distance(Camera.main.transform.position, orbitTarget), Time.deltaTime * 5f);
+            depthOfField.focalSize = Vector3.Distance(Camera.main.transform.position, orbitTarget) * 0.1f;
         }
         // Toggle camera lock.
         else if(Input.GetKeyDown(KeyCode.Space)){
@@ -120,21 +139,25 @@ public class MainCameraControl : MonoBehaviour {
             // If nothing is selected currently...
             if(!selectedNode && !selectedAssembly){
                 selectedAssembly = hoveredNode.assembly;
+                Refocus(selectedAssembly);
             }
             // If a node is selected currently...
             else if(selectedNode){
                 // If you click again on the selected node, select it's assembly.
                 if(hoveredNode == selectedNode){
                     selectedAssembly = hoveredNode.assembly;
+                    Refocus(selectedAssembly);
                     selectedNode = null;
                 }
                 // If clicking on a node in the same assembly, select that node.
                 else if(hoveredNode.assembly == selectedNode.assembly){
                     selectedNode = hoveredNode;
+                    Refocus(selectedNode);
                 }
                 // Otherwise it's a node in a different assembly... so select that one.
                 else{
                     selectedAssembly = hoveredNode.assembly;
+                    Refocus(selectedAssembly);
                     selectedNode = null;
                 }
             }
@@ -143,15 +166,30 @@ public class MainCameraControl : MonoBehaviour {
                 // If clicking on a node in the selected assembly, select that.
                 if(hoveredNode.assembly == selectedAssembly){
                     selectedNode = hoveredNode;
+                    Refocus(selectedNode);
                     selectedAssembly = null;
                 }
                 // Otherwise, select the hovered node's assembly.
                 else
                     selectedAssembly = hoveredNode.assembly;
+                    Refocus(selectedAssembly);
             }
         }
 
 	} // End of Update().
+
+
+    void Refocus(Vector3 pos){
+        Vector3 vectorToPos = pos - transform.position;
+        camOrbitDist = vectorToPos.magnitude;
+        targetRot = Quaternion.LookRotation(vectorToPos, transform.up);
+    }
+    void Refocus(Node node){
+        Refocus(node.worldPosition);   
+    }
+    void Refocus(Assembly assembly){
+        Refocus(assembly.physicsObject.transform.position);   
+    }// End of Refocus().
 
 
     void OnGUI(){
@@ -168,15 +206,19 @@ public class MainCameraControl : MonoBehaviour {
         }
 
         if(selectedAssembly){
-            GUI.color = Color.white;
+            /*
+            // Selection ring
+            GUI.color = new Color(0.5f, 1f, 0.5f, 0.2f);
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
             GUI.Label(CenteredSquare(selectedAssembly), assemblySelectTex);
+            
 
             GUI.color = new Color(1f, 1f, 1f, 0.2f);
             for(int i = 0; i < selectedAssembly.nodes.Count; i++){
                 GUI.skin.label.alignment = TextAnchor.MiddleCenter;
                 GUI.Label(CenteredSquare(selectedAssembly.nodes[i]), nodeSelectTex);
             }
+            */
         }
 
     } // End of OnGUI().

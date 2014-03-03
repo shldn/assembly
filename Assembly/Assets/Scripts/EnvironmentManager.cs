@@ -19,7 +19,7 @@ public class EnvironmentManager {
             Debug.LogError("EnvironmentManager null file name");
             return;
         }
-
+        ConsoleScript.Inst.WriteToLog("Loading: " + file);
         using (StreamReader sr = new StreamReader(file))
         {
             int fileFormat = int.Parse(sr.ReadLine());
@@ -58,6 +58,7 @@ public class EnvironmentManager {
                 sw.WriteLine(aDir);
             }
             IOHelper.SaveAllToFolder(aDir);
+            ConsoleScript.Inst.WriteToLog("Saved " + file);
         }
         else
             Debug.LogError(file + " already exists, save aborted");

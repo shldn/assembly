@@ -42,18 +42,19 @@ public class GameManager : MonoBehaviour {
                 for(int j = 0; j < Assembly.GetAll()[i].nodes.Count; j++){
                     Assembly.GetAll()[i].nodes[j].Mutate(0.1f);
                 }
+                ConsoleScript.Inst.WriteToLog("Mutated all assembly genes.");
             }
 
             // Add a node.
             if(Input.GetKeyDown(KeyCode.N)){
                 Assembly.GetAll()[i].AddRandomNode();
-                ConsoleScript.WriteToLog("Added a random node to all assemblies.");
+                ConsoleScript.Inst.WriteToLog("Added a random node to all assemblies.");
             }
 
             // Remove a node.
             if(Input.GetKeyDown(KeyCode.M)){
                 Assembly.GetAll()[i].RemoveRandomNode();
-                ConsoleScript.WriteToLog("Removed a random node from all assemblies.");
+                ConsoleScript.Inst.WriteToLog("Removed a random node from all assemblies.");
             }
 
             // Mutate entire assembly by 1 tick.
@@ -77,22 +78,6 @@ public class GameManager : MonoBehaviour {
             Node.GetAll()[i].UpdateTransform();
 
 
-
-        // Save/load
-        if (Input.GetKeyUp(KeyCode.P))
-            EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));
-        if (Input.GetKeyUp(KeyCode.O))
-            EnvironmentManager.SavePositionsOnly(IOHelper.GetValidFileName("./data/", "env", ".txt"));
-        if (Input.GetKeyUp(KeyCode.I))
-            EnvironmentManager.Load("./data/env.txt");
-        if (Input.GetKeyUp(KeyCode.L))
-            ClearAll();
-        if (Input.GetKeyUp(KeyCode.K))
-        {
-            ClearAll();
-            SimulationManager.Inst.Run();
-        }
-
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
         for(int i = 0; i < Node.GetAll().Count; i++){
@@ -110,13 +95,14 @@ public class GameManager : MonoBehaviour {
                 Assembly newAssembly = Assembly.GetRandomAssembly(UnityEngine.Random.Range(5, 30));
                 newAssembly.physicsObject.transform.position = MathUtilities.RandomVector3Sphere(30f);
             }
+            ConsoleScript.Inst.WriteToLog("Created random assemblies.");
         }
 
 
     } // End of Update().
 
 
-    void ClearAll(){
+    public static void ClearAll(){
         for (int i = Assembly.allAssemblies.Count - 1; i >= 0; i--)
             Assembly.GetAll()[i].Destroy();
         for (int i = FoodPellet.GetAll().Count - 1; i >= 0; i--)
