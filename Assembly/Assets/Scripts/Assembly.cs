@@ -4,9 +4,11 @@ using System.Collections.Generic;
 
 public class Assembly {
 
+    /* all nodes in assembly --------------------------------------*/
     public static List<Assembly> allAssemblies = new List<Assembly>();
     public static List<Assembly> GetAll() { return allAssemblies; }
 
+    /* destroying assemblies and nodes -----------------------------*/
     //stores assemblies to be deleted for the frame update
     public static List<Assembly> destroyAssemblies = new List<Assembly>();
     public static List<Assembly> GetToDestroy() { return destroyAssemblies; }
@@ -33,6 +35,7 @@ public class Assembly {
     public float consumeRate = 10.0f; //rate asm consume food
     public float energyBurnRate = 0; //rate asm burn energy
     public bool  needBurnRateUpdate = true;
+    public float burnCoefficient = 1.0f;
 
 
     public static implicit operator bool(Assembly exists){
@@ -361,6 +364,8 @@ public class Assembly {
         }
 
         CalibrateEnergy();
+        //change assembly burn coefficient
+        burnCoefficient = Random.Range(0.5f, 2.0f);
     } // End of Mutate().
 
 
@@ -509,7 +514,7 @@ public class Assembly {
         foreach( var node in nodes){
             totalBurn += node.GetBurnRate();
         }
-        energyBurnRate = totalBurn;///nodes.Count;
+        energyBurnRate = totalBurn * burnCoefficient;///nodes.Count;
     }
 
     public void SplitOff(){
