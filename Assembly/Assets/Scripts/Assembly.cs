@@ -4,12 +4,16 @@ using System.Collections.Generic;
 
 public class Assembly {
 
+    /* all nodes in assembly --------------------------------------*/
     public static List<Assembly> allAssemblies = new List<Assembly>();
     public static List<Assembly> GetAll() { return allAssemblies; }
 
+    /* destroying assemblies and nodes -----------------------------*/
     //stores assemblies to be deleted for the frame update
     public static List<Assembly> destroyAssemblies = new List<Assembly>();
     public static List<Assembly> GetToDestroy() { return destroyAssemblies; }
+    private bool removedFromUpdateTransform = false;
+    public bool markedRemoved = false;
 
     public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
@@ -31,6 +35,7 @@ public class Assembly {
     public float consumeRate = 10.0f; //rate asm consume food
     public float energyBurnRate = 0; //rate asm burn energy
     public bool  needBurnRateUpdate = true;
+    public float burnCoefficient = 1.0f;
 
 
     public static implicit operator bool(Assembly exists){
@@ -137,10 +142,12 @@ public class Assembly {
     public void Destroy(){
         for (int i = nodes.Count-1; i >= 0; --i)
             nodes[i].Destroy();
-        Object.Destroy(physicsObject);
-        physicsObject = null;
-        allAssemblies.Remove(this);
-        destroyAssemblies.Remove(this);
+        if( !(nodes.Count > 0) ){
+            Object.Destroy(physicsObject);
+            physicsObject = null;
+            allAssemblies.Remove(this);
+            destroyAssemblies.Remove(this);
+        }
     }
 
     public void Save(){
@@ -185,6 +192,8 @@ public class Assembly {
 
 
     public void UpdateTransform(){
+        if(removedFromUpdateTransform)
+            return;
         //Propel assembly through the world based on activated nodes.
         List<Node> allActuateNodes = GetActuateNodes();
         for(int i = 0; i < allActuateNodes.Count; i++){
@@ -208,7 +217,10 @@ public class Assembly {
         }
         //assembly consume energy
         CalculateEnergyUse();
+        //ConsoleScript.Inst.WriteToLog(currentEnergy+ " remains");
+            //Debug.Log(currentEnergy+ " remains");
         if( currentEnergy < 0.0f){
+            removedFromUpdateTransform = true;
             destroyAssemblies.Add(this);
             //mark assembly for destruction
         }
@@ -352,6 +364,8 @@ public class Assembly {
         }
 
         CalibrateEnergy();
+        //change assembly burn coefficient
+        burnCoefficient = Random.Range(0.5f, 2.0f);
     } // End of Mutate().
 
 
@@ -430,10 +444,12 @@ public class Assembly {
                         emitter.gameObject.transform.rotation = currentActuateNode.worldAcuateRot * currentSenseNode.RotToFood(currentFood);
                         emitter.emit = true;
                         currentActuateNode.propelling = true;
+                        needBurnRateUpdate = true;
                     }
                 }
             }
-            needBurnRateUpdate = true;
+            //needBurnRateUpdate = true;
+
         }
 
         return propulsion;
@@ -498,7 +514,24 @@ public class Assembly {
         foreach( var node in nodes){
             totalBurn += node.GetBurnRate();
         }
-        //energyBurnRate = totalBurn;///nodes.Count;
+        energyBurnRate = totalBurn * burnCoefficient;///nodes.Count;
     }
 
+    public void SplitOff(){
+        if(markedRemoved){
+            Destroy();
+            return;
+        }
+        //allAssemblies.Remove(this);
+        //Object.Destroy(physicsObject);
+        foreach( var node in nodes){
+            if(node.toSplit)
+                return;
+            //node.worldPosition += new Vector3(Random.Range(-10.0F, 10.0F), 0, Random.Range(-10.0F, 10.0F));
+            node.toSplit = true;
+            node.nodeType = NodeType.none;
+            node.sendOff = new Vector3(Random.Range(-10.0F, 10.0F), Random.Range(-10.0F, 10.0F), Random.Range(-10.0F, 10.0F));
+        }        
+        //destroyAssemblies.Remove(this);
+    }
 } // End of Assembly.

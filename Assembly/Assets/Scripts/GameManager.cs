@@ -69,28 +69,12 @@ public class GameManager : MonoBehaviour {
 
         //destroy assemblies out side of update
         for(int i = 0; i < Assembly.GetToDestroy().Count; ++i)
-            Assembly.GetToDestroy()[i].Destroy();
+            Assembly.GetToDestroy()[i].SplitOff();
         
         // Update nodes.
-        for(int i = 0; i < Node.GetAll().Count; ++i)
+		for(int i = 0; i < Node.GetAll().Count; ++i)
             Node.GetAll()[i].UpdateTransform();
 
-
-
-        // Save/load
-        if (Input.GetKeyUp(KeyCode.P))
-            EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));
-        if (Input.GetKeyUp(KeyCode.O))
-            EnvironmentManager.SavePositionsOnly(IOHelper.GetValidFileName("./data/", "env", ".txt"));
-        if (Input.GetKeyUp(KeyCode.I))
-            EnvironmentManager.Load("./data/env.txt");
-        if (Input.GetKeyUp(KeyCode.L))
-            ClearAll();
-        if (Input.GetKeyUp(KeyCode.K))
-        {
-            ClearAll();
-            SimulationManager.Inst.Run();
-        }
 
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
@@ -116,7 +100,7 @@ public class GameManager : MonoBehaviour {
     } // End of Update().
 
 
-    void ClearAll(){
+    public static void ClearAll(){
         for (int i = Assembly.allAssemblies.Count - 1; i >= 0; i--)
             Assembly.GetAll()[i].Destroy();
         for (int i = FoodPellet.GetAll().Count - 1; i >= 0; i--)

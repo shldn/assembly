@@ -19,6 +19,10 @@ public class Node {
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
 
+    public bool toSplit = false;
+    public Vector3 sendOff = Vector3.zero;
+    private int disappearRate = Random.Range(50, 150);
+
     public Quaternion worldRotation = Quaternion.identity;
 
     // Metabolism ------------------------------------------------------------------------ ||
@@ -133,12 +137,23 @@ public class Node {
             gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
         }
 
+        if(!toSplit){
         if(assembly){
             worldPosition = assembly.WorldPosition + (assembly.physicsObject.transform.rotation * HexUtilities.HexToWorld(localHexPosition));
 
             // Update physical location
             gameObject.transform.position = worldPosition;
             gameObject.transform.rotation = assembly.physicsObject.transform.rotation * worldRotation;
+        }
+        }else{
+            --disappearRate;
+            if( disappearRate < 0){
+                assembly.markedRemoved = true;
+                return;
+            }
+
+            worldPosition += sendOff * Time.deltaTime;
+            gameObject.transform.position = worldPosition;
         }
 
         // Sense node view arc ----------------------------------------------------------
@@ -206,6 +221,8 @@ public class Node {
 
 
     public void Destroy(){
+        if(disappearRate > 0)
+            return;
         if(gameObject)
             GameObject.Destroy(gameObject);
         if(senseFieldBillboard)
