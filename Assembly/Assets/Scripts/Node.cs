@@ -133,8 +133,6 @@ public class Node {
             gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
         }
 
-        
-
         if(assembly){
             worldPosition = assembly.WorldPosition + (assembly.physicsObject.transform.rotation * HexUtilities.HexToWorld(localHexPosition));
 

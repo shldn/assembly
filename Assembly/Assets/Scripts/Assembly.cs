@@ -498,7 +498,7 @@ public class Assembly {
         foreach( var node in nodes){
             totalBurn += node.GetBurnRate();
         }
-        energyBurnRate = totalBurn;///nodes.Count;
+        //energyBurnRate = totalBurn;///nodes.Count;
     }
 
 } // End of Assembly.

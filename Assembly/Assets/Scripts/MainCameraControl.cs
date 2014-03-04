@@ -5,6 +5,7 @@ public enum CamType {LOCKED, FREELOOK, ORBIT}
 
 public class MainCameraControl : MonoBehaviour {
 
+    public static MainCameraControl Inst = null;
     Quaternion targetRot;
 
     Vector3 targetPos = Vector3.zero;
@@ -17,7 +18,7 @@ public class MainCameraControl : MonoBehaviour {
     float cameraRotateSpeed = 2f;
 
     Node hoveredNode = null;
-    Node selectedNode = null;
+    public Node selectedNode = null;
     Assembly selectedAssembly = null;
 
     CamType camType = CamType.FREELOOK;
@@ -36,8 +37,12 @@ public class MainCameraControl : MonoBehaviour {
 
 	// Use this for initialization
 	void Start(){
+        Inst = this;
+
 	    targetRot = transform.rotation;
 		targetPos = transform.position;
+
+        RenderSettings.fogColor = Camera.main.backgroundColor;
 	} // End of Start().
 	
 	// Update is called once per frame
@@ -94,8 +99,8 @@ public class MainCameraControl : MonoBehaviour {
 
         // Rotate selected assembly
         if(selectedAssembly){
-            selectedAssembly.physicsObject.transform.rotation *= Quaternion.AngleAxis(WesInput.editHorizontalThrottle * 90f * Time.deltaTime, Camera.main.transform.up);
-            selectedAssembly.physicsObject.transform.rotation *= Quaternion.AngleAxis(WesInput.editVerticalThrottle * 90f * Time.deltaTime, Camera.main.transform.right);
+            selectedAssembly.physicsObject.transform.rotation *= Quaternion.Inverse(Quaternion.AngleAxis(WesInput.editHorizontalThrottle * 90f * Time.deltaTime, Quaternion.Inverse(selectedAssembly.physicsObject.transform.rotation) * Camera.main.transform.up));
+            selectedAssembly.physicsObject.transform.rotation *= Quaternion.Inverse(Quaternion.AngleAxis(WesInput.editVerticalThrottle * 90f * Time.deltaTime, Quaternion.Inverse(selectedAssembly.physicsObject.transform.rotation) * -Camera.main.transform.right));
         }
 
 
@@ -129,13 +134,13 @@ public class MainCameraControl : MonoBehaviour {
             }
         }
             // If clicking on 'nothing', deselect all.
-        else if(Input.GetMouseButtonDown(0)){
+        else if(Input.GetMouseButtonDown(0) && !NodeEngineering.Inst.uiLockout){
             selectedNode = null;
             selectedAssembly = null;
         }
 
         // When clicking on a node...
-        if(Input.GetMouseButtonDown(0) && hoveredNode){
+        if(Input.GetMouseButtonDown(0) && hoveredNode && !NodeEngineering.Inst.uiLockout){
             // If nothing is selected currently...
             if(!selectedNode && !selectedAssembly){
                 selectedAssembly = hoveredNode.assembly;
@@ -196,13 +201,13 @@ public class MainCameraControl : MonoBehaviour {
         if(hoveredNode){
             GUI.color = Color.white;
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-            GUI.Label(CenteredSquare(hoveredNode), nodeSelectTex);
+            GUI.Label(MathUtilities.CenteredSquare(hoveredNode), nodeSelectTex);
         }
 
         if(selectedNode){
             GUI.color = Color.white;
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-            GUI.Label(CenteredSquare(selectedNode), nodeSelectTex);
+            GUI.Label(MathUtilities.CenteredSquare(selectedNode), nodeSelectTex);
         }
 
         if(selectedAssembly){
@@ -223,18 +228,6 @@ public class MainCameraControl : MonoBehaviour {
 
     } // End of OnGUI().
 
-
-    private Rect CenteredSquare(float x, float y, float size){
-        return new Rect(x - (size * 0.5f), Screen.height - (y + (size * 0.5f)), size, size);
-    }
-    private Rect CenteredSquare(Node node){
-        Vector3 nodeScreenPos = Camera.main.WorldToScreenPoint(node.worldPosition);
-        return CenteredSquare(nodeScreenPos.x, nodeScreenPos.y, 2000f / Vector3.Distance(Camera.main.transform.position, node.worldPosition));
-    }
-    private Rect CenteredSquare(Assembly assembly){
-        Vector3 assemblyScreenPos = Camera.main.WorldToScreenPoint(assembly.physicsObject.transform.position);
-        return CenteredSquare(assemblyScreenPos.x, assemblyScreenPos.y, 12000f / Vector3.Distance(Camera.main.transform.position, assembly.physicsObject.transform.position));
-    }// End of CenteredSquare().
 
 } // End of MainCameraControl.
  
