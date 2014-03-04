@@ -21,7 +21,7 @@ public class Node {
 
     public bool toSplit = false;
     public Vector3 sendOff = Vector3.zero;
-    public int counter = 0;
+    private int disappearRate = Random.Range(50, 150);
 
     public Quaternion worldRotation = Quaternion.identity;
 
@@ -148,11 +148,11 @@ public class Node {
             gameObject.transform.rotation = assembly.physicsObject.transform.rotation * worldRotation;
         }
         }else{
-            counter++;
-            if(counter > 100 ){Destroy();
+            --disappearRate;
+            if( disappearRate < 0){
+                assembly.markedRemoved = true;
                 return;
             }
-
 
             worldPosition += sendOff * Time.deltaTime;
             gameObject.transform.position = worldPosition;
@@ -223,6 +223,8 @@ public class Node {
 
 
     public void Destroy(){
+        if(disappearRate > 0)
+            return;
         if(gameObject)
             GameObject.Destroy(gameObject);
         if(senseFieldBillboard)

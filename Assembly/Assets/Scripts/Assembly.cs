@@ -10,7 +10,8 @@ public class Assembly {
     //stores assemblies to be deleted for the frame update
     public static List<Assembly> destroyAssemblies = new List<Assembly>();
     public static List<Assembly> GetToDestroy() { return destroyAssemblies; }
-    public bool removed = false; 
+    private bool removedFromUpdateTransform = false;
+    public bool markedRemoved = false;
 
     public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
@@ -138,10 +139,12 @@ public class Assembly {
     public void Destroy(){
         for (int i = nodes.Count-1; i >= 0; --i)
             nodes[i].Destroy();
-        Object.Destroy(physicsObject);
-        physicsObject = null;
-        allAssemblies.Remove(this);
-        destroyAssemblies.Remove(this);
+        if( !(nodes.Count > 0) ){
+            Object.Destroy(physicsObject);
+            physicsObject = null;
+            allAssemblies.Remove(this);
+            destroyAssemblies.Remove(this);
+        }
     }
 
     public void Save(){
@@ -186,6 +189,8 @@ public class Assembly {
 
 
     public void UpdateTransform(){
+        if(removedFromUpdateTransform)
+            return;
         //Propel assembly through the world based on activated nodes.
         List<Node> allActuateNodes = GetActuateNodes();
         for(int i = 0; i < allActuateNodes.Count; i++){
@@ -210,8 +215,9 @@ public class Assembly {
         //assembly consume energy
         CalculateEnergyUse();
         //ConsoleScript.Inst.WriteToLog(currentEnergy+ " remains");
-            Debug.Log(currentEnergy+ " remains");
+            //Debug.Log(currentEnergy+ " remains");
         if( currentEnergy < 0.0f){
+            removedFromUpdateTransform = true;
             destroyAssemblies.Add(this);
             //mark assembly for destruction
         }
@@ -503,22 +509,24 @@ public class Assembly {
         foreach( var node in nodes){
             totalBurn += node.GetBurnRate();
         }
-        energyBurnRate = totalBurn*10;///nodes.Count;
+        energyBurnRate = totalBurn;///nodes.Count;
     }
 
-    //public IEnumerator  SplitOff(){
     public void SplitOff(){
-        allAssemblies.Remove(this);
-        Object.Destroy(physicsObject);
-        //for(int i = 100; i > 0; ++i){
+        if(markedRemoved){
+            Destroy();
+            return;
+        }
+        //allAssemblies.Remove(this);
+        //Object.Destroy(physicsObject);
         foreach( var node in nodes){
+            if(node.toSplit)
+                return;
             //node.worldPosition += new Vector3(Random.Range(-10.0F, 10.0F), 0, Random.Range(-10.0F, 10.0F));
             node.toSplit = true;
             node.nodeType = NodeType.none;
             node.sendOff = new Vector3(Random.Range(-10.0F, 10.0F), Random.Range(-10.0F, 10.0F), Random.Range(-10.0F, 10.0F));
         }        
-        destroyAssemblies.Remove(this);
-        //yield return 0;
-        //}
+        //destroyAssemblies.Remove(this);
     }
 } // End of Assembly.
