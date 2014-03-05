@@ -46,7 +46,7 @@ public class MainCameraControl : MonoBehaviour {
 	} // End of Start().
 	
 	// Update is called once per frame
-	void Update(){
+	void FixedUpdate(){
 
         // Smoothly interpolate camera position/rotation.
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime);

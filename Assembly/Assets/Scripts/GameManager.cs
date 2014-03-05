@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour {
 	} // End of Start().
 
 
-    void Update(){
+    void LateUpdate(){
 
         // Update assemblies.
         for(int i = 0; i < Assembly.GetAll().Count; i++){
