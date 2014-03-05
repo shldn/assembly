@@ -32,6 +32,8 @@ public class NodeEngineering : MonoBehaviour {
         Node selectedNode = MainCameraControl.Inst.selectedNode;
         if(selectedNode){
 
+            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+
             float handleSize = 500f;
 
             Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(selectedNode.worldPosition);
@@ -44,7 +46,7 @@ public class NodeEngineering : MonoBehaviour {
             senseHandle.rect = MathUtilities.CenteredSquare(senseVecEndScreenPos.x, senseVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, senseVecEnd));
 
             if(senseHandle.held){
-                selectedNode.nodeProperties.senseVector = Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up);
+                selectedNode.nodeProperties.senseVector = Quaternion.Lerp(selectedNode.nodeProperties.senseVector, Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * Time.deltaTime);
             }
 
             // Actuate
@@ -55,7 +57,7 @@ public class NodeEngineering : MonoBehaviour {
             actuateHandle.rect = MathUtilities.CenteredSquare(actuateVecEndScreenPos.x, actuateVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, actuateVecEnd));
 
             if(actuateHandle.held)
-                selectedNode.nodeProperties.actuateVector = Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up);
+                selectedNode.nodeProperties.actuateVector = Quaternion.Lerp(selectedNode.nodeProperties.actuateVector, Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * Time.deltaTime);
 
             // Vector indications
             int numDots = 6;
@@ -87,7 +89,7 @@ public class NodeEngineering : MonoBehaviour {
             senseHandle.Draw();
             actuateHandle.Draw();
 
-            uiLockout = senseHandle.hovered || actuateHandle.hovered;
+            uiLockout = senseHandle.hovered || senseHandle.held || actuateHandle.hovered || actuateHandle.held;
         }
 	} // End of Update().
 } // End of NodeEngineering.

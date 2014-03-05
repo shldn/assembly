@@ -198,11 +198,6 @@ public class MainCameraControl : MonoBehaviour {
 
 
     void OnGUI(){
-        if(hoveredNode){
-            GUI.color = Color.white;
-            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-            GUI.Label(MathUtilities.CenteredSquare(hoveredNode), nodeSelectTex);
-        }
 
         if(selectedNode){
             GUI.color = Color.white;
@@ -210,22 +205,28 @@ public class MainCameraControl : MonoBehaviour {
             GUI.Label(MathUtilities.CenteredSquare(selectedNode), nodeSelectTex);
         }
 
-        if(selectedAssembly){
+        if(!NodeEngineering.Inst.uiLockout){
+            if(hoveredNode){
+                GUI.color = new Color(1f, 1f, 1f, 0.3f);
+                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(MathUtilities.CenteredSquare(hoveredNode), nodeSelectTex);
+            }
             /*
-            // Selection ring
-            GUI.color = new Color(0.5f, 1f, 0.5f, 0.2f);
-            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-            GUI.Label(CenteredSquare(selectedAssembly), assemblySelectTex);
+            if(selectedAssembly){
+                // Selection ring
+                GUI.color = new Color(0.5f, 1f, 0.5f, 0.2f);
+                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(MathUtilities.CenteredSquare(selectedAssembly), assemblySelectTex);
             
 
-            GUI.color = new Color(1f, 1f, 1f, 0.2f);
-            for(int i = 0; i < selectedAssembly.nodes.Count; i++){
-                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-                GUI.Label(CenteredSquare(selectedAssembly.nodes[i]), nodeSelectTex);
+                GUI.color = new Color(1f, 1f, 1f, 0.2f);
+                for(int i = 0; i < selectedAssembly.nodes.Count; i++){
+                    GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                    GUI.Label(MathUtilities.CenteredSquare(selectedAssembly.nodes[i]), nodeSelectTex);
+                }
             }
             */
         }
-
     } // End of OnGUI().
 
 
