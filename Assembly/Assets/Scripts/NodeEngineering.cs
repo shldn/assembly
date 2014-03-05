@@ -8,14 +8,15 @@ public class NodeEngineering : MonoBehaviour {
     public Texture2D senseVectorHandle = null;
     public Texture2D actuateVectorHandle = null;
     public Texture2D dotTex = null;
+    public Texture2D dotEmptyTex = null;
 
     ActiveButton senseHandle = null;
     ActiveButton actuateHandle = null;
 
     public bool uiLockout = false;
 
-    public Vector3 senseVecEnd = Vector3.zero;
-    public Vector3 actuateVecEnd = Vector3.zero;
+    public Vector3 senseVec = Vector3.zero;
+    public Vector3 actuateVec = Vector3.zero;
 
     void Start(){
 
@@ -36,7 +37,8 @@ public class NodeEngineering : MonoBehaviour {
             Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(selectedNode.worldPosition);
 
             // Sense
-            senseVecEnd = selectedNode.worldPosition + (selectedNode.assembly.physicsObject.transform.rotation * selectedNode.nodeProperties.senseVector) * Vector3.forward * 2f;
+            senseVec = (selectedNode.assembly.physicsObject.transform.rotation * selectedNode.nodeProperties.senseVector) * Vector3.forward * 2f;
+            Vector3 senseVecEnd = selectedNode.worldPosition + senseVec;
             Vector3 senseVecEndScreenPos = Camera.main.WorldToScreenPoint(senseVecEnd);
 
             senseHandle.rect = MathUtilities.CenteredSquare(senseVecEndScreenPos.x, senseVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, senseVecEnd));
@@ -45,15 +47,41 @@ public class NodeEngineering : MonoBehaviour {
                 selectedNode.nodeProperties.senseVector = Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up);
             }
 
-
             // Actuate
-            actuateVecEnd = selectedNode.worldPosition + (selectedNode.assembly.physicsObject.transform.rotation * selectedNode.nodeProperties.actuateVector) * Vector3.forward * 2f;
+            actuateVec = (selectedNode.assembly.physicsObject.transform.rotation * selectedNode.nodeProperties.actuateVector) * Vector3.forward * 2f;
+            Vector3 actuateVecEnd = selectedNode.worldPosition + actuateVec;
             Vector3 actuateVecEndScreenPos = Camera.main.WorldToScreenPoint(actuateVecEnd);
 
             actuateHandle.rect = MathUtilities.CenteredSquare(actuateVecEndScreenPos.x, actuateVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, actuateVecEnd));
 
             if(actuateHandle.held)
                 selectedNode.nodeProperties.actuateVector = Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up);
+
+            // Vector indications
+            int numDots = 6;
+            float dotSize = 150f;
+            for(int i = 0; i < numDots; i++){
+                Vector3 dotPos = MainCameraControl.Inst.selectedNode.worldPosition + (((NodeEngineering.Inst.senseVec) / (numDots + 1)) * (i + 1));
+                Vector3 dotScreenPos = Camera.main.WorldToScreenPoint(dotPos);
+
+                float thisDotSize = ((dotSize / Vector3.Distance(Camera.main.transform.position, dotPos)) / numDots) * (i + 1);
+
+                if(Vector3.Angle(Camera.main.transform.forward, NodeEngineering.Inst.senseVec) >= 90f)
+                    GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotTex);
+                else
+                    GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotEmptyTex);
+            }
+            for(int i = 0; i < numDots; i++){
+                Vector3 dotPos = MainCameraControl.Inst.selectedNode.worldPosition + (((NodeEngineering.Inst.actuateVec) / (numDots + 1)) * (i + 1));
+                Vector3 dotScreenPos = Camera.main.WorldToScreenPoint(dotPos);
+
+                float thisDotSize = ((dotSize / Vector3.Distance(Camera.main.transform.position, dotPos)) / numDots) * (i + 1);
+
+                if(Vector3.Angle(Camera.main.transform.forward, NodeEngineering.Inst.actuateVec) >= 90f)
+                    GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotTex);
+                else
+                    GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotEmptyTex);
+            }
 
             // Buttons
             senseHandle.Draw();
@@ -84,14 +112,6 @@ public class ActiveButton {
 
 
     public void Draw(){
-
-
-        for(int i = 0; i < 5; i++){
-            Vector3 dotPos = MainCameraControl.Inst.selectedNode.worldPosition + ((NodeEngineering.Inst.senseVecEnd) / i);
-            Vector3 dotScreenPos = Camera.main.WorldToScreenPoint(dotPos);
-            GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, 10f), NodeEngineering.Inst.dotTex);
-        }
-
 
         hovered = rect.Contains(new Vector3(Input.mousePosition.x, Screen.height - Input.mousePosition.y, 0f));
 
