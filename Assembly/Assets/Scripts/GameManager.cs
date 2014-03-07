@@ -72,9 +72,10 @@ public class GameManager : MonoBehaviour {
             Assembly.GetToDestroy()[i].SplitOff();
         
         // Update nodes.
-		for(int i = 0; i < Node.GetAll().Count; ++i)
+		for(int i = 0; i < Node.GetAll().Count; ++i){
             Node.GetAll()[i].UpdateTransform();
-
+            Node.GetAll()[i].UpdateColor();
+        }
 
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
@@ -109,11 +110,8 @@ public class GameManager : MonoBehaviour {
 
 
     void OnGUI(){
+        
         /*
-        if( Assembly.GetAll().Count > 0 )
-            GUI.Label(new Rect(0, 0, 200, 200), Assembly.GetAll()[0].Fitness().ToString());
-
-
         if(selectedNode){
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 
@@ -169,6 +167,7 @@ public class GameManager : MonoBehaviour {
             
         }
         */
+        
     } // End of OnGUI().
 
 }

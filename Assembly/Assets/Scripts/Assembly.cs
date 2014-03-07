@@ -470,18 +470,34 @@ public class Assembly {
 
             // Get the sense node's functionally connected nodes.
             List<Node> networkedNodes = senseNodes[i].GetFullLogicNet();
+
             // Loop through those connected nodes.
             for(int j = 0; j < networkedNodes.Count; j++){
                 Node currentNode = networkedNodes[j];
-                // If the node is an actuator and hasn't been accounted for, stash it and get it's actuateVector.
+
+                // If the node is an actuator and hasn't been accounted for, get the 'wire' between it and the sense node.
                 if((currentNode.nodeType == NodeType.actuate) && !validActuateNodes.Contains(currentNode)){
                     validActuateNodes.Add(currentNode);
 
                     currentNode.validLogic = true;
                     senseNodes[i].validLogic = true;
+
+                    List<Node> actuatorNetwork = currentNode.GetFullReverseLogicNet();
+
+                    // Get control node wire between the two.
+                    List<Node> controlNetwork = new List<Node>();
+                    for(int k = 0; k < actuatorNetwork.Count; k++){
+                        if((actuatorNetwork[k].nodeType == NodeType.control) && networkedNodes.Contains(actuatorNetwork[k])){
+                            controlNetwork.Add(actuatorNetwork[k]);
+                            actuatorNetwork[k].validLogic = true;
+                        }
+                    }
                 }
             }
         }
+
+        for(int i = 0; i < nodes.Count; i++)
+            nodes[i].UpdateColor();
     } // End of UpdateNodeValidities().
 
     // returns the fitness of this assembly in the current environment
@@ -505,7 +521,7 @@ public class Assembly {
 
     //energy that is being used
     public void CalculateEnergyUse(){
-        currentEnergy -= (energyBurnRate * Time.deltaTime );
+        //currentEnergy -= (energyBurnRate * Time.deltaTime );
     }
 
     //update burn rate for asmbly

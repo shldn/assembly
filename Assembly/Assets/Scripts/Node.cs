@@ -112,22 +112,38 @@ public class Node {
             switch(neighborCount){
                 case 1:
                     nodeType = NodeType.sense;
-                    gameObject.renderer.material.color = Node.senseColor;
                     break;
                 case 2:
                     nodeType = NodeType.actuate;
-                    gameObject.renderer.material.color = Node.actuatorColor;
                     break;
                 case 3:
                     nodeType = NodeType.control;
-                    gameObject.renderer.material.color = Node.controlColor;
                     break;
                 default:
                     nodeType = NodeType.none;
-                    gameObject.renderer.material.color = Node.stemColor;
                     break;
             }
     } // End of UpdateType().
+
+
+    public void UpdateColor(){
+        switch(nodeType){
+            case NodeType.sense:
+                gameObject.renderer.material.color = Node.senseColor;
+                break;
+            case NodeType.actuate:
+                gameObject.renderer.material.color = Node.actuatorColor;
+                break;
+            case NodeType.control:
+                gameObject.renderer.material.color = Node.controlColor;
+                break;
+            default:
+                gameObject.renderer.material.color = Node.stemColor;
+                break;
+        }
+        if(!validLogic)
+            gameObject.renderer.material.color = Color.Lerp(gameObject.renderer.material.color, new Color(0.2f, 0.2f, 0.2f), 0.8f);
+    } // End of UpdateColor().
 
 
     public void UpdateTransform(){
@@ -277,6 +293,33 @@ public class Node {
     } // End of GetLogicConnections().
 
 
+    // Returns neighbors that this node can reseive a signal from.
+    public List<Node> GetReverseLogicConnections(){
+        // No assembly... no neighbors... no logic!
+        if(!assembly)
+            return null;
+
+        List<Node> logicNodes = new List<Node>();
+        List<Node> neighbors = GetNeighbors();
+
+        for(int i = 0; i < neighbors.Count; i++){
+            Node currentNeighbor = neighbors[i];
+
+            // Control transmits to actuate
+            if(nodeType == NodeType.actuate)
+                if(currentNeighbor.nodeType == NodeType.control)
+                    logicNodes.Add(currentNeighbor);
+
+            // Actuate transmits to other actuate
+            if(nodeType == NodeType.actuate)
+                if(currentNeighbor.nodeType == NodeType.actuate)
+                    logicNodes.Add(currentNeighbor);
+        }
+
+        return logicNodes;
+    } // End of GetLogicConnections().
+
+
     // Returns all nodes 'down the line' that this node would propogate a signal to.
     public List<Node> GetFullLogicNet(){
         // No assembly... no neighbors... no logic!
@@ -287,6 +330,46 @@ public class Node {
 
         // Churn through (logical) nodes to test for new connections...
         List<Node> nodesToTest = GetLogicConnections();
+
+        int logicDumpCatch = 0;
+
+        while(nodesToTest.Count > 0){
+            Node currentNode = nodesToTest[0];
+            logicNodes.Add(currentNode);
+            nodesToTest.Remove(currentNode);
+
+            // Test the node for logic neighbors.
+            List<Node> newNeighbors = currentNode.GetLogicConnections();
+            for(int i = 0; i < newNeighbors.Count; i++){
+                Node curNewNeighbor = newNeighbors[i];
+                // If a logic neighbor hasn't been captured, add it to logicNodes and the nodesToTest pile.
+                if((curNewNeighbor != this) && !logicNodes.Contains(curNewNeighbor)){
+                    nodesToTest.Add(curNewNeighbor);
+                }
+            }
+
+            // debug
+            logicDumpCatch++;
+            if(logicDumpCatch > 999){
+                MonoBehaviour.print("LogicNet while() loop is stuck!");
+                break;
+            }
+        }
+
+        return logicNodes;
+    } // End of GetFullLogicNet().
+
+
+    // Returns all nodes 'down the line' that this node would propogate a signal to.
+    public List<Node> GetFullReverseLogicNet(){
+        // No assembly... no neighbors... no logic!
+        if(!assembly)
+            return null;
+
+        List<Node> logicNodes = new List<Node>();
+
+        // Churn through (logical) nodes to test for new connections...
+        List<Node> nodesToTest = GetReverseLogicConnections();
 
         int logicDumpCatch = 0;
 
