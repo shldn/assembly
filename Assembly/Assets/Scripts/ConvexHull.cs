@@ -12,19 +12,51 @@ public class Tetrahedron
     private Vector3[] pts = new Vector3[4];
     private Plane[] planes = new Plane[4];
     private Vector3 midPt = new Vector3();
+    public List<List<Vector3>> ptSets = new List<List<Vector3>>(4);
 
     public Vector3[] Pts { get { return pts; } }
 
+    private Plane GetPlane(Vector3 p1, Vector3 p2, Vector3 p3)
+    {
+        Plane p = new Plane(p1, p2, p3);
+        if (p.GetSide(midPt))
+            p.Set3Points(p1, p3, p2);
+        if (p.GetSide(midPt))
+            Debug.LogError("Still not correct direction?");
+        return p;
+    }
 
     public Tetrahedron(Vector3[] pts_)
     {
         pts = pts_;
         midPt = 0.25f * (pts[0] + pts[1] + pts[2] + pts[3]);
-        planes[0] = new Plane(pts[0], pts[1], pts[2]);
-        planes[1] = new Plane(pts[0], pts[1], pts[3]);
-        planes[2] = new Plane(pts[1], pts[2], pts[3]);
-        planes[3] = new Plane(pts[2], pts[0], pts[3]);
-    }    
+        planes[0] = GetPlane(pts[0], pts[1], pts[2]);
+        planes[1] = GetPlane(pts[0], pts[1], pts[3]);
+        planes[2] = GetPlane(pts[1], pts[2], pts[3]);
+        planes[3] = GetPlane(pts[2], pts[0], pts[3]);
+
+        ptSets.Add(new List<Vector3>());
+        ptSets.Add(new List<Vector3>());
+        ptSets.Add(new List<Vector3>());
+        ptSets.Add(new List<Vector3>());
+    }
+
+    public void AddToPtSet(Vector3 pt)
+    {
+        int bestIdx = -1;
+        float bestDist = float.MaxValue;
+        for (int i = 0; i < planes.Length; ++i)
+        {
+            float dist = planes[i].GetDistanceToPoint(pt);
+            if (dist > 0 && dist < bestDist)
+            {
+                bestIdx = i;
+                bestDist = dist;
+            }
+        }
+        if (bestIdx > -1)
+            ptSets[bestIdx].Add(pt);
+    }
 
 
     // Fill the passed in Lists with mesh info for this tetrahedron.
@@ -96,6 +128,36 @@ public class ConvexHull : MonoBehaviour
         // create initial tetrahedron 
         Tetrahedron initTet = GetInitTetrahedron();
 
+        AssignPtsToFaces(initTet);
+
+        ShowPtSets(initTet);
+    }
+
+    void ShowPtSets(Tetrahedron tet)
+    {
+        for (int i = 0; i < HullNode.allNodes.Count; ++i)
+        {
+            if (tet.ptSets[0].Contains(HullNode.allNodes[i].transform.position))
+                HullNode.allNodes[i].color = new Color(0, 1, 0, 0.5F);
+            else if (tet.ptSets[1].Contains(HullNode.allNodes[i].transform.position))
+                HullNode.allNodes[i].color = new Color(0, 0, 1, 0.5F);
+            else if (tet.ptSets[2].Contains(HullNode.allNodes[i].transform.position))
+                HullNode.allNodes[i].color = new Color(1, 0, 1, 0.5F);
+            else if (tet.ptSets[3].Contains(HullNode.allNodes[i].transform.position))
+                HullNode.allNodes[i].color = new Color(1, 1, 0, 0.5F);
+            else
+                HullNode.allNodes[i].color = new Color(1, 0, 0, 0.5F);
+        }
+    }
+
+    void AssignPtsToFaces(Tetrahedron tet)
+    {
+        for (int i = 0; i < pts.Count; ++i)
+        {
+            if (used[i])
+                continue;
+            tet.AddToPtSet(pts[i]);
+        }
     }
 
     Tetrahedron GetInitTetrahedron()

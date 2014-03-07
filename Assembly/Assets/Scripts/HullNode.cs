@@ -6,9 +6,10 @@ using System.Collections.Generic;
 // When one of these nodes moves, the hull is recalculated.
 public class HullNode : MonoBehaviour {
 
-    static List<HullNode> allNodes = new List<HullNode>();
+    static public List<HullNode> allNodes = new List<HullNode>();
     public ConvexHull hull = null;
     Vector3 lastPos = new Vector3();
+    public Color color = new Color(1, 0, 0, 0.5F);
 
     void Awake()
     {
@@ -32,7 +33,7 @@ public class HullNode : MonoBehaviour {
 
     void OnDrawGizmos()
     {
-        Gizmos.color = new Color(1, 0, 0, 0.5F);
+        Gizmos.color = color;
         Gizmos.DrawCube(transform.position, new Vector3(1, 1, 1));
     }
 }
