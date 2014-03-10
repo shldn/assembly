@@ -5,20 +5,16 @@ using System.Collections.Generic;
 public class Helpers
 {
     // basePts are assumed to be counter-clockwise so they point toward apex
-    public static List<Face> GetPyramidFaces(List<Vector3> basePts, Vector3 apexPt)
+    // this does not return the base face, only those connected to the apex
+    public static List<Face> GetPyramidFaces(List<Vector3> pts, List<int> baseIdxs, int apexIdx)
     {
         List<Face> faces = new List<Face>();
-        for(int i=0; i < basePts.Count-1; ++i)
-            faces.Add(new Face(basePts[i], basePts[i+1], apexPt));
-        faces.Add(new Face(basePts[basePts.Count - 1], basePts[0], apexPt));
+        for (int i = 0; i < baseIdxs.Count - 1; ++i)
+            faces.Add(new Face(pts, baseIdxs[i], baseIdxs[i + 1], apexIdx));
+        faces.Add(new Face(pts, baseIdxs[baseIdxs.Count - 1], baseIdxs[0], apexIdx));
 
         return faces;
     }
-}
-
-public class Triangle
-{
-    public Vector3[] pts = new Vector3[3];
 }
 
 public class Face
@@ -26,8 +22,21 @@ public class Face
 
     public List<Vector3> pts = new List<Vector3>(3); 
     public List<Vector3> visiblePts = new List<Vector3>();
+    public List<int> idx = new List<int>(3); 
     Plane p;
 
+    public Face(List<Vector3> pts_, int idx1, int idx2, int idx3)
+    {
+        pts.Add(pts_[idx1]);
+        pts.Add(pts_[idx2]);
+        pts.Add(pts_[idx3]);
+        idx.Add(idx1);
+        idx.Add(idx2);
+        idx.Add(idx3);
+        p = new Plane(pts[0], pts[1], pts[2]);
+    }
+
+    /*
     public Face(Vector3 p1, Vector3 p2, Vector3 p3)
     {
         pts.Add(p1);
@@ -39,6 +48,17 @@ public class Face
     {
         pts = pts_;
         p = new Plane(pts_[0], pts_[1], pts_[2]);
+    }
+     */
+
+    public float GetDistanceToPoint(Vector3 pt)
+    {
+        return p.GetDistanceToPoint(pt);
+    }
+
+    public bool IsPtVisible(Vector3 pt)
+    {
+        return p.GetDistanceToPoint(pt) >= 0;
     }
 
     public Vector3 GetFurthestVisible()
@@ -60,99 +80,66 @@ public class Face
 
 public class Pyramid
 {
-    private Vector3[] pts = new Vector3[4];
-    private Plane[] planes = new Plane[4];
-    private Vector3 midPt = new Vector3();
-    public List<List<Vector3>> ptSets = new List<List<Vector3>>(4);
-
-    public Vector3[] Pts { get { return pts; } }
-
-    private Plane GetPlane(Vector3 p1, Vector3 p2, Vector3 p3)
-    {
-        Plane p = new Plane(p1, p2, p3);
-
-        // error checking, shouldn't be needed.
-        if (p.GetSide(midPt))
-        {
-            Debug.LogError("Swapping");
-            p.Set3Points(p1, p3, p2);
-        }
-        if (p.GetSide(midPt))
-            Debug.LogError("Still not correct direction?");
-        return p;
-    }
+    public List<Face> faces = new List<Face>(4);
+    private List<int> idx = new List<int>(); // temp for mesh debugging
 
     // refactor to use Faces
-    public Pyramid(Vector3[] pts_)
+    public Pyramid(List<Vector3> pts, List<int> idxs)
     {
-        pts = pts_;
-        midPt = 0.25f * (pts[0] + pts[1] + pts[2] + pts[3]);
+        //pts = pts_;
+        idx = idxs;
+        Vector3 midPt = 0.25f * (pts[idxs[0]] + pts[idxs[1]] + pts[idxs[2]] + pts[idxs[3]]);
+
 
         // determine correct orientation of 0,1,2
         // want to face away from the midpoint
-         Plane p = new Plane(pts[0], pts[1], pts[2]);
+         Plane p = new Plane(pts[idxs[0]], pts[idxs[1]], pts[idxs[2]]);
          if (p.GetSide(midPt))
          {
-             Vector3 temp = pts[2];
-             pts[2] = pts[1];
-             pts[1] = temp;
+             int temp = idxs[2];
+             idxs[2] = idxs[1];
+             idxs[1] = temp;
          }
-        planes[0] = GetPlane(pts[0], pts[1], pts[2]);
-        planes[1] = GetPlane(pts[3], pts[1], pts[0]);
-        planes[2] = GetPlane(pts[3], pts[2], pts[1]);
-        planes[3] = GetPlane(pts[3], pts[0], pts[2]);
+         faces.Add(new Face(pts, idxs[0], idxs[1], idxs[2]));
+         faces.Add(new Face(pts, idxs[3], idxs[1], idxs[0]));
+         faces.Add(new Face(pts, idxs[3], idxs[2], idxs[1]));
+         faces.Add(new Face(pts, idxs[3], idxs[0], idxs[2]));
 
-        ptSets.Add(new List<Vector3>());
-        ptSets.Add(new List<Vector3>());
-        ptSets.Add(new List<Vector3>());
-        ptSets.Add(new List<Vector3>());
     }
 
-    public void PushFaces(ref Stack<Face> faceStack)
+    public void PushFaces(ref LinkedList<Face> faceStack)
     {
-        // base
-        Face baseFace = new Face(pts[0], pts[1], pts[2]);
-        baseFace.visiblePts = ptSets[0];
-        if( baseFace.visiblePts.Count > 0)
-            faceStack.Push(baseFace);
-        
-        // non-base Pyramid faces
-        List<Face> faces = Helpers.GetPyramidFaces(new List<Vector3>(){pts[0], pts[1], pts[2]}, pts[3]);
-        for (int i = 0; i < faces.Count; ++i)
-        {
-            faces[i].visiblePts = ptSets[i + 1];
-            if (faces[i].visiblePts.Count > 0)
-                faceStack.Push(faces[i]);
-        }
+        for(int i=0; i < faces.Count; ++i)
+            faceStack.AddLast(faces[i]);
     }
 
     public bool AddToPtSet(Vector3 pt)
     {
         int bestIdx = -1;
         float bestDist = float.MaxValue;
-        for (int i = 0; i < planes.Length; ++i)
+        for (int i = 0; i < faces.Count; ++i)
         {
-            float dist = planes[i].GetDistanceToPoint(pt);
+            float dist = faces[i].GetDistanceToPoint(pt);
             if (dist > 0 && dist < bestDist)
             {
                 bestIdx = i;
                 bestDist = dist;
             }
         }
-        bool added = bestIdx > -1;
-        if (added)
-            ptSets[bestIdx].Add(pt);
-        return added;
+        bool found = bestIdx > -1;
+        if (found)
+            faces[bestIdx].visiblePts.Add(pt);
+        return found;
     }
 
 
     // Fill the passed in Lists with mesh info for this pyramid.
-    public void FillMeshInfo(List<Vector3> newVertices, List<int> newTriangles, List<Vector2> newUV)
+    public void FillMeshInfo(List<Vector3> origPts, List<Vector3> newVertices, List<int> newTriangles, List<Vector2> newUV)
     {
-        newVertices.Add(pts[0]);
-        newVertices.Add(pts[1]);
-        newVertices.Add(pts[2]);
-        newVertices.Add(pts[3]);
+        newVertices.Add(origPts[idx[0]]);
+        newVertices.Add(origPts[idx[1]]);
+        newVertices.Add(origPts[idx[2]]);
+        newVertices.Add(origPts[idx[3]]);
 
         // tri 1
         newTriangles.Add(0);
@@ -222,28 +209,52 @@ public class ConvexHull : MonoBehaviour
 
 
         // iteration phase
-        Stack<Face> faceStack = new Stack<Face>();
+        List<Face> savedFaces = new List<Face>();
+        LinkedList<Face> faceStack = new LinkedList<Face>();
         initTet.PushFaces(ref faceStack);
-
+        
         while (faceStack.Count > 0)
         {
-            Face f = faceStack.Pop();
+            // Pop 
+            Face f = faceStack.Last.Value;
+            faceStack.RemoveLast();
+
+            if (f.visiblePts.Count == 0)
+            {
+                savedFaces.Add(f);
+                continue;
+            }
             Vector3 furthestPt = f.GetFurthestVisible();
+            List<Face> facesSeenFromPt = GetVisibleFaces(faceStack, f, furthestPt);
         }
 
+    }
+
+    List<Face> GetVisibleFaces(LinkedList<Face> faceStack, Face origFace, Vector3 furthestPt)
+    {
+        List<Face> visFaces = new List<Face>();
+        visFaces.Add(origFace);
+
+        // can be optimized, must be adjacent to origFace, so should just check these, could have hash table from point to faces
+        foreach( Face f in faceStack)
+        {
+            if( f != origFace && f.IsPtVisible(furthestPt) )
+                visFaces.Add(f);
+        }
+        return visFaces;
     }
 
     void ShowPtSets(Pyramid tet)
     {
         for (int i = 0; i < HullNode.allNodes.Count; ++i)
         {
-            if (tet.ptSets[0].Contains(HullNode.allNodes[i].transform.position))
+            if (tet.faces[0].visiblePts.Contains(HullNode.allNodes[i].transform.position))
                 HullNode.allNodes[i].color = new Color(0, 1, 0, 0.5F);
-            else if (tet.ptSets[1].Contains(HullNode.allNodes[i].transform.position))
+            else if (tet.faces[1].visiblePts.Contains(HullNode.allNodes[i].transform.position))
                 HullNode.allNodes[i].color = new Color(0, 0, 1, 0.5F);
-            else if (tet.ptSets[2].Contains(HullNode.allNodes[i].transform.position))
+            else if (tet.faces[2].visiblePts.Contains(HullNode.allNodes[i].transform.position))
                 HullNode.allNodes[i].color = new Color(1, 0, 1, 0.5F);
-            else if (tet.ptSets[3].Contains(HullNode.allNodes[i].transform.position))
+            else if (tet.faces[3].visiblePts.Contains(HullNode.allNodes[i].transform.position))
                 HullNode.allNodes[i].color = new Color(1, 1, 0, 0.5F);
             else
                 HullNode.allNodes[i].color = new Color(1, 0, 0, 0.5F);
@@ -339,10 +350,10 @@ public class ConvexHull : MonoBehaviour
         used[lastTetraIdx] = true;
         
         // let's see it
-        Pyramid retTet = new Pyramid(new Vector3[] { pts[bestI], pts[bestJ], pts[lastTriIdx], pts[lastTetraIdx] });
+        Pyramid retTet = new Pyramid(pts, new List<int>(4) { bestI, bestJ, lastTriIdx, lastTetraIdx });
 
         ClearMesh();
-        retTet.FillMeshInfo(newVertices, newTriangles, newUV);
+        retTet.FillMeshInfo(pts, newVertices, newTriangles, newUV);
         return retTet;
     }
 
