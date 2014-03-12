@@ -8,6 +8,9 @@ public class GameManager : MonoBehaviour {
     Node selectedNode = null;
 
     public int numberOfFood = 10;
+    public int numberOfAssembly = 2;
+    public int numberOfNodesInAssembly = 10;
+    public bool addMultipleAssembly = true;
     public bool addMultipleFood = true;
 
 	void Start(){
@@ -16,13 +19,19 @@ public class GameManager : MonoBehaviour {
             return;
 
         // Generate a random assembly.
-        Assembly.GetRandomAssembly(10);
+        if(addMultipleAssembly){
+            Assembly.MAX_ASSEMBLY = numberOfAssembly;
+            for(int i = numberOfAssembly; i > -1; --i)
+                Assembly.GetRandomAssembly(numberOfNodesInAssembly);
+        } else
+            Assembly.GetRandomAssembly(numberOfNodesInAssembly);
 
         //Generate random food pellet
-        if(addMultipleFood)
-            for(int i = 0; i< numberOfFood; ++i)
+        if(addMultipleFood){
+            FoodPellet.MAX_FOOD = numberOfFood;
+            for(int i = numberOfFood; i > -1; --i)
                 FoodPellet.AddRandomFoodPellet();
-        else 
+        } else 
             FoodPellet.AddNewFoodPellet();
         // Add a food pellet a short ways away.
         //new FoodPellet(new Vector3(10f, 0f, 0f));
@@ -31,6 +40,10 @@ public class GameManager : MonoBehaviour {
 
 
     void LateUpdate(){
+        //updating values from the gui
+        Assembly.MAX_ASSEMBLY = numberOfAssembly;
+        Assembly.MAX_NODES_IN_ASSEMBLY = numberOfNodesInAssembly;
+        FoodPellet.MAX_FOOD = numberOfFood;
 
         // Update assemblies.
         for(int i = 0; i < Assembly.GetAll().Count; i++){
@@ -110,7 +123,15 @@ public class GameManager : MonoBehaviour {
 
 
     void OnGUI(){
-        
+        //sliders controlling assembly
+        GUI.Label(new Rect(25, 10, 200, 30), "Number of Food: " + numberOfFood   );
+        numberOfFood = (int) GUI.HorizontalSlider(new Rect(25, 40, 100, 30), numberOfFood, 1.0F, 100.0F);
+        GUI.Label(new Rect(25, 70, 250, 30), "Number of Assembly: " + numberOfAssembly   );
+        numberOfAssembly = (int) GUI.HorizontalSlider(new Rect(25, 100, 100, 30), numberOfAssembly, 1.0F, 100.0F);
+        GUI.Label(new Rect(25, 130, 250, 30), "Number of Nodes in Assembly: " + numberOfNodesInAssembly   );
+        numberOfNodesInAssembly = (int) GUI.HorizontalSlider(new Rect(25, 160, 100, 30), numberOfNodesInAssembly, 1.0F, 100.0F);
+        GUI.Label(new Rect(25, 190, 250, 30), "Current Burn Rate multiplyer: " + Assembly.burnCoefficient   );
+        Assembly.burnCoefficient = GUI.HorizontalSlider(new Rect(25, 220, 100, 30), Assembly.burnCoefficient, 0.0F, 5.0F);
         /*
         if(selectedNode){
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;

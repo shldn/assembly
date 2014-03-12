@@ -20,6 +20,11 @@ public class Assembly {
 
     public GameObject physicsObject = null;
 
+    //asmbly control
+    public static int MAX_ASSEMBLY = 1;
+    public static int MAX_NODES_IN_ASSEMBLY = 10;
+    public static bool regenerate = true;
+
     public Vector3 WorldPosition{
         get { return physicsObject.transform.position; }
         set { physicsObject.transform.position = value; }
@@ -35,7 +40,7 @@ public class Assembly {
     public float consumeRate = 10.0f; //rate asm consume food
     public float energyBurnRate = 0; //rate asm burn energy
     public bool  needBurnRateUpdate = true;
-    public float burnCoefficient = 1.0f;
+    public static float burnCoefficient = 1.0f;
 
 
     public static implicit operator bool(Assembly exists){
@@ -219,6 +224,7 @@ public class Assembly {
         CalculateEnergyUse();
         //ConsoleScript.Inst.WriteToLog(currentEnergy+ " remains");
             //Debug.Log(currentEnergy+ " remains");
+
         if( currentEnergy < 0.0f){
             removedFromUpdateTransform = true;
             destroyAssemblies.Add(this);
@@ -365,7 +371,7 @@ public class Assembly {
 
         CalibrateEnergy();
         //change assembly burn coefficient
-        burnCoefficient = Random.Range(0.5f, 2.0f);
+        //burnCoefficient = Random.Range(0.5f, 2.0f);
     } // End of Mutate().
 
 
@@ -513,7 +519,8 @@ public class Assembly {
             currentEnergy += ( food.currentEnergy + realConsumeRate);
             //destroy and create
             food.Destroy();
-            FoodPellet.AddRandomFoodPellet();
+            if(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD)
+                FoodPellet.AddRandomFoodPellet(); //regenerate new food pellet for every one destroyed
         }else {
             currentEnergy += realConsumeRate;
         }
@@ -536,6 +543,9 @@ public class Assembly {
     public void SplitOff(){
         if(markedRemoved){
             Destroy();
+            if(regenerate){
+                Assembly.GetRandomAssembly(MAX_NODES_IN_ASSEMBLY);
+            }
             return;
         }
         //allAssemblies.Remove(this);

@@ -7,6 +7,7 @@ public class FoodPellet{
 	public Vector3 worldPosition = new Vector3( 0, 9 , 0);
 	private static List<FoodPellet> allFoodPellets = new List<FoodPellet>();
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
+    public static int MAX_FOOD = 1;
 
     public static float MAX_ENERGY = 10.0f;
     public float currentEnergy = MAX_ENERGY;
