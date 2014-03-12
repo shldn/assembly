@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour {
     Node selectedNode = null;
 
     public int numberOfFood = 10;
-    public int numberOfAssembly = 2;
+    public int numberOfAssembly = 1;
     public int numberOfNodesInAssembly = 10;
     public bool addMultipleAssembly = true;
     public bool addMultipleFood = true;
@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour {
         // Generate a random assembly.
         if(addMultipleAssembly){
             Assembly.MAX_ASSEMBLY = numberOfAssembly;
-            for(int i = numberOfAssembly; i > -1; --i)
+            for(int i = numberOfAssembly; i > 0; --i)
                 Assembly.GetRandomAssembly(numberOfNodesInAssembly);
         } else
             Assembly.GetRandomAssembly(numberOfNodesInAssembly);
@@ -29,7 +29,7 @@ public class GameManager : MonoBehaviour {
         //Generate random food pellet
         if(addMultipleFood){
             FoodPellet.MAX_FOOD = numberOfFood;
-            for(int i = numberOfFood; i > -1; --i)
+            for(int i = numberOfFood; i > 0; --i)
                 FoodPellet.AddRandomFoodPellet();
         } else 
             FoodPellet.AddNewFoodPellet();
@@ -44,6 +44,25 @@ public class GameManager : MonoBehaviour {
         Assembly.MAX_ASSEMBLY = numberOfAssembly;
         Assembly.MAX_NODES_IN_ASSEMBLY = numberOfNodesInAssembly;
         FoodPellet.MAX_FOOD = numberOfFood;
+
+        //adjust food on slider
+        if( FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD )
+            while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
+                FoodPellet.AddNewFoodPellet();
+            }
+        else if( FoodPellet.GetAll().Count > FoodPellet.MAX_FOOD )
+            for(int i = FoodPellet.GetAll().Count - 1; i >= FoodPellet.MAX_FOOD; --i)
+                FoodPellet.GetAll()[i].Destroy();
+
+        //adjust assemblies on slider
+        if( Assembly.GetAll().Count < Assembly.MAX_ASSEMBLY )
+            while(Assembly.GetAll().Count < Assembly.MAX_ASSEMBLY){
+                Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
+            }
+        else if( Assembly.GetAll().Count > Assembly.MAX_ASSEMBLY )
+            for(int i = Assembly.GetAll().Count - 1; i >= Assembly.MAX_NODES_IN_ASSEMBLY; --i)
+                Assembly.GetAll()[i].Destroy();
+
 
         // Update assemblies.
         for(int i = 0; i < Assembly.GetAll().Count; i++){
@@ -131,7 +150,7 @@ public class GameManager : MonoBehaviour {
         GUI.Label(new Rect(25, 130, 250, 30), "Number of Nodes in Assembly: " + numberOfNodesInAssembly   );
         numberOfNodesInAssembly = (int) GUI.HorizontalSlider(new Rect(25, 160, 100, 30), numberOfNodesInAssembly, 1.0F, 100.0F);
         GUI.Label(new Rect(25, 190, 250, 30), "Current Burn Rate multiplyer: " + Assembly.burnCoefficient   );
-        Assembly.burnCoefficient = GUI.HorizontalSlider(new Rect(25, 220, 100, 30), Assembly.burnCoefficient, 0.0F, 5.0F);
+        Assembly.burnCoefficient = GUI.HorizontalSlider(new Rect(25, 220, 100, 30), Assembly.burnCoefficient, 0.0F, 10.0F);
         /*
         if(selectedNode){
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;

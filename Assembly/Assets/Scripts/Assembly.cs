@@ -528,7 +528,7 @@ public class Assembly {
 
     //energy that is being used
     public void CalculateEnergyUse(){
-        //currentEnergy -= (energyBurnRate * Time.deltaTime );
+        currentEnergy -= (energyBurnRate * Time.deltaTime );
     }
 
     //update burn rate for asmbly
@@ -544,7 +544,8 @@ public class Assembly {
         if(markedRemoved){
             Destroy();
             if(regenerate){
-                Assembly.GetRandomAssembly(MAX_NODES_IN_ASSEMBLY);
+                if( GetAll().Count < MAX_ASSEMBLY )
+                    Assembly.GetRandomAssembly(MAX_NODES_IN_ASSEMBLY);
             }
             return;
         }
