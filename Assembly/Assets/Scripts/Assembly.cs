@@ -60,6 +60,7 @@ public class Assembly {
     public bool  needBurnRateUpdate = true;
     public static float burnCoefficient = 1.0f;
 
+    public float MaxEnergy { get{ return nodes.Count; }}
 
     public static implicit operator bool(Assembly exists){
         return exists != null;
