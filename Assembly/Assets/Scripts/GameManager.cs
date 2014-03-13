@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour {
     public bool addMultipleAssembly = true;
     public bool addMultipleFood = true;
     public bool refactorIfInert = false;
+    public bool populationControl  = false;
 
 	void Start(){
 
@@ -61,25 +62,27 @@ public class GameManager : MonoBehaviour {
             for(int i = FoodPellet.GetAll().Count - 1; i >= FoodPellet.MAX_FOOD; --i)
                 FoodPellet.GetAll()[i].Destroy();
 
-        //adjust assemblies on slider
-        if( Assembly.GetAll().Count < Assembly.MIN_ASSEMBLY )
-            while(Assembly.GetAll().Count < Assembly.MIN_ASSEMBLY){
-                Assembly newAssembly = Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
-                newAssembly.WorldPosition = MathUtilities.RandomVector3Sphere(worldSize);
-            }
-        else if( Assembly.GetAll().Count > Assembly.MAX_ASSEMBLY ){
-            Assembly lowestHealthAssembly = null;
-            float lowestHealth = 99999f;
-
-            for(int i = Assembly.GetAll().Count - 1; i >= 0; --i){
-                Assembly currentAssembly = Assembly.GetAll()[i];
-                if(currentAssembly.Health < lowestHealth){
-                    lowestHealthAssembly = currentAssembly;
-                    lowestHealth = currentAssembly.Health;
+        if(populationControl){
+            //adjust assemblies on slider
+            if( Assembly.GetAll().Count < Assembly.MIN_ASSEMBLY )
+                while(Assembly.GetAll().Count < Assembly.MIN_ASSEMBLY){
+                    Assembly newAssembly = Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
+                    newAssembly.WorldPosition = MathUtilities.RandomVector3Sphere(worldSize);
                 }
+            else if( Assembly.GetAll().Count > Assembly.MAX_ASSEMBLY ){
+                Assembly lowestHealthAssembly = null;
+                float lowestHealth = 99999f;
+
+                for(int i = Assembly.GetAll().Count - 1; i >= 0; --i){
+                    Assembly currentAssembly = Assembly.GetAll()[i];
+                    if(currentAssembly.Health < lowestHealth){
+                        lowestHealthAssembly = currentAssembly;
+                        lowestHealth = currentAssembly.Health;
+                    }
+                }
+                if(lowestHealthAssembly)
+                    lowestHealthAssembly.Destroy();
             }
-            if(lowestHealthAssembly)
-                lowestHealthAssembly.Destroy();
         }
 
 
@@ -171,6 +174,9 @@ public class GameManager : MonoBehaviour {
         GUI.Label(sliderRect, "Number of Food: " + numberOfFood   );
         sliderRect.y += sliderLabelSpacing;
         numberOfFood = (int) GUI.HorizontalSlider(sliderRect, numberOfFood, 1.0F, 100.0F);
+        sliderRect.y += sliderLabelSpacing;
+        populationControl = GUI.Toggle(sliderRect, populationControl, " Population Control");
+        GUI.enabled = populationControl;
         sliderRect.y += sliderVertSpacing;
         GUI.Label(sliderRect, "Number of Min Assemblies: " + numberOfMinAssembly   );
         sliderRect.y += sliderLabelSpacing;
@@ -181,6 +187,9 @@ public class GameManager : MonoBehaviour {
         GUI.Label(sliderRect, "Number of Max Assemblies: " + numberOfMaxAssembly   );
         sliderRect.y += sliderLabelSpacing;
         numberOfMaxAssembly = (int) GUI.HorizontalSlider(sliderRect, numberOfMaxAssembly, 1.0F, 100.0F);
+        if(numberOfMinAssembly > numberOfMaxAssembly) //check to maintain min - max
+            numberOfMinAssembly = numberOfMaxAssembly;
+        GUI.enabled = true;
         sliderRect.y += sliderVertSpacing;
         GUI.Label(sliderRect, "Number of Nodes in Assembly: " + numberOfNodesInAssembly   );
         sliderRect.y += sliderLabelSpacing;
