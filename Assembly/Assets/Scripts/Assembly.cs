@@ -575,7 +575,7 @@ public class Assembly {
 
     //energy that is being used
     public void CalculateEnergyUse(){
-        currentEnergy -= (energyBurnRate * Time.deltaTime );
+        currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient);
     }
 
     //update burn rate for asmbly
@@ -584,7 +584,7 @@ public class Assembly {
         foreach( var node in nodes){
             totalBurn += node.GetBurnRate();
         }
-        energyBurnRate = totalBurn * burnCoefficient;///nodes.Count;
+        energyBurnRate = totalBurn;///nodes.Count;
     }
 
     public void DestroyWithAnimation(){
