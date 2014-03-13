@@ -22,7 +22,8 @@ public class Assembly {
     public GameObject physicsObject = null;
 
     //asmbly control
-    public static int MAX_ASSEMBLY = 1;
+    public static int MIN_ASSEMBLY = 1;
+    public static int MAX_ASSEMBLY = 10;
     public static int MAX_NODES_IN_ASSEMBLY = 10;
     public static bool REFACTOR_IF_INERT = false; // If an assembly is created with no logic nets, destroy it immediately.
 
