@@ -23,7 +23,6 @@ public class Assembly {
     //asmbly control
     public static int MAX_ASSEMBLY = 1;
     public static int MAX_NODES_IN_ASSEMBLY = 10;
-    public static bool regenerate = true;
 
     public Vector3 WorldPosition{
         get { return physicsObject.transform.position; }
@@ -519,8 +518,6 @@ public class Assembly {
             currentEnergy += ( food.currentEnergy + realConsumeRate);
             //destroy and create
             food.Destroy();
-            if(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD)
-                FoodPellet.AddRandomFoodPellet(); //regenerate new food pellet for every one destroyed
         }else {
             currentEnergy += realConsumeRate;
         }
@@ -543,10 +540,6 @@ public class Assembly {
     public void SplitOff(){
         if(markedRemoved){
             Destroy();
-            if(regenerate){
-                if( GetAll().Count < MAX_ASSEMBLY )
-                    Assembly.GetRandomAssembly(MAX_NODES_IN_ASSEMBLY);
-            }
             return;
         }
         //allAssemblies.Remove(this);

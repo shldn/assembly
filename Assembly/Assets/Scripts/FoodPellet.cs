@@ -32,9 +32,9 @@ public class FoodPellet{
     }
 
     //create new food node and add it to list
-    public static void AddNewFoodPellet(){
-    	new FoodPellet();
+    public static FoodPellet AddNewFoodPellet(){
     	ConsoleScript.Inst.WriteToLog("New food added.");
+    	return new FoodPellet();
     }
 
     //create random food node
