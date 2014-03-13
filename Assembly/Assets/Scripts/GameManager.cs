@@ -65,14 +65,25 @@ public class GameManager : MonoBehaviour {
                 Assembly newAssembly = Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
                 newAssembly.WorldPosition = MathUtilities.RandomVector3Sphere(worldSize);
             }
-        else if( Assembly.GetAll().Count > Assembly.MAX_ASSEMBLY )
-            for(int i = Assembly.GetAll().Count - 1; i >= Assembly.MAX_NODES_IN_ASSEMBLY; --i)
-                Assembly.GetAll()[i].Destroy();
+        else if( Assembly.GetAll().Count > Assembly.MAX_ASSEMBLY ){
+            Assembly lowestHealthAssembly = null;
+            float lowestHealth = 99999f;
+
+            for(int i = Assembly.GetAll().Count - 1; i >= 0; --i){
+                Assembly currentAssembly = Assembly.GetAll()[i];
+                if(currentAssembly.Health < lowestHealth){
+                    lowestHealthAssembly = currentAssembly;
+                    lowestHealth = currentAssembly.Health;
+                }
+            }
+            if(lowestHealthAssembly)
+                lowestHealthAssembly.Destroy();
+        }
 
 
         // Update assemblies.
         for(int i = Assembly.GetAll().Count - 1; i >= 0; i--){
-            if(i > (Assembly.GetAll().Count - 2))
+            if(i > (Assembly.GetAll().Count - 1))
                 continue;
 
             Assembly.GetAll()[i].UpdateTransform();
@@ -173,6 +184,31 @@ public class GameManager : MonoBehaviour {
 
         sliderRect.y += sliderLabelSpacing;
         refactorIfInert = GUI.Toggle(sliderRect, refactorIfInert, " Refactor Inert Assemblies");
+
+
+        for(int i = 0; i < Assembly.GetAll().Count; i++){
+            Assembly currentAssembly = Assembly.GetAll()[i];
+            Vector3 assemblyScreenPos = Camera.main.WorldToScreenPoint(Assembly.GetAll()[i].WorldPosition);
+
+            float barWidth = 50f;
+            float barHeight = 6f;
+            float barSpace = 3f;
+
+            float guiStuffY = Screen.height - assemblyScreenPos.y;
+
+            GUI.color = new Color(1f, 1f, 1f, 0.2f);
+            GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight);
+            GUI.color = new Color(1f, 1f, 1f, 1f);
+            GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight, Mathf.Clamp01(currentAssembly.Health));
+
+            // Reproduction bar
+            guiStuffY += barHeight + barSpace;
+
+            GUI.color = new Color(0f, 1f, 0f, 0.2f);
+            GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight);
+            GUI.color = new Color(0f, 1f, 0f, 1f);
+            GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight, Mathf.Clamp01(currentAssembly.Health - 1f));
+        }
 
         /*
         if(selectedNode){

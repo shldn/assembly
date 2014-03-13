@@ -129,6 +129,7 @@ public class MainCameraControl : MonoBehaviour {
                 Node currentNode = Node.GetAll()[i];
                 if(currentNode.gameObject == mouseRayHit.collider.gameObject){
                     hoveredNode = currentNode;
+                    hoveredNode.assembly.Health += 0.5f * Time.deltaTime;
                     break;
                 }
             }

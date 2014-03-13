@@ -648,10 +648,10 @@ public struct NodeProperties {
 //burn rate for different types: none, sense, actuate- static, actuate- woring, control
 public static class BurnRate{
     public static float none = 0.0f;
-    public static float sense = 0.1f;
-    public static float actuate = 0.2f;
-    public static float control = 0.3f;
-    public static float actuateValid = 0.4f;
-    public static float senseValid = 0.15f;
-    public static float controlValid = 0.5f;
+    public static float sense = 0.01f;
+    public static float actuate = 0.02f;
+    public static float control = 0.03f;
+    public static float actuateValid = 0.04f;
+    public static float senseValid = 0.015f;
+    public static float controlValid = 0.05f;
 } // End of BurnRate

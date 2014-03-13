@@ -61,6 +61,8 @@ public class Assembly {
     public static float burnCoefficient = 1.0f;
 
     public float MaxEnergy { get{ return nodes.Count; }}
+    public float Health { get{ return currentEnergy / MaxEnergy; }
+                          set{ currentEnergy = MaxEnergy * value; }}
 
     public static implicit operator bool(Assembly exists){
         return exists != null;
@@ -130,6 +132,9 @@ public class Assembly {
 
     // Sets up center of mass, mass, etc. for the assembly based on current structure.
     public void RecomputeRigidbody(){
+        if(!physicsObject)
+            return;
+
         if(nodes.Count > 0){
             physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
             physicsObject.rigidbody.mass = nodes.Count;
@@ -153,12 +158,12 @@ public class Assembly {
 
     //initialize energy for the assembly
     public void InitEnergyData(){
-        currentEnergy = nodes.Count * Node.MAX_ENERGY;
+        currentEnergy = MaxEnergy;
     }
     //need to calibrate energy through mutation as well
     //energy decrease only when the new max is less than current
     public void CalibrateEnergy(){
-        float newEnergy = nodes.Count * Node.MAX_ENERGY;
+        float newEnergy = MaxEnergy;
         if( newEnergy < currentEnergy)
             currentEnergy = newEnergy; 
     }
@@ -222,8 +227,10 @@ public class Assembly {
         }
 
         // Useless assemblies should be immediately deleted.
-        if(REFACTOR_IF_INERT && !hasValidNodes)
+        if(REFACTOR_IF_INERT && !hasValidNodes){
             Destroy();
+            return;
+        }
 
         //Propel assembly through the world based on activated nodes.
         List<Node> allActuateNodes = GetActuateNodes();
@@ -250,6 +257,16 @@ public class Assembly {
         CalculateEnergyUse();
         //ConsoleScript.Inst.WriteToLog(currentEnergy+ " remains");
             //Debug.Log(currentEnergy+ " remains");
+
+        if(Health >= 2f){
+            Assembly offspringAssem = Duplicate();
+            offspringAssem.WorldPosition = WorldPosition;
+            offspringAssem.WorldRotation = WorldRotation;
+            offspringAssem.physicsObject.rigidbody.velocity = physicsObject.rigidbody.velocity;
+            offspringAssem.physicsObject.rigidbody.angularVelocity = physicsObject.rigidbody.angularVelocity;
+
+            Health /= 2f;
+        }
 
     } // End of UpdateTransform().
 
