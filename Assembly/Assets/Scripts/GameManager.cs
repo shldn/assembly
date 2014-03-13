@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 
+    public static GameManager Inst = null;
+
     Node selectedNode = null;
 
     public int numberOfFood = 10;
@@ -15,6 +17,12 @@ public class GameManager : MonoBehaviour {
     public bool addMultipleFood = true;
     public bool refactorIfInert = false;
     public bool populationControl  = false;
+
+    float worldSize = 100f;
+
+    void Awake(){
+        Inst = this;
+    }
 
 	void Start(){
 
@@ -50,8 +58,6 @@ public class GameManager : MonoBehaviour {
         Assembly.REFACTOR_IF_INERT = refactorIfInert;
         FoodPellet.MAX_FOOD = numberOfFood;
 
-        float worldSize = 100f;
-
         //adjust food on slider
         if( FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD )
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
@@ -66,8 +72,7 @@ public class GameManager : MonoBehaviour {
             //adjust assemblies on slider
             if( Assembly.GetAll().Count < Assembly.MIN_ASSEMBLY )
                 while(Assembly.GetAll().Count < Assembly.MIN_ASSEMBLY){
-                    Assembly newAssembly = Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
-                    newAssembly.WorldPosition = MathUtilities.RandomVector3Sphere(worldSize);
+                    SeedNewRandomAssembly();
                 }
             else if( Assembly.GetAll().Count > Assembly.MAX_ASSEMBLY ){
                 Assembly lowestHealthAssembly = null;
@@ -155,6 +160,13 @@ public class GameManager : MonoBehaviour {
         }
 
     } // End of Update().
+
+
+    public Assembly SeedNewRandomAssembly(){
+        Assembly newAssembly = Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
+        newAssembly.WorldPosition = MathUtilities.RandomVector3Sphere(worldSize);
+        return newAssembly;
+    }
 
 
     public static void ClearAll(){

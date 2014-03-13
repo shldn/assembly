@@ -230,6 +230,7 @@ public class Assembly {
         // Useless assemblies should be immediately deleted.
         if(REFACTOR_IF_INERT && !hasValidNodes){
             Destroy();
+            GameManager.Inst.SeedNewRandomAssembly();
             return;
         }
 
