@@ -179,72 +179,59 @@ public class GameManager : MonoBehaviour {
 
     void OnGUI(){
         // World controls
-        float sliderVertSpacing = 15f;
-        float sliderLabelSpacing = 30f;
-        Rect sliderRect = new Rect(25, 10, 250, 30);
+        GUI.skin.label.fontSize = 12;
+        GUI.skin.toggle.fontSize = 12;
+        float guiHeight = 18f;
+        float guiGutter = 10f;
+        Rect controlGuiRect = new Rect(25, 25, 200, guiHeight);
 
-        GUI.Label(sliderRect, "Number of Food: " + numberOfFood   );
-        sliderRect.y += sliderLabelSpacing;
-        numberOfFood = (int) GUI.HorizontalSlider(sliderRect, numberOfFood, 1.0F, 100.0F);
-        sliderRect.y += sliderLabelSpacing;
-        populationControl = GUI.Toggle(sliderRect, populationControl, " Population Control");
+        GUI.Label(controlGuiRect, "Number of Food Pellets: " + numberOfFood   );
+        controlGuiRect.y += guiHeight;
+        numberOfFood = (int) GUI.HorizontalSlider(controlGuiRect, numberOfFood, 1.0F, 100.0F);
+        controlGuiRect.y += guiHeight;
+
+        GUI.Label(controlGuiRect, "Number of Nodes in Assembly: " + numberOfNodesInAssembly   );
+        controlGuiRect.y += guiHeight;
+        numberOfNodesInAssembly = (int) GUI.HorizontalSlider(controlGuiRect, numberOfNodesInAssembly, 1.0F, 100.0F);
+        controlGuiRect.y += guiHeight;
+
+        GUI.Label(controlGuiRect, "Burn Rate Multiplier: " + Assembly.burnCoefficient   );
+        controlGuiRect.y += guiHeight;
+        Assembly.burnCoefficient = GUI.HorizontalSlider(controlGuiRect, Assembly.burnCoefficient, 0.0F, 10.0F);
+        controlGuiRect.y += guiHeight;
+
+        refactorIfInert = GUI.Toggle(controlGuiRect, refactorIfInert, " Refactor Inert Assemblies");
+        controlGuiRect.y += guiHeight;
+
+        controlGuiRect.y += guiGutter;
+
+        // Population control
+        populationControl = GUI.Toggle(controlGuiRect, populationControl, " Population Control");
+        controlGuiRect.y += guiHeight;
+
         GUI.enabled = populationControl;
-        sliderRect.y += sliderVertSpacing;
-        GUI.Label(sliderRect, "Number of Min Assemblies: " + numberOfMinAssembly   );
-        sliderRect.y += sliderLabelSpacing;
-        numberOfMinAssembly = (int) GUI.HorizontalSlider(sliderRect, numberOfMinAssembly, 1.0F, 100.0F);
+        GUI.Label(controlGuiRect, "Min # of Assemblies: " + numberOfMinAssembly   );
+        controlGuiRect.y += guiHeight;
+        numberOfMinAssembly = (int) GUI.HorizontalSlider(controlGuiRect, numberOfMinAssembly, 1.0F, 100.0F);
         if(numberOfMinAssembly > numberOfMaxAssembly) //check to maintain min - max
             numberOfMaxAssembly = numberOfMinAssembly;
-        sliderRect.y += sliderVertSpacing;
-        GUI.Label(sliderRect, "Number of Max Assemblies: " + numberOfMaxAssembly   );
-        sliderRect.y += sliderLabelSpacing;
-        numberOfMaxAssembly = (int) GUI.HorizontalSlider(sliderRect, numberOfMaxAssembly, 1.0F, 100.0F);
+        controlGuiRect.y += guiHeight;
+
+        GUI.Label(controlGuiRect, "Max # of Assemblies: " + numberOfMaxAssembly   );
+        controlGuiRect.y += guiHeight;
+        numberOfMaxAssembly = (int) GUI.HorizontalSlider(controlGuiRect, numberOfMaxAssembly, 1.0F, 100.0F);
         if(numberOfMinAssembly > numberOfMaxAssembly) //check to maintain min - max
             numberOfMinAssembly = numberOfMaxAssembly;
+        controlGuiRect.y += guiHeight;
+
+        controlGuiRect.y += guiGutter;
         GUI.enabled = true;
-        sliderRect.y += sliderVertSpacing;
-        GUI.Label(sliderRect, "Number of Nodes in Assembly: " + numberOfNodesInAssembly   );
-        sliderRect.y += sliderLabelSpacing;
-        numberOfNodesInAssembly = (int) GUI.HorizontalSlider(sliderRect, numberOfNodesInAssembly, 1.0F, 100.0F);
-        sliderRect.y += sliderVertSpacing;
-        GUI.Label(sliderRect, "Current Burn Rate multiplyer: " + Assembly.burnCoefficient   );
-        sliderRect.y += sliderLabelSpacing;
-        Assembly.burnCoefficient = GUI.HorizontalSlider(sliderRect, Assembly.burnCoefficient, 0.0F, 10.0F);
-
-        sliderRect.y += sliderLabelSpacing;
-        refactorIfInert = GUI.Toggle(sliderRect, refactorIfInert, " Refactor Inert Assemblies");
 
 
-        for(int i = 0; i < Assembly.GetAll().Count; i++){
-            Assembly currentAssembly = Assembly.GetAll()[i];
-            Vector3 assemblyScreenPos = Camera.main.WorldToScreenPoint(Assembly.GetAll()[i].WorldPosition);
 
-            if(assemblyScreenPos.z <= 0f)
-                continue;
 
-            float guiSizeMult = 40f / Vector3.Distance(Camera.main.transform.position, currentAssembly.WorldPosition);
 
-            float barWidth = 50f * guiSizeMult;
-            float barHeight = 6f * guiSizeMult;
-            float barSpace = 3f * guiSizeMult;
-
-            float guiStuffY = Screen.height - assemblyScreenPos.y;
-
-            GUI.color = new Color(1f, 1f, 1f, 0.2f);
-            GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight);
-            GUI.color = new Color(1f, 1f, 1f, 1f);
-            GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight, Mathf.Clamp01(currentAssembly.Health));
-
-            // Reproduction bar
-            if(currentAssembly.Health > 1f){
-                guiStuffY += barHeight + barSpace;
-
-                GUI.color = new Color(0f, 1f, 0f, 0.2f);
-                GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight);
-                GUI.color = new Color(0f, 1f, 0f, 1f);
-                GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight, Mathf.Clamp01(currentAssembly.Health - 1f));
-            }
-        }
+        
 
         /*
         if(selectedNode){

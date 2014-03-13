@@ -9,6 +9,7 @@ public class PrefabManager : MonoBehaviour {
 	public GameObject bond = null;
 	public GameObject billboard = null;
 	public GameObject foodPellet = null;
+	public GameObject reproduceBurst = null;
 
     // debug
     public GameObject jetEngine = null;

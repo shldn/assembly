@@ -95,7 +95,11 @@ public class Node {
 
     // Copy Constructor - Make new node with current node position and orientation
     public Node Duplicate() {
-        return new Node(localHexPosition);
+        Node newNode = new Node(localHexPosition);
+        newNode.nodeProperties.actuateVector = nodeProperties.actuateVector;
+        newNode.nodeProperties.fieldOfView = nodeProperties.fieldOfView;
+        newNode.nodeProperties.senseVector = nodeProperties.senseVector;
+        return newNode;
     }
 
     // Set-up of basic Node stuff.

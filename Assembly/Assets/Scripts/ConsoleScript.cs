@@ -94,7 +94,12 @@ public class ConsoleScript : MonoBehaviour {
 
         commands["orbit"].func = delegate(string[] args)
         {
-
+            if(!MainCameraControl.Inst.autoOrbit){
+                MainCameraControl.Inst.randomOrbit = Random.rotation;
+                MainCameraControl.Inst.autoOrbit = true;
+            }
+            else
+                MainCameraControl.Inst.autoOrbit = false;
         };
 
         commands["quit"].func = delegate(string[] args)

@@ -24,11 +24,15 @@ public class MainCameraControl : MonoBehaviour {
     CamType camType = CamType.FREELOOK;
     float camOrbitDist = 15f;
 
+    bool showAssemReadouts = true;
 
     public Texture2D nodeSelectTex = null;
     public Texture2D assemblySelectTex = null;
 
     public DepthOfField34 depthOfField = null;
+
+    public bool autoOrbit = false;
+    public Quaternion randomOrbit = Quaternion.identity;
 
 
     void Awake(){
@@ -41,12 +45,18 @@ public class MainCameraControl : MonoBehaviour {
 
 	    targetRot = transform.rotation;
 		targetPos = transform.position;
-
         RenderSettings.fogColor = Camera.main.backgroundColor;
 	} // End of Start().
 	
 	// Update is called once per frame
 	void FixedUpdate(){
+
+        if(autoOrbit){
+            targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * Time.deltaTime);
+            camType = CamType.ORBIT;
+        }
+        
+
 
         // Smoothly interpolate camera position/rotation.
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime);
@@ -65,7 +75,7 @@ public class MainCameraControl : MonoBehaviour {
         if(selectedNode || selectedAssembly)
             camType = CamType.ORBIT;
 
-        if((camType == CamType.ORBIT) && (!selectedNode && !selectedAssembly))
+        if((camType == CamType.ORBIT) && (!selectedNode && !selectedAssembly) && !autoOrbit)
             camType = CamType.FREELOOK;
 
         // Orbit a selected object
@@ -73,7 +83,7 @@ public class MainCameraControl : MonoBehaviour {
             Vector3 orbitTarget = Vector3.zero;
             if(selectedAssembly)
                 orbitTarget = selectedAssembly.WorldPosition;
-            else
+            else if(selectedNode)
                 orbitTarget = selectedNode.worldPosition;
 
             targetPos = orbitTarget + (targetRot * Vector3.forward) * -camOrbitDist;
@@ -202,6 +212,63 @@ public class MainCameraControl : MonoBehaviour {
 
 
     void OnGUI(){
+
+        // Assembly health/name/etc. readouts.
+        if(showAssemReadouts){
+            for(int i = 0; i < Assembly.GetAll().Count; i++){
+                Assembly currentAssembly = Assembly.GetAll()[i];
+                Vector3 assemblyScreenPos = Camera.main.WorldToScreenPoint(Assembly.GetAll()[i].WorldPosition);
+
+                if(assemblyScreenPos.z <= 0f)
+                    continue;
+
+                float guiSizeMult = 40f / Vector3.Distance(Camera.main.transform.position, currentAssembly.WorldPosition);
+
+                float barWidth = 50f * guiSizeMult;
+                float barHeight = 6f * guiSizeMult;
+                float barSpace = 3f * guiSizeMult;
+
+                if(barWidth < 4f)
+                    continue;
+
+                float guiStuffY = Screen.height - assemblyScreenPos.y;
+
+                GUI.color = new Color(1f, 1f, 1f, 0.2f);
+                GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight);
+                GUI.color = new Color(1f, 1f, 1f, 1f);
+                GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight, Mathf.Clamp01(currentAssembly.Health));
+
+                // Reproduction bar
+                if(currentAssembly.Health > 1f){
+                    guiStuffY += barHeight + barSpace;
+
+                    GUI.color = new Color(0f, 1f, 0f, 0.2f);
+                    GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight * 0.5f);
+                    GUI.color = new Color(0f, 1f, 0f, 1f);
+                    GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight * 0.5f, Mathf.Clamp01(currentAssembly.Health - 1f));
+                }
+            }
+        }
+
+        // Camera controls
+        GUI.color = Color.white;
+        float guiHeight = 18f;
+        float guiGutter = 10f;
+        Rect controlsRect = new Rect(25, 300f, 200, guiHeight);
+
+        showAssemReadouts = GUI.Toggle(controlsRect, showAssemReadouts, "Show Assembly Info");
+        controlsRect.y += guiHeight;
+
+        bool camLocked = camType == CamType.LOCKED;
+        if(camType != CamType.ORBIT){
+            camLocked = GUI.Toggle(controlsRect, camLocked, "Camera Locked");
+        
+            if(camLocked)
+                camType = CamType.LOCKED;
+            else if(!camLocked)
+                camType = CamType.FREELOOK;
+        }
+
 
         if(selectedNode){
             GUI.color = Color.white;
