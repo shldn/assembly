@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour {
     public int numberOfNodesInAssembly = 10;
     public bool addMultipleAssembly = true;
     public bool addMultipleFood = true;
+    public bool refactorIfInert = false;
 
 	void Start(){
 
@@ -43,6 +44,7 @@ public class GameManager : MonoBehaviour {
         //updating values from the gui
         Assembly.MAX_ASSEMBLY = numberOfAssembly;
         Assembly.MAX_NODES_IN_ASSEMBLY = numberOfNodesInAssembly;
+        Assembly.REFACTOR_IF_INERT = refactorIfInert;
         FoodPellet.MAX_FOOD = numberOfFood;
 
         float worldSize = 100f;
@@ -69,7 +71,10 @@ public class GameManager : MonoBehaviour {
 
 
         // Update assemblies.
-        for(int i = 0; i < Assembly.GetAll().Count; i++){
+        for(int i = Assembly.GetAll().Count - 1; i >= 0; i--){
+            if(i > (Assembly.GetAll().Count - 2))
+                continue;
+
             Assembly.GetAll()[i].UpdateTransform();
 
             // User input -------------------------------------
@@ -102,10 +107,6 @@ public class GameManager : MonoBehaviour {
                 Assembly.GetAll()[i].Mutate(0.01f);
             // ------------------------------------------------
         }
-
-        //destroy assemblies out side of update
-        for(int i = 0; i < Assembly.GetToDestroy().Count; ++i)
-            Assembly.GetToDestroy()[i].SplitOff();
         
         // Update nodes.
 		for(int i = 0; i < Node.GetAll().Count; ++i){
@@ -137,7 +138,6 @@ public class GameManager : MonoBehaviour {
             ConsoleScript.Inst.WriteToLog("Created random assemblies.");
         }
 
-
     } // End of Update().
 
 
@@ -150,7 +150,7 @@ public class GameManager : MonoBehaviour {
 
 
     void OnGUI(){
-        //sliders controlling assembly
+        // World controls
         float sliderVertSpacing = 15f;
         float sliderLabelSpacing = 30f;
         Rect sliderRect = new Rect(25, 10, 250, 30);
@@ -159,7 +159,7 @@ public class GameManager : MonoBehaviour {
         sliderRect.y += sliderLabelSpacing;
         numberOfFood = (int) GUI.HorizontalSlider(sliderRect, numberOfFood, 1.0F, 100.0F);
         sliderRect.y += sliderVertSpacing;
-        GUI.Label(sliderRect, "Number of Assembly: " + numberOfAssembly   );
+        GUI.Label(sliderRect, "Number of Assemblies: " + numberOfAssembly   );
         sliderRect.y += sliderLabelSpacing;
         numberOfAssembly = (int) GUI.HorizontalSlider(sliderRect, numberOfAssembly, 1.0F, 100.0F);
         sliderRect.y += sliderVertSpacing;
@@ -170,6 +170,10 @@ public class GameManager : MonoBehaviour {
         GUI.Label(sliderRect, "Current Burn Rate multiplyer: " + Assembly.burnCoefficient   );
         sliderRect.y += sliderLabelSpacing;
         Assembly.burnCoefficient = GUI.HorizontalSlider(sliderRect, Assembly.burnCoefficient, 0.0F, 10.0F);
+
+        sliderRect.y += sliderLabelSpacing;
+        refactorIfInert = GUI.Toggle(sliderRect, refactorIfInert, " Refactor Inert Assemblies");
+
         /*
         if(selectedNode){
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;

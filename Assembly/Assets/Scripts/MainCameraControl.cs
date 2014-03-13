@@ -14,7 +14,7 @@ public class MainCameraControl : MonoBehaviour {
 
     float translateSmoothTime = 0.2f;
 
-    float cameraMoveSpeed = 4f;
+    float cameraMoveSpeed = 10f;
     float cameraRotateSpeed = 2f;
 
     Node hoveredNode = null;

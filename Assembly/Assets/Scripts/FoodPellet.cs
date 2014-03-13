@@ -19,13 +19,13 @@ public class FoodPellet{
     public GameObject gameObject = null;
 
     public FoodPellet(){
-	gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Quaternion.identity) as GameObject;
+	gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Random.rotation) as GameObject;
     	//currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
     }
 
     public FoodPellet(Vector3 pos){
-        gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, pos, Quaternion.identity) as GameObject;
+        gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, pos, Random.rotation) as GameObject;
         worldPosition = pos;
         //currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
@@ -33,7 +33,6 @@ public class FoodPellet{
 
     //create new food node and add it to list
     public static FoodPellet AddNewFoodPellet(){
-    	ConsoleScript.Inst.WriteToLog("New food added.");
     	return new FoodPellet();
     }
 
@@ -42,11 +41,11 @@ public class FoodPellet{
         int min = -50, max = 50; //range, can be chnaged later
         Vector3 pos = new Vector3(random.Next(min, max), random.Next(min, max) ,random.Next(min, max) );
         new FoodPellet(pos);
-        ConsoleScript.Inst.WriteToLog("New food added.");
     }
 
     public void UpdateTransform(){
         gameObject.transform.position = worldPosition;
+        gameObject.transform.localScale = Vector3.one * (currentEnergy / MAX_ENERGY);
     }
 
     public void Destroy(){

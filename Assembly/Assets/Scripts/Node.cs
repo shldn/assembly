@@ -19,16 +19,17 @@ public class Node {
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
 
-    public bool toSplit = false;
-    public Vector3 sendOff = Vector3.zero;
-    private int disappearRate = Random.Range(50, 150);
+    public bool doomed = false;
+    public Vector3 sendOffVector = Vector3.zero;
+    private float disappearTimer = Random.Range(0f, 1f);
 
     public Quaternion worldRotation = Quaternion.identity;
+    public Quaternion localRotation = Quaternion.identity;
 
     // Metabolism ------------------------------------------------------------------------ ||
     public static float MAX_ENERGY = 10.0f;
     public float energy = MAX_ENERGY;
-    public float consumeRange = 10; //how far away can it consume?
+    public float consumeRange = 30; //how far away can it consume?
 
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
@@ -100,7 +101,7 @@ public class Node {
     // Set-up of basic Node stuff.
     private void Initialize(Vector3 worldPos){
         worldPosition = worldPos;
-        worldRotation = Random.rotation;
+        localRotation = Random.rotation;
 
         allNodes.Add(this);
 
@@ -108,7 +109,9 @@ public class Node {
 
 
     public void UpdateType(){
-        int neighborCount = GetNeighbors().Count;
+        List<Node> neighbors = GetNeighbors();
+        int neighborCount = (neighbors == null) ? 0 : neighbors.Count;
+
             switch(neighborCount){
                 case 1:
                     nodeType = NodeType.sense;
@@ -148,29 +151,30 @@ public class Node {
 
     public void UpdateTransform(){
 
+        // Destroy Node if it's dead and has reached the end of it's DissapearRate timer.
+        if(doomed){
+            disappearTimer -= Time.deltaTime;
+
+            if(disappearTimer <= 0f)
+                Destroy();
+
+            worldPosition += sendOffVector * Time.deltaTime;
+        }
+            
+
         // Initialize graphic
         if( !gameObject ){
             gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
         }
 
-        if(!toSplit){
         if(assembly){
-            worldPosition = assembly.WorldPosition + (assembly.physicsObject.transform.rotation * HexUtilities.HexToWorld(localHexPosition));
-
-            // Update physical location
-            gameObject.transform.position = worldPosition;
-            gameObject.transform.rotation = assembly.physicsObject.transform.rotation * worldRotation;
+            worldPosition = assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition));
+            worldRotation = assembly.WorldRotation * localRotation;
         }
-        }else{
-            --disappearRate;
-            if( disappearRate < 0){
-                assembly.markedRemoved = true;
-                return;
-            }
 
-            worldPosition += sendOff * Time.deltaTime;
-            gameObject.transform.position = worldPosition;
-        }
+        // Update physical location
+        gameObject.transform.position = worldPosition;
+        gameObject.transform.rotation = worldRotation;
 
         // Sense node view arc ----------------------------------------------------------
         // Dynamically update existence of senseFieldBillboard.
@@ -237,8 +241,6 @@ public class Node {
 
 
     public void Destroy(){
-        if(disappearRate > 0)
-            return;
         if(gameObject)
             GameObject.Destroy(gameObject);
         if(senseFieldBillboard)
@@ -566,7 +568,7 @@ public class Node {
     public bool SenseDetectFoodRange(FoodPellet food){
         Vector3 foodDist = food.worldPosition - this.worldPosition;
         //if mag^2 < consume^2
-        if(foodDist.sqrMagnitude < consumeRange*consumeRange ){
+        if(foodDist.sqrMagnitude < (consumeRange * consumeRange)){
             return true;
         }
         return false;
