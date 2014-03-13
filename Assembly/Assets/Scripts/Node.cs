@@ -27,8 +27,8 @@ public class Node {
     public Quaternion localRotation = Quaternion.identity;
 
     // Metabolism ------------------------------------------------------------------------ ||
-    public static float MAX_ENERGY = 10.0f;
-    public float energy = MAX_ENERGY;
+    public static float MAX_ENERGY = 10.0f; //not used?
+    public float energy = MAX_ENERGY; //not used?
     public float consumeRange = 30; //how far away can it consume?
 
     // Graphics -------------------------------------------------------------------------- ||
