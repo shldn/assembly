@@ -190,9 +190,14 @@ public class GameManager : MonoBehaviour {
             Assembly currentAssembly = Assembly.GetAll()[i];
             Vector3 assemblyScreenPos = Camera.main.WorldToScreenPoint(Assembly.GetAll()[i].WorldPosition);
 
-            float barWidth = 50f;
-            float barHeight = 6f;
-            float barSpace = 3f;
+            if(assemblyScreenPos.z <= 0f)
+                continue;
+
+            float guiSizeMult = 40f / Vector3.Distance(Camera.main.transform.position, currentAssembly.WorldPosition);
+
+            float barWidth = 50f * guiSizeMult;
+            float barHeight = 6f * guiSizeMult;
+            float barSpace = 3f * guiSizeMult;
 
             float guiStuffY = Screen.height - assemblyScreenPos.y;
 
@@ -202,12 +207,14 @@ public class GameManager : MonoBehaviour {
             GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight, Mathf.Clamp01(currentAssembly.Health));
 
             // Reproduction bar
-            guiStuffY += barHeight + barSpace;
+            if(currentAssembly.Health > 1f){
+                guiStuffY += barHeight + barSpace;
 
-            GUI.color = new Color(0f, 1f, 0f, 0.2f);
-            GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight);
-            GUI.color = new Color(0f, 1f, 0f, 1f);
-            GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight, Mathf.Clamp01(currentAssembly.Health - 1f));
+                GUI.color = new Color(0f, 1f, 0f, 0.2f);
+                GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight);
+                GUI.color = new Color(0f, 1f, 0f, 1f);
+                GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight, Mathf.Clamp01(currentAssembly.Health - 1f));
+            }
         }
 
         /*

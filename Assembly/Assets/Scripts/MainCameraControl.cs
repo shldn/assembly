@@ -194,6 +194,9 @@ public class MainCameraControl : MonoBehaviour {
         Refocus(node.worldPosition);   
     }
     void Refocus(Assembly assembly){
+        if(!assembly || !assembly.physicsObject)
+            return;
+
         Refocus(assembly.physicsObject.transform.position);   
     }// End of Refocus().
 
