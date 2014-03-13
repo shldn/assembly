@@ -7,13 +7,14 @@ public class Assembly {
     /* all nodes in assembly --------------------------------------*/
     public static List<Assembly> allAssemblies = new List<Assembly>();
     public static List<Assembly> GetAll() { return allAssemblies; }
+    public bool hasValidNodes = false;
 
     /* destroying assemblies and nodes -----------------------------*/
     //stores assemblies to be deleted for the frame update
-    public static List<Assembly> destroyAssemblies = new List<Assembly>();
-    public static List<Assembly> GetToDestroy() { return destroyAssemblies; }
-    private bool removedFromUpdateTransform = false;
-    public bool markedRemoved = false;
+    //public static List<Assembly> destroyAssemblies = new List<Assembly>();
+    //public static List<Assembly> assembliesToDestroy = new List<Assembly>();
+    //private bool removedFromUpdateTransform = false;
+    //public bool markedRemoved = false;
 
     public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
@@ -23,11 +24,28 @@ public class Assembly {
     //asmbly control
     public static int MAX_ASSEMBLY = 1;
     public static int MAX_NODES_IN_ASSEMBLY = 10;
-    public static bool regenerate = true;
+    public static bool REFACTOR_IF_INERT = false; // If an assembly is created with no logic nets, destroy it immediately.
 
     public Vector3 WorldPosition{
-        get { return physicsObject.transform.position; }
-        set { physicsObject.transform.position = value; }
+        get { 
+            if(physicsObject)
+                return physicsObject.transform.position;
+            else
+                return Vector3.zero;}
+        set { 
+            if(physicsObject)
+                physicsObject.transform.position = value; }
+    }
+
+    public Quaternion WorldRotation{
+        get { 
+            if(physicsObject)
+                return physicsObject.transform.rotation;
+            else
+                return Quaternion.identity;}
+        set { 
+            if(physicsObject)
+                physicsObject.transform.rotation = value; }
     }
 
     public float Mass {
@@ -145,14 +163,14 @@ public class Assembly {
     }
 
     public void Destroy(){
-        for (int i = nodes.Count-1; i >= 0; --i)
+        for (int i = nodes.Count - 1; i >= 0; i--)
             nodes[i].Destroy();
-        if( !(nodes.Count > 0) ){
+
+        if(physicsObject)
             Object.Destroy(physicsObject);
-            physicsObject = null;
-            allAssemblies.Remove(this);
-            destroyAssemblies.Remove(this);
-        }
+
+        physicsObject = null;
+        allAssemblies.Remove(this);
     }
 
     public void Save(){
@@ -197,8 +215,15 @@ public class Assembly {
 
 
     public void UpdateTransform(){
-        if(removedFromUpdateTransform)
-            return;
+        // Dead assemblies should be destroyed with animation.
+        if( currentEnergy < 0.0f){
+            DestroyWithAnimation();
+        }
+
+        // Useless assemblies should be immediately deleted.
+        if(REFACTOR_IF_INERT && !hasValidNodes)
+            Destroy();
+
         //Propel assembly through the world based on activated nodes.
         List<Node> allActuateNodes = GetActuateNodes();
         for(int i = 0; i < allActuateNodes.Count; i++){
@@ -225,11 +250,6 @@ public class Assembly {
         //ConsoleScript.Inst.WriteToLog(currentEnergy+ " remains");
             //Debug.Log(currentEnergy+ " remains");
 
-        if( currentEnergy < 0.0f){
-            removedFromUpdateTransform = true;
-            destroyAssemblies.Add(this);
-            //mark assembly for destruction
-        }
     } // End of UpdateTransform().
 
 
@@ -465,6 +485,8 @@ public class Assembly {
 
     // Returns the assembly's propulsion if all of it's sense nodes fired at once.
     public void UpdateNodeValidities(){
+        hasValidNodes = false;
+
         for(int i = 0; i < nodes.Count; i++)
             nodes[i].validLogic = false;
 
@@ -487,6 +509,7 @@ public class Assembly {
 
                     currentNode.validLogic = true;
                     senseNodes[i].validLogic = true;
+                    hasValidNodes = true;
 
                     List<Node> actuatorNetwork = currentNode.GetFullReverseLogicNet();
 
@@ -519,8 +542,6 @@ public class Assembly {
             currentEnergy += ( food.currentEnergy + realConsumeRate);
             //destroy and create
             food.Destroy();
-            if(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD)
-                FoodPellet.AddRandomFoodPellet(); //regenerate new food pellet for every one destroyed
         }else {
             currentEnergy += realConsumeRate;
         }
@@ -540,25 +561,18 @@ public class Assembly {
         energyBurnRate = totalBurn * burnCoefficient;///nodes.Count;
     }
 
-    public void SplitOff(){
-        if(markedRemoved){
-            Destroy();
-            if(regenerate){
-                if( GetAll().Count < MAX_ASSEMBLY )
-                    Assembly.GetRandomAssembly(MAX_NODES_IN_ASSEMBLY);
-            }
-            return;
-        }
-        //allAssemblies.Remove(this);
-        //Object.Destroy(physicsObject);
-        foreach( var node in nodes){
-            if(node.toSplit)
-                return;
-            //node.worldPosition += new Vector3(Random.Range(-10.0F, 10.0F), 0, Random.Range(-10.0F, 10.0F));
-            node.toSplit = true;
-            node.nodeType = NodeType.none;
-            node.sendOff = new Vector3(Random.Range(-10.0F, 10.0F), Random.Range(-10.0F, 10.0F), Random.Range(-10.0F, 10.0F));
+    public void DestroyWithAnimation(){
+        for(int i = nodes.Count - 1; i >= 0; i--){
+            Node node = nodes[i];
+
+            // Special-case node removal
+            nodes.RemoveAt(i);
+            node.assembly = null;
+            node.UpdateType();
+
+            node.doomed = true;
+            node.sendOffVector = Random.rotation * (Vector3.forward * Random.Range(1f, 10f));
         }        
-        //destroyAssemblies.Remove(this);
+        Destroy();
     }
 } // End of Assembly.

@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour {
     public int numberOfNodesInAssembly = 10;
     public bool addMultipleAssembly = true;
     public bool addMultipleFood = true;
+    public bool refactorIfInert = false;
 
 	void Start(){
 
@@ -43,12 +44,16 @@ public class GameManager : MonoBehaviour {
         //updating values from the gui
         Assembly.MAX_ASSEMBLY = numberOfAssembly;
         Assembly.MAX_NODES_IN_ASSEMBLY = numberOfNodesInAssembly;
+        Assembly.REFACTOR_IF_INERT = refactorIfInert;
         FoodPellet.MAX_FOOD = numberOfFood;
+
+        float worldSize = 100f;
 
         //adjust food on slider
         if( FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD )
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
-                FoodPellet.AddNewFoodPellet();
+                FoodPellet newPellet = FoodPellet.AddNewFoodPellet();
+                newPellet.worldPosition = MathUtilities.RandomVector3Sphere(worldSize);
             }
         else if( FoodPellet.GetAll().Count > FoodPellet.MAX_FOOD )
             for(int i = FoodPellet.GetAll().Count - 1; i >= FoodPellet.MAX_FOOD; --i)
@@ -57,7 +62,8 @@ public class GameManager : MonoBehaviour {
         //adjust assemblies on slider
         if( Assembly.GetAll().Count < Assembly.MAX_ASSEMBLY )
             while(Assembly.GetAll().Count < Assembly.MAX_ASSEMBLY){
-                Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
+                Assembly newAssembly = Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
+                newAssembly.WorldPosition = MathUtilities.RandomVector3Sphere(worldSize);
             }
         else if( Assembly.GetAll().Count > Assembly.MAX_ASSEMBLY )
             for(int i = Assembly.GetAll().Count - 1; i >= Assembly.MAX_NODES_IN_ASSEMBLY; --i)
@@ -65,7 +71,10 @@ public class GameManager : MonoBehaviour {
 
 
         // Update assemblies.
-        for(int i = 0; i < Assembly.GetAll().Count; i++){
+        for(int i = Assembly.GetAll().Count - 1; i >= 0; i--){
+            if(i > (Assembly.GetAll().Count - 2))
+                continue;
+
             Assembly.GetAll()[i].UpdateTransform();
 
             // User input -------------------------------------
@@ -98,16 +107,16 @@ public class GameManager : MonoBehaviour {
                 Assembly.GetAll()[i].Mutate(0.01f);
             // ------------------------------------------------
         }
-
-        //destroy assemblies out side of update
-        for(int i = 0; i < Assembly.GetToDestroy().Count; ++i)
-            Assembly.GetToDestroy()[i].SplitOff();
         
         // Update nodes.
 		for(int i = 0; i < Node.GetAll().Count; ++i){
             Node.GetAll()[i].UpdateTransform();
             Node.GetAll()[i].UpdateColor();
         }
+
+        // Update foodpellets.
+        for(int i = 0; i < FoodPellet.GetAll().Count; ++i)
+            FoodPellet.GetAll()[i].UpdateTransform();
 
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
@@ -129,7 +138,6 @@ public class GameManager : MonoBehaviour {
             ConsoleScript.Inst.WriteToLog("Created random assemblies.");
         }
 
-
     } // End of Update().
 
 
@@ -142,15 +150,30 @@ public class GameManager : MonoBehaviour {
 
 
     void OnGUI(){
-        //sliders controlling assembly
-        GUI.Label(new Rect(25, 10, 200, 30), "Number of Food: " + numberOfFood   );
-        numberOfFood = (int) GUI.HorizontalSlider(new Rect(25, 40, 100, 30), numberOfFood, 1.0F, 100.0F);
-        GUI.Label(new Rect(25, 70, 250, 30), "Number of Assembly: " + numberOfAssembly   );
-        numberOfAssembly = (int) GUI.HorizontalSlider(new Rect(25, 100, 100, 30), numberOfAssembly, 1.0F, 100.0F);
-        GUI.Label(new Rect(25, 130, 250, 30), "Number of Nodes in Assembly: " + numberOfNodesInAssembly   );
-        numberOfNodesInAssembly = (int) GUI.HorizontalSlider(new Rect(25, 160, 100, 30), numberOfNodesInAssembly, 1.0F, 100.0F);
-        GUI.Label(new Rect(25, 190, 250, 30), "Current Burn Rate multiplyer: " + Assembly.burnCoefficient   );
-        Assembly.burnCoefficient = GUI.HorizontalSlider(new Rect(25, 220, 100, 30), Assembly.burnCoefficient, 0.0F, 10.0F);
+        // World controls
+        float sliderVertSpacing = 15f;
+        float sliderLabelSpacing = 30f;
+        Rect sliderRect = new Rect(25, 10, 250, 30);
+
+        GUI.Label(sliderRect, "Number of Food: " + numberOfFood   );
+        sliderRect.y += sliderLabelSpacing;
+        numberOfFood = (int) GUI.HorizontalSlider(sliderRect, numberOfFood, 1.0F, 100.0F);
+        sliderRect.y += sliderVertSpacing;
+        GUI.Label(sliderRect, "Number of Assemblies: " + numberOfAssembly   );
+        sliderRect.y += sliderLabelSpacing;
+        numberOfAssembly = (int) GUI.HorizontalSlider(sliderRect, numberOfAssembly, 1.0F, 100.0F);
+        sliderRect.y += sliderVertSpacing;
+        GUI.Label(sliderRect, "Number of Nodes in Assembly: " + numberOfNodesInAssembly   );
+        sliderRect.y += sliderLabelSpacing;
+        numberOfNodesInAssembly = (int) GUI.HorizontalSlider(sliderRect, numberOfNodesInAssembly, 1.0F, 100.0F);
+        sliderRect.y += sliderVertSpacing;
+        GUI.Label(sliderRect, "Current Burn Rate multiplyer: " + Assembly.burnCoefficient   );
+        sliderRect.y += sliderLabelSpacing;
+        Assembly.burnCoefficient = GUI.HorizontalSlider(sliderRect, Assembly.burnCoefficient, 0.0F, 10.0F);
+
+        sliderRect.y += sliderLabelSpacing;
+        refactorIfInert = GUI.Toggle(sliderRect, refactorIfInert, " Refactor Inert Assemblies");
+
         /*
         if(selectedNode){
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
