@@ -116,6 +116,8 @@ public class Assembly {
             newNodes.Add(nodes[i].Duplicate());
 
         Assembly a = new Assembly(newNodes);
+        a.physicsObject.rigidbody.AddForce(Random.rotation * Vector3.forward * 1000f);
+        a.physicsObject.rigidbody.AddTorque(Random.rotation * Vector3.forward * 10000f);
         return a;
     } // End of Duplicate().
 
@@ -260,7 +262,11 @@ public class Assembly {
         //ConsoleScript.Inst.WriteToLog(currentEnergy+ " remains");
             //Debug.Log(currentEnergy+ " remains");
 
+
+        // If assembly has 200% health, it reproduces!
         if(Health >= 2f){
+            Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+
             Assembly offspringAssem = Duplicate();
             offspringAssem.WorldPosition = WorldPosition;
             offspringAssem.WorldRotation = WorldRotation;
