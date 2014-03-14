@@ -15,20 +15,40 @@ public class Helpers
     // this does not return the base face, only those connected to the apex
     public static List<Face> GetPyramidFaces(List<Vector3> pts, List<FaceEdgeIdxPair> baseEdges, int apexIdx)
     {
-        Debug.LogError("P faces: apex: " + apexIdx);
+        //Debug.LogError("horizon: ");
+        //for (int i = 0; i < baseEdges.Count; ++i)
+        //    Debug.LogError("\t" + i + " f: " + baseEdges[i].f.IdxStr() + " edge: " + baseEdges[i].ei);
+        //for (int i = 0; i < baseEdges.Count; ++i)
+        //    baseEdges[i].f.AdjFaceCheck();
+        //Debug.LogError("Done precheck");
+
+        //Debug.LogError("P faces: apex: " + apexIdx);
         List<Face> faces = new List<Face>();
         for (int i = 0; i < baseEdges.Count; ++i)
         {
+            //Debug.LogError("\t" + i + " f: " + baseEdges[i].f.IdxStr() + " edge: " + baseEdges[i].ei);
             Face baseF = baseEdges[i].f;
             int ei = baseEdges[i].ei;
+            //if (ei < 0 || ei >= baseF.idx.Count)
+            //    Debug.LogError("Bad ei: " + ei + " base.idx.Count: " + baseF.idx.Count);
             int i1 = baseF.idx[ei];
             int i2 = baseF.idx[(ei + 1) % 3];
-            Debug.LogError(i1 + " --> " + i2 + " adj: " + baseF.idx[0] + " " + baseF.idx[1] + " " + baseF.idx[2]);
+            //Debug.LogError(i1 + " --> " + i2 + " adj: " + baseF.idx[0] + " " + baseF.idx[1] + " " + baseF.idx[2]);
             Face newF = new Face(pts, i1, i2, apexIdx);
 
             // hook up adjacency pointers
-            newF.adjFace[0] = baseF.adjFace[ei];
-            baseF.adjFace[ei] = newF;
+            //if (!baseF.AdjFaceCheck())
+            //    Debug.LogError("baseF failed");
+            Face adjFace = baseF.adjFace[ei];
+            //if( !adjFace.AdjFaceCheck() )
+            //    Debug.LogError("adjFace failed");
+            newF.adjFace[0] = adjFace;
+            //Debug.LogError("Old: Set " + adjFace.IdxStr() + " idx: " + adjFace.GetEdgeIdx(baseF) + " to newF " + newF.IdxStr() + " was: " + adjFace.adjFace[adjFace.GetEdgeIdx(baseF)].IdxStr());
+            //Debug.LogError("Set " + adjFace.IdxStr() + " idx: " + adjFace.GetAdjacentIdxEdgeStartsWithVertIdx(i2) + " to newF " + newF.IdxStr() + " was: " + adjFace.adjFace[adjFace.GetAdjacentIdxEdgeStartsWithVertIdx(i2)].IdxStr());
+            // adj face will have indices in the opposite direction
+            adjFace.adjFace[adjFace.GetAdjacentIdxEdgeStartsWithVertIdx(i2)] = newF;
+            baseF.adjFace[ei] = newF; // for sanity checks
+
             
             // adjFace[1] is the next iteration, adjFace[2] is the previous
             if (faces.Count > 0)
@@ -43,16 +63,8 @@ public class Helpers
         faces[0].adjFace[2] = faces[faces.Count - 1];
         faces[faces.Count - 1].adjFace[1] = faces[0];
 
-        return faces;
-    }
-
-    public static List<Face> GetPyramidFaces(List<Vector3> pts, List<int> baseIdxs, int apexIdx)
-    {
-        List<Face> faces = new List<Face>();
-        for (int i = 0; i < baseIdxs.Count - 1; ++i)
-            faces.Add(new Face(pts, baseIdxs[i], baseIdxs[i + 1], apexIdx));
-        faces.Add(new Face(pts, baseIdxs[baseIdxs.Count - 1], baseIdxs[0], apexIdx));
-
+        for(int i=0; i < faces.Count; ++i)
+            faces[i].AdjFaceCheck();
         return faces;
     }
 
@@ -85,7 +97,7 @@ public class Face
     public List<Vector3> pts = new List<Vector3>(3);
     public List<Vector3> visiblePts = new List<Vector3>();
     public List<int> visibleIdxs = new List<int>();
-    public List<int> idx = new List<int>(3);
+    public List<int> idx = new List<int>(3); // vert idx in the original pt list
     public List<Face> adjFace = new List<Face>(3);
     Plane p;
     public bool removeMe = false;
@@ -102,6 +114,11 @@ public class Face
         adjFace.Add(null);
         adjFace.Add(null);
         p = new Plane(pts[0], pts[1], pts[2]);
+    }
+
+    public bool Equals(Face rhs)
+    {
+        return idx[0] == rhs.idx[0] && idx[1] == rhs.idx[1] && idx[2] == rhs.idx[2];
     }
 
     /*
@@ -146,6 +163,11 @@ public class Face
         idx = visibleIdxs[bestIdx];
     }
 
+    public string IdxStr()
+    {
+        return idx[0] + " " + idx[1] + " "  + idx[2];
+    }
+
     public int GetEdgeIdx(Face f)
     {
         for (int i = 0; i < adjFace.Count; ++i)
@@ -160,6 +182,15 @@ public class Face
         return -1;
     }
 
+    public int GetEdgeIdxCount(Face f)
+    {
+        int count = 0;
+        for (int i = 0; i < adjFace.Count; ++i)
+            if (adjFace[i] == f)
+                count++;
+        return count;
+    }
+
     // returns the next face that shares the first edge vert with this Face, but not an edge, (adjacent to the adjacent)
     public Face GetNextAdjacent(int edgeIdx)
     {
@@ -170,6 +201,32 @@ public class Face
     public int GetNextAdjacentEdgeIdx(int edgeIdx)
     {
         return (adjFace[edgeIdx].GetEdgeIdx(this) + 1) % 3;
+    }
+
+    // Gets the adjacent face that has an edge that starts with the supplied vertIdx
+    public Face GetAdjacentEdgeStartsWithVertIdx(int vertIdx)
+    {
+        int idx = GetAdjacentIdxEdgeStartsWithVertIdx(vertIdx);
+        return (idx >= 0) ? adjFace[idx] : null;
+    }
+
+    public int GetAdjacentIdxEdgeStartsWithVertIdx(int vertIdx)
+    {
+        for (int i = 0; i < idx.Count; ++i)
+            if (vertIdx == idx[i])
+                return i;
+        return -1;
+    }
+
+    public bool AdjFaceCheck()
+    {
+        for (int i = 0; i < adjFace.Count; ++i)
+            if (adjFace[i].GetEdgeIdxCount(this) != GetEdgeIdxCount(adjFace[i]))
+            {
+                Debug.LogError("bad adjFace assignment: " + i + " " + adjFace[i].IdxStr() + " doesn\'t know about " + this.IdxStr() + " count: " + adjFace[i].GetEdgeIdxCount(this) + " != " + GetEdgeIdxCount(adjFace[i]));
+                return false;
+            }
+        return true;
     }
 }
 
@@ -219,6 +276,16 @@ public class Pyramid
         faces[3].adjFace[0] = faces[1]; // 3-0
         faces[3].adjFace[1] = faces[0]; // 0-2
         faces[3].adjFace[2] = faces[2]; // 2-3
+
+        AdjFaceCheck();
+
+    }
+
+    public void AdjFaceCheck()
+    {
+        // adjFace sanity check
+        for (int i = 0; i < faces.Count; ++i)
+            faces[i].AdjFaceCheck();
     }
 
     public void PushFaces(ref LinkedList<Face> faceStack)
@@ -331,7 +398,7 @@ public class ConvexHull : MonoBehaviour
         initTet.PushFaces(ref faceStack);
 
         int count = 0;
-        while (faceStack.Count > 0 && count++ < 100)
+        while (faceStack.Count > 0 && count++ < 300)
         {
             // Pop 
             Face f = faceStack.Last.Value;
@@ -347,7 +414,7 @@ public class ConvexHull : MonoBehaviour
             int furthestIdx = -1;
             f.GetFurthestVisible(ref furthestPt, ref furthestIdx);
             List<FaceEdgeIdxPair> horizonEdges = GetVisibleFaces(faceStack, f, furthestPt);
-            Debug.LogError(furthestPt.ToString() + " horizon count: " + horizonEdges.Count);
+            //Debug.LogError(furthestPt.ToString() + " horizon count: " + horizonEdges.Count);
             List<Face> newFaces = Helpers.GetPyramidFaces(pts, horizonEdges, furthestIdx);
 
             // remove faces from horizon edge from consideration -- 
@@ -389,7 +456,7 @@ public class ConvexHull : MonoBehaviour
             //savedFaces.AddRange(faceStack);
             //break;
         }
-        if (count >= 100)
+        if (count >= 300)
             Debug.LogError("hit while loop break out counter");
 
         // visualize the saved faces
@@ -418,7 +485,10 @@ public class ConvexHull : MonoBehaviour
     void GetFaceWithoutAdjacentVisible(ref Face startF, ref int edge, Vector3 visiblePt)
     {
         Stack<Face> faces = new Stack<Face>();
+        HashSet<Face> visited = new HashSet<Face>();
         faces.Push(startF);
+        visited.Add(startF);
+        startF.removeMe = true;
         while (faces.Count > 0)
         {
             Face f = faces.Pop();
@@ -428,12 +498,81 @@ public class ConvexHull : MonoBehaviour
                 {
                     startF = f;
                     edge = i;
-                    startF.removeMe = true;
                     return;
                 }
                 else
-                    faces.Push(f.adjFace[i]);
+                {
+                    if (!visited.Contains(f.adjFace[i]))
+                    {
+                        faces.Push(f.adjFace[i]);
+                        visited.Add(f);
+                        f.removeMe = true;
+                    }
+                }
             }
+        }
+        Debug.LogError("Ran out of faces start: " + startF.IdxStr());
+    }
+
+    void FindBorderEdge(ref Face startF, ref int edge, Vector3 visiblePt)
+    {
+        int testE = (edge + 1) % 3;
+        int testVIdx = startF.idx[testE];
+        Face testF = startF.adjFace[testE];
+        if (!testF.IsPtVisible(visiblePt))
+        {
+            edge = testE;
+        }
+    }
+
+    void GetNextBorderEdge(ref Face startF, ref int edge, Vector3 visiblePt)
+    {
+        int testE = (edge + 1) % 3;
+        int testVIdx = startF.idx[testE];
+        Face testF = startF.adjFace[testE];
+        if (!testF.IsPtVisible(visiblePt))
+        {
+            edge = testE;
+        }
+        else
+        {
+            // is visible, remove from face list
+            testF.removeMe = true;
+
+
+            // find the next edge along the walk that has a visible face on one side and not visible on the other.
+            Face nextF = null;
+            while (testF != startF)
+            {
+                nextF = testF.GetAdjacentEdgeStartsWithVertIdx(testVIdx);
+                if (nextF.IsPtVisible(visiblePt))
+                {
+                    testF = nextF;
+                    testF.removeMe = true;
+                }
+                else
+                {
+                    edge = testF.GetAdjacentIdxEdgeStartsWithVertIdx(testVIdx);
+                    break;
+                }
+            }
+
+            if (testF == startF)
+            {
+                Debug.LogError("testF == startF");
+            }
+            if (edge == -1)
+            {
+                Debug.LogError("Bad edge, requesting edge");
+                for (int i = 0; i < startF.idx.Count; ++i)
+                    Debug.LogError("\t" + startF.idx[i]);
+
+                Debug.LogError("pts: ");
+                for (int i = 0; i < pts.Count; ++i)
+                    Debug.LogError("\t" + i + " " + pts[i].ToString());
+            }
+
+            startF = testF;
         }
     }
 
@@ -476,20 +615,35 @@ public class ConvexHull : MonoBehaviour
         int startE = -1;
         GetFaceWithoutAdjacentVisible(ref startF, ref startE, furthestPt);
         horizonEdges.Add(new FaceEdgeIdxPair(startF, startE));
+        origFace = startF;
+        if (!origFace.IsPtVisible(furthestPt))
+            Debug.LogError("Original face cannot see pt");
+        if (origFace.adjFace[startE].IsPtVisible(furthestPt))
+            Debug.LogError("original edge borders visible face");
+
 
         int edge = startE;
         int count = 0;
-        while (count++ < 100)
+        while (count++ < 200)
         {
-            GetNextFaceWithoutAdjacentVisible(ref startF, ref edge, furthestPt);
+            GetNextBorderEdge(ref startF, ref edge, furthestPt);
             // check if we're back at our starting point.
             if ((startF == origFace && edge == startE) || edge == -1)
                 break;
 
             horizonEdges.Add(new FaceEdgeIdxPair(startF, edge));
         }
-        if (count >= 100)
-            Debug.LogError("Hit while loop failsafe");
+        if (count >= 200)
+        {
+            Debug.LogError("Hit while loop failsafe, startF: " + origFace.IdxStr());
+            if (!origFace.IsPtVisible(furthestPt))
+                Debug.LogError("Original face cannot see pt");
+            if( origFace.adjFace[startE].IsPtVisible(furthestPt))
+                Debug.LogError("original edge borders visible face");
+                
+            for (int i = 0; i < horizonEdges.Count; ++i)
+                Debug.LogError("\t" + i + " f: " + horizonEdges[i].f.IdxStr() + " edge: " + horizonEdges[i].ei);
+        }
         return horizonEdges;
     }
 
