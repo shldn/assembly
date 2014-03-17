@@ -52,6 +52,9 @@ public class MainCameraControl : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate(){
 
+        float camZoomLoopTime = 60f;
+        camOrbitDist = 170f + (Mathf.Sin((Time.time * Mathf.PI) / camZoomLoopTime) * 130f);
+
         if(autoOrbit){
             targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * Time.deltaTime);
             camType = CamType.ORBIT;
