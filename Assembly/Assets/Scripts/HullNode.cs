@@ -14,6 +14,8 @@ public class HullNode : MonoBehaviour {
     void Awake()
     {
         allNodes.Add(this);
+        if( allNodes.Count > 1 )
+            lastPos = transform.position;
     }
 
 	void Update () {
@@ -35,5 +37,20 @@ public class HullNode : MonoBehaviour {
     {
         Gizmos.color = color;
         Gizmos.DrawCube(transform.position, new Vector3(1, 1, 1));
+    }
+
+    public static void CreateRandom(float bound = 10)
+    {
+        GameObject go = new GameObject("HullNode");
+        go.AddComponent<HullNode>();
+        go.transform.position = bound * Random.insideUnitSphere;
+    }
+
+    public static void PrintHullNodePositions()
+    {
+        string str = "";
+        for (int i = 0; i < allNodes.Count; ++i)
+            str += allNodes[i].transform.position.ToString() + "\n";
+        Debug.LogError(str);
     }
 }

@@ -138,12 +138,12 @@ public class Face
 
     public float GetDistanceToPoint(Vector3 pt)
     {
-        return p.GetDistanceToPoint(pt);
+        return -p.GetDistanceToPoint(pt);
     }
 
     public bool IsPtVisible(Vector3 pt)
     {
-        return p.GetDistanceToPoint(pt) >= 0;
+        return GetDistanceToPoint(pt) >= 0;
     }
 
     public void GetFurthestVisible(ref Vector3 pos, ref int idx)
@@ -152,7 +152,7 @@ public class Face
         float bestDist = -1.0f;
         for (int i = 0; i < visiblePts.Count; ++i)
         {
-            float dist = p.GetDistanceToPoint(visiblePts[i]);
+            float dist = GetDistanceToPoint(visiblePts[i]);
             if (dist > 0 && dist < bestDist)
             {
                 bestIdx = i;
@@ -249,7 +249,7 @@ public class Pyramid
         // determine correct orientation of 0,1,2
         // want to face away from the midpoint
          Plane p = new Plane(pts[idxs[0]], pts[idxs[1]], pts[idxs[2]]);
-         if (p.GetSide(midPt))
+         if (!p.GetSide(midPt))
          {
              int temp = idxs[2];
              idxs[2] = idxs[1];
@@ -391,7 +391,6 @@ public class ConvexHull : MonoBehaviour
         // testing -- visual
         ShowPtSets(initTet);
 
-
         // iteration phase
         List<Face> savedFaces = new List<Face>();
         LinkedList<Face> faceStack = new LinkedList<Face>();
@@ -407,26 +406,20 @@ public class ConvexHull : MonoBehaviour
             if (f.visiblePts.Count == 0)
             {
                 savedFaces.Add(f);
-                //Debug.LogError("Saving face: " + savedFaces.Count);
+                //Debug.LogError(count + " Saving face: " + savedFaces.Count + " - " + f.IdxStr());
                 continue;
             }
             Vector3 furthestPt = new Vector3();
             int furthestIdx = -1;
             f.GetFurthestVisible(ref furthestPt, ref furthestIdx);
             List<FaceEdgeIdxPair> horizonEdges = GetVisibleFaces(faceStack, f, furthestPt);
-            //Debug.LogError(furthestPt.ToString() + " horizon count: " + horizonEdges.Count);
             List<Face> newFaces = Helpers.GetPyramidFaces(pts, horizonEdges, furthestIdx);
-
-            // remove faces from horizon edge from consideration -- 
-            // shouldn't need this anymore the next block should take care of it.
-            for (int i = 0; i < horizonEdges.Count; ++i)
-                faceStack.Remove(horizonEdges[i].f);
 
             // remove nodes marked for removal
             LinkedListNode<Face> it = faceStack.First;
-            while (it != faceStack.Last)
+            while (it != null)
             {
-                if (it.Value.removeMe)
+                if (it.Value.GetDistanceToPoint(furthestPt) > 0.0f)
                 {
                     LinkedListNode<Face> toRemove = it;
                     it = it.Next;
@@ -435,10 +428,19 @@ public class ConvexHull : MonoBehaviour
                 else
                     it = it.Next;
             }
+            for (int i = savedFaces.Count - 1; i >= 0; --i)
+            {
+                if (savedFaces[i].GetDistanceToPoint(furthestPt) > 0.0f)
+                    savedFaces.RemoveAt(i);
+            }
 
             // Add visible points to new faces.
+            HashSet<Face> horizonFaces = new HashSet<Face>();
             for (int i = 0; i < horizonEdges.Count; ++i)
             {
+                if( horizonFaces.Contains(horizonEdges[i].f ) )
+                    continue;
+                horizonFaces.Add(horizonEdges[i].f);
                 for (int j = 0; j < horizonEdges[i].f.visibleIdxs.Count; ++j)
                 {
                     int visIdx = horizonEdges[i].f.visibleIdxs[j];
@@ -472,9 +474,10 @@ public class ConvexHull : MonoBehaviour
 
         for(int i=0; i < faces.Count; ++i)
         {
+            // Unity expects inward facing triangles... clockwise, so flip order
             newTriangles.Add(faces[i].idx[0]);
+            newTriangles.Add(faces[i].idx[2]); 
             newTriangles.Add(faces[i].idx[1]);
-            newTriangles.Add(faces[i].idx[2]);
         }
 
         for (int i = 0; i < newVertices.Count; ++i)
@@ -635,7 +638,7 @@ public class ConvexHull : MonoBehaviour
         }
         if (count >= 200)
         {
-            Debug.LogError("Hit while loop failsafe, startF: " + origFace.IdxStr());
+            Debug.LogError("Hit while loop failsafe, startF: " + origFace.IdxStr() + " vis pt: " + furthestPt.ToString());
             if (!origFace.IsPtVisible(furthestPt))
                 Debug.LogError("Original face cannot see pt");
             if( origFace.adjFace[startE].IsPtVisible(furthestPt))
@@ -643,6 +646,9 @@ public class ConvexHull : MonoBehaviour
                 
             for (int i = 0; i < horizonEdges.Count; ++i)
                 Debug.LogError("\t" + i + " f: " + horizonEdges[i].f.IdxStr() + " edge: " + horizonEdges[i].ei);
+
+            HullNode.PrintHullNodePositions();
+            return null;
         }
         return horizonEdges;
     }
