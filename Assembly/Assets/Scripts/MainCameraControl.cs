@@ -22,16 +22,16 @@ public class MainCameraControl : MonoBehaviour {
     Assembly selectedAssembly = null;
 
     CamType camType = CamType.FREELOOK;
-    float camOrbitDist = 15f;
+    float camOrbitDist = 100f;
 
-    bool showAssemReadouts = true;
+    public bool showAssemReadouts = true;
 
     public Texture2D nodeSelectTex = null;
     public Texture2D assemblySelectTex = null;
 
     public DepthOfField34 depthOfField = null;
 
-    public bool autoOrbit = false;
+    public bool autoOrbit = true;
     public Quaternion randomOrbit = Quaternion.identity;
 
 
@@ -46,6 +46,7 @@ public class MainCameraControl : MonoBehaviour {
 	    targetRot = transform.rotation;
 		targetPos = transform.position;
         RenderSettings.fogColor = Camera.main.backgroundColor;
+        randomOrbit = Random.rotation;
 	} // End of Start().
 	
 	// Update is called once per frame
@@ -61,11 +62,17 @@ public class MainCameraControl : MonoBehaviour {
         // Smoothly interpolate camera position/rotation.
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime);
 
+        /*
+        // This code produces gimbal lock...
         Vector3 tempEulers = transform.rotation.eulerAngles;
         tempEulers.x = Mathf.SmoothDampAngle(tempEulers.x, targetRot.eulerAngles.x, ref smoothVelRotate.x, translateSmoothTime);
         tempEulers.y = Mathf.SmoothDampAngle(tempEulers.y, targetRot.eulerAngles.y, ref smoothVelRotate.y, translateSmoothTime);
         tempEulers.z = Mathf.SmoothDampAngle(tempEulers.z, targetRot.eulerAngles.z, ref smoothVelRotate.z, translateSmoothTime);
+        print(tempEulers);
         transform.eulerAngles = tempEulers;
+        */
+
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, 10f * Time.deltaTime);
 
 
         // check if selectedAssembly has been destroyed
@@ -256,19 +263,21 @@ public class MainCameraControl : MonoBehaviour {
         float guiGutter = 10f;
         Rect controlsRect = new Rect(25, 300f, 200, guiHeight);
 
-        showAssemReadouts = GUI.Toggle(controlsRect, showAssemReadouts, "Show Assembly Info");
-        controlsRect.y += guiHeight;
+        if(GameManager.Inst.showControls){
 
-        bool camLocked = camType == CamType.LOCKED;
-        if(camType != CamType.ORBIT){
-            camLocked = GUI.Toggle(controlsRect, camLocked, "Camera Locked");
+            showAssemReadouts = GUI.Toggle(controlsRect, showAssemReadouts, "Show Assembly Info");
+            controlsRect.y += guiHeight;
+
+            bool camLocked = camType == CamType.LOCKED;
+            if(camType != CamType.ORBIT){
+                camLocked = GUI.Toggle(controlsRect, camLocked, "Camera Locked");
         
-            if(camLocked)
-                camType = CamType.LOCKED;
-            else if(!camLocked)
-                camType = CamType.FREELOOK;
+                if(camLocked)
+                    camType = CamType.LOCKED;
+                else if(!camLocked)
+                    camType = CamType.FREELOOK;
+            }
         }
-
 
         if(selectedNode){
             GUI.color = Color.white;

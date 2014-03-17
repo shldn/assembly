@@ -44,7 +44,7 @@ public class Node {
     public bool propelling = false; //red node moving
 
     // debug
-    public GameObject jetEngine = null;
+    public GameObject propulsionEffect = null;
 
     public static Color stemColor = new Color(0.4f, 0.4f, 0.4f, 1f);
     public static Color senseColor = new Color(0.64f, 0.8f, 0.44f, 1f);
@@ -229,17 +229,17 @@ public class Node {
         // debug
         // Actuate node jet engine prop ------------------------------------------------- ||
         // Dynamically update existence of jetEngine.
-        if(((nodeType != NodeType.actuate) || !validLogic) && jetEngine)
-            GameObject.Destroy(jetEngine);
+        if(((nodeType != NodeType.actuate) || !validLogic) && propulsionEffect)
+            GameObject.Destroy(propulsionEffect);
 
-        if((nodeType == NodeType.actuate) && validLogic && !jetEngine)
-            jetEngine = GameObject.Instantiate(PrefabManager.Inst.jetEngine, worldPosition, Quaternion.identity) as GameObject;
+        if((nodeType == NodeType.actuate) && validLogic && !propulsionEffect)
+            propulsionEffect = GameObject.Instantiate(PrefabManager.Inst.jetEngine, worldPosition, Quaternion.identity) as GameObject;
 
-        if(jetEngine){
+        if(propulsionEffect){
             Debug.DrawRay(worldPosition, worldAcuateRot * Vector3.forward * 3f, Color.red);
 
-            jetEngine.transform.position = worldPosition + (worldAcuateRot * Vector3.forward) * -0.5f;
-            jetEngine.transform.rotation = worldAcuateRot;
+            propulsionEffect.transform.position = worldPosition + (worldAcuateRot * Vector3.forward) * -0.5f;
+            propulsionEffect.transform.rotation = worldAcuateRot;
         }
     } // End of UpdateTransform(). 
 
@@ -249,8 +249,8 @@ public class Node {
             GameObject.Destroy(gameObject);
         if(senseFieldBillboard)
             GameObject.Destroy(senseFieldBillboard);
-        if(jetEngine)
-            GameObject.Destroy(jetEngine);
+        if(propulsionEffect)
+            GameObject.Destroy(propulsionEffect);
         if(assembly)
             assembly.RemoveNode(this);
 
