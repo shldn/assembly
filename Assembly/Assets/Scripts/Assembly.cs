@@ -240,6 +240,11 @@ public class Assembly {
 
 
     public void UpdateTransform(){
+
+        if(Input.GetKey(KeyCode.U))
+            WorldPosition = Vector3.zero;
+
+
         // Dead assemblies should be destroyed with animation.
         if( currentEnergy < 0.0f){
             DestroyWithAnimation();

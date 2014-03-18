@@ -19,6 +19,8 @@ public class GameManager : MonoBehaviour {
     public bool refactorIfInert = false;
     public bool populationControl  = false;
 
+    public float targetTimeScale = 1f;
+
     public float fade = 1f;
 
     float worldSize = 100f;
@@ -36,7 +38,10 @@ public class GameManager : MonoBehaviour {
 
 
     void LateUpdate(){
-        fade = Mathf.MoveTowards(fade, 0f, Time.deltaTime * 0.3f);
+        fade = Mathf.MoveTowards(fade, 0f, (Time.deltaTime / Time.timeScale) * 0.3f);
+
+        Time.timeScale = Mathf.MoveTowards(Time.timeScale, targetTimeScale, (Time.deltaTime / Time.timeScale));
+        Time.fixedDeltaTime = 0.05f * Time.timeScale;
 
         //updating values from the gui
         Assembly.MIN_ASSEMBLY = minNumAssemblies;
@@ -297,7 +302,7 @@ public class GameManager : MonoBehaviour {
         GUI.skin.label.fontSize = 10;
 
         string bottomRightInfo = "\'Assembly\'" + "\n";
-        bottomRightInfo += (1.0f / Time.deltaTime).ToString("F1") + " frames per second" + "\n";
+        bottomRightInfo += (1.0f / (Time.deltaTime / Time.timeScale)).ToString("F1") + " frames per second" + "\n";
         bottomRightInfo += "Arthur C. Clarke Center for Human Imagination" + "\n\n";
         bottomRightInfo += System.DateTime.Now + "\n";
 
