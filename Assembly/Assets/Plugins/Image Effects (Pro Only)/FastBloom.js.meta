@@ -1,9 +1,9 @@
 fileFormatVersion: 2
-guid: 048717b96c1ea48749b22804d435dc60
+guid: 97b4768c3683045e4bfdb2e78272970c
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
-  - fogShader: {fileID: 4800000, guid: 70d8568987ac0499f952b54c7c13e265, type: 3}
+  - fastBloomShader: {fileID: 4800000, guid: 68a00c837b82e4c6d92e7da765dc5f1d, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -90,8 +90,10 @@ public class MainCameraControl : MonoBehaviour {
                 HandleMouseOrbit();
 
             // Camera's focal point and distance changes based on camera orbit distance.
-            depthOfField.focalPoint = Mathf.Lerp(depthOfField.focalPoint, Vector3.Distance(Camera.main.transform.position, orbitTarget), (Time.deltaTime / Time.timeScale) * 5f);
-            depthOfField.focalSize = Vector3.Distance(Camera.main.transform.position, orbitTarget) * 0.1f;
+            if(depthOfField){
+                depthOfField.focalPoint = Mathf.Lerp(depthOfField.focalPoint, Vector3.Distance(Camera.main.transform.position, orbitTarget), (Time.deltaTime / Time.timeScale) * 5f);
+                depthOfField.focalSize = Vector3.Distance(Camera.main.transform.position, orbitTarget) * 0.1f;
+            }
 
             // Hitting 'space' will break out of orbit mode.
             if(Input.GetKeyDown(KeyCode.Space)){
