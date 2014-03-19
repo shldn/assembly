@@ -93,6 +93,7 @@ public class GameManager : MonoBehaviour {
             Assembly.GetAll()[i].UpdateTransform();
 
             // User input -------------------------------------
+            /*
             // Mutate nodes.
             if(Input.GetKeyDown(KeyCode.B)){
                 for(int j = 0; j < Assembly.GetAll()[i].nodes.Count; j++){
@@ -121,6 +122,7 @@ public class GameManager : MonoBehaviour {
             if(Input.GetKey(KeyCode.Return))
                 Assembly.GetAll()[i].Mutate(0.01f);
             // ------------------------------------------------
+            */
         }
         
         // Update nodes.
@@ -233,6 +235,11 @@ public class GameManager : MonoBehaviour {
 
             controlGuiRect.y += guiGutter;
             GUI.enabled = true;
+
+            GUI.Label(controlGuiRect, "Time scale: " + targetTimeScale.ToString("F2")   );
+            controlGuiRect.y += guiHeight;
+            targetTimeScale = GUI.HorizontalSlider(controlGuiRect, targetTimeScale, 0.05F, 1F);
+            controlGuiRect.y += guiHeight;
         }
 
 

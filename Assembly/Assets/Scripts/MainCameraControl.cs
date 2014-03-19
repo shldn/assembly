@@ -14,7 +14,7 @@ public class MainCameraControl : MonoBehaviour {
 
     float translateSmoothTime = 0.2f;
 
-    float cameraMoveSpeed = 10f;
+    float cameraMoveSpeed = 30f;
     float cameraRotateSpeed = 2f;
 
     Node hoveredNode = null;
@@ -32,6 +32,7 @@ public class MainCameraControl : MonoBehaviour {
     public DepthOfField34 depthOfField = null;
 
     public Quaternion randomOrbit = Quaternion.identity;
+    float demoOrbitDistRunner = 0f;
 
 
     void Awake(){
@@ -62,17 +63,10 @@ public class MainCameraControl : MonoBehaviour {
         // Gallery-style demo-mode: camera orbits center, zooming in and out slowly.
         if(camType == CamType.ORBIT_DEMO){
             targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (Time.deltaTime / Time.timeScale));
-            camOrbitDist = 170f + (Mathf.Sin((Time.time * Mathf.PI) / camZoomLoopTime) * 130f);
-        }
-        
+            camOrbitDist = 170f - (Mathf.Sin((demoOrbitDistRunner * Mathf.PI) / camZoomLoopTime) * 130f);
 
-        if(camType == CamType.ORBIT_CONTROLLED){
-            GameManager.Inst.targetTimeScale = 0.01f;
+            demoOrbitDistRunner += Time.deltaTime;
         }
-        else{
-            GameManager.Inst.targetTimeScale = 1f;
-        }
-        
 
 
         // Orbit a selected object
@@ -182,6 +176,16 @@ public class MainCameraControl : MonoBehaviour {
             }
         }
 
+        // Return to demo mode with Enter.
+        if(Input.GetKey(KeyCode.Return)){
+            randomOrbit = Random.rotation;
+            selectedAssembly = null;
+            selectedNode = null;
+            demoOrbitDistRunner = 0f;
+
+            camType = CamType.ORBIT_DEMO;
+        }
+
 	} // End of Update().
 
 
@@ -237,6 +241,15 @@ public class MainCameraControl : MonoBehaviour {
 
                 float guiStuffY = Screen.height - assemblyScreenPos.y;
 
+                // Name
+                GUI.color = Color.white;
+                GUI.skin.label.fontSize = Mathf.CeilToInt(guiSizeMult * 6);
+                Rect nameRect = GUIHelper.Inst.CenteredRect(assemblyScreenPos.x, Screen.height - (assemblyScreenPos.y + 100f + (guiSizeMult * 8f)), 500f, 200f);
+                GUI.skin.label.fontStyle = FontStyle.Bold;
+                GUI.skin.label.alignment = TextAnchor.LowerCenter;
+                GUI.Label(nameRect, currentAssembly.name);
+
+                // Health bar
                 GUI.color = new Color(1f, 1f, 1f, 0.2f);
                 GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight);
                 GUI.color = new Color(1f, 1f, 1f, 1f);
@@ -258,21 +271,59 @@ public class MainCameraControl : MonoBehaviour {
         GUI.color = Color.white;
         float guiHeight = 18f;
         float guiGutter = 10f;
-        Rect controlsRect = new Rect(25, 300f, 200, guiHeight);
+        Rect controlsRect = new Rect(Screen.width - 225, 15f, 200, guiHeight);
 
-
-        Rect centeredInfoRect = new Rect(0f, Screen.height * 0.9f, Screen.width, Screen.height);
-        GUI.skin.label.alignment = TextAnchor.UpperCenter;
+        Rect centeredInfoRect = new Rect(0f, -Screen.height * 0.05f, Screen.width, Screen.height);
+        GUI.skin.label.alignment = TextAnchor.LowerCenter;
+        
+        string cameraTypeLabel = "";
         string cameraInfo = "";
-        if(camType == CamType.FREELOOK)
-            cameraInfo = "Free camera.";
-        if(camType == CamType.LOCKED)
-            cameraInfo = "Locked camera.";
-        if(camType == CamType.ORBIT_CONTROLLED)
-            cameraInfo = "Orbit camera.";
-        if(camType == CamType.ORBIT_DEMO)
-            cameraInfo = "";
+        if(camType == CamType.FREELOOK){
+            cameraTypeLabel += "Free camera";
+            cameraInfo += "Rotate the camera using the mouse, Q, and E.\n";
+            cameraInfo += "Use W, A, S, and D to move the camera around.\n";
+            cameraInfo += "Click on an assembly to select it.\n";
+            cameraInfo += "Press SPACE to lock the camera in place.\n";
+            cameraInfo += "\nPress ENTER to return to demonstration mode.\n";
+        }
+        if(camType == CamType.LOCKED){
+            cameraTypeLabel += "Locked camera";
+            cameraInfo += "Use W, A, S, and D to move the camera around.\n";
+            cameraInfo += "Click on an assembly to select it.\n";
+            cameraInfo += "Press SPACE to free the rotation of the camera.\n";
+            cameraInfo += "\nPress ENTER to return to demonstration mode.\n";
+        }
+        if(camType == CamType.ORBIT_CONTROLLED){
+            cameraTypeLabel += "Case-Orbit camera";
+            cameraInfo += "Click on a node (or another assembly) to select it.\n";
+            cameraInfo += "Use the MOUSEWHEEL to zoom in and out.";
+            if(selectedAssembly){
+                cameraInfo += "Use the arrow keys to rotate this assembly manually.\n";
+            }
+            else if(selectedNode){
+                cameraInfo += "Click on the selected node to select its assembly.\n";
+                cameraInfo += "Drag the vector handles to change this node's traits.\n";
+            }
+            cameraInfo += "Hold right-click to rotate the camera.\n";
+            cameraInfo += "\nPress SPACE to disengage.\n";
+            cameraInfo += "Press ENTER to return to demonstration mode.\n";
+        }
+        if(camType == CamType.ORBIT_DEMO){
+            cameraTypeLabel += "Exhibition Camera";
+            cameraInfo += "Click on an assembly to investigate it.\n";
+        }
+
+
+        GUI.skin.label.fontStyle = FontStyle.Normal;
+        GUI.skin.label.fontSize = 10;
         GUI.Label(centeredInfoRect, cameraInfo);
+        centeredInfoRect.y += 15f;
+
+        GUI.skin.label.fontStyle = FontStyle.Bold;
+        GUI.skin.label.fontSize = 13;
+        GUI.Label(centeredInfoRect, cameraTypeLabel);
+
+
         
         if(GameManager.Inst.showControls){
 
