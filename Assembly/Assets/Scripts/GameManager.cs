@@ -31,8 +31,8 @@ public class GameManager : MonoBehaviour {
 
 	void Start(){
 
-        if (BatchModeManager.Inst.InBatchMode)
-            return;
+        //if (BatchModeManager.Inst.InBatchMode)
+        //    return;
 
 	} // End of Start().
 

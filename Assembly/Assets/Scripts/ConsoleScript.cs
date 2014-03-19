@@ -79,7 +79,7 @@ public class ConsoleScript : MonoBehaviour {
                 WriteToLog("\t" + cmd.Key);
         };
 
-        commands["load"].func = delegate(string[] args)
+        /*commands["load"].func = delegate(string[] args)
         {
             if (args.Length <= 1)
                 WriteToLog("Please specify a file to load");
@@ -90,7 +90,7 @@ public class ConsoleScript : MonoBehaviour {
                     path += " " + args[i];
                 EnvironmentManager.Load(path);
             }
-        };
+        };*/
 
         commands["demo"].func = delegate(string[] args)
         {
@@ -110,13 +110,13 @@ public class ConsoleScript : MonoBehaviour {
 
         };
 
-        commands["save"].func = delegate(string[] args)
+        /*commands["save"].func = delegate(string[] args)
         {
             if( args.Length > 1 && (args[1] == "pos" || args[1] == "position") )
                 EnvironmentManager.SavePositionsOnly(IOHelper.GetValidFileName("./data/", "env", ".txt"));
             else
                 EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));
-        };
+        };*/
 
 
     } // End of RegisterCommands().

@@ -532,7 +532,7 @@ public class Node {
     // Save/load -------------------------------------------------------------------------||
 
     // The string representation of this class for file saving (could use ToString, but want to be explicit)
-    public string ToFileString(int format)
+    /*public string ToFileString(int format)
     {
         return localHexPosition.ToString() + nodeProperties.ToString();
     }
@@ -543,7 +543,7 @@ public class Node {
         IntVector3 pos = IOHelper.IntVector3FromString(str.Substring(0,splitIdx+1));
         NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
         return new Node(pos, props);
-    }
+    }*/
 
     public float GetBurnRate(){
         switch(nodeType){
@@ -612,7 +612,7 @@ public struct NodeProperties {
         actuateVector = _actuateVector;
     } // End of NodeProperties constructor.
 
-    public NodeProperties(string str){
+    /*public NodeProperties(string str){
 
         senseVector = Quaternion.identity;
         fieldOfView = 45.0f;
@@ -638,7 +638,7 @@ public struct NodeProperties {
                     break;
             }
         }
-    } // End of NodeProperties constructor.
+    } // End of NodeProperties constructor.*/
 
     public override string ToString()
     {

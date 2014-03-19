@@ -100,7 +100,7 @@ public class Assembly {
     }
 
     
-    public Assembly(string filePath){
+   /*public Assembly(string filePath){
         List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         IOHelper.LoadAssembly(filePath, ref name, ref worldPos, ref newNodes);
@@ -112,7 +112,7 @@ public class Assembly {
         RecomputeRigidbody();
         allAssemblies.Add(this);
         InitEnergyData();
-    }
+    }*/
     
 
     public Assembly Reproduce(){
@@ -195,7 +195,7 @@ public class Assembly {
         allAssemblies.Remove(this);
     }
 
-    public void Save(){
+    /*public void Save(){
         string path = "./saves/" + name + ".txt";
         Save(path);
     } // End of Save().
@@ -204,7 +204,7 @@ public class Assembly {
     public void Save(string path){
         ConsoleScript.Inst.WriteToLog("Saving " + path);
         IOHelper.SaveAssembly(path, this);
-    } // End of Save().
+    } // End of Save().*/
 
 
     public void AddNode(Node node){

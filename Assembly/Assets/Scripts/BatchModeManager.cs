@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿/*using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -102,4 +102,4 @@ public class BatchModeManager
         int.TryParse(match.Value, out num);
         return nameToIncrement.Substring(0, match.Index) + (num + 1).ToString() + nameToIncrement.Substring(match.Index + match.Length);
     }
-}
+}*/
