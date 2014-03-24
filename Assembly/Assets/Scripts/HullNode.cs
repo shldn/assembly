@@ -33,6 +33,13 @@ public class HullNode : MonoBehaviour {
         }
 	}
 
+    public void SetPosition(Vector3 pos)
+    {
+        transform.position = pos;
+        // don't create a new hull
+        lastPos = pos;
+    }
+
     void OnDrawGizmos()
     {
         Gizmos.color = color;
@@ -42,8 +49,17 @@ public class HullNode : MonoBehaviour {
     public static void CreateRandom(float bound = 10)
     {
         GameObject go = new GameObject("HullNode");
-        go.AddComponent<HullNode>();
         go.transform.position = bound * Random.insideUnitSphere;
+        HullNode hn = go.AddComponent<HullNode>();
+        hn.hull = (ConvexHull)UnityEngine.Object.FindObjectOfType(typeof(ConvexHull));
+    }
+
+    public static void Create(Vector3 pos)
+    {
+        GameObject go = new GameObject("HullNode");
+        HullNode hn = go.AddComponent<HullNode>();
+        go.transform.position = pos;
+        hn.lastPos = pos;
     }
 
     public static void PrintHullNodePositions()

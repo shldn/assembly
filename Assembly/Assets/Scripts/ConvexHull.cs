@@ -397,7 +397,7 @@ public class ConvexHull : MonoBehaviour
         initTet.PushFaces(ref faceStack);
 
         int count = 0;
-        while (faceStack.Count > 0 && count++ < 300)
+        while (faceStack.Count > 0 && count++ < 1000)
         {
             // Pop 
             Face f = faceStack.Last.Value;
@@ -413,8 +413,11 @@ public class ConvexHull : MonoBehaviour
             int furthestIdx = -1;
             f.GetFurthestVisible(ref furthestPt, ref furthestIdx);
             List<FaceEdgeIdxPair> horizonEdges = GetVisibleFaces(faceStack, f, furthestPt);
+            if (horizonEdges == null)
+                break;
             List<Face> newFaces = Helpers.GetPyramidFaces(pts, horizonEdges, furthestIdx);
 
+            HashSet<Face> extraFaces = new HashSet<Face>();
             // remove nodes marked for removal
             LinkedListNode<Face> it = faceStack.First;
             while (it != null)
@@ -422,6 +425,7 @@ public class ConvexHull : MonoBehaviour
                 if (it.Value.GetDistanceToPoint(furthestPt) > 0.0f)
                 {
                     LinkedListNode<Face> toRemove = it;
+                    extraFaces.Add(it.Value);
                     it = it.Next;
                     faceStack.Remove(toRemove);
                 }
@@ -436,6 +440,16 @@ public class ConvexHull : MonoBehaviour
 
             // Add visible points to new faces.
             HashSet<Face> horizonFaces = new HashSet<Face>();
+            foreach (Face ef in extraFaces)
+            {
+                horizonFaces.Add(ef);
+                for (int j = 0; j < ef.visibleIdxs.Count; ++j)
+                {
+                    int visIdx = ef.visibleIdxs[j];
+                    if (visIdx != furthestIdx)
+                        Helpers.AddToPtSet(newFaces, pts[visIdx], visIdx);
+                }
+            }
             for (int i = 0; i < horizonEdges.Count; ++i)
             {
                 if( horizonFaces.Contains(horizonEdges[i].f ) )
@@ -458,7 +472,7 @@ public class ConvexHull : MonoBehaviour
             //savedFaces.AddRange(faceStack);
             //break;
         }
-        if (count >= 300)
+        if (count >= 1000)
             Debug.LogError("hit while loop break out counter");
 
         // visualize the saved faces
