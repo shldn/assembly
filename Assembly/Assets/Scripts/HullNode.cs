@@ -60,6 +60,15 @@ public class HullNode : MonoBehaviour {
         HullNode hn = go.AddComponent<HullNode>();
         go.transform.position = pos;
         hn.lastPos = pos;
+        hn.hull = (ConvexHull)UnityEngine.Object.FindObjectOfType(typeof(ConvexHull));
+    }
+
+    public static void CreateRandomSet(int number)
+    {
+        for (int i = 0; i < number; ++i)
+            HullNode.CreateRandom(20);
+        // force re-compute
+        HullNode.allNodes[0].transform.position = HullNode.allNodes[0].transform.position + 0.01f * Vector3.up;
     }
 
     public static void PrintHullNodePositions()
@@ -68,5 +77,30 @@ public class HullNode : MonoBehaviour {
         for (int i = 0; i < allNodes.Count; ++i)
             str += allNodes[i].transform.position.ToString() + "\n";
         Debug.LogError(str);
+    }
+
+    public static void CreateFromPtString()
+    {
+        string ptStr = @"(4.7, 17.3, 3.6)
+(-12.6, -8.1, 1.2)
+(16.7, -5.8, -7.6)
+(11.9, -14.0, 4.8)
+(-8.0, -1.7, 3.4)";
+
+        string[] ptStrs = ptStr.Split('\n');
+
+        ConvexHull hull = (ConvexHull)UnityEngine.Object.FindObjectOfType(typeof(ConvexHull));
+
+        List<Vector3> nodePos = new List<Vector3>();
+        for (int i = 0; i < ptStrs.Length; ++i)
+        {
+            Vector3 pos = IOHelper.Vector3FromString(ptStrs[i]);
+            if (HullNode.allNodes.Count > i)
+                HullNode.allNodes[i].SetPosition(pos);
+            else
+                HullNode.Create(pos);
+            nodePos.Add(pos);
+        }
+        hull.Insert(nodePos);
     }
 }
