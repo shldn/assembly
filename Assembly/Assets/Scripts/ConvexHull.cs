@@ -15,40 +15,22 @@ public class Helpers
     // this does not return the base face, only those connected to the apex
     public static List<Face> GetPyramidFaces(List<Vector3> pts, List<FaceEdgeIdxPair> baseEdges, int apexIdx)
     {
-        //Debug.LogError("horizon: ");
-        //for (int i = 0; i < baseEdges.Count; ++i)
-        //    Debug.LogError("\t" + i + " f: " + baseEdges[i].f.IdxStr() + " edge: " + baseEdges[i].ei);
-        //for (int i = 0; i < baseEdges.Count; ++i)
-        //    baseEdges[i].f.AdjFaceCheck();
-        //Debug.LogError("Done precheck");
-
-        //Debug.LogError("P faces: apex: " + apexIdx);
         List<Face> faces = new List<Face>();
         for (int i = 0; i < baseEdges.Count; ++i)
         {
-            //Debug.LogError("\t" + i + " f: " + baseEdges[i].f.IdxStr() + " edge: " + baseEdges[i].ei);
             Face baseF = baseEdges[i].f;
             int ei = baseEdges[i].ei;
-            //if (ei < 0 || ei >= baseF.idx.Count)
-            //    Debug.LogError("Bad ei: " + ei + " base.idx.Count: " + baseF.idx.Count);
             int i1 = baseF.idx[ei];
             int i2 = baseF.idx[(ei + 1) % 3];
-            //Debug.LogError(i1 + " --> " + i2 + " adj: " + baseF.idx[0] + " " + baseF.idx[1] + " " + baseF.idx[2]);
             Face newF = new Face(pts, i1, i2, apexIdx);
 
             // hook up adjacency pointers
-            //if (!baseF.AdjFaceCheck())
-            //    Debug.LogError("baseF failed");
             Face adjFace = baseF.adjFace[ei];
-            //if( !adjFace.AdjFaceCheck() )
-            //    Debug.LogError("adjFace failed");
             newF.adjFace[0] = adjFace;
-            //Debug.LogError("Old: Set " + adjFace.IdxStr() + " idx: " + adjFace.GetEdgeIdx(baseF) + " to newF " + newF.IdxStr() + " was: " + adjFace.adjFace[adjFace.GetEdgeIdx(baseF)].IdxStr());
-            //Debug.LogError("Set " + adjFace.IdxStr() + " idx: " + adjFace.GetAdjacentIdxEdgeStartsWithVertIdx(i2) + " to newF " + newF.IdxStr() + " was: " + adjFace.adjFace[adjFace.GetAdjacentIdxEdgeStartsWithVertIdx(i2)].IdxStr());
+
             // adj face will have indices in the opposite direction
             adjFace.adjFace[adjFace.GetAdjacentIdxEdgeStartsWithVertIdx(i2)] = newF;
             baseF.adjFace[ei] = newF; // for sanity checks
-
             
             // adjFace[1] is the next iteration, adjFace[2] is the previous
             if (faces.Count > 0)
@@ -121,21 +103,6 @@ public class Face
         return idx[0] == rhs.idx[0] && idx[1] == rhs.idx[1] && idx[2] == rhs.idx[2];
     }
 
-    /*
-    public Face(Vector3 p1, Vector3 p2, Vector3 p3)
-    {
-        pts.Add(p1);
-        pts.Add(p2);
-        pts.Add(p3);
-        p = new Plane(p1, p2, p3);
-    }
-    public Face(List<Vector3> pts_)
-    {
-        pts = pts_;
-        p = new Plane(pts_[0], pts_[1], pts_[2]);
-    }
-     */
-
     public float GetDistanceToPoint(Vector3 pt)
     {
         return -p.GetDistanceToPoint(pt);
@@ -173,6 +140,8 @@ public class Face
         for (int i = 0; i < adjFace.Count; ++i)
             if (adjFace[i] == f)
                 return i;
+
+        // edge not found, print some debugging info
         Debug.LogError("Edge not found");
         for(int i=0; i < idx.Count; ++i)
             Debug.LogError("\t" + idx[i]);
@@ -238,13 +207,8 @@ public class Pyramid
     // refactor to use Faces
     public Pyramid(List<Vector3> pts, List<int> idxs)
     {
-        //Debug.LogError("init pyramid");
-        //for (int i = 0; i < idxs.Count; ++i)
-        //    Debug.LogError("\t" + idxs[i]);
-        //pts = pts_;
         idx = idxs;
         Vector3 midPt = 0.25f * (pts[idxs[0]] + pts[idxs[1]] + pts[idxs[2]] + pts[idxs[3]]);
-
 
         // determine correct orientation of 0,1,2
         // want to face away from the midpoint
@@ -276,8 +240,6 @@ public class Pyramid
         faces[3].adjFace[0] = faces[1]; // 3-0
         faces[3].adjFace[1] = faces[0]; // 0-2
         faces[3].adjFace[2] = faces[2]; // 2-3
-
-        AdjFaceCheck();
 
     }
 
@@ -355,9 +317,6 @@ public class Pyramid
 public class ConvexHull : MonoBehaviour
 {
     // mesh variables
-    //public Vector3[] newVertices = new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 1) };
-    //public Vector2[] newUV = new Vector2[] { new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0) };
-    //public int[] newTriangles = new int[] { 0, 1, 2 };
 
     public List<Vector3> newVertices = new List<Vector3>();
     public List<Vector2> newUV = new List<Vector2>();
@@ -406,7 +365,6 @@ public class ConvexHull : MonoBehaviour
             if (f.visiblePts.Count == 0)
             {
                 savedFaces.Add(f);
-                //Debug.LogError(count + " Saving face: " + savedFaces.Count + " - " + f.IdxStr());
                 continue;
             }
             Vector3 furthestPt = new Vector3();
@@ -417,8 +375,8 @@ public class ConvexHull : MonoBehaviour
                 break;
             List<Face> newFaces = Helpers.GetPyramidFaces(pts, horizonEdges, furthestIdx);
 
-            HashSet<Face> extraFaces = new HashSet<Face>();
             // remove nodes marked for removal
+            HashSet<Face> extraFaces = new HashSet<Face>();
             LinkedListNode<Face> it = faceStack.First;
             while (it != null)
             {
@@ -466,11 +424,6 @@ public class ConvexHull : MonoBehaviour
             // add new faces to stack
             for (int i = 0; i < newFaces.Count; ++i)
                 faceStack.AddLast(newFaces[i]);
-
-            //testing
-            //Debug.LogError("test break");
-            //savedFaces.AddRange(faceStack);
-            //break;
         }
         if (count >= 1000)
             Debug.LogError("hit while loop break out counter");
@@ -556,7 +509,6 @@ public class ConvexHull : MonoBehaviour
             // is visible, remove from face list
             testF.removeMe = true;
 
-
             // find the next edge along the walk that has a visible face on one side and not visible on the other.
             Face nextF = null;
             while (testF != startF)
@@ -574,6 +526,7 @@ public class ConvexHull : MonoBehaviour
                 }
             }
 
+            // error cases, print debugging info
             if (testF == startF)
             {
                 Debug.LogError("testF == startF");
