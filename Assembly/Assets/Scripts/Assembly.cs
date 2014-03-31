@@ -25,6 +25,7 @@ public class Assembly {
     public static int MIN_ASSEMBLY = 1;
     public static int MAX_ASSEMBLY = 10;
     public static int MAX_NODES_IN_ASSEMBLY = 10;
+    public static int MIN_NODES_IN_ASSEMBLY = 10;
     public static bool REFACTOR_IF_INERT = false; // If an assembly is created with no logic nets, destroy it immediately.
 
     public Vector3 WorldPosition{
@@ -54,6 +55,8 @@ public class Assembly {
     }
 
 
+    bool needRigidbodyUpdate = true;
+
     /* energy --------------------------------------------------- */
     public float currentEnergy = 0; //should be sum of nodes
     public float consumeRate = 10.0f; //rate asm consume food
@@ -77,6 +80,7 @@ public class Assembly {
         for(int j = 0; j < numNodes; j++)
             newAssembly.AddRandomNode();
         newAssembly.InitEnergyData();
+
         return newAssembly;
     }
 
@@ -85,6 +89,8 @@ public class Assembly {
         allAssemblies.Add(this);
         InitPhysicsObject();
         InitEnergyData();
+
+        needRigidbodyUpdate = true;
     }
     public Assembly(List<Node> nodes){
         AddNodes(nodes);
@@ -94,7 +100,7 @@ public class Assembly {
     }
 
     
-    public Assembly(string filePath){
+   /*public Assembly(string filePath){
         List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         IOHelper.LoadAssembly(filePath, ref name, ref worldPos, ref newNodes);
@@ -106,18 +112,26 @@ public class Assembly {
         RecomputeRigidbody();
         allAssemblies.Add(this);
         InitEnergyData();
-    }
+    }*/
     
+
+    public Assembly Reproduce(){
+        Assembly offspring = Duplicate();
+        offspring.Mutate(0.2f);
+        offspring.physicsObject.rigidbody.AddForce(Random.rotation * Vector3.forward * 1000f);
+        offspring.physicsObject.rigidbody.AddTorque(Random.rotation * Vector3.forward * 10000f);
+        return offspring;
+    } // End of Reproduce().
 
     // Copy Constructor - return a copy of this assembly
     public Assembly Duplicate(){
         List<Node> newNodes = new List<Node>();
-        for (int i = 0; i < nodes.Count; ++i)
-            newNodes.Add(nodes[i].Duplicate());
+        for (int i = 0; i < nodes.Count; ++i){
+            Node newNode = nodes[i].Duplicate();
+            newNodes.Add(newNode);
+        }
 
         Assembly a = new Assembly(newNodes);
-        a.physicsObject.rigidbody.AddForce(Random.rotation * Vector3.forward * 1000f);
-        a.physicsObject.rigidbody.AddTorque(Random.rotation * Vector3.forward * 10000f);
         return a;
     } // End of Duplicate().
 
@@ -129,8 +143,6 @@ public class Assembly {
         physicsObject.rigidbody.useGravity = false;
         physicsObject.rigidbody.angularDrag = 0.2f;
         physicsObject.rigidbody.drag = 0.2f;
-
-        RecomputeRigidbody();
     } // End of InitPhysicsObject().
 
     // Sets up center of mass, mass, etc. for the assembly based on current structure.
@@ -142,6 +154,7 @@ public class Assembly {
             physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
             physicsObject.rigidbody.mass = nodes.Count;
         } else {
+            MonoBehaviour.print("Zero nodes!");
             physicsObject.rigidbody.mass = 1f;
             physicsObject.rigidbody.inertiaTensor = Vector3.one;
         }
@@ -182,7 +195,7 @@ public class Assembly {
         allAssemblies.Remove(this);
     }
 
-    public void Save(){
+    /*public void Save(){
         string path = "./saves/" + name + ".txt";
         Save(path);
     } // End of Save().
@@ -191,7 +204,7 @@ public class Assembly {
     public void Save(string path){
         ConsoleScript.Inst.WriteToLog("Saving " + path);
         IOHelper.SaveAssembly(path, this);
-    } // End of Save().
+    } // End of Save().*/
 
 
     public void AddNode(Node node){
@@ -200,6 +213,7 @@ public class Assembly {
         UpdateNodes();
         UpdateNodeValidities();
         needBurnRateUpdate = true;
+        needRigidbodyUpdate = true;
     } // End of AddNode().
 
 
@@ -211,6 +225,7 @@ public class Assembly {
         UpdateNodes();
         UpdateNodeValidities();
         needBurnRateUpdate = true;
+        needRigidbodyUpdate = true;
     } // End of AddNode().
 
 
@@ -220,10 +235,16 @@ public class Assembly {
         UpdateNodes();
         UpdateNodeValidities();
         needBurnRateUpdate = true;
+        needRigidbodyUpdate = true;
     } // End of RemoveNode().
 
 
     public void UpdateTransform(){
+
+        if(Input.GetKey(KeyCode.U))
+            WorldPosition = Vector3.zero;
+
+
         // Dead assemblies should be destroyed with animation.
         if( currentEnergy < 0.0f){
             DestroyWithAnimation();
@@ -236,17 +257,13 @@ public class Assembly {
             return;
         }
 
+        if(needRigidbodyUpdate){
+            RecomputeRigidbody();
+        }
+
         //Propel assembly through the world based on activated nodes.
         List<Node> allActuateNodes = GetActuateNodes();
         for(int i = 0; i < allActuateNodes.Count; i++){
-            if(!allActuateNodes[i].jetEngine)
-                continue;
-
-            ParticleEmitter emitter = allActuateNodes[i].jetEngine.GetComponentInChildren<ParticleEmitter>();
-            if(!emitter)
-                continue;
-
-            emitter.emit = false;
             allActuateNodes[i].propelling = false;
             needBurnRateUpdate = true;
             GetFunctionalPropulsion();
@@ -267,7 +284,7 @@ public class Assembly {
         if(Health >= 2f){
             Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
 
-            Assembly offspringAssem = Duplicate();
+            Assembly offspringAssem = Reproduce();
             offspringAssem.WorldPosition = WorldPosition;
             offspringAssem.WorldRotation = WorldRotation;
             offspringAssem.physicsObject.rigidbody.velocity = physicsObject.rigidbody.velocity;
@@ -486,15 +503,6 @@ public class Assembly {
 
                         physicsObject.rigidbody.AddForceAtPosition(actuateVector * 10f, currentActuateNode.worldPosition);
 
-                        if(!currentActuateNode.jetEngine)
-                            continue;
-
-                        ParticleEmitter emitter = currentActuateNode.jetEngine.GetComponentInChildren<ParticleEmitter>();
-                        if(!emitter)
-                            continue;
-
-                        emitter.gameObject.transform.rotation = currentActuateNode.worldAcuateRot * currentSenseNode.RotToFood(currentFood);
-                        emitter.emit = true;
                         currentActuateNode.propelling = true;
                         needBurnRateUpdate = true;
                     }

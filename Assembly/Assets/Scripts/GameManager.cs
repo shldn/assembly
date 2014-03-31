@@ -9,14 +9,19 @@ public class GameManager : MonoBehaviour {
 
     Node selectedNode = null;
 
-    public int numberOfFood = 10;
-    public int numberOfMinAssembly = 1;
-    public int numberOfMaxAssembly = 10;
-    public int numberOfNodesInAssembly = 10;
-    public bool addMultipleAssembly = true;
-    public bool addMultipleFood = true;
+    public bool showControls = false;
+
+    public int numFoodPellets = 25;
+    public int minNumAssemblies = 60;
+    public int maxNumAssemblies = 100;
+    public int minNumNodes = 5;
+    public int maxNumNodes = 15;
     public bool refactorIfInert = false;
     public bool populationControl  = false;
+
+    public float targetTimeScale = 1f;
+
+    public float fade = 1f;
 
     float worldSize = 100f;
 
@@ -26,43 +31,32 @@ public class GameManager : MonoBehaviour {
 
 	void Start(){
 
-        if (BatchModeManager.Inst.InBatchMode)
-            return;
-
-        // Generate a random assembly.
-        if(addMultipleAssembly){
-            Assembly.MIN_ASSEMBLY = numberOfMinAssembly;
-            for(int i = numberOfMinAssembly; i > 0; --i)
-                Assembly.GetRandomAssembly(numberOfNodesInAssembly);
-        } else
-            Assembly.GetRandomAssembly(numberOfNodesInAssembly);
-
-        //Generate random food pellet
-        if(addMultipleFood){
-            FoodPellet.MAX_FOOD = numberOfFood;
-            for(int i = numberOfFood; i > 0; --i)
-                FoodPellet.AddRandomFoodPellet();
-        } else 
-            FoodPellet.AddNewFoodPellet();
-        // Add a food pellet a short ways away.
-        //new FoodPellet(new Vector3(10f, 0f, 0f));
+        //if (BatchModeManager.Inst.InBatchMode)
+        //    return;
 
 	} // End of Start().
 
 
     void LateUpdate(){
+        fade = Mathf.MoveTowards(fade, 0f, (Time.deltaTime / Time.timeScale) * 0.3f);
+
+        Time.timeScale = Mathf.MoveTowards(Time.timeScale, targetTimeScale, (Time.deltaTime / Time.timeScale));
+        Time.fixedDeltaTime = 0.05f * Time.timeScale;
+
         //updating values from the gui
-        Assembly.MIN_ASSEMBLY = numberOfMinAssembly;
-        Assembly.MAX_ASSEMBLY = numberOfMaxAssembly;
-        Assembly.MAX_NODES_IN_ASSEMBLY = numberOfNodesInAssembly;
+        Assembly.MIN_ASSEMBLY = minNumAssemblies;
+        Assembly.MAX_ASSEMBLY = maxNumAssemblies;
+        Assembly.MIN_NODES_IN_ASSEMBLY = minNumNodes;
+        Assembly.MAX_NODES_IN_ASSEMBLY = maxNumNodes;
         Assembly.REFACTOR_IF_INERT = refactorIfInert;
-        FoodPellet.MAX_FOOD = numberOfFood;
+        FoodPellet.MAX_FOOD = numFoodPellets;
 
         //adjust food on slider
         if( FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD )
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
                 FoodPellet newPellet = FoodPellet.AddNewFoodPellet();
                 newPellet.worldPosition = MathUtilities.RandomVector3Sphere(worldSize);
+                Instantiate(PrefabManager.Inst.reproduceBurst, newPellet.worldPosition, Quaternion.identity);
             }
         else if( FoodPellet.GetAll().Count > FoodPellet.MAX_FOOD )
             for(int i = FoodPellet.GetAll().Count - 1; i >= FoodPellet.MAX_FOOD; --i)
@@ -76,7 +70,7 @@ public class GameManager : MonoBehaviour {
                 }
             else if( Assembly.GetAll().Count > Assembly.MAX_ASSEMBLY ){
                 Assembly lowestHealthAssembly = null;
-                float lowestHealth = 99999f;
+                float lowestHealth = Mathf.Infinity;
 
                 for(int i = Assembly.GetAll().Count - 1; i >= 0; --i){
                     Assembly currentAssembly = Assembly.GetAll()[i];
@@ -99,6 +93,7 @@ public class GameManager : MonoBehaviour {
             Assembly.GetAll()[i].UpdateTransform();
 
             // User input -------------------------------------
+            /*
             // Mutate nodes.
             if(Input.GetKeyDown(KeyCode.B)){
                 for(int j = 0; j < Assembly.GetAll()[i].nodes.Count; j++){
@@ -127,6 +122,7 @@ public class GameManager : MonoBehaviour {
             if(Input.GetKey(KeyCode.Return))
                 Assembly.GetAll()[i].Mutate(0.01f);
             // ------------------------------------------------
+            */
         }
         
         // Update nodes.
@@ -183,50 +179,68 @@ public class GameManager : MonoBehaviour {
         GUI.skin.toggle.fontSize = 12;
         float guiHeight = 18f;
         float guiGutter = 10f;
-        Rect controlGuiRect = new Rect(25, 25, 200, guiHeight);
+        Rect controlGuiRect = new Rect(15, 15, 200, guiHeight);
 
-        GUI.Label(controlGuiRect, "Number of Food Pellets: " + numberOfFood   );
-        controlGuiRect.y += guiHeight;
-        numberOfFood = (int) GUI.HorizontalSlider(controlGuiRect, numberOfFood, 1.0F, 100.0F);
+        showControls = GUI.Toggle(controlGuiRect, showControls, " Show Controls");
         controlGuiRect.y += guiHeight;
 
-        GUI.Label(controlGuiRect, "Number of Nodes in Assembly: " + numberOfNodesInAssembly   );
-        controlGuiRect.y += guiHeight;
-        numberOfNodesInAssembly = (int) GUI.HorizontalSlider(controlGuiRect, numberOfNodesInAssembly, 1.0F, 100.0F);
-        controlGuiRect.y += guiHeight;
+        if(showControls){
+            GUI.Label(controlGuiRect, "Number of Food Pellets: " + numFoodPellets   );
+            controlGuiRect.y += guiHeight;
+            numFoodPellets = (int) GUI.HorizontalSlider(controlGuiRect, numFoodPellets, 1.0F, 100.0F);
+            controlGuiRect.y += guiHeight;
 
-        GUI.Label(controlGuiRect, "Burn Rate Multiplier: " + Assembly.burnCoefficient   );
-        controlGuiRect.y += guiHeight;
-        Assembly.burnCoefficient = GUI.HorizontalSlider(controlGuiRect, Assembly.burnCoefficient, 0.0F, 10.0F);
-        controlGuiRect.y += guiHeight;
+            GUI.Label(controlGuiRect, "Min Nodes/Assembly: " + minNumNodes   );
+            controlGuiRect.y += guiHeight;
+            minNumNodes = (int) GUI.HorizontalSlider(controlGuiRect, minNumNodes, 1.0F, 100.0F);
+            controlGuiRect.y += guiHeight;
+            if(minNumNodes > maxNumNodes) //check to maintain min - max
+                maxNumNodes = minNumNodes;
 
-        refactorIfInert = GUI.Toggle(controlGuiRect, refactorIfInert, " Refactor Inert Assemblies");
-        controlGuiRect.y += guiHeight;
+            GUI.Label(controlGuiRect, "Max Nodes/Assembly: " + maxNumNodes   );
+            controlGuiRect.y += guiHeight;
+            maxNumNodes = (int) GUI.HorizontalSlider(controlGuiRect, maxNumNodes, 1.0F, 100.0F);
+            controlGuiRect.y += guiHeight;
+            if(minNumNodes > maxNumNodes) //check to maintain min - max
+                minNumNodes = maxNumNodes;
 
-        controlGuiRect.y += guiGutter;
+            GUI.Label(controlGuiRect, "Burn Rate Multiplier: " + Assembly.burnCoefficient   );
+            controlGuiRect.y += guiHeight;
+            Assembly.burnCoefficient = GUI.HorizontalSlider(controlGuiRect, Assembly.burnCoefficient, 0.0F, 10.0F);
+            controlGuiRect.y += guiHeight;
 
-        // Population control
-        populationControl = GUI.Toggle(controlGuiRect, populationControl, " Population Control");
-        controlGuiRect.y += guiHeight;
+            refactorIfInert = GUI.Toggle(controlGuiRect, refactorIfInert, " Refactor Inert Assemblies");
+            controlGuiRect.y += guiHeight;
 
-        GUI.enabled = populationControl;
-        GUI.Label(controlGuiRect, "Min # of Assemblies: " + numberOfMinAssembly   );
-        controlGuiRect.y += guiHeight;
-        numberOfMinAssembly = (int) GUI.HorizontalSlider(controlGuiRect, numberOfMinAssembly, 1.0F, 100.0F);
-        if(numberOfMinAssembly > numberOfMaxAssembly) //check to maintain min - max
-            numberOfMaxAssembly = numberOfMinAssembly;
-        controlGuiRect.y += guiHeight;
+            controlGuiRect.y += guiGutter;
 
-        GUI.Label(controlGuiRect, "Max # of Assemblies: " + numberOfMaxAssembly   );
-        controlGuiRect.y += guiHeight;
-        numberOfMaxAssembly = (int) GUI.HorizontalSlider(controlGuiRect, numberOfMaxAssembly, 1.0F, 100.0F);
-        if(numberOfMinAssembly > numberOfMaxAssembly) //check to maintain min - max
-            numberOfMinAssembly = numberOfMaxAssembly;
-        controlGuiRect.y += guiHeight;
+            // Population control
+            populationControl = GUI.Toggle(controlGuiRect, populationControl, " Population Control");
+            controlGuiRect.y += guiHeight;
 
-        controlGuiRect.y += guiGutter;
-        GUI.enabled = true;
+            GUI.enabled = populationControl;
+            GUI.Label(controlGuiRect, "Min # of Assemblies: " + minNumAssemblies   );
+            controlGuiRect.y += guiHeight;
+            minNumAssemblies = (int) GUI.HorizontalSlider(controlGuiRect, minNumAssemblies, 1.0F, 100.0F);
+            if(minNumAssemblies > maxNumAssemblies) //check to maintain min - max
+                maxNumAssemblies = minNumAssemblies;
+            controlGuiRect.y += guiHeight;
 
+            GUI.Label(controlGuiRect, "Max # of Assemblies: " + maxNumAssemblies   );
+            controlGuiRect.y += guiHeight;
+            maxNumAssemblies = (int) GUI.HorizontalSlider(controlGuiRect, maxNumAssemblies, 1.0F, 100.0F);
+            if(minNumAssemblies > maxNumAssemblies) //check to maintain min - max
+                minNumAssemblies = maxNumAssemblies;
+            controlGuiRect.y += guiHeight;
+
+            controlGuiRect.y += guiGutter;
+            GUI.enabled = true;
+
+            GUI.Label(controlGuiRect, "Time scale: " + targetTimeScale.ToString("F2")   );
+            controlGuiRect.y += guiHeight;
+            targetTimeScale = GUI.HorizontalSlider(controlGuiRect, targetTimeScale, 0.05F, 1F);
+            controlGuiRect.y += guiHeight;
+        }
 
 
 
@@ -289,7 +303,30 @@ public class GameManager : MonoBehaviour {
             
         }
         */
+
+
+        // Information readout
+        GUI.skin.label.fontSize = 10;
+
+        string bottomRightInfo = "\'Assembly\'" + "\n";
+        bottomRightInfo += (1.0f / (Time.deltaTime / Time.timeScale)).ToString("F1") + " frames per second" + "\n";
+        bottomRightInfo += "Arthur C. Clarke Center for Human Imagination" + "\n\n";
+        bottomRightInfo += System.DateTime.Now + "\n";
+
+        TimeSpan timeSpan = TimeSpan.FromSeconds(Time.time);
+        string timeText = string.Format("{0:D1} hour(s), {1:D1} minute(s), and {2:D1} second(s).", timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
+        bottomRightInfo += "Sim has been running for " + timeText;
+
+        Rect infoReadoutRect = new Rect(-8f, -5f, Screen.width, Screen.height);
+        GUI.skin.label.alignment = TextAnchor.LowerRight;
+        GUI.Label(infoReadoutRect, bottomRightInfo);
         
+
+        // Game fade
+        GUI.color = new Color(0f, 0f, 0f, fade);
+        GUI.DrawTexture(new Rect(-10, -10, Screen.width + 10, Screen.height + 10), GUIHelper.Inst.white);
+        GUI.color = Color.white;
+
     } // End of OnGUI().
 
 }

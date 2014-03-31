@@ -48,7 +48,7 @@ public class ConsoleScript : MonoBehaviour {
         cmdList.Add(new ConsoleCommand("disband"));
         cmdList.Add(new ConsoleCommand("help"));
         cmdList.Add(new ConsoleCommand("load"));
-        cmdList.Add(new ConsoleCommand("orbit"));
+        cmdList.Add(new ConsoleCommand("demo"));
         cmdList.Add(new ConsoleCommand("quit"));
         cmdList.Add(new ConsoleCommand("reload"));
         cmdList.Add(new ConsoleCommand("save"));
@@ -79,7 +79,7 @@ public class ConsoleScript : MonoBehaviour {
                 WriteToLog("\t" + cmd.Key);
         };
 
-        commands["load"].func = delegate(string[] args)
+        /*commands["load"].func = delegate(string[] args)
         {
             if (args.Length <= 1)
                 WriteToLog("Please specify a file to load");
@@ -90,16 +90,14 @@ public class ConsoleScript : MonoBehaviour {
                     path += " " + args[i];
                 EnvironmentManager.Load(path);
             }
-        };
+        };*/
 
-        commands["orbit"].func = delegate(string[] args)
+        commands["demo"].func = delegate(string[] args)
         {
-            if(!MainCameraControl.Inst.autoOrbit){
+            if(MainCameraControl.Inst.camType != CamType.ORBIT_DEMO){
                 MainCameraControl.Inst.randomOrbit = Random.rotation;
-                MainCameraControl.Inst.autoOrbit = true;
+                MainCameraControl.Inst.camType = CamType.ORBIT_DEMO;
             }
-            else
-                MainCameraControl.Inst.autoOrbit = false;
         };
 
         commands["quit"].func = delegate(string[] args)
@@ -112,13 +110,13 @@ public class ConsoleScript : MonoBehaviour {
 
         };
 
-        commands["save"].func = delegate(string[] args)
+        /*commands["save"].func = delegate(string[] args)
         {
             if( args.Length > 1 && (args[1] == "pos" || args[1] == "position") )
                 EnvironmentManager.SavePositionsOnly(IOHelper.GetValidFileName("./data/", "env", ".txt"));
             else
                 EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));
-        };
+        };*/
 
 
     } // End of RegisterCommands().
@@ -131,9 +129,9 @@ public class ConsoleScript : MonoBehaviour {
         if(logVisibleTime > 0f)
             logFade = 1f;
         else
-            logFade = Mathf.MoveTowards(logFade, 0f, Time.deltaTime);
+            logFade = Mathf.MoveTowards(logFade, 0f, (Time.deltaTime / Time.timeScale));
 
-        logVisibleTime -= Time.deltaTime;
+        logVisibleTime -= (Time.deltaTime / Time.timeScale);
 
         if(active)
             logVisibleTime = 5f;
