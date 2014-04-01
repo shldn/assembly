@@ -7,7 +7,7 @@ using System.Collections.Generic;
 public class HullNode : MonoBehaviour {
 
     static public List<HullNode> allNodes = new List<HullNode>();
-    public ConvexHull hull = null;
+    public ConvexHullViewer hull = null;
     Vector3 lastPos = new Vector3();
     public Color color = new Color(1, 0, 0, 0.5F);
 
@@ -28,7 +28,7 @@ public class HullNode : MonoBehaviour {
                 List<Vector3> nodePos = new List<Vector3>();
                 for (int i = 0; i < allNodes.Count; ++i)
                     nodePos.Add(allNodes[i].transform.position);
-                hull.Insert(nodePos);
+                hull.hull = new ConvexHull(nodePos);
             }
         }
 	}
@@ -51,7 +51,7 @@ public class HullNode : MonoBehaviour {
         GameObject go = new GameObject("HullNode");
         go.transform.position = bound * Random.insideUnitSphere;
         HullNode hn = go.AddComponent<HullNode>();
-        hn.hull = (ConvexHull)UnityEngine.Object.FindObjectOfType(typeof(ConvexHull));
+        hn.hull = (ConvexHullViewer)UnityEngine.Object.FindObjectOfType(typeof(ConvexHullViewer));
     }
 
     public static void Create(Vector3 pos)
@@ -60,7 +60,7 @@ public class HullNode : MonoBehaviour {
         HullNode hn = go.AddComponent<HullNode>();
         go.transform.position = pos;
         hn.lastPos = pos;
-        hn.hull = (ConvexHull)UnityEngine.Object.FindObjectOfType(typeof(ConvexHull));
+        hn.hull = (ConvexHullViewer)UnityEngine.Object.FindObjectOfType(typeof(ConvexHullViewer));
     }
 
     public static void CreateRandomSet(int number)
@@ -89,7 +89,7 @@ public class HullNode : MonoBehaviour {
 
         string[] ptStrs = ptStr.Split('\n');
 
-        ConvexHull hull = (ConvexHull)UnityEngine.Object.FindObjectOfType(typeof(ConvexHull));
+        ConvexHullViewer hullViewer = (ConvexHullViewer)UnityEngine.Object.FindObjectOfType(typeof(ConvexHullViewer));
 
         List<Vector3> nodePos = new List<Vector3>();
         for (int i = 0; i < ptStrs.Length; ++i)
@@ -101,6 +101,6 @@ public class HullNode : MonoBehaviour {
                 HullNode.Create(pos);
             nodePos.Add(pos);
         }
-        hull.Insert(nodePos);
+        hullViewer.hull = new ConvexHull(nodePos);
     }
 }

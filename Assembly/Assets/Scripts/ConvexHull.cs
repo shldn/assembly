@@ -312,9 +312,7 @@ public class Pyramid
     }
 }
 
-[RequireComponent(typeof(MeshFilter))]
-[RequireComponent(typeof(MeshRenderer))]
-public class ConvexHull : MonoBehaviour
+public class ConvexHull
 {
     // mesh variables
 
@@ -326,14 +324,26 @@ public class ConvexHull : MonoBehaviour
     List<Vector3> pts = new List<Vector3>();
     List<bool> used = new List<bool>();
 
-    public void Insert(List<Vector3> newPts)
+    public ConvexHull(List<Vector3> newPts)
     {
-        // for now re-run the algorithm on a merged point set.
-        //pts.InsertRange(pts.Count, newPts);
-
         pts = newPts;
 
         ComputeHull();
+    }
+
+    public Mesh GetMesh()
+    {
+        Mesh mesh = new Mesh();
+        UpdateMesh(ref mesh);
+        return mesh;
+    }
+
+    public void UpdateMesh(ref Mesh mesh)
+    {
+        mesh.Clear();
+        mesh.vertices = newVertices.ToArray();
+        mesh.uv = newUV.ToArray();
+        mesh.triangles = newTriangles.ToArray();
     }
 
     void ComputeHull()
@@ -347,16 +357,13 @@ public class ConvexHull : MonoBehaviour
 
         AssignPtsToFaces(initTet);
 
-        // testing -- visual
-        ShowPtSets(initTet);
-
         // iteration phase
         List<Face> savedFaces = new List<Face>();
         LinkedList<Face> faceStack = new LinkedList<Face>();
         initTet.PushFaces(ref faceStack);
 
         int count = 0;
-        while (faceStack.Count > 0 && count++ < 1000)
+        while (faceStack.Count > 0 && count++ < 5000)
         {
             // Pop 
             Face f = faceStack.Last.Value;
@@ -425,10 +432,10 @@ public class ConvexHull : MonoBehaviour
             for (int i = 0; i < newFaces.Count; ++i)
                 faceStack.AddLast(newFaces[i]);
         }
-        if (count >= 1000)
+        if (count >= 5000)
             Debug.LogError("hit while loop break out counter");
 
-        // visualize the saved faces
+        // populate the vert and index arrays with the saved faces
         ClearMesh();
         FillMeshInfoWithFaces(savedFaces, pts, newVertices, newTriangles, newUV);
     }
@@ -620,23 +627,6 @@ public class ConvexHull : MonoBehaviour
         return horizonEdges;
     }
 
-    void ShowPtSets(Pyramid tet)
-    {
-        for (int i = 0; i < HullNode.allNodes.Count; ++i)
-        {
-            if (tet.faces[0].visiblePts.Contains(HullNode.allNodes[i].transform.position))
-                HullNode.allNodes[i].color = new Color(0, 1, 0, 0.5F);
-            else if (tet.faces[1].visiblePts.Contains(HullNode.allNodes[i].transform.position))
-                HullNode.allNodes[i].color = new Color(0, 0, 1, 0.5F);
-            else if (tet.faces[2].visiblePts.Contains(HullNode.allNodes[i].transform.position))
-                HullNode.allNodes[i].color = new Color(1, 0, 1, 0.5F);
-            else if (tet.faces[3].visiblePts.Contains(HullNode.allNodes[i].transform.position))
-                HullNode.allNodes[i].color = new Color(1, 1, 0, 0.5F);
-            else
-                HullNode.allNodes[i].color = new Color(1, 0, 0, 0.5F);
-        }
-    }
-
     void AssignPtsToFaces(Pyramid tet)
     {
         for (int i = 0; i < pts.Count; ++i)
@@ -738,15 +728,6 @@ public class ConvexHull : MonoBehaviour
         newVertices.Clear();
         newUV.Clear();
         newTriangles.Clear();
-    }
-
-    void LateUpdate()
-    {
-        Mesh mesh = GetComponent<MeshFilter>().mesh;
-        mesh.Clear();
-        mesh.vertices = newVertices.ToArray();      // TODO -- inefficient
-        mesh.uv = newUV.ToArray();                  // TODO -- inefficient
-        mesh.triangles = newTriangles.ToArray();    // TODO -- inefficient
     }
 
     // fun animation
