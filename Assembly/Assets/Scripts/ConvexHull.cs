@@ -5,8 +5,24 @@ using System.Collections.Generic;
 
 public class ConvexHull
 {
-    // mesh variables
+    // creates a new game object with the convex hull mesh from the input pts
+    public static GameObject GetMeshFromPoints(List<Vector3> pts)
+    {
+        GameObject go = new GameObject("ConvexHull", typeof(MeshRenderer), typeof(MeshFilter));
+        Mesh mesh = go.GetComponent<MeshFilter>().mesh;
+        UpdateMeshFromPoints(pts, ref mesh);
+        return go;
+    }
 
+    // pass in the points to create the convex hull from and the mesh you want to fill with the new hull mesh definition
+    public static void UpdateMeshFromPoints(List<Vector3> pts, ref Mesh meshToFill)
+    {
+        ConvexHull hull = new ConvexHull(pts);
+        hull.UpdateMesh(ref meshToFill);
+    }
+
+
+    // mesh variables
     public List<Vector3> newVertices = new List<Vector3>();
     public List<Vector2> newUV = new List<Vector2>();
     public List<int> newTriangles = new List<int>();
