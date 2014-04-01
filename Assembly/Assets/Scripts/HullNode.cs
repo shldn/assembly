@@ -79,6 +79,7 @@ public class HullNode : MonoBehaviour {
         Debug.LogError(str);
     }
 
+    /*
     public static void CreateFromPtString()
     {
         string ptStr = @"(4.7, 17.3, 3.6)
@@ -103,4 +104,5 @@ public class HullNode : MonoBehaviour {
         }
         hullViewer.hull = new ConvexHull(nodePos);
     }
+    */
 }

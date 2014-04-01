@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum CamType {LOCKED, FREELOOK, ORBIT}
+public enum CamType {LOCKED, FREELOOK, ORBIT_CONTROLLED, ORBIT_DEMO}
 
 public class MainCameraControl : MonoBehaviour {
 
+    public static MainCameraControl Inst = null;
     Quaternion targetRot;
 
     Vector3 targetPos = Vector3.zero;
@@ -13,21 +14,25 @@ public class MainCameraControl : MonoBehaviour {
 
     float translateSmoothTime = 0.2f;
 
-    float cameraMoveSpeed = 4f;
+    float cameraMoveSpeed = 30f;
     float cameraRotateSpeed = 2f;
 
     Node hoveredNode = null;
-    Node selectedNode = null;
-    Assembly selectedAssembly = null;
+    public Node selectedNode = null;
+    public Assembly selectedAssembly = null;
 
-    CamType camType = CamType.FREELOOK;
-    float camOrbitDist = 15f;
+    public CamType camType = CamType.ORBIT_DEMO;
+    float camOrbitDist = 100f;
 
+    public bool showAssemReadouts = true;
 
     public Texture2D nodeSelectTex = null;
     public Texture2D assemblySelectTex = null;
 
     public DepthOfField34 depthOfField = null;
+
+    public Quaternion randomOrbit = Quaternion.identity;
+    float demoOrbitDistRunner = 0f;
 
 
     void Awake(){
@@ -36,87 +41,101 @@ public class MainCameraControl : MonoBehaviour {
 
 	// Use this for initialization
 	void Start(){
+        Inst = this;
+
 	    targetRot = transform.rotation;
 		targetPos = transform.position;
+        RenderSettings.fogColor = Camera.main.backgroundColor;
+        randomOrbit = Random.rotation;
 	} // End of Start().
 	
 	// Update is called once per frame
-	void Update(){
+	void FixedUpdate(){
+
+        float camZoomLoopTime = 60f;
 
         // Smoothly interpolate camera position/rotation.
-        transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime);
-
-        Vector3 tempEulers = transform.rotation.eulerAngles;
-        tempEulers.x = Mathf.SmoothDampAngle(tempEulers.x, targetRot.eulerAngles.x, ref smoothVelRotate.x, translateSmoothTime);
-        tempEulers.y = Mathf.SmoothDampAngle(tempEulers.y, targetRot.eulerAngles.y, ref smoothVelRotate.y, translateSmoothTime);
-        tempEulers.z = Mathf.SmoothDampAngle(tempEulers.z, targetRot.eulerAngles.z, ref smoothVelRotate.z, translateSmoothTime);
-        transform.eulerAngles = tempEulers;
+        transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime * Time.timeScale);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, 10f * (Time.deltaTime / Time.timeScale));
 
 
-        // check if selectedAssembly has been destroyed
-        if (selectedAssembly && selectedAssembly.physicsObject == null)
-            selectedAssembly = null;
 
-        if(selectedNode || selectedAssembly)
-            camType = CamType.ORBIT;
+        // Gallery-style demo-mode: camera orbits center, zooming in and out slowly.
+        if(camType == CamType.ORBIT_DEMO){
+            targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (Time.deltaTime / Time.timeScale));
+            camOrbitDist = 170f - (Mathf.Sin((demoOrbitDistRunner * Mathf.PI) / camZoomLoopTime) * 130f);
 
-        if((camType == CamType.ORBIT) && (!selectedNode && !selectedAssembly))
-            camType = CamType.FREELOOK;
+            demoOrbitDistRunner += Time.deltaTime;
+        }
+
 
         // Orbit a selected object
-        if(camType == CamType.ORBIT){
+        if((camType == CamType.ORBIT_CONTROLLED) || (camType == CamType.ORBIT_DEMO)){
             Vector3 orbitTarget = Vector3.zero;
+
+            // Orbit the selected entity.
             if(selectedAssembly)
                 orbitTarget = selectedAssembly.WorldPosition;
-            else
+            else if(selectedNode)
                 orbitTarget = selectedNode.worldPosition;
 
-            targetPos = orbitTarget + (targetRot * Vector3.forward) * -camOrbitDist;
+            // Camera's rotation becomes the rotation of the 'boom' on which it orbits.
+            targetPos = orbitTarget + (targetRot * -Vector3.forward) * camOrbitDist;
 
+            // Orbit distance can be modified using the mousewheel.
             camOrbitDist += camOrbitDist * -Input.GetAxis("Mouse ScrollWheel");
 
+            // Orbit can be changed by holding mouse button.
+            if(Input.GetMouseButton(1))
+                HandleMouseOrbit();
+
+            // Camera's focal point and distance changes based on camera orbit distance.
+            if(depthOfField){
+                depthOfField.focalPoint = Mathf.Lerp(depthOfField.focalPoint, Vector3.Distance(Camera.main.transform.position, orbitTarget), (Time.deltaTime / Time.timeScale) * 5f);
+                depthOfField.focalSize = Vector3.Distance(Camera.main.transform.position, orbitTarget) * 0.1f;
+            }
+
+            // Hitting 'space' will break out of orbit mode.
             if(Input.GetKeyDown(KeyCode.Space)){
                 selectedAssembly = null;
                 selectedNode = null;
                 camType = CamType.FREELOOK;
             }
-
-            depthOfField.focalPoint = Mathf.Lerp(depthOfField.focalPoint, Vector3.Distance(Camera.main.transform.position, orbitTarget), Time.deltaTime * 5f);
-            depthOfField.focalSize = Vector3.Distance(Camera.main.transform.position, orbitTarget) * 0.1f;
         }
-        // Toggle camera lock.
-        else if(Input.GetKeyDown(KeyCode.Space)){
-            if(camType == CamType.FREELOOK)
-                camType = CamType.LOCKED;
-            else if(camType == CamType.LOCKED)
-                camType = CamType.FREELOOK;
-        }
+        else if((camType == CamType.FREELOOK) || (camType == CamType.LOCKED)){
 
-        // Rotate selected assembly
-        if(selectedAssembly){
-            selectedAssembly.physicsObject.transform.rotation *= Quaternion.AngleAxis(WesInput.editHorizontalThrottle * 90f * Time.deltaTime, Camera.main.transform.up);
-            selectedAssembly.physicsObject.transform.rotation *= Quaternion.AngleAxis(WesInput.editVerticalThrottle * 90f * Time.deltaTime, Camera.main.transform.right);
-        }
-
-
-
-        // Pitch/yaw camera via mouse movement.
-        if((camType == CamType.FREELOOK) || (Input.GetMouseButton(1) && ((camType == CamType.ORBIT) || (camType == CamType.LOCKED)))){
-            targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * cameraRotateSpeed, -Vector3.right);
-            targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * cameraRotateSpeed, Vector3.up);
-        }
-
-        // Translate camera with arrow keys/wasd.
-        if(camType == CamType.FREELOOK){
             // Translate position with keyboard input.
-            targetPos += WesInput.forwardThrottle * transform.forward * cameraMoveSpeed * Time.deltaTime;
-            targetPos += WesInput.horizontalThrottle * transform.right * cameraMoveSpeed * Time.deltaTime;
-            targetPos += WesInput.verticalThrottle * transform.up * cameraMoveSpeed * Time.deltaTime;
+            targetPos += WesInput.forwardThrottle * transform.forward * cameraMoveSpeed * (Time.deltaTime / Time.timeScale);
+            targetPos += WesInput.horizontalThrottle * transform.right * cameraMoveSpeed * (Time.deltaTime / Time.timeScale);
+            targetPos += WesInput.verticalThrottle * transform.up * cameraMoveSpeed * (Time.deltaTime / Time.timeScale);
+
+            // Free-moving camera, moves with mouse and keyboard controls.
+            if(camType == CamType.FREELOOK){
+
+                // Camera rotates with mouse input.
+                HandleMouseOrbit();
+
+                // Space locks the camera in place.
+                if(Input.GetKeyDown(KeyCode.Space))
+                    camType = CamType.LOCKED;
+            }
+            // Locked camera does not move with mouse input.
+            else if(camType == CamType.LOCKED){
+
+                // Holding right mouse will rotate camera.
+                if(Input.GetMouseButton(1))
+                    HandleMouseOrbit();
+
+                // Space breaks out into freelook mode.
+                if(Input.GetKeyDown(KeyCode.Space))
+                    camType = CamType.FREELOOK;
+            }
         }
 
-        // Roll camera using Q and E
+        // Roll camera using Q and E... generally works in every mode.
         targetRot *= Quaternion.AngleAxis(WesInput.rotationThrottle * -cameraRotateSpeed, Vector3.forward);
 
+        // Determine if a node is being hovered over.
         hoveredNode = null;
         RaycastHit mouseRayHit = new RaycastHit();
         if(Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f)), out mouseRayHit)){
@@ -124,117 +143,238 @@ public class MainCameraControl : MonoBehaviour {
                 Node currentNode = Node.GetAll()[i];
                 if(currentNode.gameObject == mouseRayHit.collider.gameObject){
                     hoveredNode = currentNode;
+                    hoveredNode.assembly.Health += 0.5f * Time.deltaTime;
                     break;
                 }
             }
         }
-            // If clicking on 'nothing', deselect all.
-        else if(Input.GetMouseButtonDown(0)){
-            selectedNode = null;
-            selectedAssembly = null;
-        }
 
         // When clicking on a node...
-        if(Input.GetMouseButtonDown(0) && hoveredNode){
-            // If nothing is selected currently...
+        if(Input.GetMouseButtonDown(0) && hoveredNode && !NodeEngineering.Inst.uiLockout){
+            // If nothing is selected currently, select it's assembly.
             if(!selectedNode && !selectedAssembly){
-                selectedAssembly = hoveredNode.assembly;
-                Refocus(selectedAssembly);
+                FocusOn(hoveredNode.assembly);
             }
             // If a node is selected currently...
             else if(selectedNode){
                 // If you click again on the selected node, select it's assembly.
-                if(hoveredNode == selectedNode){
-                    selectedAssembly = hoveredNode.assembly;
-                    Refocus(selectedAssembly);
-                    selectedNode = null;
-                }
-                // If clicking on a node in the same assembly, select that node.
-                else if(hoveredNode.assembly == selectedNode.assembly){
-                    selectedNode = hoveredNode;
-                    Refocus(selectedNode);
-                }
+                if(hoveredNode == selectedNode)
+                    FocusOn(hoveredNode.assembly);
+                // If clicking on another node in the same assembly, select that other node.
+                else if(hoveredNode.assembly == selectedNode.assembly)
+                    FocusOn(hoveredNode);
                 // Otherwise it's a node in a different assembly... so select that one.
-                else{
-                    selectedAssembly = hoveredNode.assembly;
-                    Refocus(selectedAssembly);
-                    selectedNode = null;
-                }
+                else
+                    FocusOn(hoveredNode.assembly);
             }
             // If an assembly is selected...
             else{
                 // If clicking on a node in the selected assembly, select that.
-                if(hoveredNode.assembly == selectedAssembly){
-                    selectedNode = hoveredNode;
-                    Refocus(selectedNode);
-                    selectedAssembly = null;
-                }
+                if(hoveredNode.assembly == selectedAssembly)
+                    FocusOn(hoveredNode);
                 // Otherwise, select the hovered node's assembly.
                 else
-                    selectedAssembly = hoveredNode.assembly;
-                    Refocus(selectedAssembly);
+                    FocusOn(hoveredNode.assembly);
             }
+        }
+
+        // Return to demo mode with Enter.
+        if(Input.GetKey(KeyCode.Return)){
+            randomOrbit = Random.rotation;
+            selectedAssembly = null;
+            selectedNode = null;
+            demoOrbitDistRunner = 0f;
+
+            camType = CamType.ORBIT_DEMO;
         }
 
 	} // End of Update().
 
 
-    void Refocus(Vector3 pos){
+    void HandleMouseOrbit(){
+        targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * cameraRotateSpeed, -Vector3.right);
+        targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * cameraRotateSpeed, Vector3.up);
+    } // End of HandleOrbit().
+
+
+    void FocusOn(Vector3 pos){
         Vector3 vectorToPos = pos - transform.position;
         camOrbitDist = vectorToPos.magnitude;
         targetRot = Quaternion.LookRotation(vectorToPos, transform.up);
+
+        camType = CamType.ORBIT_CONTROLLED;
     }
-    void Refocus(Node node){
-        Refocus(node.worldPosition);   
+    void FocusOn(Node node){
+        FocusOn(node.worldPosition);
+        
+        selectedAssembly = null;
+        selectedNode = node;
+        camType = CamType.ORBIT_CONTROLLED;
     }
-    void Refocus(Assembly assembly){
-        Refocus(assembly.physicsObject.transform.position);   
-    }// End of Refocus().
+    void FocusOn(Assembly assembly){
+        if(!assembly || !assembly.physicsObject)
+            return;
+
+        selectedNode = null;
+        selectedAssembly = assembly;
+        FocusOn(assembly.physicsObject.transform.position);   
+    }// End of FocusOn().
 
 
     void OnGUI(){
-        if(hoveredNode){
-            GUI.color = Color.white;
-            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-            GUI.Label(CenteredSquare(hoveredNode), nodeSelectTex);
+
+        // Assembly health/name/etc. readouts.
+        if(showAssemReadouts){
+            for(int i = 0; i < Assembly.GetAll().Count; i++){
+                Assembly currentAssembly = Assembly.GetAll()[i];
+                Vector3 assemblyScreenPos = Camera.main.WorldToScreenPoint(Assembly.GetAll()[i].WorldPosition);
+
+                if(assemblyScreenPos.z <= 0f)
+                    continue;
+
+                float guiSizeMult = 40f / Vector3.Distance(Camera.main.transform.position, currentAssembly.WorldPosition);
+
+                float barWidth = 50f * guiSizeMult;
+                float barHeight = 6f * guiSizeMult;
+                float barSpace = 3f * guiSizeMult;
+
+                if(barWidth < 4f)
+                    continue;
+
+                float guiStuffY = Screen.height - assemblyScreenPos.y;
+
+                // Name
+                GUI.color = Color.white;
+                GUI.skin.label.fontSize = Mathf.CeilToInt(guiSizeMult * 6);
+                Rect nameRect = GUIHelper.Inst.CenteredRect(assemblyScreenPos.x, Screen.height - (assemblyScreenPos.y + 100f + (guiSizeMult * 8f)), 500f, 200f);
+                GUI.skin.label.fontStyle = FontStyle.Bold;
+                GUI.skin.label.alignment = TextAnchor.LowerCenter;
+                GUI.Label(nameRect, currentAssembly.name);
+
+                // Health bar
+                GUI.color = new Color(1f, 1f, 1f, 0.2f);
+                GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight);
+                GUI.color = new Color(1f, 1f, 1f, 1f);
+                GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight, Mathf.Clamp01(currentAssembly.Health));
+
+                // Reproduction bar
+                if(currentAssembly.Health > 1f){
+                    guiStuffY += barHeight + barSpace;
+
+                    GUI.color = new Color(0f, 1f, 0f, 0.2f);
+                    GUIHelper.Inst.DrawCenteredRect(assemblyScreenPos.x, guiStuffY, barWidth, barHeight * 0.5f);
+                    GUI.color = new Color(0f, 1f, 0f, 1f);
+                    GUIHelper.Inst.DrawCenteredFillBar(assemblyScreenPos.x, guiStuffY, barWidth, barHeight * 0.5f, Mathf.Clamp01(currentAssembly.Health - 1f));
+                }
+            }
+        }
+
+        // Camera controls
+        GUI.color = Color.white;
+        float guiHeight = 18f;
+        float guiGutter = 10f;
+        Rect controlsRect = new Rect(Screen.width - 225, 15f, 200, guiHeight);
+
+        Rect centeredInfoRect = new Rect(0f, -Screen.height * 0.05f, Screen.width, Screen.height);
+        GUI.skin.label.alignment = TextAnchor.LowerCenter;
+        
+        string cameraTypeLabel = "";
+        string cameraInfo = "";
+        if(camType == CamType.FREELOOK){
+            cameraTypeLabel += "Free camera";
+            cameraInfo += "Rotate the camera using the mouse, Q, and E.\n";
+            cameraInfo += "Use W, A, S, and D to move the camera around.\n";
+            cameraInfo += "Click on an assembly to select it.\n";
+            cameraInfo += "Press SPACE to lock the camera in place.\n";
+            cameraInfo += "\nPress ENTER to return to demonstration mode.\n";
+        }
+        if(camType == CamType.LOCKED){
+            cameraTypeLabel += "Locked camera";
+            cameraInfo += "Use W, A, S, and D to move the camera around.\n";
+            cameraInfo += "Click on an assembly to select it.\n";
+            cameraInfo += "Press SPACE to free the rotation of the camera.\n";
+            cameraInfo += "\nPress ENTER to return to demonstration mode.\n";
+        }
+        if(camType == CamType.ORBIT_CONTROLLED){
+            cameraTypeLabel += "Case-Orbit camera";
+            cameraInfo += "Click on a node (or another assembly) to select it.\n";
+            cameraInfo += "Use the MOUSEWHEEL to zoom in and out.";
+            if(selectedAssembly){
+                cameraInfo += "Use the arrow keys to rotate this assembly manually.\n";
+            }
+            else if(selectedNode){
+                cameraInfo += "Click on the selected node to select its assembly.\n";
+                cameraInfo += "Drag the vector handles to change this node's traits.\n";
+            }
+            cameraInfo += "Hold right-click to rotate the camera.\n";
+            cameraInfo += "\nPress SPACE to disengage.\n";
+            cameraInfo += "Press ENTER to return to demonstration mode.\n";
+        }
+        if(camType == CamType.ORBIT_DEMO){
+            cameraTypeLabel += "Exhibition Camera";
+            cameraInfo += "Click on an assembly to investigate it.\n";
+        }
+
+
+        GUI.skin.label.fontStyle = FontStyle.Normal;
+        GUI.skin.label.fontSize = 10;
+        GUI.Label(centeredInfoRect, cameraInfo);
+        centeredInfoRect.y += 15f;
+
+        GUI.skin.label.fontStyle = FontStyle.Bold;
+        GUI.skin.label.fontSize = 13;
+        GUI.Label(centeredInfoRect, cameraTypeLabel);
+
+
+        
+        if(GameManager.Inst.showControls){
+
+            showAssemReadouts = GUI.Toggle(controlsRect, showAssemReadouts, "Show Assembly Info");
+            controlsRect.y += guiHeight;
+
+            /*
+            bool camLocked = camType == CamType.LOCKED;
+            if(camType != CamType.ORBIT){
+                camLocked = GUI.Toggle(controlsRect, camLocked, "Camera Locked");
+        
+                if(camLocked)
+                    camType = CamType.LOCKED;
+                else if(!camLocked)
+                    camType = CamType.FREELOOK;
+            }
+            */
         }
 
         if(selectedNode){
             GUI.color = Color.white;
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-            GUI.Label(CenteredSquare(selectedNode), nodeSelectTex);
+            GUI.Label(MathUtilities.CenteredSquare(selectedNode), nodeSelectTex);
         }
 
-        if(selectedAssembly){
+        if(!NodeEngineering.Inst.uiLockout){
+            if(hoveredNode){
+                GUI.color = new Color(1f, 1f, 1f, 0.3f);
+                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(MathUtilities.CenteredSquare(hoveredNode), nodeSelectTex);
+            }
             /*
-            // Selection ring
-            GUI.color = new Color(0.5f, 1f, 0.5f, 0.2f);
-            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-            GUI.Label(CenteredSquare(selectedAssembly), assemblySelectTex);
+            if(selectedAssembly){
+                // Selection ring
+                GUI.color = new Color(0.5f, 1f, 0.5f, 0.2f);
+                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(MathUtilities.CenteredSquare(selectedAssembly), assemblySelectTex);
             
 
-            GUI.color = new Color(1f, 1f, 1f, 0.2f);
-            for(int i = 0; i < selectedAssembly.nodes.Count; i++){
-                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-                GUI.Label(CenteredSquare(selectedAssembly.nodes[i]), nodeSelectTex);
+                GUI.color = new Color(1f, 1f, 1f, 0.2f);
+                for(int i = 0; i < selectedAssembly.nodes.Count; i++){
+                    GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                    GUI.Label(MathUtilities.CenteredSquare(selectedAssembly.nodes[i]), nodeSelectTex);
+                }
             }
             */
         }
-
     } // End of OnGUI().
 
-
-    private Rect CenteredSquare(float x, float y, float size){
-        return new Rect(x - (size * 0.5f), Screen.height - (y + (size * 0.5f)), size, size);
-    }
-    private Rect CenteredSquare(Node node){
-        Vector3 nodeScreenPos = Camera.main.WorldToScreenPoint(node.worldPosition);
-        return CenteredSquare(nodeScreenPos.x, nodeScreenPos.y, 2000f / Vector3.Distance(Camera.main.transform.position, node.worldPosition));
-    }
-    private Rect CenteredSquare(Assembly assembly){
-        Vector3 assemblyScreenPos = Camera.main.WorldToScreenPoint(assembly.physicsObject.transform.position);
-        return CenteredSquare(assemblyScreenPos.x, assemblyScreenPos.y, 12000f / Vector3.Distance(Camera.main.transform.position, assembly.physicsObject.transform.position));
-    }// End of CenteredSquare().
 
 } // End of MainCameraControl.
  

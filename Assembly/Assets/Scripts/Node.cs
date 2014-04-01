@@ -19,12 +19,17 @@ public class Node {
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
 
+    public bool doomed = false;
+    public Vector3 sendOffVector = Vector3.zero;
+    private float disappearTimer = Random.Range(0f, 1f);
+
     public Quaternion worldRotation = Quaternion.identity;
+    public Quaternion localRotation = Quaternion.identity;
 
     // Metabolism ------------------------------------------------------------------------ ||
-    public static float MAX_ENERGY = 10.0f;
-    public float energy = MAX_ENERGY;
-    public float consumeRange = 10; //how far away can it consume?
+    public static float MAX_ENERGY = 10.0f; //not used?
+    public float energy = MAX_ENERGY; //not used?
+    public float consumeRange = 30; //how far away can it consume?
 
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
@@ -39,7 +44,7 @@ public class Node {
     public bool propelling = false; //red node moving
 
     // debug
-    public GameObject jetEngine = null;
+    public GameObject propulsionEffect = null;
 
     public static Color stemColor = new Color(0.4f, 0.4f, 0.4f, 1f);
     public static Color senseColor = new Color(0.64f, 0.8f, 0.44f, 1f);
@@ -90,13 +95,17 @@ public class Node {
 
     // Copy Constructor - Make new node with current node position and orientation
     public Node Duplicate() {
-        return new Node(localHexPosition);
+        Node newNode = new Node(localHexPosition);
+        newNode.nodeProperties.actuateVector = nodeProperties.actuateVector;
+        newNode.nodeProperties.fieldOfView = nodeProperties.fieldOfView;
+        newNode.nodeProperties.senseVector = nodeProperties.senseVector;
+        return newNode;
     }
 
     // Set-up of basic Node stuff.
     private void Initialize(Vector3 worldPos){
         worldPosition = worldPos;
-        worldRotation = Random.rotation;
+        localRotation = Random.rotation;
 
         allNodes.Add(this);
 
@@ -104,44 +113,72 @@ public class Node {
 
 
     public void UpdateType(){
-        int neighborCount = GetNeighbors().Count;
+        List<Node> neighbors = GetNeighbors();
+        int neighborCount = (neighbors == null) ? 0 : neighbors.Count;
+
             switch(neighborCount){
                 case 1:
                     nodeType = NodeType.sense;
-                    gameObject.renderer.material.color = Node.senseColor;
                     break;
                 case 2:
                     nodeType = NodeType.actuate;
-                    gameObject.renderer.material.color = Node.actuatorColor;
                     break;
                 case 3:
                     nodeType = NodeType.control;
-                    gameObject.renderer.material.color = Node.controlColor;
                     break;
                 default:
                     nodeType = NodeType.none;
-                    gameObject.renderer.material.color = Node.stemColor;
                     break;
             }
     } // End of UpdateType().
 
 
+    public void UpdateColor(){
+        switch(nodeType){
+            case NodeType.sense:
+                gameObject.renderer.material.color = Node.senseColor;
+                break;
+            case NodeType.actuate:
+                gameObject.renderer.material.color = Node.actuatorColor;
+                break;
+            case NodeType.control:
+                gameObject.renderer.material.color = Node.controlColor;
+                break;
+            default:
+                gameObject.renderer.material.color = Node.stemColor;
+                break;
+        }
+        if(!validLogic)
+            gameObject.renderer.material.color = Color.Lerp(gameObject.renderer.material.color, new Color(0.2f, 0.2f, 0.2f), 0.8f);
+    } // End of UpdateColor().
+
+
     public void UpdateTransform(){
+
+        // Destroy Node if it's dead and has reached the end of it's DissapearRate timer.
+        if(doomed){
+            disappearTimer -= Time.deltaTime;
+
+            if(disappearTimer <= 0f)
+                Destroy();
+
+            worldPosition += sendOffVector * Time.deltaTime;
+        }
+            
 
         // Initialize graphic
         if( !gameObject ){
             gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
         }
 
-        
-
         if(assembly){
-            worldPosition = assembly.WorldPosition + (assembly.physicsObject.transform.rotation * HexUtilities.HexToWorld(localHexPosition));
-
-            // Update physical location
-            gameObject.transform.position = worldPosition;
-            gameObject.transform.rotation = assembly.physicsObject.transform.rotation * worldRotation;
+            worldPosition = assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition));
+            worldRotation = assembly.WorldRotation * localRotation;
         }
+
+        // Update physical location
+        gameObject.transform.position = worldPosition;
+        gameObject.transform.rotation = worldRotation;
 
         // Sense node view arc ----------------------------------------------------------
         // Dynamically update existence of senseFieldBillboard.
@@ -192,17 +229,17 @@ public class Node {
         // debug
         // Actuate node jet engine prop ------------------------------------------------- ||
         // Dynamically update existence of jetEngine.
-        if(((nodeType != NodeType.actuate) || !validLogic) && jetEngine)
-            GameObject.Destroy(jetEngine);
+        if(((nodeType != NodeType.actuate) || !validLogic) && propulsionEffect)
+            GameObject.Destroy(propulsionEffect);
 
-        if((nodeType == NodeType.actuate) && validLogic && !jetEngine)
-            jetEngine = GameObject.Instantiate(PrefabManager.Inst.jetEngine, worldPosition, Quaternion.identity) as GameObject;
+        if((nodeType == NodeType.actuate) && validLogic && !propulsionEffect)
+            propulsionEffect = GameObject.Instantiate(PrefabManager.Inst.jetEngine, worldPosition, Quaternion.identity) as GameObject;
 
-        if(jetEngine){
+        if(propulsionEffect){
             Debug.DrawRay(worldPosition, worldAcuateRot * Vector3.forward * 3f, Color.red);
 
-            jetEngine.transform.position = worldPosition + (worldAcuateRot * Vector3.forward) * -0.5f;
-            jetEngine.transform.rotation = worldAcuateRot;
+            propulsionEffect.transform.position = worldPosition + (worldAcuateRot * Vector3.forward) * -0.5f;
+            propulsionEffect.transform.rotation = worldAcuateRot;
         }
     } // End of UpdateTransform(). 
 
@@ -212,8 +249,8 @@ public class Node {
             GameObject.Destroy(gameObject);
         if(senseFieldBillboard)
             GameObject.Destroy(senseFieldBillboard);
-        if(jetEngine)
-            GameObject.Destroy(jetEngine);
+        if(propulsionEffect)
+            GameObject.Destroy(propulsionEffect);
         if(assembly)
             assembly.RemoveNode(this);
 
@@ -262,6 +299,33 @@ public class Node {
     } // End of GetLogicConnections().
 
 
+    // Returns neighbors that this node can reseive a signal from.
+    public List<Node> GetReverseLogicConnections(){
+        // No assembly... no neighbors... no logic!
+        if(!assembly)
+            return null;
+
+        List<Node> logicNodes = new List<Node>();
+        List<Node> neighbors = GetNeighbors();
+
+        for(int i = 0; i < neighbors.Count; i++){
+            Node currentNeighbor = neighbors[i];
+
+            // Control transmits to actuate
+            if(nodeType == NodeType.actuate)
+                if(currentNeighbor.nodeType == NodeType.control)
+                    logicNodes.Add(currentNeighbor);
+
+            // Actuate transmits to other actuate
+            if(nodeType == NodeType.actuate)
+                if(currentNeighbor.nodeType == NodeType.actuate)
+                    logicNodes.Add(currentNeighbor);
+        }
+
+        return logicNodes;
+    } // End of GetLogicConnections().
+
+
     // Returns all nodes 'down the line' that this node would propogate a signal to.
     public List<Node> GetFullLogicNet(){
         // No assembly... no neighbors... no logic!
@@ -272,6 +336,46 @@ public class Node {
 
         // Churn through (logical) nodes to test for new connections...
         List<Node> nodesToTest = GetLogicConnections();
+
+        int logicDumpCatch = 0;
+
+        while(nodesToTest.Count > 0){
+            Node currentNode = nodesToTest[0];
+            logicNodes.Add(currentNode);
+            nodesToTest.Remove(currentNode);
+
+            // Test the node for logic neighbors.
+            List<Node> newNeighbors = currentNode.GetLogicConnections();
+            for(int i = 0; i < newNeighbors.Count; i++){
+                Node curNewNeighbor = newNeighbors[i];
+                // If a logic neighbor hasn't been captured, add it to logicNodes and the nodesToTest pile.
+                if((curNewNeighbor != this) && !logicNodes.Contains(curNewNeighbor)){
+                    nodesToTest.Add(curNewNeighbor);
+                }
+            }
+
+            // debug
+            logicDumpCatch++;
+            if(logicDumpCatch > 999){
+                MonoBehaviour.print("LogicNet while() loop is stuck!");
+                break;
+            }
+        }
+
+        return logicNodes;
+    } // End of GetFullLogicNet().
+
+
+    // Returns all nodes 'down the line' that this node would propogate a signal to.
+    public List<Node> GetFullReverseLogicNet(){
+        // No assembly... no neighbors... no logic!
+        if(!assembly)
+            return null;
+
+        List<Node> logicNodes = new List<Node>();
+
+        // Churn through (logical) nodes to test for new connections...
+        List<Node> nodesToTest = GetReverseLogicConnections();
 
         int logicDumpCatch = 0;
 
@@ -428,7 +532,7 @@ public class Node {
     // Save/load -------------------------------------------------------------------------||
 
     // The string representation of this class for file saving (could use ToString, but want to be explicit)
-    public string ToFileString(int format)
+    /*public string ToFileString(int format)
     {
         return localHexPosition.ToString() + nodeProperties.ToString();
     }
@@ -439,7 +543,7 @@ public class Node {
         IntVector3 pos = IOHelper.IntVector3FromString(str.Substring(0,splitIdx+1));
         NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
         return new Node(pos, props);
-    }
+    }*/
 
     public float GetBurnRate(){
         switch(nodeType){
@@ -468,7 +572,7 @@ public class Node {
     public bool SenseDetectFoodRange(FoodPellet food){
         Vector3 foodDist = food.worldPosition - this.worldPosition;
         //if mag^2 < consume^2
-        if(foodDist.sqrMagnitude < consumeRange*consumeRange ){
+        if(foodDist.sqrMagnitude < (consumeRange * consumeRange)){
             return true;
         }
         return false;
@@ -508,7 +612,7 @@ public struct NodeProperties {
         actuateVector = _actuateVector;
     } // End of NodeProperties constructor.
 
-    public NodeProperties(string str){
+    /*public NodeProperties(string str){
 
         senseVector = Quaternion.identity;
         fieldOfView = 45.0f;
@@ -534,7 +638,7 @@ public struct NodeProperties {
                     break;
             }
         }
-    } // End of NodeProperties constructor.
+    } // End of NodeProperties constructor.*/
 
     public override string ToString()
     {
@@ -548,10 +652,10 @@ public struct NodeProperties {
 //burn rate for different types: none, sense, actuate- static, actuate- woring, control
 public static class BurnRate{
     public static float none = 0.0f;
-    public static float sense = 0.1f;
-    public static float actuate = 0.2f;
-    public static float control = 0.3f;
-    public static float actuateValid = 0.4f;
-    public static float senseValid = 0.15f;
-    public static float controlValid = 0.5f;
+    public static float sense = 0.01f;
+    public static float actuate = 0.02f;
+    public static float control = 0.03f;
+    public static float actuateValid = 0.04f;
+    public static float senseValid = 0.015f;
+    public static float controlValid = 0.05f;
 } // End of BurnRate

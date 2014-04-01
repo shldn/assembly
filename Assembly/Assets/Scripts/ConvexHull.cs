@@ -55,6 +55,12 @@ public class ConvexHull
 
     void ComputeHull()
     {
+        if (pts.Count < 4)
+        {
+            Debug.LogError("Convex Hull expects at least 4 points");
+            return;
+        }
+
         used = new List<bool>();
         for (int i = 0; i < pts.Count; ++i)
             used.Add(false);
