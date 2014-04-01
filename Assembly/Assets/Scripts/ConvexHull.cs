@@ -2,315 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public struct FaceEdgeIdxPair
-{
-    public FaceEdgeIdxPair(Face f_, int ei_) { f = f_; ei = ei_; }
-    public Face f;
-    public int ei;
-}
-
-public class Helpers
-{
-    // basePts are assumed to be counter-clockwise so they point toward apex
-    // this does not return the base face, only those connected to the apex
-    public static List<Face> GetPyramidFaces(List<Vector3> pts, List<FaceEdgeIdxPair> baseEdges, int apexIdx)
-    {
-        List<Face> faces = new List<Face>();
-        for (int i = 0; i < baseEdges.Count; ++i)
-        {
-            Face baseF = baseEdges[i].f;
-            int ei = baseEdges[i].ei;
-            int i1 = baseF.idx[ei];
-            int i2 = baseF.idx[(ei + 1) % 3];
-            Face newF = new Face(pts, i1, i2, apexIdx);
-
-            // hook up adjacency pointers
-            Face adjFace = baseF.adjFace[ei];
-            newF.adjFace[0] = adjFace;
-
-            // adj face will have indices in the opposite direction
-            adjFace.adjFace[adjFace.GetAdjacentIdxEdgeStartsWithVertIdx(i2)] = newF;
-            baseF.adjFace[ei] = newF; // for sanity checks
-            
-            // adjFace[1] is the next iteration, adjFace[2] is the previous
-            if (faces.Count > 0)
-            {
-                newF.adjFace[2] = faces[faces.Count - 1];
-                faces[faces.Count - 1].adjFace[1] = newF;
-            }
-            faces.Add(newF);
-        }
-
-        // hook up the first and last adjacency
-        faces[0].adjFace[2] = faces[faces.Count - 1];
-        faces[faces.Count - 1].adjFace[1] = faces[0];
-
-        for(int i=0; i < faces.Count; ++i)
-            faces[i].AdjFaceCheck();
-        return faces;
-    }
-
-    public static bool AddToPtSet(List<Face> faces, Vector3 pt, int idx)
-    {
-        int bestIdx = -1;
-        float bestDist = float.MaxValue;
-        for (int i = 0; i < faces.Count; ++i)
-        {
-            float dist = faces[i].GetDistanceToPoint(pt);
-            if (dist > 0 && dist < bestDist)
-            {
-                bestIdx = i;
-                bestDist = dist;
-            }
-        }
-        bool found = bestIdx > -1;
-        if (found)
-        {
-            faces[bestIdx].visiblePts.Add(pt);
-            faces[bestIdx].visibleIdxs.Add(idx);
-        }
-        return found;
-    }
-}
-
-public class Face
-{
-
-    public List<Vector3> pts = new List<Vector3>(3);
-    public List<Vector3> visiblePts = new List<Vector3>();
-    public List<int> visibleIdxs = new List<int>();
-    public List<int> idx = new List<int>(3); // vert idx in the original pt list
-    public List<Face> adjFace = new List<Face>(3);
-    Plane p;
-    public bool removeMe = false;
-
-    public Face(List<Vector3> pts_, int idx1, int idx2, int idx3)
-    {
-        pts.Add(pts_[idx1]);
-        pts.Add(pts_[idx2]);
-        pts.Add(pts_[idx3]);
-        idx.Add(idx1);
-        idx.Add(idx2);
-        idx.Add(idx3);
-        adjFace.Add(null);
-        adjFace.Add(null);
-        adjFace.Add(null);
-        p = new Plane(pts[0], pts[1], pts[2]);
-    }
-
-    public bool Equals(Face rhs)
-    {
-        return idx[0] == rhs.idx[0] && idx[1] == rhs.idx[1] && idx[2] == rhs.idx[2];
-    }
-
-    public float GetDistanceToPoint(Vector3 pt)
-    {
-        return -p.GetDistanceToPoint(pt);
-    }
-
-    public bool IsPtVisible(Vector3 pt)
-    {
-        return GetDistanceToPoint(pt) >= 0;
-    }
-
-    public void GetFurthestVisible(ref Vector3 pos, ref int idx)
-    {
-        int bestIdx = 0;
-        float bestDist = -1.0f;
-        for (int i = 0; i < visiblePts.Count; ++i)
-        {
-            float dist = GetDistanceToPoint(visiblePts[i]);
-            if (dist > 0 && dist < bestDist)
-            {
-                bestIdx = i;
-                bestDist = dist;
-            }
-        }
-        pos = visiblePts[bestIdx];
-        idx = visibleIdxs[bestIdx];
-    }
-
-    public string IdxStr()
-    {
-        return idx[0] + " " + idx[1] + " "  + idx[2];
-    }
-
-    public int GetEdgeIdx(Face f)
-    {
-        for (int i = 0; i < adjFace.Count; ++i)
-            if (adjFace[i] == f)
-                return i;
-
-        // edge not found, print some debugging info
-        Debug.LogError("Edge not found");
-        for(int i=0; i < idx.Count; ++i)
-            Debug.LogError("\t" + idx[i]);
-        Debug.LogError("Adj: ");
-        for(int i=0; i < adjFace.Count; ++i)
-            Debug.LogError(i + " adj: " + adjFace[i].idx[0] + " " + adjFace[i].idx[1] + " " + adjFace[i].idx[2]);
-        return -1;
-    }
-
-    public int GetEdgeIdxCount(Face f)
-    {
-        int count = 0;
-        for (int i = 0; i < adjFace.Count; ++i)
-            if (adjFace[i] == f)
-                count++;
-        return count;
-    }
-
-    // returns the next face that shares the first edge vert with this Face, but not an edge, (adjacent to the adjacent)
-    public Face GetNextAdjacent(int edgeIdx)
-    {
-        int nextEdgeIdx = GetNextAdjacentEdgeIdx(edgeIdx);
-        return adjFace[edgeIdx].adjFace[nextEdgeIdx];
-    }
-
-    public int GetNextAdjacentEdgeIdx(int edgeIdx)
-    {
-        return (adjFace[edgeIdx].GetEdgeIdx(this) + 1) % 3;
-    }
-
-    // Gets the adjacent face that has an edge that starts with the supplied vertIdx
-    public Face GetAdjacentEdgeStartsWithVertIdx(int vertIdx)
-    {
-        int idx = GetAdjacentIdxEdgeStartsWithVertIdx(vertIdx);
-        return (idx >= 0) ? adjFace[idx] : null;
-    }
-
-    public int GetAdjacentIdxEdgeStartsWithVertIdx(int vertIdx)
-    {
-        for (int i = 0; i < idx.Count; ++i)
-            if (vertIdx == idx[i])
-                return i;
-        return -1;
-    }
-
-    public bool AdjFaceCheck()
-    {
-        for (int i = 0; i < adjFace.Count; ++i)
-            if (adjFace[i].GetEdgeIdxCount(this) != GetEdgeIdxCount(adjFace[i]))
-            {
-                Debug.LogError("bad adjFace assignment: " + i + " " + adjFace[i].IdxStr() + " doesn\'t know about " + this.IdxStr() + " count: " + adjFace[i].GetEdgeIdxCount(this) + " != " + GetEdgeIdxCount(adjFace[i]));
-                return false;
-            }
-        return true;
-    }
-}
-
-public class Pyramid
-{
-    public List<Face> faces = new List<Face>(4);
-    private List<int> idx = new List<int>(); // temp for mesh debugging
-
-    // refactor to use Faces
-    public Pyramid(List<Vector3> pts, List<int> idxs)
-    {
-        idx = idxs;
-        Vector3 midPt = 0.25f * (pts[idxs[0]] + pts[idxs[1]] + pts[idxs[2]] + pts[idxs[3]]);
-
-        // determine correct orientation of 0,1,2
-        // want to face away from the midpoint
-         Plane p = new Plane(pts[idxs[0]], pts[idxs[1]], pts[idxs[2]]);
-         if (!p.GetSide(midPt))
-         {
-             int temp = idxs[2];
-             idxs[2] = idxs[1];
-             idxs[1] = temp;
-         }
-         faces.Add(new Face(pts, idxs[0], idxs[1], idxs[2]));
-         faces.Add(new Face(pts, idxs[3], idxs[1], idxs[0]));
-         faces.Add(new Face(pts, idxs[3], idxs[2], idxs[1]));
-         faces.Add(new Face(pts, idxs[3], idxs[0], idxs[2]));
-
-        // setup adjacency pointers
-        faces[0].adjFace[0] = faces[1]; // 0-1
-        faces[0].adjFace[1] = faces[2]; // 1-2
-        faces[0].adjFace[2] = faces[3]; // 2-0
-
-        faces[1].adjFace[0] = faces[2]; // 3-1
-        faces[1].adjFace[1] = faces[0]; // 1-0
-        faces[1].adjFace[2] = faces[3]; // 0-3
-
-        faces[2].adjFace[0] = faces[3]; // 3-2
-        faces[2].adjFace[1] = faces[0]; // 2-1
-        faces[2].adjFace[2] = faces[1]; // 1-3
-
-        faces[3].adjFace[0] = faces[1]; // 3-0
-        faces[3].adjFace[1] = faces[0]; // 0-2
-        faces[3].adjFace[2] = faces[2]; // 2-3
-
-    }
-
-    public void AdjFaceCheck()
-    {
-        // adjFace sanity check
-        for (int i = 0; i < faces.Count; ++i)
-            faces[i].AdjFaceCheck();
-    }
-
-    public void PushFaces(ref LinkedList<Face> faceStack)
-    {
-        for(int i=0; i < faces.Count; ++i)
-            faceStack.AddLast(faces[i]);
-    }
-
-    public bool AddToPtSet(Vector3 pt, int idx)
-    {
-        int bestIdx = -1;
-        float bestDist = float.MaxValue;
-        for (int i = 0; i < faces.Count; ++i)
-        {
-            float dist = faces[i].GetDistanceToPoint(pt);
-            if (dist > 0 && dist < bestDist)
-            {
-                bestIdx = i;
-                bestDist = dist;
-            }
-        }
-        bool found = bestIdx > -1;
-        if (found)
-        {
-            faces[bestIdx].visiblePts.Add(pt);
-            faces[bestIdx].visibleIdxs.Add(idx);
-        }
-        return found;
-    }
-
-
-    // Fill the passed in Lists with mesh info for this pyramid.
-    public void FillMeshInfo(List<Vector3> origPts, List<Vector3> newVertices, List<int> newTriangles, List<Vector2> newUV)
-    {
-        newVertices.Add(origPts[idx[0]]);
-        newVertices.Add(origPts[idx[1]]);
-        newVertices.Add(origPts[idx[2]]);
-        newVertices.Add(origPts[idx[3]]);
-
-        // tri 1
-        newTriangles.Add(0);
-        newTriangles.Add(1);
-        newTriangles.Add(2);
-
-        // tri 2
-        newTriangles.Add(0);
-        newTriangles.Add(1);
-        newTriangles.Add(3);
-
-        // tri 3
-        newTriangles.Add(1);
-        newTriangles.Add(2);
-        newTriangles.Add(3);
-
-        // tri 4
-        newTriangles.Add(2);
-        newTriangles.Add(0);
-        newTriangles.Add(3);
-
-        for (int i = 0; i < newVertices.Count; ++i)
-            newUV.Add(new Vector2(0, 0));
-    }
-}
 
 public class ConvexHull
 {
@@ -785,5 +476,316 @@ public class ConvexHull
             }
         }
         return bestIdx;
+    }
+}
+
+
+public struct FaceEdgeIdxPair
+{
+    public FaceEdgeIdxPair(Face f_, int ei_) { f = f_; ei = ei_; }
+    public Face f;
+    public int ei;
+}
+
+public class Helpers
+{
+    // basePts are assumed to be counter-clockwise so they point toward apex
+    // this does not return the base face, only those connected to the apex
+    public static List<Face> GetPyramidFaces(List<Vector3> pts, List<FaceEdgeIdxPair> baseEdges, int apexIdx)
+    {
+        List<Face> faces = new List<Face>();
+        for (int i = 0; i < baseEdges.Count; ++i)
+        {
+            Face baseF = baseEdges[i].f;
+            int ei = baseEdges[i].ei;
+            int i1 = baseF.idx[ei];
+            int i2 = baseF.idx[(ei + 1) % 3];
+            Face newF = new Face(pts, i1, i2, apexIdx);
+
+            // hook up adjacency pointers
+            Face adjFace = baseF.adjFace[ei];
+            newF.adjFace[0] = adjFace;
+
+            // adj face will have indices in the opposite direction
+            adjFace.adjFace[adjFace.GetAdjacentIdxEdgeStartsWithVertIdx(i2)] = newF;
+            baseF.adjFace[ei] = newF; // for sanity checks
+
+            // adjFace[1] is the next iteration, adjFace[2] is the previous
+            if (faces.Count > 0)
+            {
+                newF.adjFace[2] = faces[faces.Count - 1];
+                faces[faces.Count - 1].adjFace[1] = newF;
+            }
+            faces.Add(newF);
+        }
+
+        // hook up the first and last adjacency
+        faces[0].adjFace[2] = faces[faces.Count - 1];
+        faces[faces.Count - 1].adjFace[1] = faces[0];
+
+        for (int i = 0; i < faces.Count; ++i)
+            faces[i].AdjFaceCheck();
+        return faces;
+    }
+
+    public static bool AddToPtSet(List<Face> faces, Vector3 pt, int idx)
+    {
+        int bestIdx = -1;
+        float bestDist = float.MaxValue;
+        for (int i = 0; i < faces.Count; ++i)
+        {
+            float dist = faces[i].GetDistanceToPoint(pt);
+            if (dist > 0 && dist < bestDist)
+            {
+                bestIdx = i;
+                bestDist = dist;
+            }
+        }
+        bool found = bestIdx > -1;
+        if (found)
+        {
+            faces[bestIdx].visiblePts.Add(pt);
+            faces[bestIdx].visibleIdxs.Add(idx);
+        }
+        return found;
+    }
+}
+
+public class Face
+{
+
+    public List<Vector3> pts = new List<Vector3>(3);
+    public List<Vector3> visiblePts = new List<Vector3>();
+    public List<int> visibleIdxs = new List<int>();
+    public List<int> idx = new List<int>(3); // vert idx in the original pt list
+    public List<Face> adjFace = new List<Face>(3);
+    Plane p;
+    public bool removeMe = false;
+
+    public Face(List<Vector3> pts_, int idx1, int idx2, int idx3)
+    {
+        pts.Add(pts_[idx1]);
+        pts.Add(pts_[idx2]);
+        pts.Add(pts_[idx3]);
+        idx.Add(idx1);
+        idx.Add(idx2);
+        idx.Add(idx3);
+        adjFace.Add(null);
+        adjFace.Add(null);
+        adjFace.Add(null);
+        p = new Plane(pts[0], pts[1], pts[2]);
+    }
+
+    public bool Equals(Face rhs)
+    {
+        return idx[0] == rhs.idx[0] && idx[1] == rhs.idx[1] && idx[2] == rhs.idx[2];
+    }
+
+    public float GetDistanceToPoint(Vector3 pt)
+    {
+        return -p.GetDistanceToPoint(pt);
+    }
+
+    public bool IsPtVisible(Vector3 pt)
+    {
+        return GetDistanceToPoint(pt) >= 0;
+    }
+
+    public void GetFurthestVisible(ref Vector3 pos, ref int idx)
+    {
+        int bestIdx = 0;
+        float bestDist = -1.0f;
+        for (int i = 0; i < visiblePts.Count; ++i)
+        {
+            float dist = GetDistanceToPoint(visiblePts[i]);
+            if (dist > 0 && dist < bestDist)
+            {
+                bestIdx = i;
+                bestDist = dist;
+            }
+        }
+        pos = visiblePts[bestIdx];
+        idx = visibleIdxs[bestIdx];
+    }
+
+    public string IdxStr()
+    {
+        return idx[0] + " " + idx[1] + " " + idx[2];
+    }
+
+    public int GetEdgeIdx(Face f)
+    {
+        for (int i = 0; i < adjFace.Count; ++i)
+            if (adjFace[i] == f)
+                return i;
+
+        // edge not found, print some debugging info
+        Debug.LogError("Edge not found");
+        for (int i = 0; i < idx.Count; ++i)
+            Debug.LogError("\t" + idx[i]);
+        Debug.LogError("Adj: ");
+        for (int i = 0; i < adjFace.Count; ++i)
+            Debug.LogError(i + " adj: " + adjFace[i].idx[0] + " " + adjFace[i].idx[1] + " " + adjFace[i].idx[2]);
+        return -1;
+    }
+
+    public int GetEdgeIdxCount(Face f)
+    {
+        int count = 0;
+        for (int i = 0; i < adjFace.Count; ++i)
+            if (adjFace[i] == f)
+                count++;
+        return count;
+    }
+
+    // returns the next face that shares the first edge vert with this Face, but not an edge, (adjacent to the adjacent)
+    public Face GetNextAdjacent(int edgeIdx)
+    {
+        int nextEdgeIdx = GetNextAdjacentEdgeIdx(edgeIdx);
+        return adjFace[edgeIdx].adjFace[nextEdgeIdx];
+    }
+
+    public int GetNextAdjacentEdgeIdx(int edgeIdx)
+    {
+        return (adjFace[edgeIdx].GetEdgeIdx(this) + 1) % 3;
+    }
+
+    // Gets the adjacent face that has an edge that starts with the supplied vertIdx
+    public Face GetAdjacentEdgeStartsWithVertIdx(int vertIdx)
+    {
+        int idx = GetAdjacentIdxEdgeStartsWithVertIdx(vertIdx);
+        return (idx >= 0) ? adjFace[idx] : null;
+    }
+
+    public int GetAdjacentIdxEdgeStartsWithVertIdx(int vertIdx)
+    {
+        for (int i = 0; i < idx.Count; ++i)
+            if (vertIdx == idx[i])
+                return i;
+        return -1;
+    }
+
+    public bool AdjFaceCheck()
+    {
+        for (int i = 0; i < adjFace.Count; ++i)
+            if (adjFace[i].GetEdgeIdxCount(this) != GetEdgeIdxCount(adjFace[i]))
+            {
+                Debug.LogError("bad adjFace assignment: " + i + " " + adjFace[i].IdxStr() + " doesn\'t know about " + this.IdxStr() + " count: " + adjFace[i].GetEdgeIdxCount(this) + " != " + GetEdgeIdxCount(adjFace[i]));
+                return false;
+            }
+        return true;
+    }
+}
+
+public class Pyramid
+{
+    public List<Face> faces = new List<Face>(4);
+    private List<int> idx = new List<int>(); // temp for mesh debugging
+
+    // refactor to use Faces
+    public Pyramid(List<Vector3> pts, List<int> idxs)
+    {
+        idx = idxs;
+        Vector3 midPt = 0.25f * (pts[idxs[0]] + pts[idxs[1]] + pts[idxs[2]] + pts[idxs[3]]);
+
+        // determine correct orientation of 0,1,2
+        // want to face away from the midpoint
+        Plane p = new Plane(pts[idxs[0]], pts[idxs[1]], pts[idxs[2]]);
+        if (!p.GetSide(midPt))
+        {
+            int temp = idxs[2];
+            idxs[2] = idxs[1];
+            idxs[1] = temp;
+        }
+        faces.Add(new Face(pts, idxs[0], idxs[1], idxs[2]));
+        faces.Add(new Face(pts, idxs[3], idxs[1], idxs[0]));
+        faces.Add(new Face(pts, idxs[3], idxs[2], idxs[1]));
+        faces.Add(new Face(pts, idxs[3], idxs[0], idxs[2]));
+
+        // setup adjacency pointers
+        faces[0].adjFace[0] = faces[1]; // 0-1
+        faces[0].adjFace[1] = faces[2]; // 1-2
+        faces[0].adjFace[2] = faces[3]; // 2-0
+
+        faces[1].adjFace[0] = faces[2]; // 3-1
+        faces[1].adjFace[1] = faces[0]; // 1-0
+        faces[1].adjFace[2] = faces[3]; // 0-3
+
+        faces[2].adjFace[0] = faces[3]; // 3-2
+        faces[2].adjFace[1] = faces[0]; // 2-1
+        faces[2].adjFace[2] = faces[1]; // 1-3
+
+        faces[3].adjFace[0] = faces[1]; // 3-0
+        faces[3].adjFace[1] = faces[0]; // 0-2
+        faces[3].adjFace[2] = faces[2]; // 2-3
+
+    }
+
+    public void AdjFaceCheck()
+    {
+        // adjFace sanity check
+        for (int i = 0; i < faces.Count; ++i)
+            faces[i].AdjFaceCheck();
+    }
+
+    public void PushFaces(ref LinkedList<Face> faceStack)
+    {
+        for (int i = 0; i < faces.Count; ++i)
+            faceStack.AddLast(faces[i]);
+    }
+
+    public bool AddToPtSet(Vector3 pt, int idx)
+    {
+        int bestIdx = -1;
+        float bestDist = float.MaxValue;
+        for (int i = 0; i < faces.Count; ++i)
+        {
+            float dist = faces[i].GetDistanceToPoint(pt);
+            if (dist > 0 && dist < bestDist)
+            {
+                bestIdx = i;
+                bestDist = dist;
+            }
+        }
+        bool found = bestIdx > -1;
+        if (found)
+        {
+            faces[bestIdx].visiblePts.Add(pt);
+            faces[bestIdx].visibleIdxs.Add(idx);
+        }
+        return found;
+    }
+
+
+    // Fill the passed in Lists with mesh info for this pyramid.
+    public void FillMeshInfo(List<Vector3> origPts, List<Vector3> newVertices, List<int> newTriangles, List<Vector2> newUV)
+    {
+        newVertices.Add(origPts[idx[0]]);
+        newVertices.Add(origPts[idx[1]]);
+        newVertices.Add(origPts[idx[2]]);
+        newVertices.Add(origPts[idx[3]]);
+
+        // tri 1
+        newTriangles.Add(0);
+        newTriangles.Add(1);
+        newTriangles.Add(2);
+
+        // tri 2
+        newTriangles.Add(0);
+        newTriangles.Add(1);
+        newTriangles.Add(3);
+
+        // tri 3
+        newTriangles.Add(1);
+        newTriangles.Add(2);
+        newTriangles.Add(3);
+
+        // tri 4
+        newTriangles.Add(2);
+        newTriangles.Add(0);
+        newTriangles.Add(3);
+
+        for (int i = 0; i < newVertices.Count; ++i)
+            newUV.Add(new Vector2(0, 0));
     }
 }
