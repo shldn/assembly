@@ -2,29 +2,48 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+public enum FoodType { distance = 1, hit = 2, passive = 4, 
+    disAndHit = distance | hit, 
+    passAndHit = passive | hit,
+    disAndPass = distance | passive,
+    all = distance | hit | passive}
+
 public class FoodPellet{
 	
 	public Vector3 worldPosition = new Vector3( 0, 9 , 0);
+
 	private static List<FoodPellet> allFoodPellets = new List<FoodPellet>();
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
     public static int MAX_FOOD = 1;
 
+    public static FoodType ftFlag = 0x0;
+    public static FoodType ftPrevFlag = 0x0;
+    public static bool ftDistanceEnabled = true;
+    public static bool ftPassiveEnabled = false;
+    public static bool ftCollisionEnabled = false;
+
     public static float MAX_ENERGY = 10.0f;
     public float currentEnergy = MAX_ENERGY;
     
+    //how food can be absorb by assemblies
+    public FoodType foodType = FoodType.distance;
+
     //random number generator
     private static System.Random random = new System.Random();
-    //not needed for now
 
     public GameObject gameObject = null;
 
     public FoodPellet(){
-	gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Random.rotation) as GameObject;
+        UpdateFoodType();
+
+        gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Random.rotation) as GameObject;
     	//currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
     }
 
     public FoodPellet(Vector3 pos){
+        UpdateFoodType();
+        
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, pos, Random.rotation) as GameObject;
         worldPosition = pos;
         //currentEnergy = random.Next(0,10); //not all food are created equal
@@ -46,6 +65,65 @@ public class FoodPellet{
     public void UpdateTransform(){
         gameObject.transform.position = worldPosition;
         gameObject.transform.localScale = Vector3.one * (currentEnergy / MAX_ENERGY);
+        
+        //updateFoodType
+        if(ftFlag != ftPrevFlag)
+            UpdateFoodType();
+    }
+
+    public static void UpdateEnabledFoodType(){
+        if(ftDistanceEnabled)
+            ftFlag |= FoodType.distance;
+        else
+            ftFlag &= ~FoodType.distance;
+        if(ftPassiveEnabled)
+            ftFlag |= FoodType.passive;
+        else
+            ftFlag &= ~FoodType.passive;
+        if(ftCollisionEnabled)
+            ftFlag |= FoodType.hit;
+        else
+            ftFlag &= ~FoodType.hit;
+        MonoBehaviour.print("The flag is " + ftFlag);
+        
+    }
+
+    public void UpdateFoodType(){
+
+        if(FoodPellet.ftFlag == FoodType.hit)
+            foodType = FoodType.hit;
+        else if(FoodPellet.ftFlag == FoodType.distance)
+            foodType = FoodType.hit;
+        else if(FoodPellet.ftFlag == FoodType.passive)
+            foodType = FoodType.passive;
+        else if(FoodPellet.ftFlag == FoodType.all){
+            int selecter = random.Next(3);
+            if(selecter == 0)
+                foodType = FoodType.hit;
+            else if( selecter == 1)
+                foodType = FoodType.distance;
+            else
+                foodType = FoodType.passive;
+        } else if( FoodPellet.ftFlag == FoodType.passAndHit){
+            int selecter = random.Next(2);
+            if(selecter == 0)
+                foodType = FoodType.hit;
+            else if( selecter == 1)
+                foodType = FoodType.passive;
+        } else if( FoodPellet.ftFlag == FoodType.disAndHit){
+            int selecter = random.Next(2);
+            if(selecter == 0)
+                foodType = FoodType.hit;
+            else if( selecter == 1)
+                foodType = FoodType.distance;
+        } else if( FoodPellet.ftFlag == FoodType.disAndPass){
+            int selecter = random.Next(2);
+            if(selecter == 0)
+                foodType = FoodType.distance;
+            else if( selecter == 1)
+                foodType = FoodType.passive;
+        }else
+            foodType = FoodType.distance; //default to distance
     }
 
     public void Destroy(){
