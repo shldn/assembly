@@ -54,7 +54,7 @@ public class Node {
 
     public Quaternion worldSenseRot {
         get{
-            if(assembly)
+            if(assembly && assembly.physicsObject)
                 return assembly.physicsObject.transform.rotation * nodeProperties.senseVector;
             else
                 return nodeProperties.senseVector;
@@ -63,7 +63,7 @@ public class Node {
 
     public Quaternion worldAcuateRot {
         get{
-            if(assembly)
+            if(assembly && assembly.physicsObject)
                 return assembly.physicsObject.transform.rotation * nodeProperties.actuateVector;
             else
                 return nodeProperties.actuateVector;

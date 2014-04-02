@@ -25,7 +25,11 @@ public class FoodPellet{
     public static bool ftPassiveEnabled = false;
     public static bool ftCollisionEnabled = false;
 
-    public static float passiveRange = 30F;
+    public static float passiveRange = 30f;
+
+    public static Renderer glow = null;
+
+    public Renderer billboard = null;
 
     public static float MAX_ENERGY = 10.0f;
     public float currentEnergy = MAX_ENERGY;
@@ -39,20 +43,25 @@ public class FoodPellet{
     public GameObject gameObject = null;
 
     public FoodPellet(){
-        UpdateFoodType();
 
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Random.rotation) as GameObject;
+        glow = gameObject.transform.Find("glow").renderer;
+
     	//currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
+        UpdateFoodType();
     }
 
     public FoodPellet(Vector3 pos){
-        UpdateFoodType();
         
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, pos, Random.rotation) as GameObject;
+        glow = gameObject.transform.Find("glow").renderer;
+
         worldPosition = pos;
         //currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
+        UpdateFoodType();
+
     }
 
     //create new food node and add it to list
@@ -98,6 +107,7 @@ public class FoodPellet{
     //update each node foodtype based on flag
     public void UpdateFoodType(){
 
+
         if(FoodPellet.ftFlag == FoodTypeSelection.hit)
             foodType = FoodType.hit;
         else if(FoodPellet.ftFlag == FoodTypeSelection.distance)
@@ -132,6 +142,22 @@ public class FoodPellet{
                 foodType = FoodType.passive;
         }else
             foodType = FoodType.distance; //default to distance
+
+
+
+        
+        switch(foodType){
+            case FoodType.distance :
+                glow.material.SetColor("_TintColor", Color.blue);
+                break;
+            case FoodType.hit:
+                glow.material.SetColor("_TintColor", Color.red);
+                break;
+            case FoodType.passive :
+                glow.material.SetColor("_TintColor", Color.green);
+                break;
+        }
+        
     }
 
     public void Destroy(){
