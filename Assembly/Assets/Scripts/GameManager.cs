@@ -260,6 +260,13 @@ public class GameManager : MonoBehaviour {
             Node.consumeRange = GUI.HorizontalSlider(controlGuiRect, Node.consumeRange, 10F, 50F);
             controlGuiRect.y += guiHeight;
             GUI.enabled = true;
+
+            GUI.enabled = FoodPellet.ftPassiveEnabled;
+            GUI.Label(controlGuiRect, "Food Passive Range: " + FoodPellet.passiveRange);
+            controlGuiRect.y += guiHeight;
+            FoodPellet.passiveRange = GUI.HorizontalSlider(controlGuiRect, FoodPellet.passiveRange, 10F, 50F);
+            controlGuiRect.y += guiHeight;
+            GUI.enabled = true;
         }
 
 
