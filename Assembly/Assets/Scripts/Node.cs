@@ -206,6 +206,7 @@ public class Node {
                     if(SenseDetectFoodRange(FoodPellet.GetAll()[j]) ){
                         //sense node consume food source
                         assembly.Consume( FoodPellet.GetAll()[j] );
+                        
                     }
                     break;
                 }

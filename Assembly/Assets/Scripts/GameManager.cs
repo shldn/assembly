@@ -132,9 +132,12 @@ public class GameManager : MonoBehaviour {
         }
 
         // Update foodpellets.
+        FoodPellet.UpdateEnabledFoodType();    
         for(int i = 0; i < FoodPellet.GetAll().Count; ++i)
             FoodPellet.GetAll()[i].UpdateTransform();
-
+        //needs to be called after all the update tranform to work properly
+        FoodPellet.ftPrevFlag = FoodPellet.ftFlag;
+        
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
         for(int i = 0; i < Node.GetAll().Count; i++){
@@ -241,12 +244,17 @@ public class GameManager : MonoBehaviour {
             targetTimeScale = GUI.HorizontalSlider(controlGuiRect, targetTimeScale, 0.05F, 1F);
             controlGuiRect.y += guiHeight;
 
+            bool ftypeDistance = true, ftypeHit = false, ftypePassive = false;
             GUI.Label(controlGuiRect, "Food Property:");
             controlGuiRect.y += guiHeight;
-            string[] selStrings = new string[] {"Distance", "Collision", "Mix"};
-            FoodPellet.userFoodProp = GUI.SelectionGrid(controlGuiRect, FoodPellet.userFoodProp, selStrings, 3);
+            FoodPellet.ftDistanceEnabled = GUI.Toggle(controlGuiRect, FoodPellet.ftDistanceEnabled, " Distance");
             controlGuiRect.y += guiHeight;
-            GUI.enabled = !(FoodPellet.userFoodProp == 1);
+            FoodPellet.ftCollisionEnabled = GUI.Toggle(controlGuiRect, FoodPellet.ftCollisionEnabled, " Collision");
+            controlGuiRect.y += guiHeight;
+            FoodPellet.ftPassiveEnabled = GUI.Toggle(controlGuiRect, FoodPellet.ftPassiveEnabled, " Passive");
+            controlGuiRect.y += guiHeight;
+
+            GUI.enabled = FoodPellet.ftDistanceEnabled;
             GUI.Label(controlGuiRect, "Food Consumeable Range: " + Node.consumeRange);
             controlGuiRect.y += guiHeight;
             Node.consumeRange = GUI.HorizontalSlider(controlGuiRect, Node.consumeRange, 10F, 50F);
