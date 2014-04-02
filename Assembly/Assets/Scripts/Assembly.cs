@@ -75,8 +75,7 @@ public class Assembly {
     public static Assembly GetRandomAssembly(int numNodes){
         Assembly newAssembly = new Assembly();
 
-        Node seedNode = new Node();
-        newAssembly.AddNode(seedNode);
+        newAssembly.AddNode(new Node());
         for(int j = 0; j < numNodes; j++)
             newAssembly.AddRandomNode();
 
@@ -392,8 +391,6 @@ public class Assembly {
             nodes[i].UpdateTransform();
             nodes[i].UpdateType();
         }
-
-        RecomputeRigidbody();
     } // End of UpdateNodes(). 
 
 
