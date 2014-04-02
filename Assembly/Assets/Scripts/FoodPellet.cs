@@ -111,7 +111,7 @@ public class FoodPellet{
         if(FoodPellet.ftFlag == FoodTypeSelection.hit)
             foodType = FoodType.hit;
         else if(FoodPellet.ftFlag == FoodTypeSelection.distance)
-            foodType = FoodType.hit;
+            foodType = FoodType.distance;
         else if(FoodPellet.ftFlag == FoodTypeSelection.passive)
             foodType = FoodType.passive;
         else if(FoodPellet.ftFlag == FoodTypeSelection.all){
