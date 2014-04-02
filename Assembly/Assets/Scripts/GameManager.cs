@@ -244,7 +244,6 @@ public class GameManager : MonoBehaviour {
             targetTimeScale = GUI.HorizontalSlider(controlGuiRect, targetTimeScale, 0.05F, 1F);
             controlGuiRect.y += guiHeight;
 
-            bool ftypeDistance = true, ftypeHit = false, ftypePassive = false;
             GUI.Label(controlGuiRect, "Food Property:");
             controlGuiRect.y += guiHeight;
             FoodPellet.ftDistanceEnabled = GUI.Toggle(controlGuiRect, FoodPellet.ftDistanceEnabled, " Distance");
