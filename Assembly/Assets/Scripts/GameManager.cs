@@ -240,6 +240,18 @@ public class GameManager : MonoBehaviour {
             controlGuiRect.y += guiHeight;
             targetTimeScale = GUI.HorizontalSlider(controlGuiRect, targetTimeScale, 0.05F, 1F);
             controlGuiRect.y += guiHeight;
+
+            GUI.Label(controlGuiRect, "Food Property:");
+            controlGuiRect.y += guiHeight;
+            string[] selStrings = new string[] {"Distance", "Collision", "Mix"};
+            FoodPellet.userFoodProp = GUI.SelectionGrid(controlGuiRect, FoodPellet.userFoodProp, selStrings, 3);
+            controlGuiRect.y += guiHeight;
+            GUI.enabled = !(FoodPellet.userFoodProp == 1);
+            GUI.Label(controlGuiRect, "Food Consumeable Range: " + Node.consumeRange);
+            controlGuiRect.y += guiHeight;
+            Node.consumeRange = GUI.HorizontalSlider(controlGuiRect, Node.consumeRange, 10F, 50F);
+            controlGuiRect.y += guiHeight;
+            GUI.enabled = true;
         }
 
 

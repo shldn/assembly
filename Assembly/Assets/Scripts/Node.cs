@@ -27,8 +27,9 @@ public class Node {
     public Quaternion localRotation = Quaternion.identity;
 
     // Metabolism ------------------------------------------------------------------------ ||
-    public float consumeRange = 30; //how far away can it consume?
-
+    public static float consumeRange = 30.0f; //how far away can it consume?
+    public float detectRange  = 50.0f; //how far can it detect food
+    
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
 
@@ -413,8 +414,9 @@ public class Node {
         Vector3 foodDir = food.worldPosition - this.worldPosition;
         float angle = Vector3.Angle(worldSenseRot * Vector3.forward, foodDir);
 
-        if(angle < nodeProperties.fieldOfView)
-            return true;
+        if(angle < nodeProperties.fieldOfView) //detect through view angle
+            if( foodDir.sqrMagnitude < (detectRange * detectRange) ) //detect within range
+                return true;
         // Return false if no food pellets found.
         return false;
     }
@@ -569,10 +571,20 @@ public class Node {
     //check if food is within consumption range
     public bool SenseDetectFoodRange(FoodPellet food){
         Vector3 foodDist = food.worldPosition - this.worldPosition;
-        //if mag^2 < consume^2
-        if(foodDist.sqrMagnitude < (consumeRange * consumeRange)){
-            return true;
+        
+        //must make contact to be able to get food
+        if(food.foodType == FoodType.hit){
+            if(foodDist.sqrMagnitude < 1.0f){ //use 1 for collision detection to simplify
+                return true;
+            }    
+        } else {
+
+            //if mag^2 < consume^2
+            if(foodDist.sqrMagnitude < (Node.consumeRange * Node.consumeRange)){
+                return true;
+            }
         }
+
         return false;
     }
 
