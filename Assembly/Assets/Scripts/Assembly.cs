@@ -79,6 +79,8 @@ public class Assembly {
         newAssembly.AddNode(seedNode);
         for(int j = 0; j < numNodes; j++)
             newAssembly.AddRandomNode();
+
+        newAssembly.InitPhysicsObject();
         newAssembly.InitEnergyData();
 
         return newAssembly;
@@ -87,14 +89,11 @@ public class Assembly {
     // Constructors
     public Assembly(){
         allAssemblies.Add(this);
-        InitPhysicsObject();
-        InitEnergyData();
-
-        needRigidbodyUpdate = true;
     }
     public Assembly(List<Node> nodes){
-        AddNodes(nodes);
         allAssemblies.Add(this);
+
+        AddNodes(nodes);
         InitPhysicsObject();
         InitEnergyData();
     }

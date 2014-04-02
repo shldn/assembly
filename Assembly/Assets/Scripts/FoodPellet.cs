@@ -22,6 +22,10 @@ public class FoodPellet{
     public static bool ftPassiveEnabled = false;
     public static bool ftCollisionEnabled = false;
 
+    public static Renderer glow = null;
+
+    public Renderer billboard = null;
+
     public static float MAX_ENERGY = 10.0f;
     public float currentEnergy = MAX_ENERGY;
     
@@ -37,6 +41,8 @@ public class FoodPellet{
         UpdateFoodType();
 
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Random.rotation) as GameObject;
+        glow = gameObject.transform.Find("glow").renderer;
+
     	//currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
     }
@@ -45,6 +51,8 @@ public class FoodPellet{
         UpdateFoodType();
         
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, pos, Random.rotation) as GameObject;
+        glow = gameObject.transform.Find("glow").renderer;
+
         worldPosition = pos;
         //currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
@@ -90,6 +98,9 @@ public class FoodPellet{
 
     public void UpdateFoodType(){
 
+        glow = gameObject.transform.Find("glow").renderer;
+
+
         if(FoodPellet.ftFlag == FoodType.hit)
             foodType = FoodType.hit;
         else if(FoodPellet.ftFlag == FoodType.distance)
@@ -124,6 +135,19 @@ public class FoodPellet{
                 foodType = FoodType.passive;
         }else
             foodType = FoodType.distance; //default to distance
+
+
+        switch(foodType){
+            case FoodType.distance :
+                glow.material.SetColor("_TintColor", Color.blue);
+                break;
+            case FoodType.hit:
+                glow.material.SetColor("_TintColor", Color.green);
+                break;
+            case FoodType.passive :
+                glow.material.SetColor("_TintColor", Color.green);
+                break;
+        }
     }
 
     public void Destroy(){
