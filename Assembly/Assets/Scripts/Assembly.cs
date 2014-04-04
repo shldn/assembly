@@ -59,7 +59,6 @@ public class Assembly {
 
     /* energy --------------------------------------------------- */
     public float currentEnergy = 0; //should be sum of nodes
-    public float consumeRate = 10.0f; //rate asm consume food
     public float energyBurnRate = 0; //rate asm burn energy
     public bool  needBurnRateUpdate = true;
     public static float burnCoefficient = 1.0f;
@@ -562,19 +561,6 @@ public class Assembly {
     // returns the fitness of this assembly in the current environment
     public float Fitness(){
         return 1;
-    }
-
-    //consume food within range
-    public void Consume(FoodPellet food){
-        float realConsumeRate = (consumeRate* Time.deltaTime); 
-        food.currentEnergy -= realConsumeRate;
-        if( food.currentEnergy < 0){
-            currentEnergy += ( food.currentEnergy + realConsumeRate);
-            //destroy and create
-            food.Destroy();
-        }else {
-            currentEnergy += realConsumeRate;
-        }
     }
 
     //energy that is being used

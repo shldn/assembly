@@ -132,11 +132,8 @@ public class GameManager : MonoBehaviour {
         }
 
         // Update foodpellets.
-        FoodPellet.UpdateEnabledFoodType();    
         for(int i = 0; i < FoodPellet.GetAll().Count; ++i)
             FoodPellet.GetAll()[i].UpdateTransform();
-        //needs to be called after all the update tranform to work properly
-        FoodPellet.ftPrevFlag = FoodPellet.ftFlag;
         
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
@@ -244,6 +241,7 @@ public class GameManager : MonoBehaviour {
             targetTimeScale = GUI.HorizontalSlider(controlGuiRect, targetTimeScale, 0.05F, 1F);
             controlGuiRect.y += guiHeight;
 
+/*  changes the different types of food. taken out
             GUI.Label(controlGuiRect, "Food Property:");
             controlGuiRect.y += guiHeight;
             FoodPellet.ftDistanceEnabled = GUI.Toggle(controlGuiRect, FoodPellet.ftDistanceEnabled, " Distance");
@@ -266,6 +264,7 @@ public class GameManager : MonoBehaviour {
             FoodPellet.passiveRange = GUI.HorizontalSlider(controlGuiRect, FoodPellet.passiveRange, 10F, 50F);
             controlGuiRect.y += guiHeight;
             GUI.enabled = true;
+            */
         }
 
 

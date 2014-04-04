@@ -29,7 +29,8 @@ public class Node {
     // Metabolism ------------------------------------------------------------------------ ||
     public static float consumeRange = 30.0f; //how far away can it consume?
     public float detectRange  = 50.0f; //how far can it detect food
-    
+    public float consumeRate = 10.0f; //rate asm consume food
+
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
 
@@ -205,7 +206,7 @@ public class Node {
 
                     if(SenseDetectFoodRange(FoodPellet.GetAll()[j]) ){
                         //sense node consume food source
-                        assembly.Consume( FoodPellet.GetAll()[j] );
+                        Consume( FoodPellet.GetAll()[j] );
                         
                     }
                     break;
@@ -573,21 +574,30 @@ public class Node {
     public bool SenseDetectFoodRange(FoodPellet food){
         Vector3 foodDist = food.worldPosition - this.worldPosition;
         
-        //must make contact to be able to get food
-        if(food.foodType == FoodType.hit){
-            if(foodDist.sqrMagnitude < 1.0f){ //use 1 for collision detection to simplify
-                return true;
-            }    
-        } else {
-
-            //if mag^2 < consume^2
-            if(foodDist.sqrMagnitude < (Node.consumeRange * Node.consumeRange)){
-                return true;
-            }
+        //if mag^2 < consume^2
+        if(foodDist.sqrMagnitude < (Node.consumeRange * Node.consumeRange)){
+            return true;
         }
-
         return false;
     }
+
+
+    //consume food within range
+    public void Consume(FoodPellet food){
+        float realConsumeRate = (consumeRate* Time.deltaTime); 
+        Vector3 foodDist = food.worldPosition - this.worldPosition;
+        //consume rate drop off
+        realConsumeRate *= (1 - foodDist.sqrMagnitude / (consumeRange * consumeRange) );
+        food.currentEnergy -= realConsumeRate;
+        if( food.currentEnergy < 0){
+            assembly.currentEnergy += ( food.currentEnergy + realConsumeRate);
+            //destroy and create
+            food.Destroy();
+        }else {
+            assembly.currentEnergy += realConsumeRate;
+        }
+    }
+
 
 } // End of Node.
 

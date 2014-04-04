@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+/*
 public enum FoodType { distance = 1, hit = 2, passive = 4}
 
 public enum FoodTypeSelection{  distance = 1, hit = 2, passive = 4,
@@ -10,6 +11,7 @@ public enum FoodTypeSelection{  distance = 1, hit = 2, passive = 4,
     disAndPass = distance | passive,
     all = distance | hit | passive
 }
+*/
 
 public class FoodPellet{
 	
@@ -19,6 +21,7 @@ public class FoodPellet{
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
     public static int MAX_FOOD = 1;
 
+/*
     public static FoodTypeSelection ftFlag = 0x0;
     public static FoodTypeSelection ftPrevFlag = 0x0;
     public static bool ftDistanceEnabled = true;
@@ -30,13 +33,16 @@ public class FoodPellet{
     public static Renderer glow = null;
 
     public Renderer billboard = null;
+*/
 
     public static float MAX_ENERGY = 10.0f;
     public float currentEnergy = MAX_ENERGY;
     
+    /*
     //how food can be absorb by assemblies
     public FoodType foodType = FoodType.distance;
-
+    */
+    
     //random number generator
     private static System.Random random = new System.Random();
 
@@ -45,22 +51,22 @@ public class FoodPellet{
     public FoodPellet(){
 
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Random.rotation) as GameObject;
-        glow = gameObject.transform.Find("glow").renderer;
+        //glow = gameObject.transform.Find("glow").renderer;
 
     	//currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
-        UpdateFoodType();
+        //UpdateFoodType();
     }
 
     public FoodPellet(Vector3 pos){
         
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, pos, Random.rotation) as GameObject;
-        glow = gameObject.transform.Find("glow").renderer;
+        //glow = gameObject.transform.Find("glow").renderer;
 
         worldPosition = pos;
         //currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
-        UpdateFoodType();
+        //UpdateFoodType();
 
     }
 
@@ -79,12 +85,14 @@ public class FoodPellet{
     public void UpdateTransform(){
         gameObject.transform.position = worldPosition;
         gameObject.transform.localScale = Vector3.one * (currentEnergy / MAX_ENERGY);
-        
+        /*
         //updateFoodType
         if(ftFlag != ftPrevFlag)
             UpdateFoodType();
+            */
     }
 
+/*
     //update food type flag based on UI
     public static void UpdateEnabledFoodType(){
         if(ftDistanceEnabled)
@@ -104,6 +112,7 @@ public class FoodPellet{
         //MonoBehaviour.print("The flag is " + ftFlag);
     }
 
+    /*
     //update each node foodtype based on flag
     public void UpdateFoodType(){
 
@@ -158,7 +167,7 @@ public class FoodPellet{
                 break;
         }
         
-    }
+    }*/
 
     public void Destroy(){
         allFoodPellets.Remove(this);
