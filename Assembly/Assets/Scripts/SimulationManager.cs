@@ -1,8 +1,10 @@
-﻿/*using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
 
 public class SimulationManager : MonoBehaviour {
+
+    /*
 
     public int numTests = 20;               // number of tests with one environment
     public int numGenerations = 1;         // number of generations to run.
@@ -99,6 +101,7 @@ public class SimulationManager : MonoBehaviour {
             assemblyScores.RemoveAt(i);
         }
     }
+    
+*/
 
 }
-*/

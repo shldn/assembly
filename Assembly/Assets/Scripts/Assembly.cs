@@ -75,10 +75,11 @@ public class Assembly {
     public static Assembly GetRandomAssembly(int numNodes){
         Assembly newAssembly = new Assembly();
 
-        Node seedNode = new Node();
-        newAssembly.AddNode(seedNode);
+        newAssembly.AddNode(new Node());
         for(int j = 0; j < numNodes; j++)
             newAssembly.AddRandomNode();
+
+        newAssembly.InitPhysicsObject();
         newAssembly.InitEnergyData();
 
         return newAssembly;
@@ -87,14 +88,11 @@ public class Assembly {
     // Constructors
     public Assembly(){
         allAssemblies.Add(this);
-        InitPhysicsObject();
-        InitEnergyData();
-
-        needRigidbodyUpdate = true;
     }
     public Assembly(List<Node> nodes){
-        AddNodes(nodes);
         allAssemblies.Add(this);
+
+        AddNodes(nodes);
         InitPhysicsObject();
         InitEnergyData();
     }
@@ -416,8 +414,6 @@ public class Assembly {
             nodes[i].UpdateTransform();
             nodes[i].UpdateType();
         }
-
-        RecomputeRigidbody();
     } // End of UpdateNodes(). 
 
 

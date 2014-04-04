@@ -132,9 +132,12 @@ public class GameManager : MonoBehaviour {
         }
 
         // Update foodpellets.
+        FoodPellet.UpdateEnabledFoodType();    
         for(int i = 0; i < FoodPellet.GetAll().Count; ++i)
             FoodPellet.GetAll()[i].UpdateTransform();
-
+        //needs to be called after all the update tranform to work properly
+        FoodPellet.ftPrevFlag = FoodPellet.ftFlag;
+        
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
         for(int i = 0; i < Node.GetAll().Count; i++){
@@ -240,6 +243,29 @@ public class GameManager : MonoBehaviour {
             controlGuiRect.y += guiHeight;
             targetTimeScale = GUI.HorizontalSlider(controlGuiRect, targetTimeScale, 0.05F, 1F);
             controlGuiRect.y += guiHeight;
+
+            GUI.Label(controlGuiRect, "Food Property:");
+            controlGuiRect.y += guiHeight;
+            FoodPellet.ftDistanceEnabled = GUI.Toggle(controlGuiRect, FoodPellet.ftDistanceEnabled, " Distance");
+            controlGuiRect.y += guiHeight;
+            FoodPellet.ftCollisionEnabled = GUI.Toggle(controlGuiRect, FoodPellet.ftCollisionEnabled, " Collision");
+            controlGuiRect.y += guiHeight;
+            FoodPellet.ftPassiveEnabled = GUI.Toggle(controlGuiRect, FoodPellet.ftPassiveEnabled, " Passive");
+            controlGuiRect.y += guiHeight;
+
+            GUI.enabled = FoodPellet.ftDistanceEnabled;
+            GUI.Label(controlGuiRect, "Food Consumeable Range: " + Node.consumeRange);
+            controlGuiRect.y += guiHeight;
+            Node.consumeRange = GUI.HorizontalSlider(controlGuiRect, Node.consumeRange, 10F, 50F);
+            controlGuiRect.y += guiHeight;
+            GUI.enabled = true;
+
+            GUI.enabled = FoodPellet.ftPassiveEnabled;
+            GUI.Label(controlGuiRect, "Food Passive Range: " + FoodPellet.passiveRange);
+            controlGuiRect.y += guiHeight;
+            FoodPellet.passiveRange = GUI.HorizontalSlider(controlGuiRect, FoodPellet.passiveRange, 10F, 50F);
+            controlGuiRect.y += guiHeight;
+            GUI.enabled = true;
         }
 
 
