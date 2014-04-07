@@ -586,8 +586,9 @@ public class Node {
     public void Consume(FoodPellet food){
         float realConsumeRate = (consumeRate* Time.deltaTime); 
         Vector3 foodDist = food.worldPosition - this.worldPosition;
-        //consume rate drop off
+        //consume rate square drop off
         realConsumeRate *= (1 - foodDist.sqrMagnitude / (consumeRange * consumeRange) );
+        
         food.currentEnergy -= realConsumeRate;
         if( food.currentEnergy < 0){
             assembly.currentEnergy += ( food.currentEnergy + realConsumeRate);
