@@ -9,6 +9,14 @@ public class ConvexHull
     public static GameObject GetMeshFromPoints(List<Vector3> pts)
     {
         GameObject go = new GameObject("ConvexHull", typeof(MeshRenderer), typeof(MeshFilter));
+        
+        // Set mesh in the approx center of the mesh
+        Vector3 pos = Vector3.zero;
+        foreach (Vector3 p in pts)
+            pos += p;
+        pos /= (float)pts.Count;
+        go.transform.position = pos;
+
         Mesh mesh = go.GetComponent<MeshFilter>().mesh;
         UpdateMeshFromPoints(pts, ref mesh);
         return go;
@@ -100,7 +108,7 @@ public class ConvexHull
             LinkedListNode<Face> it = faceStack.First;
             while (it != null)
             {
-                if (it.Value.GetDistanceToPoint(furthestPt) > 0.0f)
+                if (it.Value.GetDistanceToPoint(furthestPt) >= 0.0f)
                 {
                     LinkedListNode<Face> toRemove = it;
                     extraFaces.Add(it.Value);
@@ -112,7 +120,7 @@ public class ConvexHull
             }
             for (int i = savedFaces.Count - 1; i >= 0; --i)
             {
-                if (savedFaces[i].GetDistanceToPoint(furthestPt) > 0.0f)
+                if (savedFaces[i].GetDistanceToPoint(furthestPt) >= 0.0f)
                     savedFaces.RemoveAt(i);
             }
 
@@ -204,6 +212,14 @@ public class ConvexHull
         Debug.LogError("Ran out of faces start: " + startF.IdxStr());
     }
 
+    void PrintPoints()
+    {
+        string str = "";
+        for (int i = 0; i < pts.Count; ++i)
+            str += "(" + pts[i].x + ", " + pts[i].y + ", " + pts[i].z + ")\n";
+        Debug.LogError(str);
+    }
+
     void FindBorderEdge(ref Face startF, ref int edge, Vector3 visiblePt)
     {
         int testE = (edge + 1) % 3;
@@ -250,16 +266,14 @@ public class ConvexHull
             if (testF == startF)
             {
                 Debug.LogError("testF == startF");
+                PrintPoints();
             }
             if (edge == -1)
             {
                 Debug.LogError("Bad edge, requesting edge");
                 for (int i = 0; i < startF.idx.Count; ++i)
                     Debug.LogError("\t" + startF.idx[i]);
-
-                Debug.LogError("pts: ");
-                for (int i = 0; i < pts.Count; ++i)
-                    Debug.LogError("\t" + i + " " + pts[i].ToString());
+                PrintPoints();
             }
 
             startF = testF;
@@ -304,6 +318,13 @@ public class ConvexHull
         Face startF = origFace;
         int startE = -1;
         GetFaceWithoutAdjacentVisible(ref startF, ref startE, furthestPt);
+        if (startE == -1)
+        {
+            Debug.LogError("Didn\'t find startEdge");
+            PrintPoints();
+            return null;
+        }
+
         horizonEdges.Add(new FaceEdgeIdxPair(startF, startE));
         origFace = startF;
         if (!origFace.IsPtVisible(furthestPt))
@@ -334,7 +355,8 @@ public class ConvexHull
             for (int i = 0; i < horizonEdges.Count; ++i)
                 Debug.LogError("\t" + i + " f: " + horizonEdges[i].f.IdxStr() + " edge: " + horizonEdges[i].ei);
 
-            HullNode.PrintHullNodePositions();
+            // print point positions
+            PrintPoints();
             return null;
         }
         return horizonEdges;
@@ -620,7 +642,7 @@ public class Face
         for (int i = 0; i < visiblePts.Count; ++i)
         {
             float dist = GetDistanceToPoint(visiblePts[i]);
-            if (dist > 0 && dist < bestDist)
+            if (dist > 0 && dist > bestDist)
             {
                 bestIdx = i;
                 bestDist = dist;

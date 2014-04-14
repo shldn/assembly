@@ -19,6 +19,7 @@ public class Assembly {
     public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
 
+    public bool showMesh = false;
     public GameObject physicsObject = null;
 
     //asmbly control
@@ -151,12 +152,16 @@ public class Assembly {
         {
             meshFilter = physicsObject.AddComponent<MeshFilter>();
             physicsObject.AddComponent<MeshRenderer>();
+            physicsObject.renderer.material.color = new Color(0.85f, 0.2f, 0.2f, 0.4f);
         }
 
         // get node positions
         List<Vector3> nodePositions = new List<Vector3>(nodes.Count);
         foreach (Node n in nodes)
-            nodePositions.Add(n.worldPosition);
+            nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition));
+
+        if (nodePositions.Count < 5)
+            return;
 
         // apply the convex hull to the mesh
         Mesh mesh = meshFilter.mesh;
@@ -190,6 +195,8 @@ public class Assembly {
 
         if (showMesh)
             ApplyConvexMeshToPhysicsObject();
+
+        needRigidbodyUpdate = false;
     } // End of ComputerPhysics().
 
 
