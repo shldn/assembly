@@ -19,6 +19,7 @@ public class Assembly {
     public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
 
+    public bool showMesh = false;
     public GameObject physicsObject = null;
 
     //asmbly control
@@ -140,7 +141,31 @@ public class Assembly {
         physicsObject.rigidbody.useGravity = false;
         physicsObject.rigidbody.angularDrag = 0.2f;
         physicsObject.rigidbody.drag = 0.2f;
+
     } // End of InitPhysicsObject().
+
+    void ApplyConvexMeshToPhysicsObject()
+    {
+        MeshFilter meshFilter = physicsObject.GetComponent<MeshFilter>();
+        if (meshFilter == null)
+        {
+            meshFilter = physicsObject.AddComponent<MeshFilter>();
+            physicsObject.AddComponent<MeshRenderer>();
+            physicsObject.renderer.material.color = new Color(0.85f, 0.2f, 0.2f, 0.4f);
+        }
+
+        // get node positions
+        List<Vector3> nodePositions = new List<Vector3>(nodes.Count);
+        foreach (Node n in nodes)
+            nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition));
+
+        if (nodePositions.Count < 5)
+            return;
+
+        // apply the convex hull to the mesh
+        Mesh mesh = meshFilter.mesh;
+        ConvexHull.UpdateMeshFromPoints(nodePositions, ref mesh);
+    }
 
     // Sets up center of mass, mass, etc. for the assembly based on current structure.
     public void RecomputeRigidbody(){
@@ -166,6 +191,11 @@ public class Assembly {
             physicsObject.rigidbody.centerOfMass = physicsObject.transform.InverseTransformPoint(centerOfMass);
             physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
         }
+
+        if (showMesh)
+            ApplyConvexMeshToPhysicsObject();
+
+        needRigidbodyUpdate = false;
     } // End of ComputerPhysics().
 
 
