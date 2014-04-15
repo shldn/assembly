@@ -19,7 +19,7 @@ public class Assembly {
     public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
 
-    public bool showMesh = false;
+    public bool showMesh = false; // display convex hull mesh skin around assembly
     public GameObject physicsObject = null;
 
     //asmbly control
