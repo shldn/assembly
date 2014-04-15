@@ -19,7 +19,10 @@ public class Assembly {
     public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
 
+    // convex hull skin variables
     public bool showMesh = false; // display convex hull mesh skin around assembly
+    public bool updateMesh = false; // update the mesh with the node positions every frame
+
     public GameObject physicsObject = null;
 
     //asmbly control
@@ -319,6 +322,9 @@ public class Assembly {
 
             Health /= 2f;
         }
+
+        if (showMesh && updateMesh)
+            UpdateSkinMesh();
 
     } // End of UpdateTransform().
 
@@ -621,4 +627,15 @@ public class Assembly {
         }        
         Destroy();
     }
+
+    private void UpdateSkinMesh()
+    {
+        MeshFilter meshFilter = physicsObject.GetComponent<MeshFilter>();
+        if (meshFilter != null)
+        {
+            for (int i = 0; i < nodes.Count && i < meshFilter.mesh.vertices.Length; ++i)
+                meshFilter.mesh.vertices[i] = HexUtilities.HexToWorld(nodes[i].localHexPosition);
+        }
+    } // End UpdateSkinMesh
+
 } // End of Assembly.
