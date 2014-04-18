@@ -97,7 +97,10 @@ public class GameManager : MonoBehaviour {
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
                 FoodPellet newPellet = FoodPellet.AddNewFoodPellet();
                 newPellet.worldPosition = MathUtilities.RandomVector3Sphere(worldSize);
-                Instantiate(PrefabManager.Inst.reproduceBurst, newPellet.worldPosition, Quaternion.identity);
+                UnityEngine.Object lightEffect = Instantiate(PrefabManager.Inst.reproduceBurst, newPellet.worldPosition, Quaternion.identity);
+
+                //destroy effect after 1.5 sec
+                UnityEngine.Object.Destroy(lightEffect, 1.5F);
             }
         else if( FoodPellet.GetAll().Count > FoodPellet.MAX_FOOD )
             for(int i = FoodPellet.GetAll().Count - 1; i >= FoodPellet.MAX_FOOD; --i)

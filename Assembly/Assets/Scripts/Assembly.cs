@@ -332,7 +332,7 @@ public class Assembly {
 
         // If assembly has 200% health, it reproduces!
         if(Health >= 2f){
-            Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            Object lightEffect = Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
 
             Assembly offspringAssem = Reproduce();
             offspringAssem.WorldPosition = WorldPosition;
@@ -341,6 +341,9 @@ public class Assembly {
             offspringAssem.physicsObject.rigidbody.angularVelocity = physicsObject.rigidbody.angularVelocity;
 
             Health /= 2f;
+
+            //destroy the visual effect after 1.5 sec
+            Object.Destroy(lightEffect, 1.5F);
         }
 
         if (showMesh && updateMesh)
