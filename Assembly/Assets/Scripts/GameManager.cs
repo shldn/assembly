@@ -18,12 +18,25 @@ public class GameManager : MonoBehaviour {
     public int maxNumNodes = 15;
     public bool refactorIfInert = false;
     public bool populationControl  = false;
+    public bool showAssemReadouts = true;
 
     public float targetTimeScale = 1f;
 
     public float fade = 1f;
+    public float initialFadeIn = 1f;
 
     float worldSize = 100f;
+
+    public bool pauseMenu = false;
+
+    public float deltaRealTime = 0f;
+
+
+    public GameObject pauseMenuObject = null;
+    public OrbitMenuItem closeMenuOption = null;
+    public OrbitMenuItem exitOption = null;
+    public OrbitMenuItem optionOption = null;
+    public OrbitMenuItem siteOption = null;
 
     void Awake(){
         Inst = this;
@@ -34,13 +47,41 @@ public class GameManager : MonoBehaviour {
         //if (BatchModeManager.Inst.InBatchMode)
         //    return;
 
+        if(Application.isWebPlayer)
+            exitOption.gameObject.SetActive(false);
+
 	} // End of Start().
 
 
     void LateUpdate(){
-        fade = Mathf.MoveTowards(fade, 0f, (Time.deltaTime / Time.timeScale) * 0.3f);
+        deltaRealTime = Time.deltaTime / Time.timeScale;
 
-        Time.timeScale = Mathf.MoveTowards(Time.timeScale, targetTimeScale, (Time.deltaTime / Time.timeScale));
+        if(Input.GetKeyDown(KeyCode.Escape))
+            pauseMenu = !pauseMenu;
+
+        pauseMenuObject.SetActive(pauseMenu);
+
+        if(closeMenuOption.down)
+            pauseMenu = false;
+
+        if(exitOption.held)
+            Application.Quit();
+
+        if(optionOption.down)
+            showControls = !showControls;
+
+        if(siteOption.held)
+            Application.OpenURL("http://imagination.ucsd.edu/assembly/index.html");
+
+        initialFadeIn = Mathf.MoveTowards(initialFadeIn, 0f, (Time.deltaTime / Time.timeScale) * 0.3f);
+        
+        fade = Mathf.Lerp(fade, pauseMenu? 0.8f : 0f, Time.deltaTime * 10f);
+
+        if(initialFadeIn > fade)
+            fade = initialFadeIn;
+
+
+        Time.timeScale = Mathf.MoveTowards(Time.timeScale, targetTimeScale, (deltaRealTime));
         Time.fixedDeltaTime = 0.05f * Time.timeScale;
 
         //updating values from the gui
@@ -174,15 +215,18 @@ public class GameManager : MonoBehaviour {
 
 
     void OnGUI(){
+
+        // Game fade
+        GUI.color = new Color(0f, 0f, 0f, fade);
+        GUI.DrawTexture(new Rect(-10, -10, Screen.width + 10, Screen.height + 10), GUIHelper.Inst.white);
+        GUI.color = Color.white;
+
         // World controls
         GUI.skin.label.fontSize = 12;
         GUI.skin.toggle.fontSize = 12;
         float guiHeight = 18f;
         float guiGutter = 10f;
         Rect controlGuiRect = new Rect(15, 15, 200, guiHeight);
-
-        showControls = GUI.Toggle(controlGuiRect, showControls, " Show Controls");
-        controlGuiRect.y += guiHeight;
 
         if(showControls){
             GUI.Label(controlGuiRect, "Number of Food Pellets: " + numFoodPellets   );
@@ -239,6 +283,9 @@ public class GameManager : MonoBehaviour {
             GUI.Label(controlGuiRect, "Time scale: " + targetTimeScale.ToString("F2")   );
             controlGuiRect.y += guiHeight;
             targetTimeScale = GUI.HorizontalSlider(controlGuiRect, targetTimeScale, 0.05F, 1F);
+            controlGuiRect.y += guiHeight;
+
+            showAssemReadouts = GUI.Toggle(controlGuiRect, showAssemReadouts, "Show Assembly Info");
             controlGuiRect.y += guiHeight;
 
 /*  changes the different types of food. taken out
@@ -366,10 +413,7 @@ public class GameManager : MonoBehaviour {
         GUI.Label(infoReadoutRect, bottomRightInfo);
         
 
-        // Game fade
-        GUI.color = new Color(0f, 0f, 0f, fade);
-        GUI.DrawTexture(new Rect(-10, -10, Screen.width + 10, Screen.height + 10), GUIHelper.Inst.white);
-        GUI.color = Color.white;
+        
 
     } // End of OnGUI().
 

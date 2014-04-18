@@ -172,6 +172,7 @@ public class Node {
         }
 
         if(assembly){
+            //worldPosition = Vector3.Lerp(worldPosition, assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition)), Time.deltaTime * 1f);
             worldPosition = assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition));
             worldRotation = assembly.WorldRotation * localRotation;
         }

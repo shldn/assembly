@@ -32,10 +32,6 @@ public class NodeEngineering : MonoBehaviour {
         Node selectedNode = MainCameraControl.Inst.selectedNode;
         Assembly selectedAssembly = MainCameraControl.Inst.selectedAssembly;
         if(selectedNode){
-
-            
-
-
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 
             float handleSize = 500f;

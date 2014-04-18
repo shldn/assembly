@@ -19,6 +19,10 @@ public class Assembly {
     public string name = System.DateTime.Now.ToString("MMddyyHHmmssff");
 	public List<Node> nodes = new List<Node>();
 
+    // convex hull skin variables
+    public bool showMesh = true; // display convex hull mesh skin around assembly
+    public bool updateMesh = false; // update the mesh with the node positions every frame
+
     public GameObject physicsObject = null;
 
     //asmbly control
@@ -140,7 +144,46 @@ public class Assembly {
         physicsObject.rigidbody.useGravity = false;
         physicsObject.rigidbody.angularDrag = 0.2f;
         physicsObject.rigidbody.drag = 0.2f;
+
     } // End of InitPhysicsObject().
+
+    void ApplyConvexMeshToPhysicsObject()
+    {
+        MeshFilter meshFilter = physicsObject.GetComponent<MeshFilter>();
+        if (meshFilter == null)
+        {
+            meshFilter = physicsObject.AddComponent<MeshFilter>();
+            physicsObject.AddComponent<MeshRenderer>();
+
+            //physicsObject.renderer.material.shader = Shader.Find("Particles/Additive");
+            //physicsObject.renderer.material.SetColor("_TintColor", new Color(0.05f, 0.05f, 0.07f, 1f));
+
+            physicsObject.renderer.material = PrefabManager.Inst.assemblySkin;
+        }
+
+        // get node positions
+        List<Vector3> nodePositions = new List<Vector3>(nodes.Count);
+
+        float vertexOffset = 0.6f;
+        foreach (Node n in nodes){
+            nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(1f, 1f, 1f) * vertexOffset)));
+            nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(1f, 1f, -1f) * vertexOffset)));
+            nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(1f, -1f, 1f) * vertexOffset)));
+            nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(1f, -1f, -1f) * vertexOffset)));
+            nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(-1f, 1f, 1f) * vertexOffset)));
+            nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(-1f, 1f, -1f) * vertexOffset)));
+            nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(-1f, -1f, 1f) * vertexOffset)));
+            nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(-1f, -1f, -1f) * vertexOffset)));
+            
+        }
+
+        if (nodePositions.Count < 5)
+            return;
+
+        // apply the convex hull to the mesh
+        Mesh mesh = meshFilter.mesh;
+        ConvexHull.UpdateMeshFromPoints(nodePositions, ref mesh);
+    }
 
     // Sets up center of mass, mass, etc. for the assembly based on current structure.
     public void RecomputeRigidbody(){
@@ -148,24 +191,34 @@ public class Assembly {
             return;
 
         if(nodes.Count > 0){
-            physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
-            physicsObject.rigidbody.mass = nodes.Count;
+            physicsObject.rigidbody.mass = nodes.Count * 1f;
         } else {
             MonoBehaviour.print("Zero nodes!");
             physicsObject.rigidbody.mass = 1f;
             physicsObject.rigidbody.inertiaTensor = Vector3.one;
         }
-
+        /*
         Vector3 centerOfMass = Vector3.zero;
         for(int i = 0; i < nodes.Count; i++){
             centerOfMass += nodes[i].worldPosition;
         }
         centerOfMass /= (float)nodes.Count;
+        */
 
+        /*
         if(nodes.Count > 0){
             physicsObject.rigidbody.centerOfMass = physicsObject.transform.InverseTransformPoint(centerOfMass);
             physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
         }
+        */
+
+        if (showMesh)
+            ApplyConvexMeshToPhysicsObject();
+
+        physicsObject.AddComponent<MeshCollider>();
+        physicsObject.layer = LayerMask.NameToLayer("Ignore Raycast");
+
+        needRigidbodyUpdate = false;
     } // End of ComputerPhysics().
 
 
@@ -289,6 +342,9 @@ public class Assembly {
 
             Health /= 2f;
         }
+
+        if (showMesh && updateMesh)
+            UpdateSkinMesh();
 
     } // End of UpdateTransform().
 
@@ -591,4 +647,15 @@ public class Assembly {
         }        
         Destroy();
     }
+
+    private void UpdateSkinMesh()
+    {
+        MeshFilter meshFilter = physicsObject.GetComponent<MeshFilter>();
+        if (meshFilter != null)
+        {
+            for (int i = 0; i < nodes.Count && i < meshFilter.mesh.vertices.Length; ++i)
+                meshFilter.mesh.vertices[i] = HexUtilities.HexToWorld(nodes[i].localHexPosition);
+        }
+    } // End UpdateSkinMesh
+
 } // End of Assembly.

@@ -24,7 +24,6 @@ public class MainCameraControl : MonoBehaviour {
     public CamType camType = CamType.ORBIT_DEMO;
     float camOrbitDist = 100f;
 
-    public bool showAssemReadouts = true;
 
     public Texture2D nodeSelectTex = null;
     public Texture2D assemblySelectTex = null;
@@ -86,7 +85,7 @@ public class MainCameraControl : MonoBehaviour {
             camOrbitDist += camOrbitDist * -Input.GetAxis("Mouse ScrollWheel");
 
             // Orbit can be changed by holding mouse button.
-            if(Input.GetMouseButton(1))
+            if(Input.GetMouseButton(1) && !GameManager.Inst.pauseMenu)
                 HandleMouseOrbit();
 
             // Camera's focal point and distance changes based on camera orbit distance.
@@ -96,7 +95,7 @@ public class MainCameraControl : MonoBehaviour {
             }
 
             // Hitting 'space' will break out of orbit mode.
-            if(Input.GetKeyDown(KeyCode.Space)){
+            if(Input.GetKeyDown(KeyCode.Space) && !GameManager.Inst.pauseMenu){
                 selectedAssembly = null;
                 selectedNode = null;
                 camType = CamType.FREELOOK;
@@ -116,18 +115,18 @@ public class MainCameraControl : MonoBehaviour {
                 HandleMouseOrbit();
 
                 // Space locks the camera in place.
-                if(Input.GetKeyDown(KeyCode.Space))
+                if(Input.GetKeyDown(KeyCode.Space) && !GameManager.Inst.pauseMenu)
                     camType = CamType.LOCKED;
             }
             // Locked camera does not move with mouse input.
             else if(camType == CamType.LOCKED){
 
                 // Holding right mouse will rotate camera.
-                if(Input.GetMouseButton(1))
+                if(Input.GetMouseButton(1) && !GameManager.Inst.pauseMenu)
                     HandleMouseOrbit();
 
                 // Space breaks out into freelook mode.
-                if(Input.GetKeyDown(KeyCode.Space))
+                if(Input.GetKeyDown(KeyCode.Space) && !GameManager.Inst.pauseMenu)
                     camType = CamType.FREELOOK;
             }
         }
@@ -150,7 +149,7 @@ public class MainCameraControl : MonoBehaviour {
         }
 
         // When clicking on a node...
-        if(Input.GetMouseButtonDown(0) && hoveredNode && !NodeEngineering.Inst.uiLockout){
+        if(Input.GetMouseButtonDown(0) && hoveredNode && !NodeEngineering.Inst.uiLockout && !GameManager.Inst.pauseMenu){
             // If nothing is selected currently, select it's assembly.
             if(!selectedNode && !selectedAssembly){
                 FocusOn(hoveredNode.assembly);
@@ -179,7 +178,7 @@ public class MainCameraControl : MonoBehaviour {
         }
 
         // Return to demo mode with Enter.
-        if(Input.GetKey(KeyCode.Return)){
+        if(Input.GetKey(KeyCode.Return) && !GameManager.Inst.pauseMenu){
             randomOrbit = Random.rotation;
             selectedAssembly = null;
             selectedNode = null;
@@ -224,7 +223,7 @@ public class MainCameraControl : MonoBehaviour {
     void OnGUI(){
 
         // Assembly health/name/etc. readouts.
-        if(showAssemReadouts){
+        if(GameManager.Inst.showAssemReadouts){
             for(int i = 0; i < Assembly.GetAll().Count; i++){
                 Assembly currentAssembly = Assembly.GetAll()[i];
                 Vector3 assemblyScreenPos = Camera.main.WorldToScreenPoint(Assembly.GetAll()[i].WorldPosition);
@@ -298,7 +297,7 @@ public class MainCameraControl : MonoBehaviour {
         if(camType == CamType.ORBIT_CONTROLLED){
             cameraTypeLabel += "Case-Orbit camera";
             cameraInfo += "Click on a node (or another assembly) to select it.\n";
-            cameraInfo += "Use the MOUSEWHEEL to zoom in and out.";
+            cameraInfo += "Use the MOUSEWHEEL to zoom in and out.\n";
             if(selectedAssembly){
                 cameraInfo += "Use the arrow keys to rotate this assembly manually.\n";
             }
@@ -315,6 +314,7 @@ public class MainCameraControl : MonoBehaviour {
             cameraInfo += "Click on an assembly to investigate it.\n";
         }
 
+        cameraInfo += "\nPress ESC for menu.";
 
         GUI.skin.label.fontStyle = FontStyle.Normal;
         GUI.skin.label.fontSize = 10;
@@ -329,8 +329,7 @@ public class MainCameraControl : MonoBehaviour {
         
         if(GameManager.Inst.showControls){
 
-            showAssemReadouts = GUI.Toggle(controlsRect, showAssemReadouts, "Show Assembly Info");
-            controlsRect.y += guiHeight;
+            
 
             /*
             bool camLocked = camType == CamType.LOCKED;
