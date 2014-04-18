@@ -161,6 +161,14 @@ public class ConvexHull
         FillMeshInfoWithFaces(savedFaces, pts, newVertices, newTriangles, newUV);
     }
 
+    private Vector3 GetCenterPt()
+    {
+        Vector3 center = Vector3.zero;
+        foreach (Vector3 p in pts)
+            center += p;
+        center /= (float)pts.Count;
+        return center;
+    }
     
     // Fill the passed in Lists with mesh info for this pyramid.
     public void FillMeshInfoWithFaces(List<Face> faces, List<Vector3> origPts, List<Vector3> newVertices, List<int> newTriangles, List<Vector2> newUV)
@@ -175,8 +183,16 @@ public class ConvexHull
             newTriangles.Add(faces[i].idx[1]);
         }
 
+
+        // more efficient if we do these calculations only for verts in the mesh
+        Vector3 center = GetCenterPt();
+        float pi_recip = 1.0f / Mathf.PI;
         for (int i = 0; i < newVertices.Count; ++i)
-            newUV.Add(new Vector2(0, 0));
+        {
+            // project uvs as if mesh was a sphere
+            Vector3 v = (newVertices[i] - center).normalized;
+            newUV.Add(new Vector2(0.5f + 0.5f * pi_recip * Mathf.Atan2(v.z, v.x), 0.5f - pi_recip * Mathf.Asin(v.y)));
+        }
     }
 
 
