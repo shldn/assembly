@@ -97,7 +97,10 @@ public class GameManager : MonoBehaviour {
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
                 FoodPellet newPellet = FoodPellet.AddNewFoodPellet();
                 newPellet.worldPosition = MathUtilities.RandomVector3Sphere(worldSize);
-                Instantiate(PrefabManager.Inst.reproduceBurst, newPellet.worldPosition, Quaternion.identity);
+                UnityEngine.Object lightEffect = Instantiate(PrefabManager.Inst.reproduceBurst, newPellet.worldPosition, Quaternion.identity);
+
+                //destroy effect after 1.5 sec
+                UnityEngine.Object.Destroy(lightEffect, 1.5F);
             }
         else if( FoodPellet.GetAll().Count > FoodPellet.MAX_FOOD )
             for(int i = FoodPellet.GetAll().Count - 1; i >= FoodPellet.MAX_FOOD; --i)
@@ -312,6 +315,25 @@ public class GameManager : MonoBehaviour {
             controlGuiRect.y += guiHeight;
             GUI.enabled = true;
             */
+
+            /*GUI to control food detection and distance*/
+            GUI.Label(controlGuiRect, "Adjust Detection Range: " + Node.detectRange);
+            controlGuiRect.y += guiHeight;
+            Node.detectRange = GUI.HorizontalSlider(controlGuiRect, Node.detectRange, 10F, 100F);
+            controlGuiRect.y += guiHeight;
+            if(Node.detectRange < Node.consumeRange)
+                Node.consumeRange = Node.detectRange;
+            GUI.Label(controlGuiRect, "Adjust Consume Range: " + Node.consumeRange);
+            controlGuiRect.y += guiHeight;
+            Node.consumeRange = GUI.HorizontalSlider(controlGuiRect, Node.consumeRange, 10F, 100F);
+            if( Node.consumeRange > Node.detectRange)
+                Node.detectRange = Node.consumeRange;
+            controlGuiRect.y += guiHeight;
+            GUI.Label(controlGuiRect, "Adjust Consume Rate: " + Node.consumeRate);
+            controlGuiRect.y += guiHeight;
+            Node.consumeRate = GUI.HorizontalSlider(controlGuiRect, Node.consumeRate, 5F, 20F);
+            controlGuiRect.y += guiHeight;
+
         }
 
 

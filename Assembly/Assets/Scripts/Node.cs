@@ -28,8 +28,8 @@ public class Node {
 
     // Metabolism ------------------------------------------------------------------------ ||
     public static float consumeRange = 30.0f; //how far away can it consume?
-    public float detectRange  = 50.0f; //how far can it detect food
-    public float consumeRate = 10.0f; //rate asm consume food
+    public static float detectRange  = 50.0f; //how far can it detect food
+    public static float consumeRate = 10.0f; //rate asm consume food
 
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
