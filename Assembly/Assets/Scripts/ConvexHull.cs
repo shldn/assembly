@@ -34,6 +34,7 @@ public class ConvexHull
     public List<Vector3> newVertices = new List<Vector3>();
     public List<Vector2> newUV = new List<Vector2>();
     public List<int> newTriangles = new List<int>();
+    public List<Vector3> newNormals = new List<Vector3>();
 
     // convex hull variables
     List<Vector3> pts = new List<Vector3>();
@@ -59,6 +60,8 @@ public class ConvexHull
         mesh.vertices = newVertices.ToArray();
         mesh.uv = newUV.ToArray();
         mesh.triangles = newTriangles.ToArray();
+        if (newNormals.Count > 0)
+            mesh.normals = newNormals.ToArray();
     }
 
     void ComputeHull()
@@ -169,29 +172,78 @@ public class ConvexHull
         center /= (float)pts.Count;
         return center;
     }
+
+    private void AddNormal(Dictionary<int, List<Vector3>> vertNormals, int idx, Vector3 normal)
+    {
+        if (!vertNormals.ContainsKey(idx))
+            vertNormals.Add(idx, new List<Vector3>());
+        vertNormals[idx].Add(normal);
+    }
     
     // Fill the passed in Lists with mesh info for this pyramid.
     public void FillMeshInfoWithFaces(List<Face> faces, List<Vector3> origPts, List<Vector3> newVertices, List<int> newTriangles, List<Vector2> newUV)
     {
+        bool computeUvs = true;
+        bool computeNormals = true;
+
+        Dictionary<int, List<Vector3>> vertNormals = new Dictionary<int,List<Vector3>>();
+
+        // verts
         newVertices.AddRange(origPts);
 
+        // tris
         for(int i=0; i < faces.Count; ++i)
         {
             // Unity expects inward facing triangles... clockwise, so flip order
             newTriangles.Add(faces[i].idx[0]);
             newTriangles.Add(faces[i].idx[2]); 
             newTriangles.Add(faces[i].idx[1]);
+
+            if( computeNormals )
+            {
+                Vector3 v1 = origPts[faces[i].idx[2]] - origPts[faces[i].idx[0]];
+                Vector3 v2 = origPts[faces[i].idx[1]] - origPts[faces[i].idx[2]];
+                Vector3 faceNormal = Vector3.Cross(v1, v2).normalized;
+                AddNormal(vertNormals, faces[i].idx[0], faceNormal);
+                AddNormal(vertNormals, faces[i].idx[1], faceNormal);
+                AddNormal(vertNormals, faces[i].idx[2], faceNormal);
+            }
         }
 
-
+        // uvs
         // more efficient if we do these calculations only for verts in the mesh
-        Vector3 center = GetCenterPt();
-        float pi_recip = 1.0f / Mathf.PI;
-        for (int i = 0; i < newVertices.Count; ++i)
+        if (computeUvs)
         {
-            // project uvs as if mesh was a sphere
-            Vector3 v = (newVertices[i] - center).normalized;
-            newUV.Add(new Vector2(0.5f + 0.5f * pi_recip * Mathf.Atan2(v.z, v.x), 0.5f - pi_recip * Mathf.Asin(v.y)));
+            Vector3 center = GetCenterPt();
+            float pi_recip = 1.0f / Mathf.PI;
+            for (int i = 0; i < newVertices.Count; ++i)
+            {
+                // project uvs as if mesh was a sphere
+                Vector3 v = (newVertices[i] - center).normalized;
+                newUV.Add(new Vector2(0.5f + 0.5f * pi_recip * Mathf.Atan2(v.z, v.x), 0.5f - pi_recip * Mathf.Asin(v.y)));
+            }
+        }
+        else
+            for (int i = 0; i < newVertices.Count; ++i)
+                newUV.Add(new Vector2(0, 0));
+
+        // normals
+        if (computeNormals)
+        {
+            for (int i = 0; i < newVertices.Count; ++i)
+            {
+                if (vertNormals.ContainsKey(i))
+                {
+                    Vector3 sum = Vector3.zero;
+                    List<Vector3> normals = vertNormals[i];
+                    for (int j = 0; j < normals.Count; ++j)
+                        sum += normals[j];
+                    sum /= (float)normals.Count;
+                    newNormals.Add(sum);
+                }
+                else
+                    newNormals.Add(Vector3.up);
+            }
         }
     }
 
