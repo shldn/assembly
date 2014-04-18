@@ -11,6 +11,8 @@ public class PrefabManager : MonoBehaviour {
 	public GameObject foodPellet = null;
 	public GameObject reproduceBurst = null;
 
+    public Material assemblySkin = null;
+
     // debug
     public GameObject jetEngine = null;
 
