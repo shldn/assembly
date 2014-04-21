@@ -40,11 +40,29 @@ public class ConvexHull
     List<Vector3> pts = new List<Vector3>();
     List<bool> used = new List<bool>();
 
+    bool enforceFloatingPointCheck = true;
+
+
     public ConvexHull(List<Vector3> newPts)
     {
-        pts = newPts;
-
+        AddPts(newPts);
         ComputeHull();
+    }
+
+    private void AddPts(List<Vector3> newPts)
+    {
+        // to reduce holes from floating point error, only allow positions up to a certain decimal point
+        if (enforceFloatingPointCheck)
+        {
+            int numDecimalPlaces = 4;
+            pts.Capacity = newPts.Count;
+            for (int i = 0; i < newPts.Count; ++i)
+                pts.Add( new Vector3((float)System.Math.Round(newPts[i].x, numDecimalPlaces),
+                                     (float)System.Math.Round(newPts[i].y, numDecimalPlaces),
+                                     (float)System.Math.Round(newPts[i].z, numDecimalPlaces)) );
+        }
+        else
+            pts = newPts;
     }
 
     public Mesh GetMesh()
