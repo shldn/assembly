@@ -164,8 +164,28 @@ public class Assembly {
         // get node positions
         List<Vector3> nodePositions = new List<Vector3>(nodes.Count);
 
-        float vertexOffset = 0.6f;
+        float vertexOffset = 0.7f;
         foreach (Node n in nodes){
+           // nodePositions.Add(n.localPosition);
+
+            /*
+            if(Random.Range(0f, 1f) < 0.1f){
+                MonoBehaviour.print("Hex to world local: " + HexUtilities.HexToWorld(n.localHexPosition) + "  Local real: " + n.localPosition);
+            }
+            */
+
+            
+            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(1f, 1f, 1f) * vertexOffset)));
+            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(1f, 1f, -1f) * vertexOffset)));
+            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(1f, -1f, 1f) * vertexOffset)));
+            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(1f, -1f, -1f) * vertexOffset)));
+            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(-1f, 1f, 1f) * vertexOffset)));
+            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(-1f, 1f, -1f) * vertexOffset)));
+            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(-1f, -1f, 1f) * vertexOffset)));
+            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(-1f, -1f, -1f) * vertexOffset)));
+            
+             
+            /*
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(1f, 1f, 1f) * vertexOffset)));
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(1f, 1f, -1f) * vertexOffset)));
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(1f, -1f, 1f) * vertexOffset)));
@@ -174,7 +194,7 @@ public class Assembly {
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(-1f, 1f, -1f) * vertexOffset)));
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(-1f, -1f, 1f) * vertexOffset)));
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(-1f, -1f, -1f) * vertexOffset)));
-            
+            */
         }
 
         if (nodePositions.Count < 5)
@@ -215,7 +235,9 @@ public class Assembly {
         if (showMesh)
             ApplyConvexMeshToPhysicsObject();
 
-        physicsObject.AddComponent<MeshCollider>();
+        MeshCollider meshCollider = physicsObject.AddComponent<MeshCollider>();
+        meshCollider.convex = true;
+
         physicsObject.layer = LayerMask.NameToLayer("Ignore Raycast");
 
         needRigidbodyUpdate = false;

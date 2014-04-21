@@ -18,6 +18,7 @@ public class Node {
 
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
+    public Vector3 localPosition = Vector3.zero;
 
     public bool doomed = false;
     public Vector3 sendOffVector = Vector3.zero;
@@ -84,6 +85,7 @@ public class Node {
     }
 	public Node(IntVector3 hexPos){
         localHexPosition = hexPos;
+        localPosition = HexUtilities.HexToWorld(localHexPosition);
         Initialize(HexUtilities.HexToWorld(localHexPosition));
     }
     public Node(IntVector3 hexPos, NodeProperties props)
