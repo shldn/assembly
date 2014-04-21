@@ -201,8 +201,8 @@ public class ConvexHull
     // Fill the passed in Lists with mesh info for this pyramid.
     public void FillMeshInfoWithFaces(List<Face> faces, List<Vector3> origPts, List<Vector3> newVertices, List<int> newTriangles, List<Vector2> newUV)
     {
-        bool computeUvs = true;
-        bool computeNormals = true;
+        bool includeUvs = true;
+        bool includeNormals = true;
 
         Dictionary<int, List<Vector3>> vertNormals = new Dictionary<int,List<Vector3>>();
 
@@ -217,11 +217,9 @@ public class ConvexHull
             newTriangles.Add(faces[i].idx[2]); 
             newTriangles.Add(faces[i].idx[1]);
 
-            if( computeNormals )
+            if (includeNormals)
             {
-                Vector3 v1 = origPts[faces[i].idx[2]] - origPts[faces[i].idx[0]];
-                Vector3 v2 = origPts[faces[i].idx[1]] - origPts[faces[i].idx[2]];
-                Vector3 faceNormal = Vector3.Cross(v1, v2).normalized;
+                Vector3 faceNormal = faces[i].normal;
                 AddNormal(vertNormals, faces[i].idx[0], faceNormal);
                 AddNormal(vertNormals, faces[i].idx[1], faceNormal);
                 AddNormal(vertNormals, faces[i].idx[2], faceNormal);
@@ -230,7 +228,7 @@ public class ConvexHull
 
         // uvs
         // more efficient if we do these calculations only for verts in the mesh
-        if (computeUvs)
+        if (includeUvs)
         {
             Vector3 center = GetCenterPt();
             float pi_recip = 1.0f / Mathf.PI;
@@ -246,7 +244,7 @@ public class ConvexHull
                 newUV.Add(new Vector2(0, 0));
 
         // normals
-        if (computeNormals)
+        if (includeNormals)
         {
             for (int i = 0; i < newVertices.Count; ++i)
             {
@@ -691,6 +689,7 @@ public class Face
     public List<Face> adjFace = new List<Face>(3);
     Plane p;
     public bool removeMe = false;
+    public Vector3 normal { get { return -p.normal; } }
 
     public Face(List<Vector3> pts_, int idx1, int idx2, int idx3)
     {
