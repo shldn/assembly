@@ -11,14 +11,12 @@ public class Node {
     public static List<Node> GetAll() { return allNodes; }
 
     // Variables ------------------------------------------------------------------------- ||
-    public NodeType nodeType = NodeType.none;
     public NodeProperties nodeProperties = NodeProperties.random;
 
     public Assembly assembly = null;
 
     public Vector3 worldPosition = Vector3.zero;
     public IntVector3 localHexPosition = IntVector3.zero;
-    public Vector3 localPosition = Vector3.zero;
 
     public bool doomed = false;
     public Vector3 sendOffVector = Vector3.zero;
@@ -27,137 +25,90 @@ public class Node {
     public Quaternion worldRotation = Quaternion.identity;
     public Quaternion localRotation = Quaternion.identity;
 
-    // Metabolism ------------------------------------------------------------------------ ||
-    public static float consumeRange = 30.0f; //how far away can it consume?
-    public static float detectRange  = 50.0f; //how far can it detect food
-    public static float consumeRate = 10.0f; //rate asm consume food
+    public List<Node> neighbors = new List<Node>();
+
+    public Color baseColor = PrefabManager.Inst.stemColor;
+    public bool signalLock = false;
+    public bool activeLogic = false;
+
 
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
-
-    public GameObject senseFieldBillboard = null;
-    float arcScale = 5f;
-
-    public GameObject actuateVectorBillboard = null;
-    float actuateVecScale = 5f;
-
-    public bool validLogic = false; //sense - control 
-    public bool propelling = false; //red node moving
-
-    // debug
-    public GameObject propulsionEffect = null;
-
-    public static Color stemColor = new Color(0.4f, 0.4f, 0.4f, 1f);
-    public static Color senseColor = new Color(0.64f, 0.8f, 0.44f, 1f);
-    public static Color actuatorColor = new Color(0.67f, 0.22f, 0.22f, 1f);
-    public static Color controlColor = new Color(0.35f, 0.59f, 0.84f, 1f);
-
-    // Calculated properties ------------------------------------------------------------- ||
-
-    public Quaternion worldSenseRot {
-        get{
-            if(assembly && assembly.physicsObject)
-                return assembly.physicsObject.transform.rotation * nodeProperties.senseVector;
-            else
-                return nodeProperties.senseVector;
-        }
-    }
-
-    public Quaternion worldAcuateRot {
-        get{
-            if(assembly && assembly.physicsObject)
-                return assembly.physicsObject.transform.rotation * nodeProperties.actuateVector;
-            else
-                return nodeProperties.actuateVector;
-        }
-    }
 
     public static implicit operator bool(Node exists){
         return exists != null;
     }
 
-
     // ------------------------------------------------------------------------------------ ||
-
     // Constructors
 	public Node(){
         Initialize(Vector3.zero);
     }
 	public Node(IntVector3 hexPos){
         localHexPosition = hexPos;
-        localPosition = HexUtilities.HexToWorld(localHexPosition);
         Initialize(HexUtilities.HexToWorld(localHexPosition));
     }
-    public Node(IntVector3 hexPos, NodeProperties props)
-    {
+    public Node(IntVector3 hexPos, NodeProperties props){
         localHexPosition = hexPos;
         nodeProperties = props;
         Initialize(HexUtilities.HexToWorld(localHexPosition));
     }
+    // Copy an old node.
+    public Node(Node oldNode){
+        localHexPosition = oldNode.localHexPosition;
+        localRotation = oldNode.localRotation;
+        nodeProperties.actuateVector = oldNode.nodeProperties.actuateVector;
+        nodeProperties.fieldOfView = oldNode.nodeProperties.fieldOfView;
+        nodeProperties.senseVector = oldNode.nodeProperties.senseVector;
+        Initialize(HexUtilities.HexToWorld(localHexPosition));
 
-    // Copy Constructor - Make new node with current node position and orientation
-    public Node Duplicate() {
-        Node newNode = new Node(localHexPosition);
-        newNode.nodeProperties.actuateVector = nodeProperties.actuateVector;
-        newNode.nodeProperties.fieldOfView = nodeProperties.fieldOfView;
-        newNode.nodeProperties.senseVector = nodeProperties.senseVector;
-        return newNode;
+        // Manual assembly list insertion...
+        assembly = oldNode.assembly;
+        assembly.nodes.Add(this);
     }
+
 
     // Set-up of basic Node stuff.
     private void Initialize(Vector3 worldPos){
         worldPosition = worldPos;
         localRotation = Random.rotation;
+        gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
 
         allNodes.Add(this);
-
     } // End of Initialize().
 
-
     public void UpdateType(){
-        List<Node> neighbors = GetNeighbors();
+        neighbors = GetNeighbors();
         int neighborCount = (neighbors == null) ? 0 : neighbors.Count;
-
-            switch(neighborCount){
-                case 1:
-                    nodeType = NodeType.sense;
-                    break;
-                case 2:
-                    nodeType = NodeType.actuate;
-                    break;
-                case 3:
-                    nodeType = NodeType.control;
-                    break;
-                default:
-                    nodeType = NodeType.none;
-                    break;
-            }
-    } // End of UpdateType().
-
-
-    public void UpdateColor(){
-        switch(nodeType){
-            case NodeType.sense:
-                gameObject.renderer.material.color = Node.senseColor;
+        switch(neighborCount){
+            case 1:
+                if(this.GetType() != typeof(SenseNode)){
+                    SenseNode newNode = new SenseNode(this);
+                    Destroy();
+                }
                 break;
-            case NodeType.actuate:
-                gameObject.renderer.material.color = Node.actuatorColor;
+            case 2:
+                if(this.GetType() != typeof(ActuateNode)){
+                    ActuateNode newNode = new ActuateNode(this);
+                    Destroy();
+                }
                 break;
-            case NodeType.control:
-                gameObject.renderer.material.color = Node.controlColor;
-                break;
-            default:
-                gameObject.renderer.material.color = Node.stemColor;
+            case 3:
+                if(this.GetType() != typeof(ControlNode)){
+                    ControlNode newNode = new ControlNode(this);
+                    Destroy();
+                }
                 break;
         }
-        if(!validLogic)
-            gameObject.renderer.material.color = Color.Lerp(gameObject.renderer.material.color, new Color(0.2f, 0.2f, 0.2f), 0.8f);
-    } // End of UpdateColor().
+    } // End of UpdateType().
 
+    public virtual void Update(){
 
-    public void UpdateTransform(){
+        gameObject.renderer.material.color = baseColor;
+        if(!activeLogic)
+            gameObject.renderer.material.color = Color.Lerp(baseColor, new Color(0.2f, 0.2f, 0.2f), 0.9f);
 
-        // Destroy Node if it's dead and has reached the end of it's DissapearRate timer.
+        // Destroy Node if it's dead and has reached the end of it's DisappearRate timer.
         if(doomed){
             disappearTimer -= Time.deltaTime;
 
@@ -165,96 +116,24 @@ public class Node {
                 Destroy();
 
             worldPosition += sendOffVector * Time.deltaTime;
-        }
-            
-
-        // Initialize graphic
-        if( !gameObject ){
-            gameObject = GameObject.Instantiate(PrefabManager.Inst.node, worldPosition, Quaternion.identity) as GameObject;
-        }
+        } 
 
         if(assembly){
-            //worldPosition = Vector3.Lerp(worldPosition, assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition)), Time.deltaTime * 1f);
             worldPosition = assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition));
             worldRotation = assembly.WorldRotation * localRotation;
+
+            assembly.currentEnergy -= GetBurnRate() * Time.deltaTime;
         }
 
         // Update physical location
         gameObject.transform.position = worldPosition;
         gameObject.transform.rotation = worldRotation;
-
-        // Sense node view arc ----------------------------------------------------------
-        // Dynamically update existence of senseFieldBillboard.
-        if(((nodeType != NodeType.sense) || !validLogic) && senseFieldBillboard)
-            GameObject.Destroy(senseFieldBillboard);
-
-        if((nodeType == NodeType.sense) && validLogic && !senseFieldBillboard)
-            senseFieldBillboard = GameObject.Instantiate(PrefabManager.Inst.billboard, worldPosition, Quaternion.identity) as GameObject;
-
-        // Update arc rotation and such. 
-        if(senseFieldBillboard){
-            senseFieldBillboard.transform.position = worldPosition + (worldSenseRot * Vector3.forward * arcScale);
-            senseFieldBillboard.transform.localScale = Vector3.one * arcScale;
-
-            Debug.DrawRay(worldPosition, worldSenseRot * Vector3.forward * 3f, Color.green);
-
-            Color tempColor = senseColor;
-
-            //calling detect food on sense node
-            for(int j = 0; j < FoodPellet.GetAll().Count; ++j){
-                bool detected = this.DetectFood(FoodPellet.GetAll()[j] );
-                if( detected ){
-                    //change detection color
-                    tempColor = Color.cyan;
-
-                    if(SenseDetectFoodRange(FoodPellet.GetAll()[j]) ){
-                        //sense node consume food source
-                        Consume( FoodPellet.GetAll()[j] );
-                        
-                    }
-                    break;
-                }
-            }
-                               
-            senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
-
-            // The following code billboards the arc with the main camera.
-            senseFieldBillboard.transform.rotation = worldSenseRot;
-            senseFieldBillboard.transform.position = worldPosition + (senseFieldBillboard.transform.rotation * (Vector3.forward * (0.5f * arcScale)));
-            senseFieldBillboard.transform.rotation *= Quaternion.AngleAxis(90, Vector3.up);
-
-            Vector3 camRelativePos = senseFieldBillboard.transform.InverseTransformPoint(Camera.main.transform.position);
-            float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
-
-            senseFieldBillboard.transform.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
-        }
-
-
-        // debug
-        // Actuate node jet engine prop ------------------------------------------------- ||
-        // Dynamically update existence of jetEngine.
-        if(((nodeType != NodeType.actuate) || !validLogic) && propulsionEffect)
-            GameObject.Destroy(propulsionEffect);
-
-        if((nodeType == NodeType.actuate) && validLogic && !propulsionEffect)
-            propulsionEffect = GameObject.Instantiate(PrefabManager.Inst.jetEngine, worldPosition, Quaternion.identity) as GameObject;
-
-        if(propulsionEffect){
-            Debug.DrawRay(worldPosition, worldAcuateRot * Vector3.forward * 3f, Color.red);
-
-            propulsionEffect.transform.position = worldPosition + (worldAcuateRot * Vector3.forward) * -0.5f;
-            propulsionEffect.transform.rotation = worldAcuateRot;
-        }
     } // End of UpdateTransform(). 
 
 
-    public void Destroy(){
+    public virtual void Destroy(){
         if(gameObject)
             GameObject.Destroy(gameObject);
-        if(senseFieldBillboard)
-            GameObject.Destroy(senseFieldBillboard);
-        if(propulsionEffect)
-            GameObject.Destroy(propulsionEffect);
         if(assembly)
             assembly.RemoveNode(this);
 
@@ -270,7 +149,6 @@ public class Node {
 
 
     // Logic ---------------------------------------------------------------------------------||
-
     // Returns neighbors that this node can send a signal to.
     public List<Node> GetLogicConnections(){
         // No assembly... no neighbors... no logic!
@@ -278,24 +156,19 @@ public class Node {
             return null;
 
         List<Node> logicNodes = new List<Node>();
-        List<Node> neighbors = GetNeighbors();
+        neighbors = GetNeighbors();
 
         for(int i = 0; i < neighbors.Count; i++){
             Node currentNeighbor = neighbors[i];
 
             // Sense transmits to control
-            if(nodeType == NodeType.sense)
-                if(currentNeighbor.nodeType == NodeType.control)
+            if(this.GetType() == typeof(SenseNode))
+                if(currentNeighbor.GetType() == typeof(ControlNode))
                     logicNodes.Add(currentNeighbor);
 
             // Control transmits to actuate
-            if(nodeType == NodeType.control)
-                if(currentNeighbor.nodeType == NodeType.actuate)
-                    logicNodes.Add(currentNeighbor);
-
-            // Actuate transmits to other actuate
-            if(nodeType == NodeType.actuate)
-                if(currentNeighbor.nodeType == NodeType.actuate)
+            if(this.GetType() == typeof(ControlNode))
+                if(currentNeighbor.GetType() == typeof(ActuateNode))
                     logicNodes.Add(currentNeighbor);
         }
 
@@ -310,19 +183,19 @@ public class Node {
             return null;
 
         List<Node> logicNodes = new List<Node>();
-        List<Node> neighbors = GetNeighbors();
+        neighbors = GetNeighbors();
 
         for(int i = 0; i < neighbors.Count; i++){
             Node currentNeighbor = neighbors[i];
 
-            // Control transmits to actuate
-            if(nodeType == NodeType.actuate)
-                if(currentNeighbor.nodeType == NodeType.control)
+            // Sense transmits to control
+            if(this.GetType() == typeof(ActuateNode))
+                if(currentNeighbor.GetType() == typeof(ControlNode))
                     logicNodes.Add(currentNeighbor);
 
-            // Actuate transmits to other actuate
-            if(nodeType == NodeType.actuate)
-                if(currentNeighbor.nodeType == NodeType.actuate)
+            // Control transmits to actuate
+            if(this.GetType() == typeof(ControlNode))
+                if(currentNeighbor.GetType() == typeof(SenseNode))
                     logicNodes.Add(currentNeighbor);
         }
 
@@ -330,150 +203,13 @@ public class Node {
     } // End of GetLogicConnections().
 
 
-    // Returns all nodes 'down the line' that this node would propogate a signal to.
-    public List<Node> GetFullLogicNet(){
-        // No assembly... no neighbors... no logic!
-        if(!assembly)
-            return null;
-
-        List<Node> logicNodes = new List<Node>();
-
-        // Churn through (logical) nodes to test for new connections...
-        List<Node> nodesToTest = GetLogicConnections();
-
-        int logicDumpCatch = 0;
-
-        while(nodesToTest.Count > 0){
-            Node currentNode = nodesToTest[0];
-            logicNodes.Add(currentNode);
-            nodesToTest.Remove(currentNode);
-
-            // Test the node for logic neighbors.
-            List<Node> newNeighbors = currentNode.GetLogicConnections();
-            for(int i = 0; i < newNeighbors.Count; i++){
-                Node curNewNeighbor = newNeighbors[i];
-                // If a logic neighbor hasn't been captured, add it to logicNodes and the nodesToTest pile.
-                if((curNewNeighbor != this) && !logicNodes.Contains(curNewNeighbor)){
-                    nodesToTest.Add(curNewNeighbor);
-                }
-            }
-
-            // debug
-            logicDumpCatch++;
-            if(logicDumpCatch > 999){
-                MonoBehaviour.print("LogicNet while() loop is stuck!");
-                break;
-            }
-        }
-
-        return logicNodes;
-    } // End of GetFullLogicNet().
-
-
-    // Returns all nodes 'down the line' that this node would propogate a signal to.
-    public List<Node> GetFullReverseLogicNet(){
-        // No assembly... no neighbors... no logic!
-        if(!assembly)
-            return null;
-
-        List<Node> logicNodes = new List<Node>();
-
-        // Churn through (logical) nodes to test for new connections...
-        List<Node> nodesToTest = GetReverseLogicConnections();
-
-        int logicDumpCatch = 0;
-
-        while(nodesToTest.Count > 0){
-            Node currentNode = nodesToTest[0];
-            logicNodes.Add(currentNode);
-            nodesToTest.Remove(currentNode);
-
-            // Test the node for logic neighbors.
-            List<Node> newNeighbors = currentNode.GetLogicConnections();
-            for(int i = 0; i < newNeighbors.Count; i++){
-                Node curNewNeighbor = newNeighbors[i];
-                // If a logic neighbor hasn't been captured, add it to logicNodes and the nodesToTest pile.
-                if((curNewNeighbor != this) && !logicNodes.Contains(curNewNeighbor)){
-                    nodesToTest.Add(curNewNeighbor);
-                }
-            }
-
-            // debug
-            logicDumpCatch++;
-            if(logicDumpCatch > 999){
-                MonoBehaviour.print("LogicNet while() loop is stuck!");
-                break;
-            }
-        }
-
-        return logicNodes;
-    } // End of GetFullLogicNet().
-
-
-    // Food Pellets ---------------------------------------------------------------------------||
-
-    // Does this sense node detect a certain food node?
-    public bool DetectFood(FoodPellet food){
-        if(this.nodeType != NodeType.sense)
-            return false;
-        Vector3 foodDir = food.worldPosition - this.worldPosition;
-        float angle = Vector3.Angle(worldSenseRot * Vector3.forward, foodDir);
-
-        if(angle < nodeProperties.fieldOfView) //detect through view angle
-            if( foodDir.sqrMagnitude < (detectRange * detectRange) ) //detect within range
-                return true;
-        // Return false if no food pellets found.
-        return false;
-    }
-
-    // 'General' detect food... returns true if node detects any food pellet.
-    public bool DetectFood(){
-        for(int i = 0; i < FoodPellet.GetAll().Count; i++)
-            if(DetectFood(FoodPellet.GetAll()[i]))
-                return true;
-        // Return false if no food pellets found.
-        return false;
-    }
-
-    // Same as general DetectFood() but references a list of all detected food pellets.
-    public bool DetectFood(ref List<FoodPellet> allFood){
-        bool sensedFood = false;
-        for(int i = 0; i < FoodPellet.GetAll().Count; i++)
-            if(DetectFood(FoodPellet.GetAll()[i])){
-                allFood.Add(FoodPellet.GetAll()[i]);
-                sensedFood = true;
-            }
-        // Return false if no food pellets found.
-        return sensedFood;
-    }
-
-
-    // Gets the rotation from the node to a certain foodPellet.
-    public Quaternion RotToFood(FoodPellet food){
-        // Get rotation to food
-        Quaternion quatToFood = Quaternion.LookRotation(food.worldPosition - worldPosition, worldSenseRot * Vector3.up);
-
-        Quaternion relativeQuatToFood = Quaternion.Inverse(worldSenseRot) * quatToFood;
-
-        Debug.DrawRay(worldPosition, (worldSenseRot * relativeQuatToFood) * Vector3.forward * 3f);
-
-
-        return relativeQuatToFood;
-    }
-
-    public float FoodSignalStrength(FoodPellet food){
-        return 1f / Vector3.Distance(worldPosition, food.worldPosition);
-    }
-
-    
     // Neighbors ---------------------------------------------------------------------------||
-
     public List<Node> GetNeighbors(){
         // No assembly... no neighbors!
         if(!assembly)
             return null;
 
-        List<Node> neighbors = new List<Node>();
+        neighbors = new List<Node>();
         // Loop through all adjacent positions and see if they are occupied.
         for(int i = 0; i < 12; i++){
             IntVector3 currentNeighborPos = localHexPosition + HexUtilities.Adjacent(i);
@@ -535,7 +271,6 @@ public class Node {
 
 
     // Save/load -------------------------------------------------------------------------||
-
     // The string representation of this class for file saving (could use ToString, but want to be explicit)
     /*public string ToFileString(int format)
     {
@@ -550,58 +285,7 @@ public class Node {
         return new Node(pos, props);
     }*/
 
-    public float GetBurnRate(){
-        switch(nodeType){
-            case NodeType.none:
-                return BurnRate.none;
-            case NodeType.sense:
-                if(validLogic) //if green light
-                    return BurnRate.senseValid;
-                else //no green light
-                    return BurnRate.sense;
-            case NodeType.actuate:
-                if(propelling) //if red moving
-                    return BurnRate.actuateValid;
-                else //if red not moving
-                    return BurnRate.actuate;
-            case NodeType.control:
-                if(validLogic) //if control logic set
-                    return BurnRate.controlValid;
-                else // no connection
-                    return BurnRate.control;
-        }
-        return BurnRate.none;
-    }
-
-    //check if food is within consumption range
-    public bool SenseDetectFoodRange(FoodPellet food){
-        Vector3 foodDist = food.worldPosition - this.worldPosition;
-        
-        //if mag^2 < consume^2
-        if(foodDist.sqrMagnitude < (Node.consumeRange * Node.consumeRange)){
-            return true;
-        }
-        return false;
-    }
-
-
-    //consume food within range
-    public void Consume(FoodPellet food){
-        float realConsumeRate = (consumeRate* Time.deltaTime); 
-        Vector3 foodDist = food.worldPosition - this.worldPosition;
-        //consume rate square drop off
-        realConsumeRate *= (1 - foodDist.sqrMagnitude / (consumeRange * consumeRange) );
-        
-        food.currentEnergy -= realConsumeRate;
-        if( food.currentEnergy < 0){
-            assembly.currentEnergy += ( food.currentEnergy + realConsumeRate);
-            //destroy and create
-            food.Destroy();
-        }else {
-            assembly.currentEnergy += realConsumeRate;
-        }
-    }
-
+    public virtual float GetBurnRate(){return 0f;}
 
 } // End of Node.
 
@@ -614,7 +298,6 @@ public struct NodeProperties {
 
     // Actuate
     public Quaternion actuateVector;
-
 
     // A fully randomly-seeded NodeProperties.
     public static NodeProperties random{
@@ -665,8 +348,7 @@ public struct NodeProperties {
         }
     } // End of NodeProperties constructor.*/
 
-    public override string ToString()
-    {
+    public override string ToString(){
         return  "sv" + ":" + senseVector.ToString() + ";" +
                 "av" + ":" + actuateVector.ToString() + ";" +
                 "fov" + ":" + fieldOfView.ToString();

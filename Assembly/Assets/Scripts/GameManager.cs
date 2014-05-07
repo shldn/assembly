@@ -171,8 +171,7 @@ public class GameManager : MonoBehaviour {
         
         // Update nodes.
 		for(int i = 0; i < Node.GetAll().Count; ++i){
-            Node.GetAll()[i].UpdateTransform();
-            Node.GetAll()[i].UpdateColor();
+            Node.GetAll()[i].Update();
         }
 
         // Update foodpellets.
@@ -317,23 +316,24 @@ public class GameManager : MonoBehaviour {
             */
 
             /*GUI to control food detection and distance*/
-            GUI.Label(controlGuiRect, "Adjust Detection Range: " + Node.detectRange);
+            
+            GUI.Label(controlGuiRect, "Adjust Detection Range: " + SenseNode.detectRange);
             controlGuiRect.y += guiHeight;
-            Node.detectRange = GUI.HorizontalSlider(controlGuiRect, Node.detectRange, 10F, 100F);
+            SenseNode.detectRange = GUI.HorizontalSlider(controlGuiRect, SenseNode.detectRange, 10F, 100F);
             controlGuiRect.y += guiHeight;
-            if(Node.detectRange < Node.consumeRange)
-                Node.consumeRange = Node.detectRange;
-            GUI.Label(controlGuiRect, "Adjust Consume Range: " + Node.consumeRange);
+            if(SenseNode.detectRange < SenseNode.consumeRange)
+                SenseNode.consumeRange = SenseNode.detectRange;
+            GUI.Label(controlGuiRect, "Adjust Consume Range: " + SenseNode.consumeRange);
             controlGuiRect.y += guiHeight;
-            Node.consumeRange = GUI.HorizontalSlider(controlGuiRect, Node.consumeRange, 10F, 100F);
-            if( Node.consumeRange > Node.detectRange)
-                Node.detectRange = Node.consumeRange;
+            SenseNode.consumeRange = GUI.HorizontalSlider(controlGuiRect, SenseNode.consumeRange, 10F, 100F);
+            if( SenseNode.consumeRange > SenseNode.detectRange)
+                SenseNode.detectRange = SenseNode.consumeRange;
             controlGuiRect.y += guiHeight;
-            GUI.Label(controlGuiRect, "Adjust Consume Rate: " + Node.consumeRate);
+            GUI.Label(controlGuiRect, "Adjust Consume Rate: " + SenseNode.consumeRate);
             controlGuiRect.y += guiHeight;
-            Node.consumeRate = GUI.HorizontalSlider(controlGuiRect, Node.consumeRate, 5F, 20F);
+            SenseNode.consumeRate = GUI.HorizontalSlider(controlGuiRect, SenseNode.consumeRate, 5F, 20F);
             controlGuiRect.y += guiHeight;
-
+            
         }
 
 

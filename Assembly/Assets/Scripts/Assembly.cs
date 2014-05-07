@@ -7,7 +7,9 @@ public class Assembly {
     /* all nodes in assembly --------------------------------------*/
     public static List<Assembly> allAssemblies = new List<Assembly>();
     public static List<Assembly> GetAll() { return allAssemblies; }
-    public bool hasValidNodes = false;
+
+    public bool hasFunctioningNodes = false;
+    int numFramesAlive = 0;
 
     /* destroying assemblies and nodes -----------------------------*/
     //stores assemblies to be deleted for the frame update
@@ -128,7 +130,7 @@ public class Assembly {
     public Assembly Duplicate(){
         List<Node> newNodes = new List<Node>();
         for (int i = 0; i < nodes.Count; ++i){
-            Node newNode = nodes[i].Duplicate();
+            Node newNode = new Node(nodes[i]);
             newNodes.Add(newNode);
         }
 
@@ -143,7 +145,7 @@ public class Assembly {
         physicsObject.AddComponent<Rigidbody>();
         physicsObject.rigidbody.useGravity = false;
         physicsObject.rigidbody.angularDrag = 0.2f;
-        physicsObject.rigidbody.drag = 0.2f;
+        physicsObject.rigidbody.drag = 0.3f;
 
     } // End of InitPhysicsObject().
 
@@ -164,28 +166,8 @@ public class Assembly {
         // get node positions
         List<Vector3> nodePositions = new List<Vector3>(nodes.Count);
 
-        float vertexOffset = 0.7f;
+        float vertexOffset = 0.6f;
         foreach (Node n in nodes){
-           // nodePositions.Add(n.localPosition);
-
-            /*
-            if(Random.Range(0f, 1f) < 0.1f){
-                MonoBehaviour.print("Hex to world local: " + HexUtilities.HexToWorld(n.localHexPosition) + "  Local real: " + n.localPosition);
-            }
-            */
-
-            
-            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(1f, 1f, 1f) * vertexOffset)));
-            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(1f, 1f, -1f) * vertexOffset)));
-            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(1f, -1f, 1f) * vertexOffset)));
-            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(1f, -1f, -1f) * vertexOffset)));
-            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(-1f, 1f, 1f) * vertexOffset)));
-            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(-1f, 1f, -1f) * vertexOffset)));
-            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(-1f, -1f, 1f) * vertexOffset)));
-            nodePositions.Add(n.localPosition + (n.worldRotation * (new Vector3(-1f, -1f, -1f) * vertexOffset)));
-            
-             
-            /*
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(1f, 1f, 1f) * vertexOffset)));
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(1f, 1f, -1f) * vertexOffset)));
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(1f, -1f, 1f) * vertexOffset)));
@@ -194,7 +176,7 @@ public class Assembly {
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(-1f, 1f, -1f) * vertexOffset)));
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(-1f, -1f, 1f) * vertexOffset)));
             nodePositions.Add(HexUtilities.HexToWorld(n.localHexPosition) + (n.worldRotation * (new Vector3(-1f, -1f, -1f) * vertexOffset)));
-            */
+            
         }
 
         if (nodePositions.Count < 5)
@@ -235,9 +217,7 @@ public class Assembly {
         if (showMesh)
             ApplyConvexMeshToPhysicsObject();
 
-        MeshCollider meshCollider = physicsObject.AddComponent<MeshCollider>();
-        meshCollider.convex = true;
-
+        physicsObject.AddComponent<MeshCollider>();
         physicsObject.layer = LayerMask.NameToLayer("Ignore Raycast");
 
         needRigidbodyUpdate = false;
@@ -282,9 +262,8 @@ public class Assembly {
     public void AddNode(Node node){
         node.assembly = this;
         nodes.Add(node);
-        UpdateNodes();
-        UpdateNodeValidities();
-        needBurnRateUpdate = true;
+        //UpdateNodes();
+        //needBurnRateUpdate = true;
         needRigidbodyUpdate = true;
     } // End of AddNode().
 
@@ -295,7 +274,6 @@ public class Assembly {
             newNodes[i].assembly = this;
         nodes.AddRange(newNodes);
         UpdateNodes();
-        UpdateNodeValidities();
         needBurnRateUpdate = true;
         needRigidbodyUpdate = true;
     } // End of AddNode().
@@ -305,25 +283,23 @@ public class Assembly {
     {
         nodes.Remove(node);
         UpdateNodes();
-        UpdateNodeValidities();
         needBurnRateUpdate = true;
         needRigidbodyUpdate = true;
     } // End of RemoveNode().
 
 
     public void UpdateTransform(){
-
-        if(Input.GetKey(KeyCode.U))
-            WorldPosition = Vector3.zero;
+        numFramesAlive++;
+        UpdateNodes();
 
 
         // Dead assemblies should be destroyed with animation.
-        if( currentEnergy < 0.0f){
+        if(currentEnergy < 0.0f){
             DestroyWithAnimation();
         }
 
         // Useless assemblies should be immediately deleted.
-        if(REFACTOR_IF_INERT && !hasValidNodes){
+        if((numFramesAlive > 1) && REFACTOR_IF_INERT && !hasFunctioningNodes){
             Destroy();
             GameManager.Inst.SeedNewRandomAssembly();
             return;
@@ -333,28 +309,10 @@ public class Assembly {
             RecomputeRigidbody();
         }
 
-        //Propel assembly through the world based on activated nodes.
-        List<Node> allActuateNodes = GetActuateNodes();
-        for(int i = 0; i < allActuateNodes.Count; i++){
-            allActuateNodes[i].propelling = false;
-            needBurnRateUpdate = true;
-            GetFunctionalPropulsion();
-        }
-
-        //print debug
-        if( needBurnRateUpdate ){
-            needBurnRateUpdate = false;
-            UpdateEnergyBurnRate();
-        }
-        //assembly consume energy
-        CalculateEnergyUse();
-        //ConsoleScript.Inst.WriteToLog(currentEnergy+ " remains");
-            //Debug.Log(currentEnergy+ " remains");
-
 
         // If assembly has 200% health, it reproduces!
         if(Health >= 2f){
-            Object lightEffect = Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
 
             Assembly offspringAssem = Reproduce();
             offspringAssem.WorldPosition = WorldPosition;
@@ -363,9 +321,6 @@ public class Assembly {
             offspringAssem.physicsObject.rigidbody.angularVelocity = physicsObject.rigidbody.angularVelocity;
 
             Health /= 2f;
-
-            //destroy the visual effect after 1.5 sec
-            Object.Destroy(lightEffect, 1.5F);
         }
 
         if (showMesh && updateMesh)
@@ -468,7 +423,6 @@ public class Assembly {
 
     public void UpdateNodes(){
         for(int i = 0; i < nodes.Count; i++){
-            nodes[i].UpdateTransform();
             nodes[i].UpdateType();
         }
     } // End of UpdateNodes(). 
@@ -518,7 +472,7 @@ public class Assembly {
     public List<Node> GetSenseNodes(){
         List<Node> senseNodes = new List<Node>();
         for(int i = 0; i < nodes.Count; i++)
-            if(nodes[i].nodeType == NodeType.sense)
+            if(nodes[i].GetType() == typeof(SenseNode))
                 senseNodes.Add(nodes[i]);
 
         return senseNodes;
@@ -528,7 +482,7 @@ public class Assembly {
     public List<Node> GetActuateNodes(){
         List<Node> actuateNodes = new List<Node>();
         for(int i = 0; i < nodes.Count; i++)
-            if(nodes[i].nodeType == NodeType.actuate)
+            if(nodes[i].GetType() == typeof(ActuateNode))
                 actuateNodes.Add(nodes[i]);
 
         return actuateNodes;
@@ -538,13 +492,13 @@ public class Assembly {
     public List<Node> GetControlNodes(){
         List<Node> controlNodes = new List<Node>();
         for(int i = 0; i < nodes.Count; i++)
-            if(nodes[i].nodeType == NodeType.control)
+            if(nodes[i].GetType() == typeof(ControlNode))
                 controlNodes.Add(nodes[i]);
 
         return controlNodes;
     } // End of GetControlNodes().
 
-
+    /*
     public Vector3 GetFunctionalPropulsion(){
         List<Node> senseNodes = GetSenseNodes();
         List<Node> validActuateNodes = new List<Node>();
@@ -590,9 +544,9 @@ public class Assembly {
 
         return propulsion;
     } // End of GetMaximumPropulsion().
+    */
 
-
-
+    /*
     // Returns the assembly's propulsion if all of it's sense nodes fired at once.
     public void UpdateNodeValidities(){
         hasValidNodes = false;
@@ -638,7 +592,8 @@ public class Assembly {
         for(int i = 0; i < nodes.Count; i++)
             nodes[i].UpdateColor();
     } // End of UpdateNodeValidities().
-
+    */
+    
     // returns the fitness of this assembly in the current environment
     public float Fitness(){
         return 1;
