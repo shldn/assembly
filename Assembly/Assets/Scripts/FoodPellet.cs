@@ -113,7 +113,7 @@ public class FoodPellet{
         direction *= -0.2f;
         int min = -2, max = 2; //range, can be chnaged later
         Vector3 pos = new Vector3(random.Next(min, max), random.Next(min, max) ,random.Next(min, max) );
-        particleObject.Emit(gameObject.transform.position + pos, direction, 1.0f, 10, Color.green);
+        particleObject.Emit(gameObject.transform.position + pos, direction, 1.0f, 8, Color.green);
         
         //particleGlow.material.SetColor("_TintColor", Color.green);
         /*

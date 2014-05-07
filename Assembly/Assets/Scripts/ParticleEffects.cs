@@ -8,8 +8,9 @@ class ParticleEffects : MonoBehaviour{
 	}
 	
 	void LateUpdate (){
-		if (!particleObject.IsAlive())
+		if (!particleObject.IsAlive()){
 			Object.Destroy (this.gameObject);	
+		}
 	}
 	
 	/*
