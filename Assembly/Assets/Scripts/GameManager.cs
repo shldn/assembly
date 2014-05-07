@@ -250,7 +250,7 @@ public class GameManager : MonoBehaviour {
             if(minNumNodes > maxNumNodes) //check to maintain min - max
                 minNumNodes = maxNumNodes;
 
-            GUI.Label(controlGuiRect, "Burn Rate Multiplier: " + Assembly.burnCoefficient   );
+            GUI.Label(controlGuiRect, "Burn Rate Multiplier: " + Assembly.burnCoefficient.ToString("F2")  );
             controlGuiRect.y += guiHeight;
             Assembly.burnCoefficient = GUI.HorizontalSlider(controlGuiRect, Assembly.burnCoefficient, 0.0F, 10.0F);
             controlGuiRect.y += guiHeight;

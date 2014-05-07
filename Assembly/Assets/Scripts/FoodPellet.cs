@@ -47,12 +47,18 @@ public class FoodPellet{
     private static System.Random random = new System.Random();
 
     public GameObject gameObject = null;
+    private ParticleSystem particleObject;
+    private Renderer particleGlow = null;
 
     public FoodPellet(){
 
-        gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Random.rotation) as GameObject;
-        //glow = gameObject.transform.Find("glow").renderer;
 
+        gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Random.rotation) as GameObject;
+
+        particleObject = gameObject.GetComponentInChildren<ParticleSystem>();
+
+        //glow = gameObject.transform.Find("glow").renderer;
+        //particleGlow = gameObject.transform.Find("Particle Object").renderer;
     	//currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
         //UpdateFoodType();
@@ -62,6 +68,9 @@ public class FoodPellet{
         
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, pos, Random.rotation) as GameObject;
         //glow = gameObject.transform.Find("glow").renderer;
+
+        particleObject = gameObject.GetComponentInChildren<ParticleSystem>();
+        //particleGlow = gameObject.transform.Find("Particle System").renderer;
 
         worldPosition = pos;
         //currentEnergy = random.Next(0,10); //not all food are created equal
@@ -90,6 +99,33 @@ public class FoodPellet{
         if(ftFlag != ftPrevFlag)
             UpdateFoodType();
             */
+    }
+
+    public void SendParticleTo(Vector3 direction){
+        //Particle[] particles = particleObject.particles;
+        //int i =0;
+        
+        //direction.Normalize();
+        //particleObject.Emit(worldPosition, direction, 1.0f, 10, Color.green);
+        //Particle
+        
+        //negative direction so it goes from food to node
+        direction *= -0.2f;
+        int min = -2, max = 2; //range, can be chnaged later
+        Vector3 pos = new Vector3(random.Next(min, max), random.Next(min, max) ,random.Next(min, max) );
+        particleObject.Emit(gameObject.transform.position + pos, direction, 1.0f, 8, Color.green);
+        
+        //particleGlow.material.SetColor("_TintColor", Color.green);
+        /*
+        while (i < 10) {
+            particleObject.Emit(worldPosition, direction, 3f, 10, Color.red);
+            //float yPosition = Mathf.Sin(Time.time) * Time.deltaTime;
+            //particles[i].position += direction;
+            //particles[i].color = Color.red;
+            //particles[i].size = Mathf.Sin(Time.time) * 0.2F;
+            i++;
+        }*/
+        
     }
 
 /*
@@ -170,6 +206,11 @@ public class FoodPellet{
     }*/
 
     public void Destroy(){
+
+        particleObject.enableEmission = false;
+        particleObject.transform.parent = null;
+        particleObject.gameObject.AddComponent("ParticleEffects");
+
         allFoodPellets.Remove(this);
         Object.Destroy(gameObject);
     }
