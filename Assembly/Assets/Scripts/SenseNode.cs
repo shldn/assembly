@@ -88,6 +88,8 @@ public class SenseNode : Node {
                         if(neighbors[i].GetType() == typeof(ControlNode)){
 
                             ((ControlNode)neighbors[i]).Process(quatToFood, sigStrength);
+
+                            FoodPellet.GetAll()[j].SendParticleTo(FoodPellet.GetAll()[j].gameObject.transform.position - gameObject.transform.position);
                         }
                     }
                 signalLock = false;
