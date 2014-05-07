@@ -210,6 +210,7 @@ public class Node {
                     if(SenseDetectFoodRange(FoodPellet.GetAll()[j]) ){
                         //sense node consume food source
                         Consume( FoodPellet.GetAll()[j] );
+
                         
                     }
                     break;
@@ -591,7 +592,7 @@ public class Node {
         Vector3 foodDist = food.worldPosition - this.worldPosition;
         //consume rate square drop off
         realConsumeRate *= (1 - foodDist.sqrMagnitude / (consumeRange * consumeRange) );
-        
+        food.SendParticleTo(foodDist);
         food.currentEnergy -= realConsumeRate;
         if( food.currentEnergy < 0){
             assembly.currentEnergy += ( food.currentEnergy + realConsumeRate);
