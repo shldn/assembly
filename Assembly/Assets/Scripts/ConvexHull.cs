@@ -99,7 +99,7 @@ public class ConvexHull
         int cutIdxCount = 2; // found the first two verts in init
         for (; cutIdxCount < cutVertIndices.Count; ++cutIdxCount )
         {
-            GetNextBorderEdge(ref face, ref edge, f => f.ContainsVert(cutVertIndices[cutIdxCount]));
+            GetNextBorderEdge(ref face, ref edge, fe => fe.f.GetEdgeEndVert(fe.ei) == cutVertIndices[cutIdxCount]);
             cutFaces.Add(face);
             AddSafeEdge(safeEdges, face, edge);
         }
@@ -460,25 +460,23 @@ public class ConvexHull
         }
     }
 
-    void GetNextBorderEdge(ref Face startF, ref int edge, Predicate<Face> pred)
+    void GetNextBorderEdge(ref Face startF, ref int edge, Predicate<FaceEdgeIdxPair> pred)
     {
         int testE = (edge + 1) % 3;
-        int testVIdx = startF.idx[testE];
-        if (pred(startF))
-        {
+        if (pred(new FaceEdgeIdxPair(startF, testE)))
             edge = testE;
-        }
         else
         {
+            int testVIdx = startF.idx[testE];
             Face testF = startF.adjFace[testE];
-            edge = startF.GetAdjacentIdxEdgeStartsWithVertIdx(startF.idx[edge]);
+            edge = testF.idx.FindIndex(i => i == testVIdx);
 
-            // find the next edge along the walk that has a visible face on one side and not visible on the other.
+            // find the next edge along the walk that satisfies the predicate.
             Face nextF = null;
             while (testF != startF)
             {
                 nextF = testF.GetAdjacentEdgeStartsWithVertIdx(testVIdx);
-                if (!pred(testF))
+                if (!pred(new FaceEdgeIdxPair(testF, edge)))
                 {
                     testF = nextF;
                     edge = testF.GetAdjacentIdxEdgeStartsWithVertIdx(testVIdx);
