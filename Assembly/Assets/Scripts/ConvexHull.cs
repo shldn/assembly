@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -38,6 +39,7 @@ public class ConvexHull
 
     // convex hull variables
     List<Vector3> pts = new List<Vector3>();
+    List<Face> faces = new List<Face>();
     List<bool> used = new List<bool>();
 
     bool enforceFloatingPointCheck = true;
@@ -47,6 +49,101 @@ public class ConvexHull
     {
         AddPts(newPts);
         ComputeHull();
+    }
+
+    private void AddSafeEdge(Dictionary<Face, int> safeEdges, Face f, int e)
+    {
+        int edgeVal = (e + 1) * (e + 1);
+        if (!safeEdges.ContainsKey(f))
+            safeEdges.Add(f, edgeVal);
+        else
+            safeEdges[f] += edgeVal;
+    }
+    
+    // cut indices are expected to be in order as they walk along the mesh.
+    public void Cut(List<int> cutVertIndices)
+    {
+        if (cutVertIndices.Count <= 1)
+        {
+            Debug.LogError("cutVertIndices is empty or 1");
+            return;
+        }
+
+        // make sure the cut is closed
+        if (cutVertIndices[0] != cutVertIndices[cutVertIndices.Count - 1])
+            cutVertIndices.Add(cutVertIndices[0]);
+
+        Dictionary<Face, int> safeEdges = new Dictionary<Face, int>();
+        List<Face> cutFaces = new List<Face>();
+        int startE = -1;
+
+        // find the face that contains the first cut edge
+        for (int i = 0; i < faces.Count && cutFaces.Count == 0; ++i)
+        {
+            startE = faces[i].idx.FindIndex(iparam => iparam == cutVertIndices[0]);
+            if (startE != -1 && faces[i].idx[(startE + 1) % 3] == cutVertIndices[1])
+            {
+                cutFaces.Add(faces[i]);
+                AddSafeEdge(safeEdges, faces[i], startE);
+            }
+        }
+
+        if (cutFaces.Count == 0)
+        {
+            Debug.LogError("ConvexHull::Cut: first edge not found, perhaps the order is backwards");
+            return;
+        }
+
+        Face face = cutFaces[0];
+        int edge = startE;
+        int cutIdxCount = 2; // found the first two verts in init
+        for (; cutIdxCount < cutVertIndices.Count; ++cutIdxCount )
+        {
+            GetNextBorderEdge(ref face, ref edge, f => f.ContainsVert(cutVertIndices[cutIdxCount]));
+            cutFaces.Add(face);
+            AddSafeEdge(safeEdges, face, edge);
+        }
+
+        RemoveCutFaces(cutFaces, safeEdges);
+
+        // update the mesh
+        ClearMesh();
+        FillMeshInfoWithFaces(faces, pts, newVertices, newTriangles, newUV);
+
+    }
+
+    void AddAllAttachedToSet(Face face, HashSet<Face> set)
+    {
+        for (int i = 0; i < 3; ++i)
+            if (set.Add(face.adjFace[i]))
+                AddAllAttachedToSet(face, set);
+    }
+
+    void RemoveCutFaces(List<Face> cutFaces, Dictionary<Face, int> safeEdges)
+    {
+        HashSet<Face> facesToRemove = new HashSet<Face>();
+        for(int i=0; i < cutFaces.Count; ++i)
+            facesToRemove.Add(cutFaces[i]);
+
+        // remove faces attached to the cut faces
+        for (int i = 0; i < cutFaces.Count; ++i)
+        {
+            Face cutFace = cutFaces[i];
+            for (int afi = 0; afi < 3; ++afi)
+            {
+                int mask = (afi + 1) * (afi + 1);
+                if ((safeEdges[cutFace] & mask) == 0)
+                {
+                    Face faceToRemove = cutFace.adjFace[afi];
+                    if (facesToRemove.Add(faceToRemove))
+                        AddAllAttachedToSet(faceToRemove, facesToRemove);
+                }
+            }
+        }
+
+        // remove all marked for removal
+        foreach(Face f in facesToRemove)
+            faces.Remove(f);
     }
 
     private void AddPts(List<Vector3> newPts)
@@ -100,7 +197,6 @@ public class ConvexHull
         AssignPtsToFaces(initTet);
 
         // iteration phase
-        List<Face> savedFaces = new List<Face>();
         LinkedList<Face> faceStack = new LinkedList<Face>();
         initTet.PushFaces(ref faceStack);
 
@@ -113,7 +209,7 @@ public class ConvexHull
 
             if (f.visiblePts.Count == 0)
             {
-                savedFaces.Add(f);
+                faces.Add(f);
                 continue;
             }
             Vector3 furthestPt = new Vector3();
@@ -139,10 +235,10 @@ public class ConvexHull
                 else
                     it = it.Next;
             }
-            for (int i = savedFaces.Count - 1; i >= 0; --i)
+            for (int i = faces.Count - 1; i >= 0; --i)
             {
-                if (savedFaces[i].GetDistanceToPoint(furthestPt) >= 0.0f)
-                    savedFaces.RemoveAt(i);
+                if (faces[i].GetDistanceToPoint(furthestPt) >= 0.0f)
+                    faces.RemoveAt(i);
             }
 
             // Add visible points to new faces.
@@ -179,7 +275,7 @@ public class ConvexHull
 
         // populate the vert and index arrays with the saved faces
         ClearMesh();
-        FillMeshInfoWithFaces(savedFaces, pts, newVertices, newTriangles, newUV);
+        FillMeshInfoWithFaces(faces, pts, newVertices, newTriangles, newUV);
     }
 
     private Vector3 GetCenterPt()
@@ -304,11 +400,11 @@ public class ConvexHull
         Debug.LogError(str);
     }
 
-    void FindBorderEdge(ref Face startF, ref int edge, Vector3 visiblePt)
+    void FindBorderEdge(ref Face face, ref int edge, Vector3 visiblePt)
     {
         int testE = (edge + 1) % 3;
-        int testVIdx = startF.idx[testE];
-        Face testF = startF.adjFace[testE];
+        int testVIdx = face.idx[testE];
+        Face testF = face.adjFace[testE];
         if (!testF.IsPtVisible(visiblePt))
         {
             edge = testE;
@@ -363,6 +459,54 @@ public class ConvexHull
             startF = testF;
         }
     }
+
+    void GetNextBorderEdge(ref Face startF, ref int edge, Predicate<Face> pred)
+    {
+        int testE = (edge + 1) % 3;
+        int testVIdx = startF.idx[testE];
+        if (pred(startF))
+        {
+            edge = testE;
+        }
+        else
+        {
+            Face testF = startF.adjFace[testE];
+            edge = startF.GetAdjacentIdxEdgeStartsWithVertIdx(startF.idx[edge]);
+
+            // find the next edge along the walk that has a visible face on one side and not visible on the other.
+            Face nextF = null;
+            while (testF != startF)
+            {
+                nextF = testF.GetAdjacentEdgeStartsWithVertIdx(testVIdx);
+                if (!pred(testF))
+                {
+                    testF = nextF;
+                    edge = testF.GetAdjacentIdxEdgeStartsWithVertIdx(testVIdx);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            // error cases, print debugging info
+            if (testF == startF)
+            {
+                Debug.LogError("testF == startF");
+                PrintPoints();
+            }
+            if (edge == -1)
+            {
+                Debug.LogError("Bad edge, requesting edge");
+                for (int i = 0; i < startF.idx.Count; ++i)
+                    Debug.LogError("\t" + startF.idx[i]);
+                PrintPoints();
+            }
+
+            startF = testF;
+        }
+    }
+
 
     void GetNextFaceWithoutAdjacentVisible(ref Face startF, ref int edge, Vector3 visiblePt)
     {
@@ -547,6 +691,7 @@ public class ConvexHull
         newVertices.Clear();
         newUV.Clear();
         newTriangles.Clear();
+        newNormals.Clear();
     }
 
     // fun animation
@@ -679,6 +824,14 @@ public class Helpers
     }
 }
 
+public class Edge
+{
+    public Edge(Face f, int ei, bool forward_ = true) { face = f; edgeIdx = ei; forward = forward_; }
+    public Face face;
+    int edgeIdx;
+    bool forward;
+}
+
 public class Face
 {
 
@@ -703,6 +856,11 @@ public class Face
         adjFace.Add(null);
         adjFace.Add(null);
         p = new Plane(pts[0], pts[1], pts[2]);
+    } 
+
+    public bool ContainsVert(int vIdx)
+    {
+        return idx.Contains(vIdx);
     }
 
     public bool Equals(Face rhs)
@@ -740,6 +898,11 @@ public class Face
     public string IdxStr()
     {
         return idx[0] + " " + idx[1] + " " + idx[2];
+    }
+
+    public int GetEdgeEndVert(int edgeIdx)
+    {
+        return idx[(edgeIdx + 1) % 3];
     }
 
     public int GetEdgeIdx(Face f)
