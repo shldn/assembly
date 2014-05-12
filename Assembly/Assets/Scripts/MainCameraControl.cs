@@ -139,6 +139,21 @@ public class MainCameraControl : MonoBehaviour {
         // Roll camera using Q and E... generally works in every mode.
         targetRot *= Quaternion.AngleAxis(WesInput.rotationThrottle * -cameraRotateSpeed, Vector3.forward);
 
+        // Determine if a node is being hovered over.
+        hoveredNode = null;
+        if(selectedAssembly){
+            RaycastHit mouseRayHitNode = new RaycastHit();
+            if(Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f)), out mouseRayHitNode, Mathf.Infinity, (1 << LayerMask.NameToLayer("Nodes")))){
+                for(int i = 0; i < Node.GetAll().Count; i++){
+                    Node currentNode = Node.GetAll()[i];
+                    if((currentNode.gameObject == mouseRayHitNode.collider.gameObject) && (currentNode.assembly == selectedAssembly)){
+                        hoveredNode = currentNode;
+                        break;
+                    }
+                }
+            }
+        }
+
         Assembly hoveredAssembly = null;
         // Select an assembly
         RaycastHit mouseRayHit = new RaycastHit();
@@ -154,24 +169,7 @@ public class MainCameraControl : MonoBehaviour {
                     break;
                 }
             }
-        }
-        
-        hoveredNode = null;
-        if(selectedAssembly){
-            RaycastHit mouseRayHitNode = new RaycastHit();
-            if(Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f)), out mouseRayHitNode, Mathf.Infinity, (1 << LayerMask.NameToLayer("Nodes")))){
-                for(int i = 0; i < Node.GetAll().Count; i++){
-                    Node currentNode = Node.GetAll()[i];
-                    if((currentNode.gameObject == mouseRayHitNode.collider.gameObject) && (currentNode.assembly == selectedAssembly)){
-                        hoveredNode = currentNode;
-                        break;
-                    }
-                }
-            }
-        }
-        
-
-        // Determine if a node is being hovered over.
+        }      
         
 
         // When clicking on a node...
