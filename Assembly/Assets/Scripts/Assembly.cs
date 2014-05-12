@@ -142,6 +142,7 @@ public class Assembly {
     // Generates and initializes the Unity-driven physics object for the Assembly.
     public void InitPhysicsObject(){
         physicsObject = new GameObject(name);
+        physicsObject.layer = LayerMask.NameToLayer("Assemblies");
         physicsObject.AddComponent<Rigidbody>();
         physicsObject.rigidbody.useGravity = false;
         physicsObject.rigidbody.angularDrag = 0.2f;
@@ -218,7 +219,6 @@ public class Assembly {
             ApplyConvexMeshToPhysicsObject();
 
         physicsObject.AddComponent<MeshCollider>();
-        physicsObject.layer = LayerMask.NameToLayer("Ignore Raycast");
 
         needRigidbodyUpdate = false;
     } // End of ComputerPhysics().

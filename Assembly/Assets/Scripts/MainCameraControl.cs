@@ -77,10 +77,11 @@ public class MainCameraControl : MonoBehaviour {
             Vector3 orbitTarget = Vector3.zero;
 
             // Orbit the selected entity.
-            if(selectedAssembly)
-                orbitTarget = selectedAssembly.WorldPosition;
-            else if(selectedNode)
+            if(selectedNode)
                 orbitTarget = selectedNode.worldPosition;
+            else if(selectedAssembly)
+                orbitTarget = selectedAssembly.WorldPosition;
+            
 
             // Camera's rotation becomes the rotation of the 'boom' on which it orbits.
             targetPos = orbitTarget + (targetRot * -Vector3.forward) * camOrbitDist;
@@ -138,47 +139,59 @@ public class MainCameraControl : MonoBehaviour {
         // Roll camera using Q and E... generally works in every mode.
         targetRot *= Quaternion.AngleAxis(WesInput.rotationThrottle * -cameraRotateSpeed, Vector3.forward);
 
-        // Determine if a node is being hovered over.
-        hoveredNode = null;
+        Assembly hoveredAssembly = null;
+        // Select an assembly
         RaycastHit mouseRayHit = new RaycastHit();
-        if(Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f)), out mouseRayHit)){
-            for(int i = 0; i < Node.GetAll().Count; i++){
-                Node currentNode = Node.GetAll()[i];
-                if(currentNode.gameObject == mouseRayHit.collider.gameObject){
-                    hoveredNode = currentNode;
-                    hoveredNode.assembly.Health += 0.5f * Time.deltaTime;
+        if(Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f)), out mouseRayHit, Mathf.Infinity, (1 << LayerMask.NameToLayer("Assemblies")))){
+            for(int i = 0; i < Assembly.GetAll().Count; i++){
+                Assembly currentAssembly = Assembly.GetAll()[i];
+                if((currentAssembly != selectedAssembly) && (currentAssembly.physicsObject == mouseRayHit.collider.gameObject)){
+                    hoveredAssembly = currentAssembly;
+
+                    if(Input.GetMouseButtonDown(0))
+                        FocusOn(hoveredAssembly);
+
                     break;
                 }
             }
         }
+        
+        hoveredNode = null;
+        if(selectedAssembly){
+            RaycastHit mouseRayHitNode = new RaycastHit();
+            if(Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f)), out mouseRayHitNode, Mathf.Infinity, (1 << LayerMask.NameToLayer("Nodes")))){
+                for(int i = 0; i < Node.GetAll().Count; i++){
+                    Node currentNode = Node.GetAll()[i];
+                    if((currentNode.gameObject == mouseRayHitNode.collider.gameObject) && (currentNode.assembly == selectedAssembly)){
+                        hoveredNode = currentNode;
+                        break;
+                    }
+                }
+            }
+        }
+        
+
+        // Determine if a node is being hovered over.
+        
 
         // When clicking on a node...
         if(Input.GetMouseButtonDown(0) && hoveredNode && !NodeEngineering.Inst.uiLockout && !GameManager.Inst.pauseMenu){
             // If nothing is selected currently, select it's assembly.
-            if(!selectedNode && !selectedAssembly){
-                FocusOn(hoveredNode.assembly);
-            }
+            
             // If a node is selected currently...
-            else if(selectedNode){
+            if(selectedNode){
                 // If you click again on the selected node, select it's assembly.
-                if(hoveredNode == selectedNode)
+                if(hoveredNode == selectedNode){
                     FocusOn(hoveredNode.assembly);
+                    selectedNode = null;
+                }
                 // If clicking on another node in the same assembly, select that other node.
-                else if(hoveredNode.assembly == selectedNode.assembly)
-                    FocusOn(hoveredNode);
-                // Otherwise it's a node in a different assembly... so select that one.
                 else
-                    FocusOn(hoveredNode.assembly);
+                    FocusOn(hoveredNode);
             }
             // If an assembly is selected...
-            else{
-                // If clicking on a node in the selected assembly, select that.
-                if(hoveredNode.assembly == selectedAssembly)
-                    FocusOn(hoveredNode);
-                // Otherwise, select the hovered node's assembly.
-                else
-                    FocusOn(hoveredNode.assembly);
-            }
+            else
+                FocusOn(hoveredNode);
         }
 
         // Return to demo mode with Enter.
@@ -210,7 +223,6 @@ public class MainCameraControl : MonoBehaviour {
     void FocusOn(Node node){
         FocusOn(node.worldPosition);
         
-        selectedAssembly = null;
         selectedNode = node;
         camType = CamType.ORBIT_CONTROLLED;
     }

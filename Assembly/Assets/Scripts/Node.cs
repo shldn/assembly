@@ -122,7 +122,10 @@ public class Node {
             worldPosition = assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition));
             worldRotation = assembly.WorldRotation * localRotation;
 
-            assembly.currentEnergy -= GetBurnRate() * Assembly.burnCoefficient * Time.deltaTime;
+            // Burn energy if not selected... sucks having the assembly you're following explode into pieces
+            //   (and throw a million nullref excepts)
+            if(assembly != MainCameraControl.Inst.selectedAssembly)
+                assembly.currentEnergy -= GetBurnRate() * Assembly.burnCoefficient * Time.deltaTime;
         }
 
         // Update physical location
