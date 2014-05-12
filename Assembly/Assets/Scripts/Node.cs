@@ -122,7 +122,7 @@ public class Node {
             worldPosition = assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition));
             worldRotation = assembly.WorldRotation * localRotation;
 
-            assembly.currentEnergy -= GetBurnRate() * Time.deltaTime;
+            assembly.currentEnergy -= GetBurnRate() * Assembly.burnCoefficient * Time.deltaTime;
         }
 
         // Update physical location
@@ -304,7 +304,7 @@ public struct NodeProperties {
         get{
             // Sense
             Quaternion _senseVector = Random.rotation;
-            float _fieldOfView = 45f;
+            float _fieldOfView = 90f;
 
             // Actuate
             Quaternion _actuateVector = Random.rotation;

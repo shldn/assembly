@@ -17,8 +17,8 @@ public class SenseNode : Node {
     List<Node> logicNeighbors = new List<Node>();
 
     // Metabolism ------------------------------------------------------------------------ ||
-    public static float consumeRange = 30.0f; //how far away can it consume?
-    public static float detectRange  = 50.0f; //how far can it detect food
+    public static float consumeRange = 50.0f; //how far away can it consume?
+    public static float detectRange  = 100.0f; //how far can it detect food
     public static float consumeRate = 10.0f; //rate asm consume food
 
     public GameObject senseFieldBillboard = null;
@@ -69,6 +69,8 @@ public class SenseNode : Node {
         }
         
         Color tempColor = Color.red;
+        float totalSigStrength = 0f;
+        Quaternion totalSigQuat = Quaternion.identity;
         //calling detect food on sense node
         for(int j = 0; j < FoodPellet.GetAll().Count; ++j){
             if(SenseDetectFoodRange(FoodPellet.GetAll()[j]) && this.DetectFood(FoodPellet.GetAll()[j])){
@@ -80,21 +82,29 @@ public class SenseNode : Node {
                 Quaternion quatToFood = RotToFood(FoodPellet.GetAll()[j]);
                 float sigStrength = FoodSignalStrength(FoodPellet.GetAll()[j]);
 
-                tempColor = Color.Lerp(tempColor, Color.cyan, sigStrength);
+                if(Vector3.Distance(worldPosition, FoodPellet.GetAll()[j].worldPosition) <= SenseNode.consumeRange){
+                    if(Random.Range(0f, 1.1f - sigStrength) <= 0.01f)
+                        FoodPellet.GetAll()[j].SendParticleTo(FoodPellet.GetAll()[j].gameObject.transform.position - gameObject.transform.position);
 
-                signalLock = true;
-                if(neighbors != null)
-                    for(int i = 0; i < neighbors.Count; i++){
-                        if(neighbors[i].GetType() == typeof(ControlNode)){
-
-                            ((ControlNode)neighbors[i]).Process(quatToFood, sigStrength);
-
-                            FoodPellet.GetAll()[j].SendParticleTo(FoodPellet.GetAll()[j].gameObject.transform.position - gameObject.transform.position);
-                        }
-                    }
-                signalLock = false;
+                    totalSigQuat = Quaternion.Lerp(totalSigQuat, quatToFood, sigStrength);
+                    totalSigStrength += sigStrength;
+                }
             }
         }
+
+        // Send total signal
+        totalSigStrength = Mathf.Clamp01(totalSigStrength);
+        tempColor = Color.Lerp(tempColor, Color.cyan, totalSigStrength);
+        signalLock = true;
+        if(neighbors != null)
+            for(int i = 0; i < neighbors.Count; i++){
+                if(neighbors[i].GetType() == typeof(ControlNode)){
+
+                    ((ControlNode)neighbors[i]).Process(totalSigQuat, totalSigStrength);
+                }
+            }
+        signalLock = false;
+
 
         if(senseFieldBillboard)
             senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
@@ -188,7 +198,7 @@ public class SenseNode : Node {
 
     //consume food within range
     public void Consume(FoodPellet food){
-        float realConsumeRate = (consumeRate* Time.deltaTime); 
+        float realConsumeRate = (consumeRate* Time.deltaTime) * SenseNode.consumeRate; 
         Vector3 foodDist = food.worldPosition - this.worldPosition;
         //consume rate square drop off
         realConsumeRate *= (1 - foodDist.sqrMagnitude / (consumeRange * consumeRange) );

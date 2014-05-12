@@ -62,7 +62,11 @@ public class MainCameraControl : MonoBehaviour {
         // Gallery-style demo-mode: camera orbits center, zooming in and out slowly.
         if(camType == CamType.ORBIT_DEMO){
             targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (Time.deltaTime / Time.timeScale));
-            camOrbitDist = 170f - (Mathf.Sin((demoOrbitDistRunner * Mathf.PI) / camZoomLoopTime) * 130f);
+
+            float camMaxOrbit = 500f;
+            float camMinOrbit = 100f;
+
+            camOrbitDist = Mathf.Lerp(camMaxOrbit, camMinOrbit, ((Mathf.Sin((demoOrbitDistRunner * Mathf.PI) / camZoomLoopTime)) * 0.5f) + 0.5f);
 
             demoOrbitDistRunner += Time.deltaTime;
         }
