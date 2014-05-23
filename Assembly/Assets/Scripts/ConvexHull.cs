@@ -29,6 +29,17 @@ public class ConvexHull
         hull.UpdateMesh(ref meshToFill);
     }
 
+    // pass in the points to create the convex hull from and the mesh you want to fill with the new hull mesh definition
+    // meshIndices -- List of indices from original pts list that are used in the mesh
+    // meshDistancesToCenter -- parrallel list to meshIndices with their respective distances to the center of the hull mesh
+    public static void UpdateMeshFromPointsWithInfo(List<Vector3> pts, ref Mesh meshToFill, ref List<int> meshIndices, ref List<float> meshDistancesToCenter)
+    {
+        ConvexHull hull = new ConvexHull(pts);
+        hull.UpdateMesh(ref meshToFill);
+        meshIndices = hull.GetMeshVertIndices();
+        meshDistancesToCenter = hull.GetDistancesToCenter(meshIndices);
+    }
+
 
     // mesh variables
     public List<Vector3> newVertices = new List<Vector3>();
@@ -604,6 +615,32 @@ public class ConvexHull
             }
         }
         return bestIdx;
+    }
+
+
+    public List<int> GetMeshVertIndices()
+    {
+        List<int> idxList = new List<int>();
+        HashSet<int> used = new HashSet<int>();
+        for (int i = 0; i < newTriangles.Count; ++i)
+        {
+            if (!used.Contains(newTriangles[i]))
+            {
+                idxList.Add(newTriangles[i]);
+                used.Add(newTriangles[i]);
+            }
+        }
+        return idxList;
+    }
+
+
+    public List<float> GetDistancesToCenter(List<int> idxList)
+    {
+        Vector3 center = GetCenterPt();
+        List<float> distances = new List<float>(idxList.Count);
+        for (int i = 0; i < idxList.Count; ++i)
+            distances.Add(Vector3.Distance(pts[idxList[i]], center));
+        return distances;
     }
 }
 
