@@ -472,14 +472,12 @@ public class ConvexHull
             edge = testF.idx.FindIndex(i => i == testVIdx);
 
             // find the next edge along the walk that satisfies the predicate.
-            Face nextF = null;
             while (testF != startF)
             {
-                nextF = testF.GetAdjacentEdgeStartsWithVertIdx(testVIdx);
                 if (!pred(new FaceEdgeIdxPair(testF, edge)))
                 {
-                    testF = nextF;
-                    edge = testF.GetAdjacentIdxEdgeStartsWithVertIdx(testVIdx);
+                    testF = testF.GetAdjacentEdgeStartsWithVertIdx(testVIdx);
+                    edge = testF.idx.FindIndex(i => i == testVIdx);
                 }
                 else
                 {
