@@ -7,6 +7,9 @@ public class ControlNode : Node {
     public ControlNode(Node node) : base(node){
         Initialize();
     }
+    public ControlNode(Node node, Assembly assem) : base(node, assem){
+        Initialize();
+    }
     public ControlNode(IntVector3 localHex) : base(localHex){
         Initialize();
     }
@@ -25,23 +28,36 @@ public class ControlNode : Node {
 	} // End of Update().
 
     public void Process(Quaternion inputQuat, float sigStrength){
+        if(signalLock)
+            return;
+
         signalLock = true;
         for(int i = 0; i < neighbors.Count; i++){
             if(neighbors[i].GetType() == typeof(ActuateNode)){
                 ((ActuateNode)neighbors[i]).Propel(inputQuat, sigStrength);
+            }
+            else if(neighbors[i].GetType() == typeof(ControlNode)){
+                ((ControlNode)neighbors[i]).Process(inputQuat, sigStrength);
             }
         }
         signalLock = false;
     } // End of Process().
 
     // Returns true is this node could possibly send data to a muscle node.
+    /*
     public bool LogicCheck(){
+
+        // Do whatever
+
+        signalLock = true;
         for(int i = 0; i < neighbors.Count; i++){
-            if(neighbors[i].GetType() == typeof(ActuateNode)){
+            if((neighbors[i].GetType() == typeof(ActuateNode)) || (neighbors[i].GetType() == typeof(ControlNode))){
                 activeLogic = true;
                 neighbors[i].activeLogic = true;
             }
         }
+        signalLock = false;
         return activeLogic;
     } // End of logicCheck().
+    */
 } // End of ControlNode.

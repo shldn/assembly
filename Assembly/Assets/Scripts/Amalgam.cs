@@ -23,6 +23,5 @@ public class Amalgam : MonoBehaviour {
         // apply the convex hull to the mesh
         Mesh mesh = GetComponent<MeshFilter>().mesh;
         ConvexHull.UpdateMeshFromPoints(amalgamPoints, ref mesh);
-
 	} // End of Start().
 } // End of Amalgam.

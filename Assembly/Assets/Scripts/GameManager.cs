@@ -5,6 +5,11 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour {
 
+    public static float simStep = 0.05f;
+
+
+    
+
     public static GameManager Inst = null;
 
     Node selectedNode = null;
@@ -16,7 +21,7 @@ public class GameManager : MonoBehaviour {
     public int maxNumAssemblies = 100;
     public int minNumNodes = 5;
     public int maxNumNodes = 15;
-    public bool refactorIfInert = false;
+    //public bool refactorIfInert = false;
     public bool populationControl  = false;
     public bool showAssemReadouts = true;
 
@@ -25,7 +30,7 @@ public class GameManager : MonoBehaviour {
     public float fade = 1f;
     public float initialFadeIn = 1f;
 
-    float worldSize = 100f;
+    float worldSize = 150f;
 
     public bool pauseMenu = false;
 
@@ -50,11 +55,14 @@ public class GameManager : MonoBehaviour {
         if(Application.isWebPlayer)
             exitOption.gameObject.SetActive(false);
 
+        Application.targetFrameRate = 999;
+        
+
 	} // End of Start().
 
 
     void LateUpdate(){
-        deltaRealTime = Time.deltaTime / Time.timeScale;
+        deltaRealTime = GameManager.simStep / Time.timeScale;
 
         if(Input.GetKeyDown(KeyCode.Escape))
             pauseMenu = !pauseMenu;
@@ -73,9 +81,9 @@ public class GameManager : MonoBehaviour {
         if(siteOption.held)
             Application.OpenURL("http://imagination.ucsd.edu/assembly/index.html");
 
-        initialFadeIn = Mathf.MoveTowards(initialFadeIn, 0f, (Time.deltaTime / Time.timeScale) * 0.3f);
+        initialFadeIn = Mathf.MoveTowards(initialFadeIn, 0f, (GameManager.simStep / Time.timeScale) * 0.3f);
         
-        fade = Mathf.Lerp(fade, pauseMenu? 0.8f : 0f, Time.deltaTime * 10f);
+        fade = Mathf.Lerp(fade, pauseMenu? 0.8f : 0f, GameManager.simStep * 10f);
 
         if(initialFadeIn > fade)
             fade = initialFadeIn;
@@ -89,15 +97,15 @@ public class GameManager : MonoBehaviour {
         Assembly.MAX_ASSEMBLY = maxNumAssemblies;
         Assembly.MIN_NODES_IN_ASSEMBLY = minNumNodes;
         Assembly.MAX_NODES_IN_ASSEMBLY = maxNumNodes;
-        Assembly.REFACTOR_IF_INERT = refactorIfInert;
+        //Assembly.REFACTOR_IF_INERT = refactorIfInert;
         FoodPellet.MAX_FOOD = numFoodPellets;
 
         //adjust food on slider
         if( FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD )
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
                 FoodPellet newPellet = FoodPellet.AddNewFoodPellet();
-                newPellet.worldPosition = MathUtilities.RandomVector3Sphere(worldSize);
-                UnityEngine.Object lightEffect = Instantiate(PrefabManager.Inst.reproduceBurst, newPellet.worldPosition, Quaternion.identity);
+                newPellet.worldPosition = new Vector3(0f, UnityEngine.Random.Range(-200f, 200f), 0f);
+                UnityEngine.Object lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity);
 
                 //destroy effect after 1.5 sec
                 UnityEngine.Object.Destroy(lightEffect, 1.5F);
@@ -134,7 +142,7 @@ public class GameManager : MonoBehaviour {
             if(i > (Assembly.GetAll().Count - 1))
                 continue;
 
-            Assembly.GetAll()[i].UpdateTransform();
+            Assembly.GetAll()[i].Update();
 
             // User input -------------------------------------
             /*
@@ -176,7 +184,7 @@ public class GameManager : MonoBehaviour {
 
         // Update foodpellets.
         for(int i = 0; i < FoodPellet.GetAll().Count; ++i)
-            FoodPellet.GetAll()[i].UpdateTransform();
+            FoodPellet.GetAll()[i].Update();
         
         // Find closest node for rendering HUD information.
         float closestDistance = 9999f;
@@ -255,8 +263,10 @@ public class GameManager : MonoBehaviour {
             Assembly.burnCoefficient = GUI.HorizontalSlider(controlGuiRect, Assembly.burnCoefficient, 0.0F, 10.0F);
             controlGuiRect.y += guiHeight;
 
+            /*
             refactorIfInert = GUI.Toggle(controlGuiRect, refactorIfInert, " Refactor Inert Assemblies");
             controlGuiRect.y += guiHeight;
+            */
 
             controlGuiRect.y += guiGutter;
 

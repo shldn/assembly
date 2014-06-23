@@ -22,7 +22,9 @@ public class ActuateNode : Node {
     public ActuateNode(Node node) : base(node){
         Initialize();
     }
-    public ActuateNode(IntVector3 localHex) : base(localHex){
+    public ActuateNode(Node node, Assembly assem) : base(node, assem){
+        Initialize();
+    }public ActuateNode(IntVector3 localHex) : base(localHex){
         Initialize();
     }
 
@@ -37,10 +39,11 @@ public class ActuateNode : Node {
 	public override void Update(){
         base.Update();
 
-        if(activeLogic && !propulsionEffect){
+        if(!propulsionEffect){
             propulsionEffect = GameObject.Instantiate(PrefabManager.Inst.propulsionEffect, worldPosition, Quaternion.identity) as GameObject;
             propulsionEffect.transform.parent = gameObject.transform;
             trail = propulsionEffect.GetComponent<TrailRenderer>();
+            trail.time = 4f * nodeProperties.muscleStrength;
         }
 
 	    Debug.DrawRay(worldPosition, worldAcuateRot * Vector3.forward * 3f, Color.red);
@@ -55,6 +58,6 @@ public class ActuateNode : Node {
         }
         */
 
-        assembly.physicsObject.rigidbody.AddForceAtPosition(((nodeProperties.actuateVector * inputQuat) * Vector3.forward) * 100f * sigStrength, worldPosition);
+        assembly.physicsObject.rigidbody.AddForceAtPosition(((nodeProperties.actuateVector * inputQuat) * Vector3.forward) * 10f * sigStrength * nodeProperties.muscleStrength, worldPosition);
     } // End of Propel().
 } // End of ActuateNode.

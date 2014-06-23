@@ -33,6 +33,8 @@ public class MainCameraControl : MonoBehaviour {
     public Quaternion randomOrbit = Quaternion.identity;
     float demoOrbitDistRunner = 0f;
 
+    float camMaxOrbit = 500f;
+    float camMinOrbit = 100f;
 
     void Awake(){
         depthOfField = Camera.main.GetComponent("DepthOfField34") as DepthOfField34;
@@ -55,20 +57,20 @@ public class MainCameraControl : MonoBehaviour {
 
         // Smoothly interpolate camera position/rotation.
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime * Time.timeScale);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, 10f * (Time.deltaTime / Time.timeScale));
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, 10f * (GameManager.simStep / Time.timeScale));
 
 
 
         // Gallery-style demo-mode: camera orbits center, zooming in and out slowly.
         if(camType == CamType.ORBIT_DEMO){
-            targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (Time.deltaTime / Time.timeScale));
+            targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (GameManager.simStep / Time.timeScale));
 
-            float camMaxOrbit = 500f;
-            float camMinOrbit = 100f;
+            camMaxOrbit += camMaxOrbit * -Input.GetAxis("Mouse ScrollWheel");
+            camMinOrbit += camMinOrbit * -Input.GetAxis("Mouse ScrollWheel");
 
             camOrbitDist = Mathf.Lerp(camMaxOrbit, camMinOrbit, ((Mathf.Sin((demoOrbitDistRunner * Mathf.PI) / camZoomLoopTime)) * 0.5f) + 0.5f);
 
-            demoOrbitDistRunner += Time.deltaTime;
+            demoOrbitDistRunner += GameManager.simStep;
         }
 
 
@@ -79,9 +81,13 @@ public class MainCameraControl : MonoBehaviour {
             // Orbit the selected entity.
             if(selectedNode)
                 orbitTarget = selectedNode.worldPosition;
-            else if(selectedAssembly)
+            else if(selectedAssembly){
                 orbitTarget = selectedAssembly.WorldPosition;
-            
+                if(Input.GetKey(KeyCode.F))
+                    selectedAssembly.WorldPosition += transform.forward * 10f * GameManager.simStep;
+                if(Input.GetKey(KeyCode.H))
+                    selectedAssembly.currentEnergy += 5f * GameManager.simStep;
+            }
 
             // Camera's rotation becomes the rotation of the 'boom' on which it orbits.
             targetPos = orbitTarget + (targetRot * -Vector3.forward) * camOrbitDist;
@@ -95,7 +101,7 @@ public class MainCameraControl : MonoBehaviour {
 
             // Camera's focal point and distance changes based on camera orbit distance.
             if(depthOfField){
-                depthOfField.focalPoint = Mathf.Lerp(depthOfField.focalPoint, Vector3.Distance(Camera.main.transform.position, orbitTarget), (Time.deltaTime / Time.timeScale) * 5f);
+                depthOfField.focalPoint = Mathf.Lerp(depthOfField.focalPoint, Vector3.Distance(Camera.main.transform.position, orbitTarget), (GameManager.simStep / Time.timeScale) * 5f);
                 depthOfField.focalSize = Vector3.Distance(Camera.main.transform.position, orbitTarget) * 0.1f;
             }
 
@@ -109,9 +115,9 @@ public class MainCameraControl : MonoBehaviour {
         else if((camType == CamType.FREELOOK) || (camType == CamType.LOCKED)){
 
             // Translate position with keyboard input.
-            targetPos += WesInput.forwardThrottle * transform.forward * cameraMoveSpeed * (Time.deltaTime / Time.timeScale);
-            targetPos += WesInput.horizontalThrottle * transform.right * cameraMoveSpeed * (Time.deltaTime / Time.timeScale);
-            targetPos += WesInput.verticalThrottle * transform.up * cameraMoveSpeed * (Time.deltaTime / Time.timeScale);
+            targetPos += WesInput.forwardThrottle * transform.forward * cameraMoveSpeed * (GameManager.simStep / Time.timeScale);
+            targetPos += WesInput.horizontalThrottle * transform.right * cameraMoveSpeed * (GameManager.simStep / Time.timeScale);
+            targetPos += WesInput.verticalThrottle * transform.up * cameraMoveSpeed * (GameManager.simStep / Time.timeScale);
 
             // Free-moving camera, moves with mouse and keyboard controls.
             if(camType == CamType.FREELOOK){

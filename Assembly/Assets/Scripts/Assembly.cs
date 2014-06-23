@@ -32,7 +32,7 @@ public class Assembly {
     public static int MAX_ASSEMBLY = 10;
     public static int MAX_NODES_IN_ASSEMBLY = 10;
     public static int MIN_NODES_IN_ASSEMBLY = 10;
-    public static bool REFACTOR_IF_INERT = false; // If an assembly is created with no logic nets, destroy it immediately.
+    //public static bool REFACTOR_IF_INERT = false; // If an assembly is created with no logic nets, destroy it immediately.
 
     public Vector3 WorldPosition{
         get { 
@@ -121,8 +121,8 @@ public class Assembly {
     public Assembly Reproduce(){
         Assembly offspring = Duplicate();
         offspring.Mutate(0.2f);
-        offspring.physicsObject.rigidbody.AddForce(Random.rotation * Vector3.forward * 1000f);
-        offspring.physicsObject.rigidbody.AddTorque(Random.rotation * Vector3.forward * 10000f);
+        offspring.physicsObject.rigidbody.AddForce(Random.rotation * Vector3.forward * Random.Range(10f, 100f));
+        offspring.physicsObject.rigidbody.AddTorque(Random.rotation * Vector3.forward * Random.Range(10f, 100f));
         return offspring;
     } // End of Reproduce().
 
@@ -145,7 +145,7 @@ public class Assembly {
         physicsObject.layer = LayerMask.NameToLayer("Assemblies");
         physicsObject.AddComponent<Rigidbody>();
         physicsObject.rigidbody.useGravity = false;
-        physicsObject.rigidbody.angularDrag = 0.2f;
+        physicsObject.rigidbody.angularDrag = 0.1f;
         physicsObject.rigidbody.drag = 0.3f;
 
     } // End of InitPhysicsObject().
@@ -219,6 +219,7 @@ public class Assembly {
             ApplyConvexMeshToPhysicsObject();
 
         physicsObject.AddComponent<MeshCollider>();
+        physicsObject.GetComponent<MeshCollider>().convex = true;
 
         needRigidbodyUpdate = false;
     } // End of ComputerPhysics().
@@ -288,7 +289,7 @@ public class Assembly {
     } // End of RemoveNode().
 
 
-    public void UpdateTransform(){
+    public void Update(){
         numFramesAlive++;
         UpdateNodes();
 
@@ -298,29 +299,33 @@ public class Assembly {
             DestroyWithAnimation();
         }
 
+        /*
         // Useless assemblies should be immediately deleted.
         if((numFramesAlive > 1) && REFACTOR_IF_INERT && !hasFunctioningNodes){
             Destroy();
             GameManager.Inst.SeedNewRandomAssembly();
             return;
         }
+        */
 
-        if(needRigidbodyUpdate){
+        if(needRigidbodyUpdate && (numFramesAlive > 1)){
             RecomputeRigidbody();
         }
 
 
         // If assembly has 200% health, it reproduces!
         if(Health >= 2f){
-            Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            MonoBehaviour.print("Assembly very healthy; reproducing!");
 
+            Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            
             Assembly offspringAssem = Reproduce();
             offspringAssem.WorldPosition = WorldPosition;
             offspringAssem.WorldRotation = WorldRotation;
             offspringAssem.physicsObject.rigidbody.velocity = physicsObject.rigidbody.velocity;
             offspringAssem.physicsObject.rigidbody.angularVelocity = physicsObject.rigidbody.angularVelocity;
 
-            Health /= 2f;
+            Health = Mathf.Clamp(Health, 0f, 2f) * 0.5f;
         }
 
         if (showMesh && updateMesh)
@@ -601,7 +606,7 @@ public class Assembly {
 
     //energy that is being used
     public void CalculateEnergyUse(){
-        currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient);
+        currentEnergy -= (energyBurnRate * GameManager.simStep * burnCoefficient);
     }
 
     //update burn rate for asmbly
