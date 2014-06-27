@@ -29,7 +29,7 @@ public class Node {
 
     public Color baseColor = PrefabManager.Inst.stemColor;
     public bool signalLock = false;
-    public bool activeLogic = false;
+    //public bool activeLogic = false;
 
 
     // Graphics -------------------------------------------------------------------------- ||
@@ -61,10 +61,20 @@ public class Node {
         nodeProperties.fieldOfView = oldNode.nodeProperties.fieldOfView;
         nodeProperties.senseVector = oldNode.nodeProperties.senseVector;
         Initialize(HexUtilities.HexToWorld(localHexPosition));
+    }
+
+    // Copy an old node.
+    public Node(Node oldNode, Assembly assem){
+        localHexPosition = oldNode.localHexPosition;
+        localRotation = oldNode.localRotation;
+        nodeProperties.actuateVector = oldNode.nodeProperties.actuateVector;
+        nodeProperties.fieldOfView = oldNode.nodeProperties.fieldOfView;
+        nodeProperties.senseVector = oldNode.nodeProperties.senseVector;
+        Initialize(HexUtilities.HexToWorld(localHexPosition));
 
         // Manual assembly list insertion...
-        assembly = oldNode.assembly;
-        assembly.nodes.Add(this);
+        assembly = assem;
+        assem.nodes.Add(this);
     }
 
 
@@ -78,24 +88,27 @@ public class Node {
     } // End of Initialize().
 
     public void UpdateType(){
+        if(!assembly)
+            return;
+
         neighbors = GetNeighbors();
         int neighborCount = (neighbors == null) ? 0 : neighbors.Count;
         switch(neighborCount){
             case 1:
                 if(this.GetType() != typeof(SenseNode)){
-                    SenseNode newNode = new SenseNode(this);
+                    SenseNode newNode = new SenseNode(this, assembly);
                     Destroy();
                 }
                 break;
             case 2:
                 if(this.GetType() != typeof(ActuateNode)){
-                    ActuateNode newNode = new ActuateNode(this);
+                    ActuateNode newNode = new ActuateNode(this, assembly);
                     Destroy();
                 }
                 break;
-            case 3:
+            default:
                 if(this.GetType() != typeof(ControlNode)){
-                    ControlNode newNode = new ControlNode(this);
+                    ControlNode newNode = new ControlNode(this, assembly);
                     Destroy();
                 }
                 break;
@@ -105,8 +118,11 @@ public class Node {
     public virtual void Update(){
 
         gameObject.renderer.material.color = baseColor;
+
+        /*
         if(!activeLogic)
             gameObject.renderer.material.color = Color.Lerp(baseColor, new Color(0.2f, 0.2f, 0.2f), 0.9f);
+        */
 
         // Destroy Node if it's dead and has reached the end of it's DisappearRate timer.
         if(doomed){
@@ -298,6 +314,7 @@ public struct NodeProperties {
     // Sense
     public Quaternion senseVector;
     public float fieldOfView;
+    public float muscleStrength;
 
     // Actuate
     public Quaternion actuateVector;
@@ -307,20 +324,21 @@ public struct NodeProperties {
         get{
             // Sense
             Quaternion _senseVector = Random.rotation;
-            float _fieldOfView = 90f;
+            float _fieldOfView = 45f;
 
             // Actuate
             Quaternion _actuateVector = Random.rotation;
 
-            return new NodeProperties(Random.rotation, 45f, Random.rotation);
+            return new NodeProperties(Random.rotation, 45f, Random.rotation, Random.Range(0.1f, 1f));
         }
     } // End of NodeProperties.random.
 
     // Constructor
-    public NodeProperties(Quaternion _senseVector, float _fieldOfView, Quaternion _actuateVector){
+    public NodeProperties(Quaternion _senseVector, float _fieldOfView, Quaternion _actuateVector, float _muscleStrength){
         senseVector = _senseVector;
         fieldOfView = _fieldOfView;
         actuateVector = _actuateVector;
+        muscleStrength = _muscleStrength;
     } // End of NodeProperties constructor.
 
     /*public NodeProperties(string str){
@@ -362,10 +380,10 @@ public struct NodeProperties {
 //burn rate for different types: none, sense, actuate- static, actuate- woring, control
 public static class BurnRate{
     public static float none = 0.0f;
-    public static float sense = 0.01f;
-    public static float actuate = 0.02f;
-    public static float control = 0.03f;
-    public static float actuateValid = 0.04f;
-    public static float senseValid = 0.015f;
-    public static float controlValid = 0.05f;
+    public static float sense = 0.02f;
+    public static float actuate = 0.04f;
+    public static float control = 0.06f;
+    public static float actuateValid = 0.08f;
+    public static float senseValid = 0.03f;
+    public static float controlValid = 0.1f;
 } // End of BurnRate

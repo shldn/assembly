@@ -21,6 +21,8 @@ public class FoodPellet{
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
     public static int MAX_FOOD = 1;
 
+    float particleEmitCooldown = 0f;
+
 /*
     public static FoodTypeSelection ftFlag = 0x0;
     public static FoodTypeSelection ftPrevFlag = 0x0;
@@ -35,7 +37,7 @@ public class FoodPellet{
     public Renderer billboard = null;
 */
 
-    public static float MAX_ENERGY = 10.0f;
+    public static float MAX_ENERGY = 50.0f;
     public float currentEnergy = MAX_ENERGY;
     
     /*
@@ -86,46 +88,53 @@ public class FoodPellet{
 
     //create random food node
     public static void AddRandomFoodPellet(){
-        int min = -50, max = 50; //range, can be chnaged later
-        Vector3 pos = new Vector3(random.Next(min, max), random.Next(min, max) ,random.Next(min, max) );
+        Vector3 pos = MathUtilities.RandomVector3Sphere(80f);
         new FoodPellet(pos);
     }
 
-    public void UpdateTransform(){
+    public void Update(){
+        particleEmitCooldown -= Time.deltaTime;
+
         gameObject.transform.position = worldPosition;
         gameObject.transform.localScale = Vector3.one * (currentEnergy / MAX_ENERGY);
+
+        if(currentEnergy <= 0f)
+            Destroy();
+
         /*
         //updateFoodType
         if(ftFlag != ftPrevFlag)
             UpdateFoodType();
-            */
+        */
     }
 
-    public void SendParticleTo(Vector3 direction){
-        //Particle[] particles = particleObject.particles;
-        //int i =0;
+    public void ParticleStream(Vector3 direction){
+        if(particleEmitCooldown <= 0f){
+            particleEmitCooldown = 0.01f + Random.Range(0f, 0.2f);
+
+            //Particle[] particles = particleObject.particles;
+            //int i =0;
         
-        //direction.Normalize();
-        //particleObject.Emit(worldPosition, direction, 1.0f, 10, Color.green);
-        //Particle
+            //direction.Normalize();
+            //particleObject.Emit(worldPosition, direction, 1.0f, 10, Color.green);
+            //Particle
         
-        //negative direction so it goes from food to node
-        direction *= -0.2f;
-        int min = -2, max = 2; //range, can be chnaged later
-        Vector3 pos = new Vector3(random.Next(min, max), random.Next(min, max) ,random.Next(min, max) );
-        particleObject.Emit(gameObject.transform.position + pos, direction, 3.0f, 8, Color.white);
+            //negative direction so it goes from food to node
+            direction *= -0.2f;
+            int min = -2, max = 2; //range, can be chnaged later
+            particleObject.Emit(gameObject.transform.position + MathUtilities.RandomVector3Sphere(2f), direction, 3.0f, 8, Color.white);
         
-        //particleGlow.material.SetColor("_TintColor", Color.green);
-        /*
-        while (i < 10) {
-            particleObject.Emit(worldPosition, direction, 3f, 10, Color.red);
-            //float yPosition = Mathf.Sin(Time.time) * Time.deltaTime;
-            //particles[i].position += direction;
-            //particles[i].color = Color.red;
-            //particles[i].size = Mathf.Sin(Time.time) * 0.2F;
-            i++;
-        }*/
-        
+            //particleGlow.material.SetColor("_TintColor", Color.green);
+            /*
+            while (i < 10) {
+                particleObject.Emit(worldPosition, direction, 3f, 10, Color.red);
+                //float yPosition = Mathf.Sin(Time.time) * Time.deltaTime;
+                //particles[i].position += direction;
+                //particles[i].color = Color.red;
+                //particles[i].size = Mathf.Sin(Time.time) * 0.2F;
+                i++;
+            }*/
+        }
     }
 
 /*

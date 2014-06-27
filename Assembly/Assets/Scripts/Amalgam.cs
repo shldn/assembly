@@ -22,7 +22,6 @@ public class Amalgam : MonoBehaviour {
 
         // apply the convex hull to the mesh
         Mesh mesh = GetComponent<MeshFilter>().mesh;
-
         // mesh from points with boundary info
         List<int> boundaryAssemblies = new List<int>();
         List<float> boundaryDistances = new List<float>();

@@ -10,7 +10,9 @@ public class PrefabManager : MonoBehaviour {
 	public GameObject billboard = null;
 	public GameObject foodPellet = null;
 	public GameObject reproduceBurst = null;
-    public GameObject propulsionEffect = null;
+	public GameObject newPelletBurst = null;
+    public GameObject mainTrail = null;
+    public GameObject extendedTrail = null;
 
     public Material assemblySkin = null;
 

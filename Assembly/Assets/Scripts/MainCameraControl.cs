@@ -33,6 +33,8 @@ public class MainCameraControl : MonoBehaviour {
     public Quaternion randomOrbit = Quaternion.identity;
     float demoOrbitDistRunner = 0f;
 
+    float camMaxOrbit = 500f;
+    float camMinOrbit = 100f;
 
     void Awake(){
         depthOfField = Camera.main.GetComponent("DepthOfField34") as DepthOfField34;
@@ -61,10 +63,10 @@ public class MainCameraControl : MonoBehaviour {
 
         // Gallery-style demo-mode: camera orbits center, zooming in and out slowly.
         if(camType == CamType.ORBIT_DEMO){
-            targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (Time.deltaTime / Time.timeScale));
+            targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (Time.deltaTime));
 
-            float camMaxOrbit = 500f;
-            float camMinOrbit = 100f;
+            camMaxOrbit += camMaxOrbit * -Input.GetAxis("Mouse ScrollWheel");
+            camMinOrbit += camMinOrbit * -Input.GetAxis("Mouse ScrollWheel");
 
             camOrbitDist = Mathf.Lerp(camMaxOrbit, camMinOrbit, ((Mathf.Sin((demoOrbitDistRunner * Mathf.PI) / camZoomLoopTime)) * 0.5f) + 0.5f);
 
@@ -79,9 +81,13 @@ public class MainCameraControl : MonoBehaviour {
             // Orbit the selected entity.
             if(selectedNode)
                 orbitTarget = selectedNode.worldPosition;
-            else if(selectedAssembly)
+            else if(selectedAssembly){
                 orbitTarget = selectedAssembly.WorldPosition;
-            
+                if(Input.GetKey(KeyCode.F))
+                    selectedAssembly.WorldPosition += transform.forward * 10f * Time.deltaTime;
+                if(Input.GetKey(KeyCode.H))
+                    selectedAssembly.currentEnergy += 5f * Time.deltaTime;
+            }
 
             // Camera's rotation becomes the rotation of the 'boom' on which it orbits.
             targetPos = orbitTarget + (targetRot * -Vector3.forward) * camOrbitDist;
