@@ -126,12 +126,12 @@ public class Node {
 
         // Destroy Node if it's dead and has reached the end of it's DisappearRate timer.
         if(doomed){
-            disappearTimer -= GameManager.simStep;
+            disappearTimer -= Time.deltaTime;
 
             if(disappearTimer <= 0f)
                 Destroy();
 
-            worldPosition += sendOffVector * GameManager.simStep;
+            worldPosition += sendOffVector * Time.deltaTime;
         } 
 
         if(assembly){
@@ -141,7 +141,7 @@ public class Node {
             // Burn energy if not selected... sucks having the assembly you're following explode into pieces
             //   (and throw a million nullref excepts)
             if(assembly != MainCameraControl.Inst.selectedAssembly)
-                assembly.currentEnergy -= GetBurnRate() * Assembly.burnCoefficient * GameManager.simStep;
+                assembly.currentEnergy -= GetBurnRate() * Assembly.burnCoefficient * Time.deltaTime;
         }
 
         // Update physical location

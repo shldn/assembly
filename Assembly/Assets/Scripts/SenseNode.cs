@@ -192,13 +192,13 @@ public class SenseNode : Node {
 
     //consume food within range
     public void Consume(FoodPellet food){
-        float realConsumeRate = (consumeRate * GameManager.simStep) * SenseNode.consumeRate; 
+        float realConsumeRate = (consumeRate * Time.deltaTime) * SenseNode.consumeRate; 
         Vector3 foodDist = food.worldPosition - this.worldPosition;
         //consume rate square drop off
         //realConsumeRate *= (1 - foodDist.sqrMagnitude / (Mathf.Pow(consumeRange, 2f)));
         
-        food.currentEnergy -= realConsumeRate * GameManager.simStep;
-        assembly.currentEnergy += (realConsumeRate * GameManager.simStep) * 0.2f;
+        food.currentEnergy -= realConsumeRate * Time.deltaTime;
+        assembly.currentEnergy += (realConsumeRate * Time.deltaTime) * 0.2f;
 
         /*
         if( food.currentEnergy < 0){

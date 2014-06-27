@@ -57,20 +57,20 @@ public class MainCameraControl : MonoBehaviour {
 
         // Smoothly interpolate camera position/rotation.
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime * Time.timeScale);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, 10f * (GameManager.simStep / Time.timeScale));
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, 10f * (Time.deltaTime / Time.timeScale));
 
 
 
         // Gallery-style demo-mode: camera orbits center, zooming in and out slowly.
         if(camType == CamType.ORBIT_DEMO){
-            targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (GameManager.simStep / Time.timeScale));
+            targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (Time.deltaTime));
 
             camMaxOrbit += camMaxOrbit * -Input.GetAxis("Mouse ScrollWheel");
             camMinOrbit += camMinOrbit * -Input.GetAxis("Mouse ScrollWheel");
 
             camOrbitDist = Mathf.Lerp(camMaxOrbit, camMinOrbit, ((Mathf.Sin((demoOrbitDistRunner * Mathf.PI) / camZoomLoopTime)) * 0.5f) + 0.5f);
 
-            demoOrbitDistRunner += GameManager.simStep;
+            demoOrbitDistRunner += Time.deltaTime;
         }
 
 
@@ -84,9 +84,9 @@ public class MainCameraControl : MonoBehaviour {
             else if(selectedAssembly){
                 orbitTarget = selectedAssembly.WorldPosition;
                 if(Input.GetKey(KeyCode.F))
-                    selectedAssembly.WorldPosition += transform.forward * 10f * GameManager.simStep;
+                    selectedAssembly.WorldPosition += transform.forward * 10f * Time.deltaTime;
                 if(Input.GetKey(KeyCode.H))
-                    selectedAssembly.currentEnergy += 5f * GameManager.simStep;
+                    selectedAssembly.currentEnergy += 5f * Time.deltaTime;
             }
 
             // Camera's rotation becomes the rotation of the 'boom' on which it orbits.
@@ -101,7 +101,7 @@ public class MainCameraControl : MonoBehaviour {
 
             // Camera's focal point and distance changes based on camera orbit distance.
             if(depthOfField){
-                depthOfField.focalPoint = Mathf.Lerp(depthOfField.focalPoint, Vector3.Distance(Camera.main.transform.position, orbitTarget), (GameManager.simStep / Time.timeScale) * 5f);
+                depthOfField.focalPoint = Mathf.Lerp(depthOfField.focalPoint, Vector3.Distance(Camera.main.transform.position, orbitTarget), (Time.deltaTime / Time.timeScale) * 5f);
                 depthOfField.focalSize = Vector3.Distance(Camera.main.transform.position, orbitTarget) * 0.1f;
             }
 
@@ -115,9 +115,9 @@ public class MainCameraControl : MonoBehaviour {
         else if((camType == CamType.FREELOOK) || (camType == CamType.LOCKED)){
 
             // Translate position with keyboard input.
-            targetPos += WesInput.forwardThrottle * transform.forward * cameraMoveSpeed * (GameManager.simStep / Time.timeScale);
-            targetPos += WesInput.horizontalThrottle * transform.right * cameraMoveSpeed * (GameManager.simStep / Time.timeScale);
-            targetPos += WesInput.verticalThrottle * transform.up * cameraMoveSpeed * (GameManager.simStep / Time.timeScale);
+            targetPos += WesInput.forwardThrottle * transform.forward * cameraMoveSpeed * (Time.deltaTime / Time.timeScale);
+            targetPos += WesInput.horizontalThrottle * transform.right * cameraMoveSpeed * (Time.deltaTime / Time.timeScale);
+            targetPos += WesInput.verticalThrottle * transform.up * cameraMoveSpeed * (Time.deltaTime / Time.timeScale);
 
             // Free-moving camera, moves with mouse and keyboard controls.
             if(camType == CamType.FREELOOK){

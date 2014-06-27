@@ -11,7 +11,8 @@ public class PrefabManager : MonoBehaviour {
 	public GameObject foodPellet = null;
 	public GameObject reproduceBurst = null;
 	public GameObject newPelletBurst = null;
-    public GameObject propulsionEffect = null;
+    public GameObject mainTrail = null;
+    public GameObject extendedTrail = null;
 
     public Material assemblySkin = null;
 

@@ -219,7 +219,7 @@ public class Assembly {
             ApplyConvexMeshToPhysicsObject();
 
         physicsObject.AddComponent<MeshCollider>();
-        physicsObject.GetComponent<MeshCollider>().convex = true;
+        physicsObject.GetComponent<MeshCollider>().convex = false;
 
         needRigidbodyUpdate = false;
     } // End of ComputerPhysics().
@@ -315,8 +315,6 @@ public class Assembly {
 
         // If assembly has 200% health, it reproduces!
         if(Health >= 2f){
-            MonoBehaviour.print("Assembly very healthy; reproducing!");
-
             Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
             
             Assembly offspringAssem = Reproduce();
@@ -606,7 +604,7 @@ public class Assembly {
 
     //energy that is being used
     public void CalculateEnergyUse(){
-        currentEnergy -= (energyBurnRate * GameManager.simStep * burnCoefficient);
+        currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient);
     }
 
     //update burn rate for asmbly

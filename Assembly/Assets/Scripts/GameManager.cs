@@ -43,6 +43,21 @@ public class GameManager : MonoBehaviour {
     public OrbitMenuItem optionOption = null;
     public OrbitMenuItem siteOption = null;
 
+
+    public GuiKnob timeScaleKnob = null;
+    public GuiKnob minNumAssemKnob = null;
+    public GuiKnob maxNumAssemKnob = null;
+    public GuiKnob numFoodPelletsKnob = null;
+    public GuiKnob minNodesKnob = null;
+    public GuiKnob maxNodesKnob = null;
+    public GuiKnob consumeRateKnob = null;
+    public GuiKnob burnRateKnob = null;
+
+    float controlRingAngleMod = 0f;
+    float controlRingAngleModVel = 0f;
+    float controlRingFade = 0f;
+
+
     void Awake(){
         Inst = this;
     }
@@ -62,7 +77,7 @@ public class GameManager : MonoBehaviour {
 
 
     void LateUpdate(){
-        deltaRealTime = GameManager.simStep / Time.timeScale;
+        deltaRealTime = Time.deltaTime / Time.timeScale;
 
         if(Input.GetKeyDown(KeyCode.Escape))
             pauseMenu = !pauseMenu;
@@ -81,9 +96,9 @@ public class GameManager : MonoBehaviour {
         if(siteOption.held)
             Application.OpenURL("http://imagination.ucsd.edu/assembly/index.html");
 
-        initialFadeIn = Mathf.MoveTowards(initialFadeIn, 0f, (GameManager.simStep / Time.timeScale) * 0.3f);
+        initialFadeIn = Mathf.MoveTowards(initialFadeIn, 0f, (Time.deltaTime / Time.timeScale) * 0.3f);
         
-        fade = Mathf.Lerp(fade, pauseMenu? 0.8f : 0f, GameManager.simStep * 10f);
+        fade = Mathf.Lerp(fade, pauseMenu? 0.8f : 0f, Time.deltaTime * 10f);
 
         if(initialFadeIn > fade)
             fade = initialFadeIn;
@@ -116,23 +131,26 @@ public class GameManager : MonoBehaviour {
 
         if(populationControl){
             //adjust assemblies on slider
-            if( Assembly.GetAll().Count < Assembly.MIN_ASSEMBLY )
+            if( Assembly.GetAll().Count < Assembly.MIN_ASSEMBLY ){
                 while(Assembly.GetAll().Count < Assembly.MIN_ASSEMBLY){
                     SeedNewRandomAssembly();
                 }
+            }
             else if( Assembly.GetAll().Count > Assembly.MAX_ASSEMBLY ){
-                Assembly lowestHealthAssembly = null;
-                float lowestHealth = Mathf.Infinity;
+                for(int i = 0; i < (Assembly.GetAll().Count - Assembly.MAX_ASSEMBLY); i++){
+                    Assembly lowestHealthAssembly = null;
+                    float lowestHealth = Mathf.Infinity;
 
-                for(int i = Assembly.GetAll().Count - 1; i >= 0; --i){
-                    Assembly currentAssembly = Assembly.GetAll()[i];
-                    if(currentAssembly.Health < lowestHealth){
-                        lowestHealthAssembly = currentAssembly;
-                        lowestHealth = currentAssembly.Health;
+                    for(int j = Assembly.GetAll().Count - 1; j >= 0; --j){
+                        Assembly currentAssembly = Assembly.GetAll()[j];
+                        if(currentAssembly.Health < lowestHealth){
+                            lowestHealthAssembly = currentAssembly;
+                            lowestHealth = currentAssembly.Health;
+                        }
                     }
+                    if(lowestHealthAssembly)
+                        lowestHealthAssembly.Destroy();
                 }
-                if(lowestHealthAssembly)
-                    lowestHealthAssembly.Destroy();
             }
         }
 
@@ -238,7 +256,80 @@ public class GameManager : MonoBehaviour {
         float guiGutter = 10f;
         Rect controlGuiRect = new Rect(15, 15, 200, guiHeight);
 
+
+        targetTimeScale = timeScaleKnob.Value;
+        minNumAssemblies = (int)minNumAssemKnob.Value;
+        maxNumAssemblies = (int)maxNumAssemKnob.Value;
+        numFoodPellets = (int)numFoodPelletsKnob.Value;
+        minNumNodes = (int)minNodesKnob.Value;
+        maxNumNodes = (int)maxNodesKnob.Value;
+        Assembly.burnCoefficient = burnRateKnob.Value;
+        SenseNode.consumeRate = consumeRateKnob.Value;
+        
+
+        float ringRadius = 250;
+        float ringAngleRatio = 0.25f;
+
+        controlRingAngleMod = Mathf.SmoothDamp(controlRingAngleMod, (Mathf.PI * 2f) - (((Screen.width * 0.5f) - Input.mousePosition.x) * 0.0045f), ref controlRingAngleModVel, 0.2f);
+        float controlRingAngle = 0f + controlRingAngleMod;
+
+        Vector2 circleCenter = new Vector2(Screen.width * 0.5f, Screen.height - (Screen.height * 0.225f));
+        bool controlBeingUsed = false;
+        for(int i = 0; i < 10; i++){
+            GuiKnob currentKnob = null;
+
+            switch(i){
+                case 0 :
+                    currentKnob = timeScaleKnob;
+                    break;
+                case 1 : 
+                    currentKnob = minNumAssemKnob;
+                    break;
+                case 2 : 
+                    currentKnob = maxNumAssemKnob;
+                    break;
+                case 3 : 
+                    currentKnob = numFoodPelletsKnob;
+                    break;
+                case 4 : 
+                    currentKnob = minNodesKnob;
+                    break;
+                case 5 : 
+                    currentKnob = maxNodesKnob;
+                    break;
+                case 6 : 
+                    currentKnob = consumeRateKnob;
+                    break;
+                case 7 : 
+                    currentKnob = burnRateKnob;
+                    break;
+            };
+
+
+            if(currentKnob != null){
+                currentKnob.pxlPos = circleCenter + new Vector2(Mathf.Cos(controlRingAngle) * ringRadius, Mathf.Sin(controlRingAngle) * ringRadius * ringAngleRatio);
+                float closeness = 0.5f + (Mathf.Cos(controlRingAngle - (Mathf.PI * 0.5f)) * 0.5f);
+                currentKnob.scale = 0.25f + (closeness * 0.7f);
+                currentKnob.alpha = closeness * controlRingFade;
+
+                if(currentKnob.clicked)
+                    controlBeingUsed = true;
+            }
+            controlRingAngle += Mathf.PI * 0.17f;
+        }
+
+        Rect controlFadeInRect = new Rect(circleCenter.x - (ringRadius * 1.5f), circleCenter.y - (ringRadius * 1.5f * ringAngleRatio), ringRadius * 3f, ringRadius * 3f * ringAngleRatio);
+        float ringFadeSpeed = 2f;
+        if(!Input.GetMouseButton(1) && (controlBeingUsed || controlFadeInRect.Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))){
+            controlRingFade = Mathf.MoveTowards(controlRingFade, 1f, Time.deltaTime * ringFadeSpeed);
+        }
+        else
+            controlRingFade = Mathf.MoveTowards(controlRingFade, 0f, Time.deltaTime * ringFadeSpeed);
+
+
+
         if(showControls){
+            /*
             GUI.Label(controlGuiRect, "Number of Food Pellets: " + numFoodPellets   );
             controlGuiRect.y += guiHeight;
             numFoodPellets = (int) GUI.HorizontalSlider(controlGuiRect, numFoodPellets, 1.0F, 100.0F);
@@ -263,34 +354,11 @@ public class GameManager : MonoBehaviour {
             Assembly.burnCoefficient = GUI.HorizontalSlider(controlGuiRect, Assembly.burnCoefficient, 0.0F, 10.0F);
             controlGuiRect.y += guiHeight;
 
-            /*
-            refactorIfInert = GUI.Toggle(controlGuiRect, refactorIfInert, " Refactor Inert Assemblies");
-            controlGuiRect.y += guiHeight;
-            */
 
-            controlGuiRect.y += guiGutter;
 
-            // Population control
-            populationControl = GUI.Toggle(controlGuiRect, populationControl, " Population Control");
-            controlGuiRect.y += guiHeight;
 
-            GUI.enabled = populationControl;
-            GUI.Label(controlGuiRect, "Min # of Assemblies: " + minNumAssemblies   );
-            controlGuiRect.y += guiHeight;
-            minNumAssemblies = (int) GUI.HorizontalSlider(controlGuiRect, minNumAssemblies, 1.0F, 100.0F);
-            if(minNumAssemblies > maxNumAssemblies) //check to maintain min - max
-                maxNumAssemblies = minNumAssemblies;
-            controlGuiRect.y += guiHeight;
 
-            GUI.Label(controlGuiRect, "Max # of Assemblies: " + maxNumAssemblies   );
-            controlGuiRect.y += guiHeight;
-            maxNumAssemblies = (int) GUI.HorizontalSlider(controlGuiRect, maxNumAssemblies, 1.0F, 100.0F);
-            if(minNumAssemblies > maxNumAssemblies) //check to maintain min - max
-                minNumAssemblies = maxNumAssemblies;
-            controlGuiRect.y += guiHeight;
-
-            controlGuiRect.y += guiGutter;
-            GUI.enabled = true;
+            
 
             GUI.Label(controlGuiRect, "Time scale: " + targetTimeScale.ToString("F2")   );
             controlGuiRect.y += guiHeight;
@@ -300,7 +368,6 @@ public class GameManager : MonoBehaviour {
             showAssemReadouts = GUI.Toggle(controlGuiRect, showAssemReadouts, "Show Assembly Info");
             controlGuiRect.y += guiHeight;
 
-/*  changes the different types of food. taken out
             GUI.Label(controlGuiRect, "Food Property:");
             controlGuiRect.y += guiHeight;
             FoodPellet.ftDistanceEnabled = GUI.Toggle(controlGuiRect, FoodPellet.ftDistanceEnabled, " Distance");
@@ -323,10 +390,7 @@ public class GameManager : MonoBehaviour {
             FoodPellet.passiveRange = GUI.HorizontalSlider(controlGuiRect, FoodPellet.passiveRange, 10F, 50F);
             controlGuiRect.y += guiHeight;
             GUI.enabled = true;
-            */
 
-            /*GUI to control food detection and distance*/
-            
             GUI.Label(controlGuiRect, "Adjust Detection Range: " + SenseNode.detectRange);
             controlGuiRect.y += guiHeight;
             SenseNode.detectRange = GUI.HorizontalSlider(controlGuiRect, SenseNode.detectRange, 10F, 100F);
@@ -343,7 +407,7 @@ public class GameManager : MonoBehaviour {
             controlGuiRect.y += guiHeight;
             SenseNode.consumeRate = GUI.HorizontalSlider(controlGuiRect, SenseNode.consumeRate, 5F, 20F);
             controlGuiRect.y += guiHeight;
-            
+            */
         }
 
 

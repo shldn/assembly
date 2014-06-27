@@ -129,9 +129,9 @@ public class ConsoleScript : MonoBehaviour {
         if(logVisibleTime > 0f)
             logFade = 1f;
         else
-            logFade = Mathf.MoveTowards(logFade, 0f, (GameManager.simStep / Time.timeScale));
+            logFade = Mathf.MoveTowards(logFade, 0f, (Time.deltaTime / Time.timeScale));
 
-        logVisibleTime -= (GameManager.simStep / Time.timeScale);
+        logVisibleTime -= (Time.deltaTime / Time.timeScale);
 
         if(active)
             logVisibleTime = 5f;

@@ -93,7 +93,7 @@ public class FoodPellet{
     }
 
     public void Update(){
-        particleEmitCooldown -= GameManager.simStep;
+        particleEmitCooldown -= Time.deltaTime;
 
         gameObject.transform.position = worldPosition;
         gameObject.transform.localScale = Vector3.one * (currentEnergy / MAX_ENERGY);
@@ -128,7 +128,7 @@ public class FoodPellet{
             /*
             while (i < 10) {
                 particleObject.Emit(worldPosition, direction, 3f, 10, Color.red);
-                //float yPosition = Mathf.Sin(Time.time) * GameManager.simStep;
+                //float yPosition = Mathf.Sin(Time.time) * Time.deltaTime;
                 //particles[i].position += direction;
                 //particles[i].color = Color.red;
                 //particles[i].size = Mathf.Sin(Time.time) * 0.2F;
