@@ -28,6 +28,9 @@ public class GuiKnob : MonoBehaviour {
 
     public float alpha = 1f;
 
+    float yClickPos = 0f;
+    bool clickPosCaught = false;
+
     public float Value{
         get{ return Mathf.Lerp(minValue, maxValue, mapValue); }
         set{ mapValue = Mathf.InverseLerp(minValue, maxValue, value); }
@@ -35,7 +38,7 @@ public class GuiKnob : MonoBehaviour {
 
 
 
-    void Awake(){
+    void Start(){
         Value = initialValue;
     }
 
@@ -46,7 +49,13 @@ public class GuiKnob : MonoBehaviour {
 
         GUI.color = new Color(1f, 1f, 1f, 0.1f * alpha);
         if(clicked){{
-            mapValue += Input.GetAxis("Mouse Y") * 0.01f;
+            if(!clickPosCaught){
+                yClickPos = Input.mousePosition.y;
+                clickPosCaught = true;
+            }
+
+            mapValue += (Input.mousePosition.y - yClickPos) * 0.01f;
+            yClickPos = Input.mousePosition.y;
             mapValue = Mathf.Clamp01(mapValue);
 
             if(minLimitKnob && (Value < minLimitKnob.Value))
@@ -62,8 +71,10 @@ public class GuiKnob : MonoBehaviour {
         }
 
 
-        if(!Input.GetMouseButton(0))
+        if(!Input.GetMouseButton(0)){
             clicked = false;
+            clickPosCaught = false;
+        }
 
         GUI.DrawTexture(rect, knobTex);
 

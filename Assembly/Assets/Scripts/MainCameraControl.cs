@@ -33,8 +33,7 @@ public class MainCameraControl : MonoBehaviour {
     public Quaternion randomOrbit = Quaternion.identity;
     float demoOrbitDistRunner = 0f;
 
-    float camMaxOrbit = 500f;
-    float camMinOrbit = 100f;
+    float camDemoOrbitRad = 500f;
 
     void Awake(){
         depthOfField = Camera.main.GetComponent("DepthOfField34") as DepthOfField34;
@@ -53,8 +52,6 @@ public class MainCameraControl : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate(){
 
-        float camZoomLoopTime = 60f;
-
         // Smoothly interpolate camera position/rotation.
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime * Time.timeScale);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, 10f * (Time.deltaTime / Time.timeScale));
@@ -65,12 +62,11 @@ public class MainCameraControl : MonoBehaviour {
         if(camType == CamType.ORBIT_DEMO){
             targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (Time.deltaTime));
 
-            camMaxOrbit += camMaxOrbit * -Input.GetAxis("Mouse ScrollWheel");
-            camMinOrbit += camMinOrbit * -Input.GetAxis("Mouse ScrollWheel");
-
-            camOrbitDist = Mathf.Lerp(camMaxOrbit, camMinOrbit, ((Mathf.Sin((demoOrbitDistRunner * Mathf.PI) / camZoomLoopTime)) * 0.5f) + 0.5f);
-
-            demoOrbitDistRunner += Time.deltaTime;
+            camOrbitDist += camOrbitDist * -Input.GetAxis("Mouse ScrollWheel");
+            if(Input.GetKey(KeyCode.Period))
+                camOrbitDist += camOrbitDist * 1f * Time.deltaTime;
+            if(Input.GetKey(KeyCode.Comma))
+                camOrbitDist -= camOrbitDist * 1f * Time.deltaTime;
         }
 
 
@@ -94,6 +90,10 @@ public class MainCameraControl : MonoBehaviour {
 
             // Orbit distance can be modified using the mousewheel.
             camOrbitDist += camOrbitDist * -Input.GetAxis("Mouse ScrollWheel");
+            if(Input.GetKey(KeyCode.Period))
+                camOrbitDist += camOrbitDist * 1f * Time.deltaTime;
+            if(Input.GetKey(KeyCode.Comma))
+                camOrbitDist -= camOrbitDist * 1f * Time.deltaTime;
 
             // Orbit can be changed by holding mouse button.
             if(Input.GetMouseButton(1) && !GameManager.Inst.pauseMenu)
