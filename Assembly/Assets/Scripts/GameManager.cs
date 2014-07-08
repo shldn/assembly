@@ -60,6 +60,11 @@ public class GameManager : MonoBehaviour {
 
     void Awake(){
         Inst = this;
+
+        if(Application.platform == RuntimePlatform.Android){
+            maxNumAssemKnob.initialValue = 20;
+            minNumAssemKnob.initialValue = 15;
+        }
     }
 
 	void Start(){
@@ -267,7 +272,8 @@ public class GameManager : MonoBehaviour {
         SenseNode.consumeRate = consumeRateKnob.Value;
         
 
-        float ringRadius = 250;
+        
+        float ringRadius = 250f;
         float ringAngleRatio = 0.25f;
 
         controlRingAngleMod = Mathf.SmoothDamp(controlRingAngleMod, (Mathf.PI * 2f) - (((Screen.width * 0.5f) - Input.mousePosition.x) * 0.0045f), ref controlRingAngleModVel, 0.2f);
@@ -307,20 +313,35 @@ public class GameManager : MonoBehaviour {
 
 
             if(currentKnob != null){
-                currentKnob.pxlPos = circleCenter + new Vector2(Mathf.Cos(controlRingAngle) * ringRadius, Mathf.Sin(controlRingAngle) * ringRadius * ringAngleRatio);
-                float closeness = 0.5f + (Mathf.Cos(controlRingAngle - (Mathf.PI * 0.5f)) * 0.5f);
-                currentKnob.scale = 0.25f + (closeness * 0.7f);
-                currentKnob.alpha = closeness * controlRingFade;
+                // Auto-rotate ring on desktop systems
+                if(Application.platform != RuntimePlatform.Android){
+                    currentKnob.pxlPos = circleCenter + new Vector2(Mathf.Cos(controlRingAngle) * ringRadius, Mathf.Sin(controlRingAngle) * ringRadius * ringAngleRatio);
+                    float closeness = 0.5f + (Mathf.Cos(controlRingAngle - (Mathf.PI * 0.5f)) * 0.5f);
+                    currentKnob.scale = 0.25f + (closeness * 0.7f);
+                    currentKnob.alpha = closeness * controlRingFade;
+                }
+                // Static controls on handheld systems
+                else{
+                    currentKnob.pxlPos = new Vector2(150f + (i * 220f), Screen.height - 150f);
+                    currentKnob.scale = 2f;
+                }
+
 
                 if(currentKnob.clicked)
                     controlBeingUsed = true;
+                
             }
             controlRingAngle += Mathf.PI * 0.17f;
         }
 
         Rect controlFadeInRect = new Rect(circleCenter.x - (ringRadius * 1.5f), circleCenter.y - (ringRadius * 1.5f * ringAngleRatio), ringRadius * 3f, ringRadius * 3f * ringAngleRatio);
         float ringFadeSpeed = 2f;
-        if(!Input.GetMouseButton(1) && (controlBeingUsed || controlFadeInRect.Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))){
+
+        // Menu always visible if on handheld
+        if(Application.platform == RuntimePlatform.Android)
+            controlRingFade = 1f;
+        // Otherwise only fades in if mouse is nearby.
+        else if(!Input.GetMouseButton(1) && (controlBeingUsed || controlFadeInRect.Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))){
             controlRingFade = Mathf.MoveTowards(controlRingFade, 1f, Time.deltaTime * ringFadeSpeed);
         }
         else
