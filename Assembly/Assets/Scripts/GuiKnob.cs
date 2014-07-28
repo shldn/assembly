@@ -43,7 +43,7 @@ public class GuiKnob : MonoBehaviour {
     }
 
 
-    void OnGUI(){
+    public void Draw(){
 
         Rect rect = new Rect(pxlPos.x - (scale * knobSize * 0.5f), pxlPos.y - (scale * knobSize * 0.5f), scale * knobSize, scale * knobSize);
 

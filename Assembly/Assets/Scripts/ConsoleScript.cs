@@ -38,13 +38,17 @@ public class ConsoleScript : MonoBehaviour {
     public Dictionary<string, ConsoleCommand> commands = new Dictionary<string, ConsoleCommand>();
 
     public static ConsoleScript Inst = null;
+    NetworkView myNetworkView = null;
 
 
     void Awake(){
         Inst = this;
 
+        myNetworkView = GetComponent<NetworkView>();
+
         List<ConsoleCommand> cmdList = new List<ConsoleCommand>();
         cmdList.Add(new ConsoleCommand("clear"));
+        cmdList.Add(new ConsoleCommand("say"));
         cmdList.Add(new ConsoleCommand("disband"));
         cmdList.Add(new ConsoleCommand("help"));
         cmdList.Add(new ConsoleCommand("load"));
@@ -77,6 +81,16 @@ public class ConsoleScript : MonoBehaviour {
             WriteToLog("Available Commands:");
             foreach(KeyValuePair<string,ConsoleCommand> cmd in commands)
                 WriteToLog("\t" + cmd.Key);
+        };
+
+        commands["say"].func = delegate(string[] args)
+        {
+            // Need to handle all args after 0!
+            string messageToSend = "";
+            for(int i = 1; i < args.Length; i++)
+                messageToSend += args[i] + " ";
+
+            GlobalWriteToLog(Net_Manager.playerName + " \"" + messageToSend + "\"", RPCMode.All);
         };
 
         /*commands["load"].func = delegate(string[] args)
@@ -226,6 +240,21 @@ public class ConsoleScript : MonoBehaviour {
     public static void NewLine(string lineText){
         lines.Add(lineText);
     } // End of NewLine().
+
+
+    // Displays a message in the client's chat log and attempts to do the same for all connected players.
+    public void GlobalWriteToLog(string message, RPCMode rpcMode){
+	    if(Network.peerType != NetworkPeerType.Disconnected)
+		    myNetworkView.RPC("ChatMessage", rpcMode, message);
+	    else
+		    WriteToLog(message);
+    } // End of GlobalMessage().
+
+
+    [RPC] // Displays a networked client message.
+    void ChatMessage(string message){
+	    WriteToLog(message);
+    } // End of ChatMessage().
 }
 
 

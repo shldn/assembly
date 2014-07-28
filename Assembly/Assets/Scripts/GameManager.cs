@@ -83,7 +83,7 @@ public class GameManager : MonoBehaviour {
 
     void LateUpdate(){
         deltaRealTime = Time.deltaTime / Time.timeScale;
-
+        
         if(Input.GetKeyDown(KeyCode.Escape))
             pauseMenu = !pauseMenu;
 
@@ -229,6 +229,12 @@ public class GameManager : MonoBehaviour {
             ConsoleScript.Inst.WriteToLog("Created random assemblies.");
         }
 
+
+        if(Application.platform == RuntimePlatform.Android){
+            // Quit on back button.
+            if(Input.GetKeyDown(KeyCode.Escape))
+                Application.Quit();
+        }
     } // End of Update().
 
 
@@ -330,8 +336,11 @@ public class GameManager : MonoBehaviour {
                 if(currentKnob.clicked)
                     controlBeingUsed = true;
                 
+                currentKnob.Draw();
+
             }
             controlRingAngle += Mathf.PI * 0.17f;
+
         }
 
         Rect controlFadeInRect = new Rect(circleCenter.x - (ringRadius * 1.5f), circleCenter.y - (ringRadius * 1.5f * ringAngleRatio), ringRadius * 3f, ringRadius * 3f * ringAngleRatio);

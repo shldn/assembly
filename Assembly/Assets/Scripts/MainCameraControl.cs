@@ -17,6 +17,9 @@ public class MainCameraControl : MonoBehaviour {
     float cameraMoveSpeed = 30f;
     float cameraRotateSpeed = 2f;
 
+    float touchRotateSpeed = 0.2f;
+
+
     Node hoveredNode = null;
     public Node selectedNode = null;
     public Assembly selectedAssembly = null;
@@ -34,6 +37,13 @@ public class MainCameraControl : MonoBehaviour {
     float demoOrbitDistRunner = 0f;
 
     float camDemoOrbitRad = 500f;
+
+    Vector2 touchRotLastPos = Vector2.zero;
+    bool touchRotInit = false;
+
+    bool pinchZooming = false;
+    float pinchZoomStart = 0f;
+    float pinchZoomInitOrbit = 0f;
 
     void Awake(){
         depthOfField = Camera.main.GetComponent("DepthOfField34") as DepthOfField34;
@@ -56,6 +66,47 @@ public class MainCameraControl : MonoBehaviour {
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref smoothVelTranslate, translateSmoothTime * Time.timeScale);
         transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, 10f * (Time.deltaTime / Time.timeScale));
 
+
+        if((Application.platform == RuntimePlatform.Android) || (Application.platform == RuntimePlatform.IPhonePlayer)){
+
+            if(Input.touchCount == 1){
+                Vector2 touch0 = Input.GetTouch(0).position;
+
+                if(!touchRotInit){
+                    touchRotInit = true;
+                }
+                else{
+                    targetRot *= Quaternion.AngleAxis((touch0.y - touchRotLastPos.y) * touchRotateSpeed, -Vector3.right);
+                    targetRot *= Quaternion.AngleAxis((touch0.x - touchRotLastPos.x) * touchRotateSpeed, Vector3.up);
+                }
+                touchRotLastPos = touch0;
+
+            }
+            else
+                touchRotInit = false;
+
+            // Pinch zoom
+            if (Input.touchCount >= 2)
+            {
+                Vector2 touch0, touch1;
+                float distance;
+                touch0 = Input.GetTouch(0).position;
+                touch1 = Input.GetTouch(1).position;
+ 
+                distance = Vector2.Distance(touch0, touch1);
+
+                if(!pinchZooming){
+                    pinchZooming = true;
+                    pinchZoomStart = distance;
+                    pinchZoomInitOrbit = camOrbitDist;
+                }
+
+                camOrbitDist = pinchZoomInitOrbit * (pinchZoomStart / distance);
+            }
+            else{
+                pinchZooming = false;
+            }
+        }
 
 
         // Gallery-style demo-mode: camera orbits center, zooming in and out slowly.
@@ -212,8 +263,22 @@ public class MainCameraControl : MonoBehaviour {
 
 
     void HandleMouseOrbit(){
-        targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * cameraRotateSpeed, -Vector3.right);
-        targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * cameraRotateSpeed, Vector3.up);
+        if((Application.platform == RuntimePlatform.Android) || (Application.platform == RuntimePlatform.IPhonePlayer)){
+            // Move mouse with touch.
+            if(Input.touchCount == 1){
+                Vector2 touch0 = Input.GetTouch(0).position;
+
+                targetRot *= Quaternion.AngleAxis((touch0.y - touchRotLastPos.y) * touchRotateSpeed, -Vector3.right);
+                targetRot *= Quaternion.AngleAxis((touch0.x - touchRotLastPos.x) * touchRotateSpeed, Vector3.up);
+                
+                touchRotLastPos = touch0;
+                
+            }
+        }
+        else{
+            targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * cameraRotateSpeed, -Vector3.right);
+            targetRot *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * cameraRotateSpeed, Vector3.up);
+        }
     } // End of HandleOrbit().
 
 
