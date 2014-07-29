@@ -39,6 +39,8 @@ public class Node {
         return exists != null;
     }
 
+    GameObject junkObject = null;
+
     // ------------------------------------------------------------------------------------ ||
     // Constructors
 	public Node(){
@@ -119,6 +121,14 @@ public class Node {
 
         gameObject.renderer.material.color = baseColor;
 
+        if(!junkObject){
+            int rand = Random.Range(0, RandomJunk.Inst.junkObjects.Length);
+            GameObject junkPrefab = RandomJunk.Inst.junkObjects[rand];
+            junkObject = GameObject.Instantiate(junkPrefab, worldPosition, worldRotation) as GameObject;
+            junkObject.transform.parent = gameObject.transform;
+        }
+
+
         /*
         if(!activeLogic)
             gameObject.renderer.material.color = Color.Lerp(baseColor, new Color(0.2f, 0.2f, 0.2f), 0.9f);
@@ -155,6 +165,8 @@ public class Node {
             GameObject.Destroy(gameObject);
         if(assembly)
             assembly.RemoveNode(this);
+        if(junkObject)
+            GameObject.Destroy(junkObject);
 
         allNodes.Remove(this);
     } // End of Destroy().
