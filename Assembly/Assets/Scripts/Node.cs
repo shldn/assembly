@@ -121,12 +121,14 @@ public class Node {
 
         gameObject.renderer.material.color = baseColor;
 
+        /*
         if(!junkObject){
             int rand = Random.Range(0, RandomJunk.Inst.junkObjects.Length);
             GameObject junkPrefab = RandomJunk.Inst.junkObjects[rand];
             junkObject = GameObject.Instantiate(junkPrefab, worldPosition, worldRotation) as GameObject;
             junkObject.transform.parent = gameObject.transform;
         }
+        */
 
 
         /*
