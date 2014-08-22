@@ -54,6 +54,8 @@ public class Net_Manager : MonoBehaviour {
     public static NetworkView myNetworkView;
     public NetworkPlayer myOwner;
 
+    public GameObject netAmalgamPrefab;
+
 
     void Awake(){
 	    myNetworkView = networkView;
@@ -293,6 +295,9 @@ public class Net_Manager : MonoBehaviour {
 	    playerList[0].playerName = playerName;
 	
 	    ConsoleScript.Inst.WriteToLog("!Server initialized as [" + playerName + "].");
+
+        Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0);
+
     } // End of OnServerInitialized().
 
 
@@ -318,6 +323,9 @@ public class Net_Manager : MonoBehaviour {
 	    networkView.RPC("Credentials", RPCMode.Others, Network.player, playerName);
 	    ConsoleScript.Inst.GlobalWriteToLog("![" + playerName + "] has connected.", RPCMode.Others);
         ConsoleScript.Inst.WriteToLog("Connected to server as [" + playerName + "].");
+
+        Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0);
+
     } // End of OnConnectedToServer().
 
 
