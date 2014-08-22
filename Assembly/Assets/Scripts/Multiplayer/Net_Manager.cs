@@ -296,7 +296,8 @@ public class Net_Manager : MonoBehaviour {
 	
 	    ConsoleScript.Inst.WriteToLog("!Server initialized as [" + playerName + "].");
 
-        Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0);
+        GameObject newPlayerObject = Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0) as GameObject;
+        
 
     } // End of OnServerInitialized().
 
