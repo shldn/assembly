@@ -27,6 +27,8 @@ public class Assembly {
 
     public GameObject physicsObject = null;
 
+    public bool networkEffect = false;
+
     //asmbly control
     public static int MIN_ASSEMBLY = 1;
     public static int MAX_ASSEMBLY = 10;
@@ -298,6 +300,10 @@ public class Assembly {
         if(currentEnergy < 0.0f){
             DestroyWithAnimation();
         }
+
+
+        
+
 
         /*
         // Useless assemblies should be immediately deleted.

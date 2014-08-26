@@ -296,8 +296,9 @@ public class Net_Manager : MonoBehaviour {
 	
 	    ConsoleScript.Inst.WriteToLog("!Server initialized as [" + playerName + "].");
 
-        GameObject newPlayerObject = Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0) as GameObject;
-        
+        GameObject newNetAmalgamGO = Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0) as GameObject;
+        Net_Amalgam newNetAmalgam = newNetAmalgamGO.GetComponent<Net_Amalgam>();
+        newNetAmalgam.SendAssemblies();
 
     } // End of OnServerInitialized().
 
@@ -325,7 +326,9 @@ public class Net_Manager : MonoBehaviour {
 	    ConsoleScript.Inst.GlobalWriteToLog("![" + playerName + "] has connected.", RPCMode.Others);
         ConsoleScript.Inst.WriteToLog("Connected to server as [" + playerName + "].");
 
-        Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0);
+        GameObject newNetAmalgamGO = Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0) as GameObject;
+        Net_Amalgam newNetAmalgam = newNetAmalgamGO.GetComponent<Net_Amalgam>();
+        newNetAmalgam.SendAssemblies();
 
     } // End of OnConnectedToServer().
 

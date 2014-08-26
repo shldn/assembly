@@ -119,7 +119,12 @@ public class Node {
 
     public virtual void Update(){
 
-        gameObject.renderer.material.color = baseColor;
+        if(assembly && !assembly.networkEffect)
+            gameObject.renderer.material.color = baseColor;
+        else
+            gameObject.renderer.material.color = Color.Lerp(baseColor, Color.green, 0.3f);
+
+
 
         /*
         if(!junkObject){
