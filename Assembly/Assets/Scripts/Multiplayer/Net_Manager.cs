@@ -298,7 +298,6 @@ public class Net_Manager : MonoBehaviour {
 
         GameObject newNetAmalgamGO = Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0) as GameObject;
         Net_Amalgam newNetAmalgam = newNetAmalgamGO.GetComponent<Net_Amalgam>();
-        newNetAmalgam.SendAssemblies();
 
     } // End of OnServerInitialized().
 

@@ -610,7 +610,7 @@ public class Assembly {
 
     //energy that is being used
     public void CalculateEnergyUse(){
-        currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient);
+        currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient * 0.1f);
     }
 
     //update burn rate for asmbly
