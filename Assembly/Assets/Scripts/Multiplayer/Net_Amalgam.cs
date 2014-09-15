@@ -110,7 +110,7 @@ public class Net_Amalgam : MonoBehaviour {
         Assembly newAssembly = Assembly.GetRandomAssembly(1);
         newAssembly.WorldPosition = newPosition;
         newAssembly.WorldRotation = newRotation;
-        newAssembly.networkEffect = true;
+        newAssembly.imported = true;
 
         // Generate nodes
         string[]nodeData = assemblyData.Split('n');

@@ -119,7 +119,7 @@ public class Node {
 
     public virtual void Update(){
 
-        if(assembly && !assembly.networkEffect)
+        if(assembly && !assembly.imported)
             gameObject.renderer.material.color = baseColor;
         else
             gameObject.renderer.material.color = Color.Lerp(baseColor, Color.green, 0.3f);
@@ -157,7 +157,7 @@ public class Node {
 
             // Burn energy if not selected... sucks having the assembly you're following explode into pieces
             //   (and throw a million nullref excepts)
-            if(assembly != MainCameraControl.Inst.selectedAssembly)
+            if(assembly.imported && (assembly != MainCameraControl.Inst.selectedAssembly))
                 assembly.currentEnergy -= GetBurnRate() * Assembly.burnCoefficient * Time.deltaTime;
         }
 
