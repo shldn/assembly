@@ -62,6 +62,8 @@ public class Net_Amalgam : MonoBehaviour {
 
             // Values are sent as "<value><character indicator>", so "positions.x = 3.534" is sent as "3.534x".
 
+            assemblyData += currentAssembly.currentEnergy + "g";
+
             // Store world position
             assemblyData += currentAssembly.WorldPosition.x + "x";
             assemblyData += currentAssembly.WorldPosition.y + "y";
@@ -80,16 +82,18 @@ public class Net_Amalgam : MonoBehaviour {
                 assemblyData += currentNode.localHexPosition.x + "x";
                 assemblyData += currentNode.localHexPosition.y + "y";
                 assemblyData += currentNode.localHexPosition.z + "z";
+
                 assemblyData += "n";
             }
 
-            networkView.RPC("ReceiveAssembly", RPCMode.All, assemblyData);
+            networkView.RPC("ReceiveAssembly", RPCMode.Others, assemblyData);
         }
     } // End of SendAssemblies().
 
     [RPC]
     void ReceiveAssembly(string assemblyData){
-        int cursor = 0;
+
+        float newEnergy = ExtractFloat(ref assemblyData, 'g');
 
         // Find world position.
         Vector3 newPosition = Vector3.zero;
@@ -112,6 +116,8 @@ public class Net_Amalgam : MonoBehaviour {
         newAssembly.WorldRotation = newRotation;
         newAssembly.imported = true;
 
+
+
         // Generate nodes
         string[]nodeData = assemblyData.Split('n');
         for(int j = 0; j < nodeData.Length - 1; j++){
@@ -123,8 +129,15 @@ public class Net_Amalgam : MonoBehaviour {
             newNodeHexPos.z = ExtractInt(ref currentNodeData, 'z');
 
             // Make this more specific...
-            newAssembly.AddNode(new Node(newNodeHexPos));
+            Node newNode = new Node();
+            newAssembly.AddNode(newNode);
+            newNode.localHexPosition = newNodeHexPos;
+            //newAssembly.AddRandomNode();
         }
+
+        newAssembly.currentEnergy = newEnergy;
+        Instantiate(PrefabManager.Inst.reproduceBurst, newAssembly.WorldPosition, Quaternion.identity);
+
     } // End of ReceiveAssemblies().
 
     float ExtractFloat(ref string text, char delimiter){

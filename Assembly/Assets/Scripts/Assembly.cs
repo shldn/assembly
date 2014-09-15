@@ -27,7 +27,7 @@ public class Assembly {
 
     public GameObject physicsObject = null;
 
-    public bool imported = false;
+    public bool networkEffect = false;
 
     //asmbly control
     public static int MIN_ASSEMBLY = 1;
@@ -610,8 +610,7 @@ public class Assembly {
 
     //energy that is being used
     public void CalculateEnergyUse(){
-        if(!imported)
-            currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient);
+        currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient * 0.1f);
     }
 
     //update burn rate for asmbly

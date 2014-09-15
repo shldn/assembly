@@ -124,7 +124,10 @@ public class GameManager : MonoBehaviour {
         if( FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD )
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
                 FoodPellet newPellet = FoodPellet.AddNewFoodPellet();
-                newPellet.worldPosition = new Vector3(0f, UnityEngine.Random.Range(-200f, 200f), 0f);
+                float spiralSize = 75f;
+                float spiralDensity = 0.05f;
+                float xPos = UnityEngine.Random.Range(-200f, 200f);
+                newPellet.worldPosition = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
                 UnityEngine.Object lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity);
 
                 //destroy effect after 1.5 sec
