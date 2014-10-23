@@ -27,7 +27,7 @@ public class Assembly {
 
     public GameObject physicsObject = null;
 
-    public bool networkEffect = false;
+    public bool imported = false;
 
     //asmbly control
     public static int MIN_ASSEMBLY = 1;

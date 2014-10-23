@@ -1,5 +1,7 @@
 Assembly/Library/*
 Assembly/Temp/*
+JellyfishGrotto/Library/*
+JellyfishGrotto/Temp/*
 bin/*
 *.csproj
 *.pidb

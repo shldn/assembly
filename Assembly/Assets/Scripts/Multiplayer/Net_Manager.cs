@@ -82,8 +82,7 @@ public class Net_Manager : MonoBehaviour {
 
 
     void Update(){
-	    showClientDisWindow = Network.peerType == NetworkPeerType.Disconnected;
-
+	    showClientDisWindow = (Network.peerType == NetworkPeerType.Disconnected);
     } // End of Update().
 
 
@@ -247,28 +246,31 @@ public class Net_Manager : MonoBehaviour {
     void OnGUI(){
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 	
-	    // If player is not connected, run the ConnectWindow function.
-	    if(Network.peerType == NetworkPeerType.Disconnected){
-		    // Place the connect window in the middle of the visible screen.
+        if(GameManager.Inst.pauseMenu)
+        {
+	        // If player is not connected, run the ConnectWindow function.
+	        if(Network.peerType == NetworkPeerType.Disconnected){
+		        // Place the connect window in the middle of the visible screen.
 		
-		    leftIndent = (Screen.width / 2) - (connectionWindowWidth / 2);
-		    topIndent = (Screen.height / 2) - (connectionWindowHeight / 2);
+		        leftIndent = (Screen.width / 2) - (connectionWindowWidth / 2);
+		        topIndent = (Screen.height / 2) - (connectionWindowHeight / 2);
 		
-		    connectionWindowRect = new Rect(leftIndent, topIndent, connectionWindowWidth, connectionWindowHeight);
-		    connectionWindowRect = GUILayout.Window(0, connectionWindowRect, ConnectWindow, titleMessage);
-	    }
+		        connectionWindowRect = new Rect(leftIndent, topIndent, connectionWindowWidth, connectionWindowHeight);
+		        connectionWindowRect = GUILayout.Window(0, connectionWindowRect, ConnectWindow, titleMessage);
+	        }
 	
-	    // Show server info/disconnect if game is running as a server.
-	    if(Network.peerType == NetworkPeerType.Server){
-		    serverDisWindowRect = new Rect(Screen.width - (serverDisWindowLeftIndent + serverDisWindowWidth), serverDisWindowTopIndent, serverDisWindowWidth, serverDisWindowHeight);
-		    serverDisWindowRect = GUILayout.Window(1, serverDisWindowRect, ServerDisconnectWindow, "Hosting Server");
-	    }
+	        // Show server info/disconnect if game is running as a server.
+	        if(Network.peerType == NetworkPeerType.Server){
+		        serverDisWindowRect = new Rect(Screen.width - (serverDisWindowLeftIndent + serverDisWindowWidth), serverDisWindowTopIndent, serverDisWindowWidth, serverDisWindowHeight);
+		        serverDisWindowRect = GUILayout.Window(1, serverDisWindowRect, ServerDisconnectWindow, "Hosting Server");
+	        }
 	
-	    // If client is connected to server, show server info window.
-	    if(showClientDisWindow && (Network.peerType == NetworkPeerType.Client)){
-		    clientDisWindowRect = new Rect((Screen.width / 2) - (clientDisWindowWidth / 2), (Screen.height / 2) - (clientDisWindowHeight / 2), clientDisWindowWidth, clientDisWindowHeight);
-		    clientDisWindowRect = GUILayout.Window(1, clientDisWindowRect, ClientDisconnectWindow, "Connected to Server: " + serverName);
-	    }
+	        // If client is connected to server, show server info window.
+	        if(showClientDisWindow && (Network.peerType == NetworkPeerType.Client)){
+		        clientDisWindowRect = new Rect((Screen.width / 2) - (clientDisWindowWidth / 2), (Screen.height / 2) - (clientDisWindowHeight / 2), clientDisWindowWidth, clientDisWindowHeight);
+		        clientDisWindowRect = GUILayout.Window(1, clientDisWindowRect, ClientDisconnectWindow, "Connected to Server: " + serverName);
+	        }
+        }
     } // End of OnGUI().
 
 

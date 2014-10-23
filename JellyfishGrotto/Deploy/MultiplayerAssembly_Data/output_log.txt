@@ -1,0 +1,72 @@
+Initialize engine version: 4.3.3f1 (c8ca9b6b9936)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 9.0c [nvd3dum.dll 9.18.13.4052]
+    Renderer: NVIDIA GeForce GTX 280
+    Vendor:   NVIDIA
+    VRAM:     997 MB (via DXGI)
+    Caps:     Shader=30 DepthRT=1 NativeDepth=1 NativeShadow=1 DF16=0 INTZ=1 RAWZ=0 NULL=1 RESZ=0 SlowINTZ=0
+Begin MonoManager ReloadAssembly
+Platform assembly: F:\Wes_Projects\Assembly\MultiplayerAssembly\Deploy\MultiplayerAssembly_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading F:\Wes_Projects\Assembly\MultiplayerAssembly\Deploy\MultiplayerAssembly_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: F:\Wes_Projects\Assembly\MultiplayerAssembly\Deploy\MultiplayerAssembly_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading F:\Wes_Projects\Assembly\MultiplayerAssembly\Deploy\MultiplayerAssembly_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+- Completed reload, in  0.058 seconds
+desktop: 1920x1200 59Hz; virtual: 6240x2531 at -3120,-1331
+<RI> Initializing input.
+<RI> Input initialized.
+Couldn't send RPC function 'ServerInfo'
+
+ 
+(Filename:  Line: 2458)
+
+No objects for the given player ID were deleted 1
+ 
+(Filename:  Line: 1368)
+
+OverflowException: Number overflow.
+  at (wrapper managed-to-native) object:__icall_wrapper_mono_array_new_specific (intptr,int)
+  at Net_Manager.OnPlayerDisconnected (NetworkPlayer networkPlayer) [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+Couldn't send RPC function 'ServerInfo'
+
+ 
+(Filename:  Line: 2458)
+
+No objects for the given player ID were deleted 2
+ 
+(Filename:  Line: 1368)
+
+OverflowException: Number overflow.
+  at (wrapper managed-to-native) object:__icall_wrapper_mono_array_new_specific (intptr,int)
+  at Net_Manager.OnPlayerDisconnected (NetworkPlayer networkPlayer) [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+Couldn't send RPC function 'ServerInfo'
+
+ 
+(Filename:  Line: 2458)
+
+No objects for the given player ID were deleted 3
+ 
+(Filename:  Line: 1368)
+
+OverflowException: Number overflow.
+  at (wrapper managed-to-native) object:__icall_wrapper_mono_array_new_specific (intptr,int)
+  at Net_Manager.OnPlayerDisconnected (NetworkPlayer networkPlayer) [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+No objects for the given player ID were deleted 4
+ 
+(Filename:  Line: 1368)
+
+UnloadTime: 0.293311 ms
+Unloading 2 Unused Serialized files (Serialized files now loaded: 0 / Dirty serialized files: 0)
+
+Unloading 1 unused Assets to reduce memory usage. Loaded Objects now: 121.
+Total: 0.478404 ms (FindLiveObjects: 0.008578 ms CreateObjectMapping: 0.009238 ms MarkObjects: 0.130983 ms  DeleteObjects: 0.002969 ms)
+

@@ -36,14 +36,6 @@ public class GameManager : MonoBehaviour {
 
     public float deltaRealTime = 0f;
 
-
-    public GameObject pauseMenuObject = null;
-    public OrbitMenuItem closeMenuOption = null;
-    public OrbitMenuItem exitOption = null;
-    public OrbitMenuItem optionOption = null;
-    public OrbitMenuItem siteOption = null;
-
-
     public GuiKnob timeScaleKnob = null;
     public GuiKnob minNumAssemKnob = null;
     public GuiKnob maxNumAssemKnob = null;
@@ -72,12 +64,6 @@ public class GameManager : MonoBehaviour {
         //if (BatchModeManager.Inst.InBatchMode)
         //    return;
 
-        if(Application.isWebPlayer)
-            exitOption.gameObject.SetActive(false);
-
-        Application.targetFrameRate = 999;
-        
-
 	} // End of Start().
 
 
@@ -86,20 +72,6 @@ public class GameManager : MonoBehaviour {
         
         if(Input.GetKeyDown(KeyCode.Escape))
             pauseMenu = !pauseMenu;
-
-        pauseMenuObject.SetActive(pauseMenu);
-
-        if(closeMenuOption.down)
-            pauseMenu = false;
-
-        if(exitOption.held)
-            Application.Quit();
-
-        if(optionOption.down)
-            showControls = !showControls;
-
-        if(siteOption.held)
-            Application.OpenURL("http://imagination.ucsd.edu/assembly/index.html");
 
         initialFadeIn = Mathf.MoveTowards(initialFadeIn, 0f, (Time.deltaTime / Time.timeScale) * 0.3f);
         
@@ -279,6 +251,14 @@ public class GameManager : MonoBehaviour {
         maxNumNodes = (int)maxNodesKnob.Value;
         Assembly.burnCoefficient = burnRateKnob.Value;
         SenseNode.consumeRate = consumeRateKnob.Value;
+
+        if((Application.platform == RuntimePlatform.Android) || (Application.platform == RuntimePlatform.IPhonePlayer)){
+            minNumAssemKnob.maxValue = 50f;
+            maxNumAssemKnob.maxValue = 50f;
+            minNodesKnob.maxValue = 25f;
+            maxNodesKnob.maxValue = 25f;
+            numFoodPelletsKnob.maxValue = 30f;
+        }
         
 
         
