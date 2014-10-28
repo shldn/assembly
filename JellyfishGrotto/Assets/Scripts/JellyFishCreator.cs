@@ -18,13 +18,12 @@ public class JellyFishCreator : MonoBehaviour
 		Tails [0].SetActive (true);
 		Boballs [0].SetActive (true);
 		smallTails [0].SetActive (true);
-
-        Randomize();
 	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
+		/*
 		if (Input.GetKeyDown (KeyCode.A)) 
 		{
 			num = Random.Range(0,Heads.Length);
@@ -49,7 +48,6 @@ public class JellyFishCreator : MonoBehaviour
 			changeBoball(num);
 		}
 
-		/*
 
 		if  (Input.touches.Length <= 0)
 		{
@@ -162,23 +160,6 @@ public class JellyFishCreator : MonoBehaviour
 				smallTails[i].SetActive(false);
 		};
 	}
-
-
-    public void Randomize(){
-
-		num = Random.Range(0,Heads.Length);
-		changeHead(num);
-
-		num = Random.Range(0,Tails.Length);
-		changeTail(num);
-
-		num = Random.Range(0,smallTails.Length);
-		smallTail(num);
-
-		num = Random.Range(0,Boballs.Length);
-		changeBoball(num);
-
-    } // End of Randomize().
 
 
 }

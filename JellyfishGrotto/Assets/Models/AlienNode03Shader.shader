@@ -63,9 +63,9 @@ Shader "Shader Forge/AlienNode03Shader" {
                 VertexOutput o;
                 o.uv0 = v.uv0;
                 o.normalDir = mul(float4(v.normal,0), _World2Object).xyz;
-                float4 node_3266 = _Time + _TimeEditor;
-                float2 node_3265 = o.uv0;
-                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_3265.rg+node_3266.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
+                float4 node_2566 = _Time + _TimeEditor;
+                float2 node_2565 = o.uv0;
+                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_2565.rg+node_2566.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
                 o.posWorld = mul(_Object2World, v.vertex);
                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
                 return o;
@@ -85,9 +85,9 @@ Shader "Shader Forge/AlienNode03Shader" {
                 float NdotL = dot( normalDirection, lightDirection );
                 float3 diffuse = pow(max( 0.0, NdotL), ((1.0-max(0,dot(normalDirection, viewDirection)))*_node_2538*_node_2493.rgb)) * attenColor + UNITY_LIGHTMODEL_AMBIENT.xyz;
 ////// Emissive:
-                float4 node_3266 = _Time + _TimeEditor;
-                float2 node_3265 = i.uv0;
-                float2 node_598 = (node_3265.rg+node_3266.g*float2(-0.5,-0.5));
+                float4 node_2566 = _Time + _TimeEditor;
+                float2 node_2565 = i.uv0;
+                float2 node_598 = (node_2565.rg+node_2566.g*float2(-0.5,-0.5));
                 float4 node_3 = tex2D(_Color,TRANSFORM_TEX(node_598, _Color));
                 float3 emissive = node_3.rgb;
 ///////// Gloss:
@@ -95,7 +95,7 @@ Shader "Shader Forge/AlienNode03Shader" {
                 float gloss = exp2(node_620.r*10.0+1.0);
 ////// Specular:
                 NdotL = max(0.0, NdotL);
-                float2 node_479 = (node_3265.rg+node_3266.g*float2(0.1,0.1));
+                float2 node_479 = (node_2565.rg+node_2566.g*float2(0.1,0.1));
                 float4 node_375 = tex2D(_Spec,TRANSFORM_TEX(node_479, _Spec));
                 float node_619 = (node_620.r*node_375.r);
                 float3 specularColor = float3(node_619,node_619,node_619);
@@ -108,7 +108,7 @@ Shader "Shader Forge/AlienNode03Shader" {
                 finalColor += specular;
                 finalColor += emissive;
 /// Final Color:
-                return fixed4(finalColor,(tex2D(_Alpha,TRANSFORM_TEX(node_3265.rg, _Alpha)).r+_AlphaValue.r));
+                return fixed4(finalColor,(tex2D(_Alpha,TRANSFORM_TEX(node_2565.rg, _Alpha)).r+_AlphaValue.r));
             }
             ENDCG
         }
@@ -155,9 +155,9 @@ Shader "Shader Forge/AlienNode03Shader" {
                 VertexOutput o;
                 o.uv0 = v.uv0;
                 o.normalDir = mul(float4(v.normal,0), _World2Object).xyz;
-                float4 node_3268 = _Time + _TimeEditor;
-                float2 node_3267 = o.uv0;
-                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_3267.rg+node_3268.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
+                float4 node_2568 = _Time + _TimeEditor;
+                float2 node_2567 = o.uv0;
+                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_2567.rg+node_2568.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
                 o.posWorld = mul(_Object2World, v.vertex);
                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
@@ -181,21 +181,21 @@ Shader "Shader Forge/AlienNode03Shader" {
                 float gloss = exp2(node_620.r*10.0+1.0);
 ////// Specular:
                 NdotL = max(0.0, NdotL);
-                float4 node_3268 = _Time + _TimeEditor;
-                float2 node_3267 = i.uv0;
-                float2 node_479 = (node_3267.rg+node_3268.g*float2(0.1,0.1));
+                float4 node_2568 = _Time + _TimeEditor;
+                float2 node_2567 = i.uv0;
+                float2 node_479 = (node_2567.rg+node_2568.g*float2(0.1,0.1));
                 float4 node_375 = tex2D(_Spec,TRANSFORM_TEX(node_479, _Spec));
                 float node_619 = (node_620.r*node_375.r);
                 float3 specularColor = float3(node_619,node_619,node_619);
                 float3 specular = attenColor * pow(max(0,dot(halfDirection,normalDirection)),gloss) * specularColor;
                 float3 finalColor = 0;
                 float3 diffuseLight = diffuse;
-                float2 node_598 = (node_3267.rg+node_3268.g*float2(-0.5,-0.5));
+                float2 node_598 = (node_2567.rg+node_2568.g*float2(-0.5,-0.5));
                 float4 node_3 = tex2D(_Color,TRANSFORM_TEX(node_598, _Color));
                 finalColor += diffuseLight * ((node_3.rgb*float3(0,0.04827571,1))*10.0);
                 finalColor += specular;
 /// Final Color:
-                return fixed4(finalColor * (tex2D(_Alpha,TRANSFORM_TEX(node_3267.rg, _Alpha)).r+_AlphaValue.r),0);
+                return fixed4(finalColor * (tex2D(_Alpha,TRANSFORM_TEX(node_2567.rg, _Alpha)).r+_AlphaValue.r),0);
             }
             ENDCG
         }
@@ -232,8 +232,8 @@ Shader "Shader Forge/AlienNode03Shader" {
                 VertexOutput o;
                 o.uv0 = v.uv0;
                 o.normalDir = mul(float4(v.normal,0), _World2Object).xyz;
-                float4 node_3270 = _Time + _TimeEditor;
-                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_3270.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
+                float4 node_2570 = _Time + _TimeEditor;
+                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_2570.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
                 TRANSFER_SHADOW_COLLECTOR(o)
                 return o;
@@ -278,8 +278,8 @@ Shader "Shader Forge/AlienNode03Shader" {
                 VertexOutput o;
                 o.uv0 = v.uv0;
                 o.normalDir = mul(float4(v.normal,0), _World2Object).xyz;
-                float4 node_3272 = _Time + _TimeEditor;
-                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_3272.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
+                float4 node_2572 = _Time + _TimeEditor;
+                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_2572.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
                 TRANSFER_SHADOW_CASTER(o)
                 return o;

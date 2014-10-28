@@ -23,16 +23,20 @@ public class GameManager : MonoBehaviour {
 
 
 	// Use this for initialization
-	void Start () {
-	
-        for(int i = 0; i < 30; i++){
-            Instantiate(jellyfishPrefab, MathUtilities.RandomVector3Sphere(30f), Random.rotation);
+	void Start(){
+        if(Application.platform != RuntimePlatform.Android){
+            for(int i = 0; i < 30; i++){
+                Instantiate(jellyfishPrefab, MathUtilities.RandomVector3Sphere(30f), Random.rotation);
+            }
         }
 	}
+
+
+    void Update(){
+
+        if(Input.GetKey(KeyCode.Escape))
+            Application.Quit();
+    } // End of Update().
 	
-	// Update is called once per frame
-	void Update () {
-	
-	}
 
 } // End of GameManager.

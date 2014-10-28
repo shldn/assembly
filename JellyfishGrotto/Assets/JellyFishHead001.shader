@@ -69,9 +69,9 @@ Shader "Shader Forge/JellyFishHead001" {
                 o.normalDir = mul(float4(v.normal,0), _World2Object).xyz;
                 o.tangentDir = normalize( mul( _Object2World, float4( v.tangent.xyz, 0.0 ) ).xyz );
                 o.binormalDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
-                float4 node_1882 = _Time + _TimeEditor;
-                float2 node_1881 = o.uv0;
-                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_1881.rg+node_1882.g*float2(0,-0.5)).g)-0.5))*_BabolValue),1.0));
+                float4 node_2045 = _Time + _TimeEditor;
+                float2 node_2044 = o.uv0;
+                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_2044.rg+node_2045.g*float2(0,-0.5)).g)-0.5))*_BabolValue),1.0));
                 o.posWorld = mul(_Object2World, v.vertex);
                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
@@ -82,8 +82,8 @@ Shader "Shader Forge/JellyFishHead001" {
                 float3x3 tangentTransform = float3x3( i.tangentDir, i.binormalDir, i.normalDir);
                 float3 viewDirection = normalize(_WorldSpaceCameraPos.xyz - i.posWorld.xyz);
 /////// Normals:
-                float2 node_1881 = i.uv0;
-                float3 normalLocal = UnpackNormal(tex2D(_Normal,TRANSFORM_TEX(node_1881.rg, _Normal))).rgb;
+                float2 node_2044 = i.uv0;
+                float3 normalLocal = UnpackNormal(tex2D(_Normal,TRANSFORM_TEX(node_2044.rg, _Normal))).rgb;
                 float3 normalDirection =  normalize(mul( normalLocal, tangentTransform )); // Perturbed normals
                 float3 lightDirection = normalize(_WorldSpaceLightPos0.xyz);
                 float3 halfDirection = normalize(viewDirection+lightDirection);
@@ -92,8 +92,8 @@ Shader "Shader Forge/JellyFishHead001" {
                 float3 attenColor = attenuation * _LightColor0.xyz;
 /////// Diffuse:
                 float NdotL = dot( normalDirection, lightDirection );
-                float4 node_1882 = _Time + _TimeEditor;
-                float2 node_17 = (node_1881.rg+node_1882.g*float2(0,-0.3));
+                float4 node_2045 = _Time + _TimeEditor;
+                float2 node_17 = (node_2044.rg+node_2045.g*float2(0,-0.3));
                 float4 node_9 = tex2D(_ColorChange,TRANSFORM_TEX(node_17, _ColorChange));
                 float3 diffuse = pow(max( 0.0, NdotL), (_node_1857*node_9.rgb)) * attenColor + UNITY_LIGHTMODEL_AMBIENT.xyz;
 ////// Emissive:
@@ -102,7 +102,7 @@ Shader "Shader Forge/JellyFishHead001" {
                 float gloss = exp2(0.5*10.0+1.0);
 ////// Specular:
                 NdotL = max(0.0, NdotL);
-                float4 node_2 = tex2D(_BasicMap,TRANSFORM_TEX(node_1881.rg, _BasicMap));
+                float4 node_2 = tex2D(_BasicMap,TRANSFORM_TEX(node_2044.rg, _BasicMap));
                 float node_193 = (node_2.g*_SpecularValue);
                 float3 specularColor = float3(node_193,node_193,node_193);
                 float3 specular = (floor(attenuation) * _LightColor0.xyz) * pow(max(0,dot(halfDirection,normalDirection)),gloss) * specularColor;
@@ -167,9 +167,9 @@ Shader "Shader Forge/JellyFishHead001" {
                 o.normalDir = mul(float4(v.normal,0), _World2Object).xyz;
                 o.tangentDir = normalize( mul( _Object2World, float4( v.tangent.xyz, 0.0 ) ).xyz );
                 o.binormalDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
-                float4 node_1884 = _Time + _TimeEditor;
-                float2 node_1883 = o.uv0;
-                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_1883.rg+node_1884.g*float2(0,-0.5)).g)-0.5))*_BabolValue),1.0));
+                float4 node_2047 = _Time + _TimeEditor;
+                float2 node_2046 = o.uv0;
+                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_2046.rg+node_2047.g*float2(0,-0.5)).g)-0.5))*_BabolValue),1.0));
                 o.posWorld = mul(_Object2World, v.vertex);
                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
@@ -180,8 +180,8 @@ Shader "Shader Forge/JellyFishHead001" {
                 float3x3 tangentTransform = float3x3( i.tangentDir, i.binormalDir, i.normalDir);
                 float3 viewDirection = normalize(_WorldSpaceCameraPos.xyz - i.posWorld.xyz);
 /////// Normals:
-                float2 node_1883 = i.uv0;
-                float3 normalLocal = UnpackNormal(tex2D(_Normal,TRANSFORM_TEX(node_1883.rg, _Normal))).rgb;
+                float2 node_2046 = i.uv0;
+                float3 normalLocal = UnpackNormal(tex2D(_Normal,TRANSFORM_TEX(node_2046.rg, _Normal))).rgb;
                 float3 normalDirection =  normalize(mul( normalLocal, tangentTransform )); // Perturbed normals
                 float3 lightDirection = normalize(lerp(_WorldSpaceLightPos0.xyz, _WorldSpaceLightPos0.xyz - i.posWorld.xyz,_WorldSpaceLightPos0.w));
                 float3 halfDirection = normalize(viewDirection+lightDirection);
@@ -190,15 +190,15 @@ Shader "Shader Forge/JellyFishHead001" {
                 float3 attenColor = attenuation * _LightColor0.xyz;
 /////// Diffuse:
                 float NdotL = dot( normalDirection, lightDirection );
-                float4 node_1884 = _Time + _TimeEditor;
-                float2 node_17 = (node_1883.rg+node_1884.g*float2(0,-0.3));
+                float4 node_2047 = _Time + _TimeEditor;
+                float2 node_17 = (node_2046.rg+node_2047.g*float2(0,-0.3));
                 float4 node_9 = tex2D(_ColorChange,TRANSFORM_TEX(node_17, _ColorChange));
                 float3 diffuse = pow(max( 0.0, NdotL), (_node_1857*node_9.rgb)) * attenColor;
 ///////// Gloss:
                 float gloss = exp2(0.5*10.0+1.0);
 ////// Specular:
                 NdotL = max(0.0, NdotL);
-                float4 node_2 = tex2D(_BasicMap,TRANSFORM_TEX(node_1883.rg, _BasicMap));
+                float4 node_2 = tex2D(_BasicMap,TRANSFORM_TEX(node_2046.rg, _BasicMap));
                 float node_193 = (node_2.g*_SpecularValue);
                 float3 specularColor = float3(node_193,node_193,node_193);
                 float3 specular = attenColor * pow(max(0,dot(halfDirection,normalDirection)),gloss) * specularColor;
@@ -245,8 +245,8 @@ Shader "Shader Forge/JellyFishHead001" {
                 VertexOutput o;
                 o.uv0 = v.uv0;
                 o.normalDir = mul(float4(v.normal,0), _World2Object).xyz;
-                float4 node_1886 = _Time + _TimeEditor;
-                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_1886.g*float2(0,-0.5)).g)-0.5))*_BabolValue),1.0));
+                float4 node_2049 = _Time + _TimeEditor;
+                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_2049.g*float2(0,-0.5)).g)-0.5))*_BabolValue),1.0));
                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
                 TRANSFER_SHADOW_COLLECTOR(o)
                 return o;
@@ -292,8 +292,8 @@ Shader "Shader Forge/JellyFishHead001" {
                 VertexOutput o;
                 o.uv0 = v.uv0;
                 o.normalDir = mul(float4(v.normal,0), _World2Object).xyz;
-                float4 node_1888 = _Time + _TimeEditor;
-                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_1888.g*float2(0,-0.5)).g)-0.5))*_BabolValue),1.0));
+                float4 node_2051 = _Time + _TimeEditor;
+                v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_2051.g*float2(0,-0.5)).g)-0.5))*_BabolValue),1.0));
                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
                 TRANSFER_SHADOW_CASTER(o)
                 return o;

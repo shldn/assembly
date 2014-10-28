@@ -14,7 +14,7 @@ public class Net_Manager : MonoBehaviour {
     static int nextViewID;
 
     string titleMessage = "Assembly --- http://imagination.ucsd.edu/assembly";
-    string connectToIP = "132.239.235.116";
+    string[] connectToIP = {"132.239.235.116", "132.239.235.115"};
     int connectionPort = 25565;
     bool useNAT = false; // Not sure what NAT is... do some research.
     string ipAddress;
@@ -27,32 +27,12 @@ public class Net_Manager : MonoBehaviour {
     bool iWantToHost = false;
     bool iWantToConnect = false;
 
-    // Main window variables
-    Rect connectionWindowRect;
-    int connectionWindowWidth = 400;
-    int connectionWindowHeight = 280;
-    int buttonHeight =  200;
-
-    // Server shutdown window
-    Rect serverDisWindowRect;
-    int serverDisWindowWidth = 200;
-    int serverDisWindowHeight = 150;
-    int serverDisWindowLeftIndent = 10;
-    int serverDisWindowTopIndent = 10;
-
-    // Client disconnect window
-    Rect clientDisWindowRect;
-    int clientDisWindowWidth = 300;
-    int clientDisWindowHeight = 150;
-    bool showClientDisWindow;
-
-    float previousUpdateTime;
-    float updateFrequency = 5;
-
     public static NetworkView myNetworkView;
     public NetworkPlayer myOwner;
 
-    //public GameObject netAmalgamPrefab;
+    
+    float connectCooldown = 0f;
+    int ipListConnect = 0;
 
 
     void Awake(){
@@ -61,152 +41,23 @@ public class Net_Manager : MonoBehaviour {
     } // End of Awake().
 
 
-    void Start(){
-	    // Load details from registry.
-	    playerName = PlayerPrefs.GetString("playerName");
-	    serverName = PlayerPrefs.GetString("serverName");
-	    serverTagline = PlayerPrefs.GetString("serverTagline");
-	
-	    // If nothin in the registry, give a default name.
-	    if(serverName == "")
-		    serverName = "Assembly Server";
-	
-	    if(serverTagline == "")
-		    serverTagline = "UCSD Gamelab - indurain";
-	
-	    if(playerName == "")
-		    playerName = "Player";
-    } // End of Start().
-
-
     void Update(){
-	    showClientDisWindow = (Network.peerType == NetworkPeerType.Disconnected);
+	    connectCooldown -= Time.deltaTime;
+        // Cycle through available IPs to connect to.
+        if((Application.platform == RuntimePlatform.Android) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f)){
+			Network.Connect(connectToIP[ipListConnect], connectionPort);
+            ipListConnect++;
+            ipListConnect = Mathf.FloorToInt(Mathf.Repeat(ipListConnect, connectToIP.Length));
+
+            connectCooldown = 3f;
+        }
+
+        // If player is not connected, run the ConnectWindow function.
+	    if((Application.platform != RuntimePlatform.Android) && (Network.peerType == NetworkPeerType.Disconnected) && Input.GetKeyDown(KeyCode.Space)){
+            // Create the server.
+			Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
+	    }
     } // End of Update().
-
-
-    void ConnectWindow(int windowID){
-	    // Leave a gap from the header.
-	    GUILayout.Space(15);
-	
-	    // Give option to create or join a server.
-	    if(!iWantToHost && !iWantToConnect){
-		    if(GUILayout.Button("Host a Server", GUILayout.Height(buttonHeight)))
-			    iWantToHost = true;
-
-		    if(GUILayout.Button("Connect to Server", GUILayout.Height(buttonHeight)))
-			    iWantToConnect = true;
-		
-		    GUILayout.Space(40);
-		
-		    // If this is a standalone, include a 'quit' button.
-		    if(!Application.isWebPlayer && !Application.isEditor){
-			    if(GUILayout.Button("Quit", GUILayout.Height(buttonHeight)))
-				    Application.Quit();
-		    }		
-	    }
-	
-	    if(iWantToHost){
-		    GUILayout.Label("Server name:");
-		    serverName = GUILayout.TextField(serverName);
-		
-		    GUILayout.Label("Tagline:");
-		    serverTagline = GUILayout.TextField(serverTagline);
-		
-		    GUILayout.Label("Player name:");
-		    playerName = GUILayout.TextField(playerName);
-		
-		    GUILayout.Label("Port:");
-		    // Display default port as String, but read as int. lol.
-		    connectionPort = int.Parse(GUILayout.TextField(connectionPort.ToString()));
-		
-		    GUILayout.Space(10);
-		    if(GUILayout.Button("Host", GUILayout.Height(45))){
-			    if(playerName == "")
-				    playerName = "Player";
-			
-			    if(playerName != ""){
-				    // Connect to the server.
-				    Network.Connect(connectToIP, connectionPort);
-				    PlayerPrefs.SetString("playerName", playerName);
-			    }
-			
-			    // Create the server.
-			    Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
-			
-			    // Save server name/tagline using PlayerPrefs (saves to the registry in Windows.)
-			    PlayerPrefs.SetString("serverName", serverName);
-			    PlayerPrefs.SetString("serverTagline", serverTagline);
-			
-			    iWantToConnect = false;
-		    }
-		    if(GUILayout.Button("Back", GUILayout.Height(30)))
-			    iWantToHost = false;
-	    }
-	
-	    if(iWantToConnect){
-		    GUILayout.Label("Player name:");
-		    playerName = GUILayout.TextField(playerName);
-		
-		    GUILayout.Label("Server IP:");
-		    connectToIP = GUILayout.TextField(connectToIP);
-		
-		    GUILayout.Label("Port:");
-		    connectionPort = int.Parse(GUILayout.TextField(connectionPort.ToString()));
-		    GUILayout.Space(10);
-		
-		    if(GUILayout.Button("Connect", GUILayout.Height(45))){
-			    if(playerName == "")
-				    playerName = "Player";
-			
-			    if(playerName != ""){
-				    // Connect to the server.
-				    Network.Connect(connectToIP, connectionPort);
-				    PlayerPrefs.SetString("playerName", playerName);
-			    }
-		    }
-		
-		    if(GUILayout.Button("Back", GUILayout.Height(30)))
-			    iWantToConnect = false;
-	    }
-    } // End of ConnectWindow().
-
-
-    void ServerDisconnectWindow(int windowID){
-	    GUILayout.Label(serverName);
-	    GUILayout.Label(serverTagline);
-	    GUILayout.Space(10);
-	    GUILayout.Label(Network.player.ipAddress);
-	    GUILayout.Label("Number of players: " + (Network.connections.Length + 1));
-	    // If at least one person playing, show average ping.
-	    if(Network.connections.Length > 0)
-		    GUILayout.Label("Average ping: " + Network.GetAveragePing(Network.connections[0]));
-
-	    GUILayout.Space(5);
-	
-	    if(GUILayout.Button("End Server", GUILayout.Height(25)))
-		    Network.Disconnect();
-    } // End of ServerDisconnectWindow().
-
-
-    void ClientDisconnectWindow(int windowID)
-    {
-	    GUILayout.Label(serverTagline);
-	    GUILayout.Space(10);
-	    GUILayout.Label("Number of players: " + (Network.connections.Length + 1));
-	    GUILayout.Label("Ping: " + Network.GetAveragePing(Network.connections[0]));
-	    GUILayout.Space(5);
-	
-	    if(GUILayout.Button("Disconnect", GUILayout.Height(25)))
-		    Network.Disconnect();
-	
-	    GUILayout.Space(5);
-	
-	    // This allows a player using a webplayer in fullscreen to return to the game.
-	    // (Pressing ESC in fullscreen just exits fullscreen.)
-	    if(GUILayout.Button("Return to Game", GUILayout.Height(25))){
-		    showClientDisWindow = false;
-	    }
-    }// End of ClientDisconnectWindow().
 
 
     void OnDisconnectedFromServer(){
@@ -244,30 +95,18 @@ public class Net_Manager : MonoBehaviour {
     void OnGUI(){
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 	 
-        if(true)
-        {
-	        // If player is not connected, run the ConnectWindow function.
-	        if(Network.peerType == NetworkPeerType.Disconnected){
-		        // Place the connect window in the middle of the visible screen.
-		
-		        connectionWindowRect = new Rect(0f, 0f, Screen.width, Screen.height);
-		        connectionWindowRect = GUILayout.Window(0, connectionWindowRect, ConnectWindow, titleMessage, GUILayout.Width(Screen.width), GUILayout.Height(Screen.height));
-	        }
-	
-            /*
-	        // Show server info/disconnect if game is running as a server.
-	        if(Network.peerType == NetworkPeerType.Server){
-		        serverDisWindowRect = new Rect(0f, 0f, Screen.width, Screen.height);
-		        serverDisWindowRect = GUILayout.Window(1, serverDisWindowRect, ServerDisconnectWindow, "Hosting Server");
-	        }
-	
-	        // If client is connected to server, show server info window.
-	        if(showClientDisWindow && (Network.peerType == NetworkPeerType.Client)){
-		        clientDisWindowRect = new Rect(0f, 0f, Screen.width, Screen.height);
-		        clientDisWindowRect = GUILayout.Window(1, clientDisWindowRect, ClientDisconnectWindow, "Connected to Server: " + serverName);
-	        }
-            */
+        if((Application.platform == RuntimePlatform.Android) && (Network.peerType == NetworkPeerType.Disconnected)){
+            GUI.skin.label.fontSize = 40;
+            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+            GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Connecting to server...");
         }
+
+        if((Application.platform != RuntimePlatform.Android) && (Network.peerType == NetworkPeerType.Disconnected)){
+            GUI.skin.label.fontSize = 20;
+            GUI.skin.label.alignment = TextAnchor.LowerCenter;
+            GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Press SPACE to initialize server.");
+        }
+
     } // End of OnGUI().
 
 
@@ -276,31 +115,6 @@ public class Net_Manager : MonoBehaviour {
 	    serverName = theServerName;
 	    serverTagline = theServerTagline;
     } // End of ServerInfo().
-
-
-    [RPC]
-    void EnvironmentUpdate(float newTimeOfDay, int newDayLength){
-
-    } // End of EnvironmentUpdate().
-
-
-    // When my server starts, set me up as player 1.
-    void OnServerInitialized(){
-	    // Set me up as the first player.
-	    ANetworkPlayer[] playerList = new ANetworkPlayer[1];
-	    playerList[0] = new ANetworkPlayer();
-	
-	    playerList[0].player = networkView.owner;
-	    playerList[0].playerName = playerName;
-        ANetworkPlayer.me = playerList[0];
-	
-	    //ConsoleScript.Inst.WriteToLog("!Server initialized as [" + playerName + "].");
-
-        //GameObject newNetAmalgamGO = Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0) as GameObject;
-        //Net_Amalgam newNetAmalgam = newNetAmalgamGO.GetComponent<Net_Amalgam>();
-
-        Network.Instantiate(PrefabManager.Inst.playerSyncObject, Vector3.zero, Quaternion.identity, 1);
-    } // End of OnServerInitialized().
 
 
     void OnPlayerConnected(NetworkPlayer networkPlayer){
@@ -394,6 +208,11 @@ public class Net_Manager : MonoBehaviour {
     void ServerRemoveBufferedRPCs(NetworkViewID viewID){
 	    Network.RemoveRPCs(viewID);
     } // End of ServerRemoveBufferedRPCs().
+
+
+    void OnApplicationQuit(){
+        Network.Disconnect();
+    } // End of OnApplicationQuit().
 
 } // End of Net_Manager.
 
