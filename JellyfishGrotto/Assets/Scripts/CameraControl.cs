@@ -7,10 +7,17 @@ public class CameraControl : MonoBehaviour {
 
 
     float orbitRunner = 0f;
+    float orbitRunnerTarget = 0f;
+    float orbitRunnerVel = 0f;
+
     float orbitTilt = 20f;
+    float orbitTiltTarget = 20f;
+    float orbitTiltVel = 0f;
 
     public float orbitDist = 50f;
     public float orbitSpeed = 1f;
+
+    float smoothTime = 0.5f;
 
 
     void Awake(){
@@ -26,19 +33,23 @@ public class CameraControl : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update(){
-	    orbitRunner += Time.deltaTime;
+	    orbitRunnerTarget += Time.deltaTime;
+
         transform.position = Quaternion.AngleAxis(-orbitRunner * orbitSpeed, Vector3.up) * Quaternion.AngleAxis(-orbitTilt, Vector3.right) * Vector3.forward * orbitDist;
         transform.LookAt(Vector3.zero);
 
         if(Network.peerType == NetworkPeerType.Server){
             float orbitSensitivity = 3f;
-            orbitRunner -= Input.GetAxis("Mouse X") * orbitSensitivity;
-            orbitTilt -= Input.GetAxis("Mouse Y") * orbitSensitivity;
+            orbitRunnerTarget -= Input.GetAxis("Mouse X") * orbitSensitivity;
+            orbitTiltTarget -= Input.GetAxis("Mouse Y") * orbitSensitivity;
 
-            orbitTilt = Mathf.Clamp(orbitTilt, -35f, 35f);
+            orbitTiltTarget = Mathf.Clamp(orbitTiltTarget, -35f, 35f);
 
             Screen.showCursor = false;
         }
+
+        orbitRunner = Mathf.SmoothDamp(orbitRunner, orbitRunnerTarget, ref orbitRunnerVel, smoothTime);
+        orbitTilt = Mathf.SmoothDamp(orbitTilt, orbitTiltTarget, ref orbitTiltVel, smoothTime);
 	} // End of Update().
 
 

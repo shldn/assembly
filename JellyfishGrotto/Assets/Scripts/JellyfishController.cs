@@ -28,7 +28,7 @@ public class JellyfishController : MonoBehaviour {
 
 
     void FixedUpdate(){
-        rigidbody.AddForce(transform.up * 0.1f, ForceMode.Force);
+        rigidbody.AddForce(transform.up * 1f, ForceMode.Force);
         rigidbody.AddTorque(torqueVector * 0.1f, ForceMode.Force);
     } // End of OnLateUpdate().
 
