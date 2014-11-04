@@ -14,7 +14,7 @@ public class Net_Manager : MonoBehaviour {
     static int nextViewID;
 
     string titleMessage = "Assembly --- http://imagination.ucsd.edu/assembly";
-    string[] connectToIP = {"132.239.235.116", "132.239.235.115"};
+    string[] connectToIP = {"132.239.235.116", "132.239.235.115", "75.80.103.34"};
     int connectionPort = 25565;
     bool useNAT = false; // Not sure what NAT is... do some research.
     string ipAddress;
@@ -213,6 +213,25 @@ public class Net_Manager : MonoBehaviour {
     void OnApplicationQuit(){
         Network.Disconnect();
     } // End of OnApplicationQuit().
+
+
+
+    [RPC] // Server receives this from client when they send a jellyfish back.
+    void PushJelly(int head, int tail, int bobble, int wing){
+
+        AudioSource.PlayClipAtPoint(PrefabManager.Inst.placePingClip, Vector3.zero);
+
+        Transform newJellyTrans = Instantiate(PrefabManager.Inst.jellyfish, Camera.main.transform.position + (Camera.main.transform.forward * 10f), Random.rotation) as Transform;
+        Instantiate(PrefabManager.Inst.pingBurst, newJellyTrans.position, Quaternion.identity);
+        JellyFishCreator newJellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
+        newJellyCreator.changeHead(head);
+        newJellyCreator.changeTail(tail);
+        newJellyCreator.changeBoball(bobble);
+        newJellyCreator.smallTail(wing);
+
+        print("Received jelly, " + head + " " + tail + " " + bobble + " " + wing);
+
+    } // End of StartSelect().
 
 } // End of Net_Manager.
 

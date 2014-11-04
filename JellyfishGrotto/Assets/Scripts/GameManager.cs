@@ -5,7 +5,9 @@ public class GameManager : MonoBehaviour {
 
     public static GameManager Inst;
 
-    public Transform jellyfishPrefab;
+    public bool editing = false;
+
+    public Material editorSkybox;
 
 
     void Awake(){
@@ -26,8 +28,21 @@ public class GameManager : MonoBehaviour {
 	void Start(){
         if(Application.platform != RuntimePlatform.Android){
             for(int i = 0; i < 30; i++){
-                Instantiate(jellyfishPrefab, MathUtilities.RandomVector3Sphere(30f), Random.rotation);
+                Transform newJellyTrans = Instantiate(PrefabManager.Inst.jellyfish, MathUtilities.RandomVector3Sphere(30f), Random.rotation) as Transform;
+
+                JellyFishCreator jellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
+
+                jellyCreator.HeadChange();
+                jellyCreator.TailChange();
+                jellyCreator.SmallTaillChange();
+                jellyCreator.BoballChange();
+
+                transform.localScale *= Random.Range(0.75f, 1.5f);
             }
+        }
+        else{
+            Camera.main.clearFlags = CameraClearFlags.Skybox;
+            RenderSettings.skybox = editorSkybox;
         }
 	}
 

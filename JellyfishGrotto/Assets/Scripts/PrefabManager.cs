@@ -7,6 +7,10 @@ public class PrefabManager : MonoBehaviour {
 
     public Transform playerSyncObject;
     public Transform pingBurst;
+    public Transform jellyfish;
+
+    public AudioClip pingClip;
+    public AudioClip placePingClip;
 
 
 

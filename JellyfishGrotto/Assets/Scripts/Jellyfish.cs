@@ -7,23 +7,13 @@ public class Jellyfish : MonoBehaviour {
     public static List<Jellyfish> all = new List<Jellyfish>();
 
     bool queuedToDestroy = false;
+    JellyFishCreator creator;
 
 
     void Awake(){
         all.Add(this);
+        creator = GetComponent<JellyFishCreator>();
     } // End of Awake().
-
-
-    void Start(){
-        JellyFishCreator myJellyCreator = GetComponent<JellyFishCreator>();
-
-        myJellyCreator.HeadChange();
-        myJellyCreator.TailChange();
-        myJellyCreator.SmallTaillChange();
-        myJellyCreator.BoballChange();
-
-        transform.localScale *= Random.Range(0.75f, 1.5f);
-    } // End of Start().
 
 
     void Update(){
@@ -37,5 +27,19 @@ public class Jellyfish : MonoBehaviour {
     public void Destroy(){
         queuedToDestroy = true;
     } // End of Destroy().
+
+
+    public void NextHead(){
+        creator.NextHead();
+    }
+    public void NextBobble(){
+        creator.NextBobble();
+    }
+    public void NextTail(){
+        creator.NextTail();
+    }
+    public void NextWing(){
+        creator.NextWing();
+    }
 
 } // End of Jellyfish.

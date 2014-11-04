@@ -4,25 +4,26 @@ using System.Collections;
 public class JellyFishCreator : MonoBehaviour 
 {
 	
+    [HideInInspector] public int headNum;
 	public GameObject[] Heads;
+    [HideInInspector] public int tailNum;
 	public GameObject[] Tails;
+    [HideInInspector] public int boballNum;
 	public GameObject[] Boballs;
+    [HideInInspector] public int wingNum;
 	public GameObject[] smallTails;
 	int num;
 	public GUITexture myImg;
 
-	// Use this for initialization
-	void Start () 
-	{
-		Heads [0].SetActive (true);
-		Tails [0].SetActive (true);
-		Boballs [0].SetActive (true);
-		smallTails [0].SetActive (true);
-	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
+        if (Input.GetKeyDown (KeyCode.A)) 
+		{
+			NextHead();
+		}
+
 		/*
 		if (Input.GetKeyDown (KeyCode.A)) 
 		{
@@ -91,31 +92,53 @@ public class JellyFishCreator : MonoBehaviour
 
 	public void HeadChange()
 	{
-		num = Random.Range(0,Heads.Length);
-		changeHead(num);
+		headNum = Random.Range(0, Heads.Length);
+		changeHead(headNum);
 	}
 
 	public void TailChange()
 	{
-		num = Random.Range(0,Tails.Length);
-		changeTail(num);
+		tailNum = Random.Range(0, Tails.Length);
+		changeTail(tailNum);
 	}
 
 	public void SmallTaillChange()
 	{
-		num = Random.Range(0,smallTails.Length);
-		smallTail(num);
+		wingNum = Random.Range(0, smallTails.Length);
+		smallTail(wingNum);
 	}
 
 	public void BoballChange()
 	{
-		num = Random.Range(0,Boballs.Length);
-		changeBoball(num);
+		boballNum = Random.Range(0, Boballs.Length);
+		changeBoball(boballNum);
 	}
+
+
+    public void NextHead(){
+        headNum = Mathf.FloorToInt(Mathf.Repeat(headNum + 1, Heads.Length));
+		changeHead(headNum);
+	}
+
+	public void NextTail(){
+		tailNum = Mathf.FloorToInt(Mathf.Repeat(tailNum + 1, Tails.Length));
+		changeTail(tailNum);
+	}
+
+	public void NextWing(){
+		wingNum = Mathf.FloorToInt(Mathf.Repeat(wingNum + 1, smallTails.Length));
+		smallTail(wingNum);
+	}
+
+	public void NextBobble(){
+		boballNum = Mathf.FloorToInt(Mathf.Repeat(boballNum + 1, Boballs.Length));
+		changeBoball(boballNum);
+	}
+
 
 	public void changeHead(int number)
 	{
-
+        headNum = number;
 		for (int i = 0; i < Heads.Length; i++) 
 		{
 			if(i == number)
@@ -127,7 +150,7 @@ public class JellyFishCreator : MonoBehaviour
 
 	public void changeTail(int number)
 	{
-		
+        tailNum = number;
 		for (int i = 0; i < Tails.Length; i++) 
 		{
 			if(i == number)
@@ -139,7 +162,7 @@ public class JellyFishCreator : MonoBehaviour
 
 	public void changeBoball(int number)
 	{
-		
+        boballNum = number;
 		for (int i = 0; i < Boballs.Length; i++) 
 		{
 			if(i == number)
@@ -151,7 +174,7 @@ public class JellyFishCreator : MonoBehaviour
 
 	public void smallTail(int number)
 	{
-		
+        wingNum = number;
 		for (int i = 0; i < smallTails.Length; i++) 
 		{
 			if(i == number)

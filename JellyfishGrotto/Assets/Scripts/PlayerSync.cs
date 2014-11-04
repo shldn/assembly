@@ -21,73 +21,92 @@ public class PlayerSync : MonoBehaviour {
     void Update(){
         screenPosSmoothed = Vector3.SmoothDamp(screenPosSmoothed, screenPos, ref screenPosVel, screenPosSmoothTime);
 
-        if(networkView.isMine){
-            if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0))
-                screenPos += new Vector3(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y")) * 10f;
+        if(cursorObject){
+            cursorObject.gameObject.SetActive(!GameManager.Inst.editing);
         }
 
-        screenPos.x = Mathf.Clamp(screenPos.x, 0f, Screen.width);
-        screenPos.y = Mathf.Clamp(screenPos.y, 0f, Screen.height);
+        if(cursorObject && (Application.platform == RuntimePlatform.Android) && !networkView.isMine)
+            Destroy(cursorObject);
 
-        Ray cursorRay = Camera.main.ScreenPointToRay(new Vector3(screenPosSmoothed.x, Screen.height - screenPosSmoothed.y, 0f));
-        cursorObject.position = cursorRay.origin + cursorRay.direction * 1f;
+        if(!GameManager.Inst.editing && ((Network.peerType == NetworkPeerType.Server) || networkView.isMine)){
+            if(networkView.isMine){
+                if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0))
+                    screenPos += new Vector3(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y")) * 10f;
+            }
 
+            screenPos.x = Mathf.Clamp(screenPos.x, 0f, Screen.width);
+            screenPos.y = Mathf.Clamp(screenPos.y, 0f, Screen.height);
 
-        if(networkView.isMine && Input.GetMouseButton(0) && !selecting){
-            networkView.RPC("StartSelect", RPCMode.Server);
-            selecting = true;
-        }
-
-        if(networkView.isMine && !Input.GetMouseButton(0) && selecting){
-            networkView.RPC("StopSelect", RPCMode.Server);
-            selecting = false;
-        }
+            Ray cursorRay = Camera.main.ScreenPointToRay(new Vector3(screenPosSmoothed.x, Screen.height - screenPosSmoothed.y, 0f));
+            cursorObject.position = cursorRay.origin + cursorRay.direction * 1f;
 
 
-        // Collect points for gestural control.
-        if(selecting)
-            if((lastPoints.Count < 2) || (Vector3.Distance(screenPosSmoothed, lastPoints[lastPoints.Count - 1]) > 10f))
-                lastPoints.Add(screenPosSmoothed);
+            if(networkView.isMine && Input.GetMouseButton(0) && !selecting){
+                networkView.RPC("StartSelect", RPCMode.Server);
+                selecting = true;
+            }
 
-        // Determine circled jellies
-        if(!selecting && (lastPoints.Count > 0)){
-            foreach(Jellyfish someJelly in Jellyfish.all){
-                Vector3 jellyScreenPos = Camera.main.WorldToScreenPoint(someJelly.transform.position);
-                jellyScreenPos.y = Screen.height - jellyScreenPos.y;
+            if(networkView.isMine && !Input.GetMouseButton(0) && selecting){
+                networkView.RPC("StopSelect", RPCMode.Server);
+                selecting = false;
+            }
 
-                float totalAngle = 0f;
-                float lastAngleToJelly = 0f;
-                for(int i = 0; i < lastPoints.Count; i++){
-                    Vector2 currentVec = new Vector2(jellyScreenPos.x, jellyScreenPos.y) - lastPoints[i];
-                    float angleToJelly = Mathf.Atan2(currentVec.x, currentVec.y) * Mathf.Rad2Deg;
 
-                    if(i > 0)
-                        totalAngle += Mathf.DeltaAngle(angleToJelly, lastAngleToJelly);
+            // Collect points for gestural control.
+            if(selecting)
+                if((lastPoints.Count < 2) || (Vector3.Distance(screenPosSmoothed, lastPoints[lastPoints.Count - 1]) > 10f))
+                    lastPoints.Add(screenPosSmoothed);
 
-                    lastAngleToJelly = angleToJelly;
+            // Determine circled jellies
+            if(!selecting && (lastPoints.Count > 0)){
+                if(Network.peerType == NetworkPeerType.Server){
+                    foreach(Jellyfish someJelly in Jellyfish.all){
+                        Vector3 jellyScreenPos = Camera.main.WorldToScreenPoint(someJelly.transform.position);
+                        jellyScreenPos.y = Screen.height - jellyScreenPos.y;
+
+                        float totalAngle = 0f;
+                        float lastAngleToJelly = 0f;
+                        for(int i = 0; i < lastPoints.Count; i++){
+                            Vector2 currentVec = new Vector2(jellyScreenPos.x, jellyScreenPos.y) - lastPoints[i];
+                            float angleToJelly = Mathf.Atan2(currentVec.x, currentVec.y) * Mathf.Rad2Deg;
+
+                            if(i > 0)
+                                totalAngle += Mathf.DeltaAngle(angleToJelly, lastAngleToJelly);
+
+                            lastAngleToJelly = angleToJelly;
+                        }
+
+                        float angleForgiveness = 40f;
+                        if(Mathf.Abs(totalAngle) > (360f - angleForgiveness)){
+                            JellyFishCreator someJellyCreator = someJelly.GetComponent<JellyFishCreator>();
+                            networkView.RPC("CaptureJelly", networkView.owner, someJellyCreator.headNum, someJellyCreator.tailNum, someJellyCreator.boballNum, someJellyCreator.wingNum);
+
+                            Instantiate(PrefabManager.Inst.pingBurst, someJelly.transform.position, Quaternion.identity);
+
+                            print("Sending jelly, " + someJellyCreator.headNum + " " + someJellyCreator.tailNum + " " + someJellyCreator.boballNum + " " + someJellyCreator.wingNum);
+
+                            someJelly.Destroy();
+                            break;
+                        }
+                    }
                 }
 
-                float angleForgiveness = 40f;
-                if((Mathf.Abs(totalAngle) > (360f - angleForgiveness)) && (Mathf.Abs(totalAngle) < (360f + angleForgiveness)))
-                    someJelly.Destroy();
+                lastPoints.Clear();
             }
 
-            lastPoints.Clear();
-        }
+            if(lastPoints.Count > 2){
+                cursorLine.SetVertexCount(lastPoints.Count + 1);
+                for(int i = 0; i < lastPoints.Count; i++){
+                    Ray pointRay = Camera.main.ScreenPointToRay(new Vector3(lastPoints[i].x, Screen.height - lastPoints[i].y, 0f));
+                    cursorLine.SetPosition(i, pointRay.origin + pointRay.direction * 1f);
+                }
+                cursorLine.SetPosition(lastPoints.Count, cursorObject.position);
 
-
-        if(lastPoints.Count > 2){
-            cursorLine.SetVertexCount(lastPoints.Count + 1);
-            for(int i = 0; i < lastPoints.Count; i++){
-                Ray pointRay = Camera.main.ScreenPointToRay(new Vector3(lastPoints[i].x, Screen.height - lastPoints[i].y, 0f));
-                cursorLine.SetPosition(i, pointRay.origin + pointRay.direction * 1f);
+                cursorLine.enabled = true;
             }
-            cursorLine.SetPosition(lastPoints.Count, cursorObject.position);
-
-            cursorLine.enabled = true;
+            else
+                cursorLine.enabled = false;
         }
-        else
-            cursorLine.enabled = false;
 
     } // End of Update().
 
@@ -102,12 +121,30 @@ public class PlayerSync : MonoBehaviour {
         selecting = false;
     } // End of StartSelect().
 
+    [RPC] // Client receives this when it captures a jelly.
+    void CaptureJelly(int head, int tail, int bobble, int wing){
+        foreach(Jellyfish someJelly in Jellyfish.all)
+            someJelly.Destroy();
+
+        AudioSource.PlayClipAtPoint(PrefabManager.Inst.pingClip, Vector3.zero);
+        Transform newJellyTrans = Instantiate(PrefabManager.Inst.jellyfish, Vector3.zero, Random.rotation) as Transform;
+        JellyFishCreator newJellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
+        newJellyCreator.changeHead(head);
+        newJellyCreator.changeTail(tail);
+        newJellyCreator.changeBoball(bobble);
+        newJellyCreator.smallTail(wing);
+
+        GameManager.Inst.editing = true;
+    } // End of StartSelect().
+
 
     void OnGUI(){
+        /*
         if(Application.platform != RuntimePlatform.Android){
             Rect playerInfoRect = new Rect(screenPosSmoothed.x, screenPosSmoothed.y, 500f, 500f);
             GUI.Label(playerInfoRect, " Player");
         }
+        */
     } // End of OnGUI().
 
 
@@ -137,13 +174,19 @@ public class PlayerSync : MonoBehaviour {
 
 	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info){
 
+        Vector3 screenRelativePos = Vector3.zero;
+
 		// When sending my own data out...
 		if(stream.isWriting){
-			stream.Serialize(ref screenPos);
+            screenRelativePos = new Vector3(screenPos.x / Screen.width, screenPos.y / Screen.height);
+
+			stream.Serialize(ref screenRelativePos);
 		}
 		// When receiving data from someone else...
 		else{
-            stream.Serialize(ref screenPos);
+            stream.Serialize(ref screenRelativePos);
+
+            screenPos = new Vector3(screenRelativePos.x * Screen.width, screenRelativePos.y * Screen.height);
 		}
     } // End of OnSerializeNetworkView().
 

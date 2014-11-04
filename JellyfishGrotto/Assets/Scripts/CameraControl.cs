@@ -14,10 +14,20 @@ public class CameraControl : MonoBehaviour {
     float orbitTiltTarget = 20f;
     float orbitTiltVel = 0f;
 
-    public float orbitDist = 50f;
+    float orbitDist = 6f;
+    float targetOrbitDist = 6f;
     public float orbitSpeed = 1f;
 
+    float lastPinchDist = -1f;
+
     float smoothTime = 0.5f;
+
+    Vector3 orbitTarget = Vector3.zero;
+
+    Quaternion rotEditor = Quaternion.identity;
+    Quaternion targetRotEditor = Quaternion.identity;
+
+    bool pinchRelease = true;
 
 
     void Awake(){
@@ -28,6 +38,10 @@ public class CameraControl : MonoBehaviour {
 	void Start(){
         RenderSettings.fog = true;
         RenderSettings.fogColor = Camera.main.backgroundColor;
+
+        targetRotEditor = Random.rotation;
+        rotEditor = targetRotEditor;
+        transform.rotation = rotEditor;
 	} // End of Start().
 	
 
@@ -35,21 +49,75 @@ public class CameraControl : MonoBehaviour {
 	void Update(){
 	    orbitRunnerTarget += Time.deltaTime;
 
-        transform.position = Quaternion.AngleAxis(-orbitRunner * orbitSpeed, Vector3.up) * Quaternion.AngleAxis(-orbitTilt, Vector3.right) * Vector3.forward * orbitDist;
-        transform.LookAt(Vector3.zero);
-
         if(Network.peerType == NetworkPeerType.Server){
-            float orbitSensitivity = 3f;
-            orbitRunnerTarget -= Input.GetAxis("Mouse X") * orbitSensitivity;
-            orbitTiltTarget -= Input.GetAxis("Mouse Y") * orbitSensitivity;
+            orbitDist = 40f;
+            transform.position = orbitTarget + Quaternion.AngleAxis(-orbitRunner * orbitSpeed, Vector3.up) * Quaternion.AngleAxis(-orbitTilt, Vector3.right) * Vector3.forward * orbitDist;
+            transform.LookAt(orbitTarget);
 
-            orbitTiltTarget = Mathf.Clamp(orbitTiltTarget, -35f, 35f);
+            if((Network.peerType == NetworkPeerType.Server)){
+                float orbitSensitivity = 3f;
+                orbitRunnerTarget -= Input.GetAxis("Mouse X") * orbitSensitivity;
+                orbitTiltTarget -= Input.GetAxis("Mouse Y") * orbitSensitivity;
 
-            Screen.showCursor = false;
+                orbitTiltTarget = Mathf.Clamp(orbitTiltTarget, -35f, 35f);
+
+                Screen.showCursor = false;
+                Screen.lockCursor = true;
+            }
+
+            orbitRunner = Mathf.SmoothDamp(orbitRunner, orbitRunnerTarget, ref orbitRunnerVel, smoothTime);
+            orbitTilt = Mathf.SmoothDamp(orbitTilt, orbitTiltTarget, ref orbitTiltVel, smoothTime);
         }
+        else if(Application.platform == RuntimePlatform.Android){
+            if(Jellyfish.all.Count > 0){
+                Jellyfish targetJelly = Jellyfish.all[0];
+                orbitTarget = targetJelly.transform.position;
 
-        orbitRunner = Mathf.SmoothDamp(orbitRunner, orbitRunnerTarget, ref orbitRunnerVel, smoothTime);
-        orbitTilt = Mathf.SmoothDamp(orbitTilt, orbitTiltTarget, ref orbitTiltVel, smoothTime);
+                if (Input.touchCount >= 2){
+                    pinchRelease = false;
+
+                    Vector2 touch0, touch1;
+                    float pinchDist;
+                    touch0 = Input.GetTouch(0).position;
+                    touch1 = Input.GetTouch(1).position;
+ 
+                    pinchDist = Vector2.Distance(touch0, touch1);
+
+                    if(lastPinchDist != -1){
+                        targetOrbitDist -= (pinchDist - lastPinchDist) * 0.1f;
+                    }
+                    lastPinchDist = pinchDist;
+                }
+                else{
+                    lastPinchDist = -1f;
+
+                    if(Input.touchCount == 0)
+                        pinchRelease = true;
+                }
+
+                if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && pinchRelease){
+                    targetRotEditor *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * 3f, Vector3.up);
+                    targetRotEditor *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * 3f, -Vector3.right);
+                }
+            
+            
+                targetOrbitDist = Mathf.Clamp(targetOrbitDist, 3f, 40f);
+
+
+                orbitDist = Mathf.Lerp(orbitDist, targetOrbitDist, Time.deltaTime * 3f);
+                rotEditor = Quaternion.Lerp(rotEditor, targetRotEditor, Time.deltaTime);
+
+                transform.position = orbitTarget + (targetRotEditor * (-Vector3.forward * orbitDist));
+                transform.rotation = targetRotEditor;
+            }
+            else{
+                orbitDist = 6f;
+                targetOrbitDist = 6f;
+            }
+
+            
+            
+        }
 	} // End of Update().
 
 
