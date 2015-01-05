@@ -157,7 +157,7 @@ public class Node {
 
             // Burn energy if not selected... sucks having the assembly you're following explode into pieces
             //   (and throw a million nullref excepts)
-            if(assembly.imported && (assembly != MainCameraControl.Inst.selectedAssembly))
+            if(!assembly.imported && (assembly != MainCameraControl.Inst.selectedAssembly))
                 assembly.currentEnergy -= GetBurnRate() * Assembly.burnCoefficient * Time.deltaTime;
         }
 

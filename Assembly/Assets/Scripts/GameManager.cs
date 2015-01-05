@@ -216,6 +216,7 @@ public class GameManager : MonoBehaviour {
     public Assembly SeedNewRandomAssembly(){
         Assembly newAssembly = Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
         newAssembly.WorldPosition = MathUtilities.RandomVector3Sphere(worldSize);
+        Instantiate(PrefabManager.Inst.newPelletBurst, newAssembly.WorldPosition, Quaternion.identity);
         return newAssembly;
     }
 
