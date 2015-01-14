@@ -199,6 +199,97 @@ public class GameManager : MonoBehaviour {
             ConsoleScript.Inst.WriteToLog("Created random assemblies.");
         }
 
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            ConvexHullViewer[] hullViewer = (ConvexHullViewer[])UnityEngine.Object.FindObjectsOfType(typeof(ConvexHullViewer));
+            List<int> sharedRingIndices = new List<int>();
+            for (int i = 0; i < HullNode.allNodes.Count; ++i)
+            {
+                int count = 0;
+                for (int j = 0; j < HullNode.allNodes.Count; ++j)
+                    if ((HullNode.allNodes[j].id & 1) > 0)
+                    {
+                        if (HullNode.allNodes[j].cut == sharedRingIndices.Count)
+                            sharedRingIndices.Add(count);
+                        count++;
+                    }
+            }
+            hullViewer[1].hull.Cut(sharedRingIndices);
+
+            // cut other side
+            sharedRingIndices.Clear();
+            Stack<int> sharedRingStack = new Stack<int>(); // to help reverse the order at the end
+            for (int i = 0; i < HullNode.allNodes.Count; ++i)
+            {
+                int count = 0;
+                for (int j = 0; j < HullNode.allNodes.Count; ++j)
+                    if ((HullNode.allNodes[j].id & 2) > 0)
+                    {
+                        if (HullNode.allNodes[j].cut == sharedRingStack.Count)
+                        {
+                            Debug.LogError(count + " pos: " + HullNode.allNodes[j].transform.position.ToString());
+                            sharedRingStack.Push(count);
+                        }
+                        count++;
+                    }
+            }
+            while (sharedRingStack.Count > 0)
+                sharedRingIndices.Add(sharedRingStack.Pop());
+
+            hullViewer[0].hull.Cut(sharedRingIndices);
+
+        }
+
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            string ptStr = @"(-25.8, 40.1, 66.6)
+(-31.6, 48.3, 56.5)
+(-30.8, 40.1, 66.6)
+(-22.7, 48.3, 56.5)
+(-30.8, 40.1, 73.9)
+(-29.7, 44.0, 60.4)
+(-25.8, 40.1, 56.5)
+(-30.8, 40.1, 60.2)
+(-27.9, 45.3, 52.3)
+(-31.6, 40.1, 56.5)
+(-28.3, 47.5, 47.4)
+(-25.8, 44.0, 60.6)
+(-25.8, 43.8, 66.6)";
+
+            string[] ptStrs = ptStr.Split('\n');
+    
+            ConvexHullViewer[] hullViewer = (ConvexHullViewer[])UnityEngine.Object.FindObjectsOfType(typeof(ConvexHullViewer));
+            List<Vector3> nodePos1 = new List<Vector3>();
+            
+            //for(int i=0; i < ptStrs.Length; ++i)
+            //    nodePos1.Add(IOHelper.Vector3FromString(ptStrs[i]));
+            
+            for (int i = 0; i < HullNode.allNodes.Count; ++i)
+                if ((HullNode.allNodes[i].id & 1) > 0)                    
+                    nodePos1.Add(HullNode.allNodes[i].transform.position);
+            
+            ptStr = @"(-31.6, 48.3, 56.5)
+(-22.7, 48.3, 56.5)
+(-25.8, 40.1, 56.5)
+(-30.9, 47.5, 47.4)
+(-27.9, 45.3, 52.3)
+(-31.6, 40.1, 56.5)
+(-28.3, 47.5, 47.4)";
+            ptStrs = ptStr.Split('\n');
+
+            List<Vector3> nodePos2 = new List<Vector3>();
+            
+            for (int i = 0; i < HullNode.allNodes.Count; ++i)
+                if ((HullNode.allNodes[i].id & 2) > 0)
+                    nodePos2.Add(HullNode.allNodes[i].transform.position);
+             
+            //for (int i = 0; i < ptStrs.Length; ++i)
+            //    nodePos2.Add(IOHelper.Vector3FromString(ptStrs[i]));
+
+            hullViewer[1].hull = new ConvexHull(nodePos1);
+            hullViewer[0].hull = new ConvexHull(nodePos2);
+        }
+
     } // End of Update().
 
 

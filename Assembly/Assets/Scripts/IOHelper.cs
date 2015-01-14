@@ -1,10 +1,11 @@
-﻿/*using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
 
 public class IOHelper
 {
+/*
     private static int assemblyFileFormatVersion = 1;
 
     // if the file already exists, make a new one with an incremented file name
@@ -20,6 +21,7 @@ public class IOHelper
         return filename;
     }
 
+
     public static void SaveAllToFolder(string folderPath)
     {
         string ext = ".txt";
@@ -27,7 +29,6 @@ public class IOHelper
         foreach (Assembly a in Assembly.GetAll())
             a.Save(GetValidFileName(folderPath, a.name, ext));
     }
-
 
     public static void LoadDirectory(string dir)
     {
@@ -75,7 +76,7 @@ public class IOHelper
         else
             Debug.LogError(filePath + " already exists, save aborted");
     }
-
+*/
     static public List<Vector3> Vector3ListFromString(string str)
     {
         List<Vector3> vList = new List<Vector3>();
@@ -122,4 +123,4 @@ public class IOHelper
     {
         return v.x + "," + v.y + "," + v.z;
     }
-}*/
+}

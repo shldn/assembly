@@ -47,12 +47,18 @@ public class ConvexHull
 
     public ConvexHull(List<Vector3> newPts)
     {
+        Debug.LogError("Num pts: " + newPts.Count);
+        string str = "";
+        for (int i = 0; i < newPts.Count; ++i)
+            str += i + " " + newPts[i].ToString() + "\n";
+        Debug.LogError(str);
         AddPts(newPts);
         ComputeHull();
     }
 
     private void AddSafeEdge(Dictionary<Face, int> safeEdges, Face f, int e)
     {
+        Debug.LogError("Adding safe edge: " + f.IdxStr() + " edge: " + e);
         int edgeVal = (e + 1) * (e + 1);
         if (!safeEdges.ContainsKey(f))
             safeEdges.Add(f, edgeVal);
@@ -68,6 +74,14 @@ public class ConvexHull
             Debug.LogError("cutVertIndices is empty or 1");
             return;
         }
+
+        string str = "Cut\n";
+        for (int i = 0; i < cutVertIndices.Count; ++i)
+            str += cutVertIndices[i] + " ";
+        str += " available faces: ";
+        for (int i = 0; i < faces.Count; ++i)
+            str += faces[i].IdxStr() + "\n";
+        Debug.LogError(str);
 
         // make sure the cut is closed
         if (cutVertIndices[0] != cutVertIndices[cutVertIndices.Count - 1])
@@ -99,6 +113,7 @@ public class ConvexHull
         int cutIdxCount = 2; // found the first two verts in init
         for (; cutIdxCount < cutVertIndices.Count; ++cutIdxCount )
         {
+            Debug.LogError("Next edge end: " + cutVertIndices[cutIdxCount]);
             GetNextBorderEdge(ref face, ref edge, fe => fe.f.GetEdgeEndVert(fe.ei) == cutVertIndices[cutIdxCount]);
             cutFaces.Add(face);
             AddSafeEdge(safeEdges, face, edge);
@@ -142,8 +157,11 @@ public class ConvexHull
         }
 
         // remove all marked for removal
-        foreach(Face f in facesToRemove)
+        foreach (Face f in facesToRemove)
+        {
+            Debug.LogError("Removing: " + f.IdxStr());
             faces.Remove(f);
+        }
     }
 
     private void AddPts(List<Vector3> newPts)
@@ -464,12 +482,16 @@ public class ConvexHull
     {
         int testE = (edge + 1) % 3;
         if (pred(new FaceEdgeIdxPair(startF, testE)))
+        {
+            Debug.LogError("First Found: e: " + testE + "f: " + startF.IdxStr());
             edge = testE;
+        }
         else
         {
             int testVIdx = startF.idx[testE];
             Face testF = startF.adjFace[testE];
             edge = testF.idx.FindIndex(i => i == testVIdx);
+            Debug.LogError("Now looking for starts with " + testVIdx);
 
             // find the next edge along the walk that satisfies the predicate.
             while (testF != startF)
@@ -481,6 +503,7 @@ public class ConvexHull
                 }
                 else
                 {
+                    Debug.LogError("Found e: " + edge + " f: "  + testF.IdxStr());
                     break;
                 }
             }
