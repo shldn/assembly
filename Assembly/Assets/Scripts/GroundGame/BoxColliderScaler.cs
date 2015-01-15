@@ -11,6 +11,8 @@ public class BoxColliderScaler : MonoBehaviour {
     public float speedOut = 2.0f;
     public float speedIn = 10.0f;
 
+    public bool playAnimation = true;
+
     Vector3 scaleTarget = Vector3.one;
     Vector3 originalScale = Vector3.one;
 
@@ -61,6 +63,8 @@ public class BoxColliderScaler : MonoBehaviour {
     {
         scaleTarget = originalScale + magnitude * dir.normalized;
         isAnimatingForward = true;
+        if (playAnimation && animation != null)
+            animation.Play();
         if (repeatDelay > 0)
             Invoke("Scale", repeatDelay);
         else
