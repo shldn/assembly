@@ -1,0 +1,120 @@
+fileFormatVersion: 2
+guid: 79415e6dd9eeb6f479b4926944704e76
+ModelImporter:
+  serializedVersion: 15
+  fileIDToRecycleName:
+    100000: bladebase
+    100002: propeelerbase
+    100004: //RootNode
+    100006: Propellerblade002
+    100008: Propellerblade003
+    100010: Propellerblade004
+    100012: Propellerblade1
+    100014: propellerblades
+    100016: propellerring
+    400000: bladebase
+    400002: propeelerbase
+    400004: //RootNode
+    400006: Propellerblade002
+    400008: Propellerblade003
+    400010: Propellerblade004
+    400012: Propellerblade1
+    400014: propellerblades
+    400016: propellerring
+    2300000: bladebase
+    2300002: propeelerbase
+    2300004: Propellerblade002
+    2300006: Propellerblade003
+    2300008: Propellerblade004
+    2300010: Propellerblade1
+    2300012: propellerring
+    3300000: bladebase
+    3300002: propeelerbase
+    3300004: Propellerblade002
+    3300006: Propellerblade003
+    3300008: Propellerblade004
+    3300010: Propellerblade1
+    3300012: propellerring
+    4300000: propeelerbase
+    4300002: propellerring
+    4300004: bladebase
+    4300006: Propellerblade004
+    4300008: Propellerblade003
+    4300010: Propellerblade002
+    4300012: Propellerblade1
+    7400000: propeller_bladespin
+    9500000: //RootNode
+    11100000: //RootNode
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 2
+    clipAnimations:
+    - name: propeller_bladespin
+      takeName: Take 001
+      firstFrame: 0
+      lastFrame: 29
+      wrapMode: 2
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      transformMask: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    handles: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  additionalBone: 1
+  animationType: 1
+  userData: 
