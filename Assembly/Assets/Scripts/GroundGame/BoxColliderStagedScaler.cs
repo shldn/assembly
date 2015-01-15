@@ -21,9 +21,11 @@ public class BoxColliderStagedScaler : MonoBehaviour
     public List<float> magnitude = new List<float>();
     public List<float> speed = new List<float>();
     public bool playAnimation = true;
-    
-    List<Vector3> targets = new List<Vector3>();
-    Vector3 originalScale = Vector3.one;
+
+    List<Vector3> offsetTargets = new List<Vector3>();
+    Vector3 originalSize = Vector3.one;
+    Vector3 originalCenter = Vector3.zero;
+    Vector3 currentOffset = Vector3.zero;
 
     BoxCollider boxCollider = null;
     int stage = 5000;
@@ -32,7 +34,8 @@ public class BoxColliderStagedScaler : MonoBehaviour
     void Awake()
     {
         boxCollider = GetComponent<BoxCollider>();
-        originalScale = boxCollider.size;
+        originalSize = boxCollider.size;
+        originalCenter = boxCollider.center;
     }
 
     void Start()
@@ -50,10 +53,12 @@ public class BoxColliderStagedScaler : MonoBehaviour
         }
         if (stage < NumStages)
         {
-            Vector3 newSize = Vector3.MoveTowards(boxCollider.size, targets[stage], speed[stage] * Time.fixedDeltaTime);
-            if (boxCollider.size == newSize)
+            Vector3 newOffset = Vector3.MoveTowards(currentOffset, offsetTargets[stage], speed[stage] * Time.fixedDeltaTime);
+            if (currentOffset == newOffset)
                 stage++;
-            boxCollider.size = newSize;
+            currentOffset = newOffset;
+            boxCollider.size = originalSize + newOffset;
+            boxCollider.center = originalCenter + 0.5f * newOffset;
         }
     }
 
@@ -75,14 +80,14 @@ public class BoxColliderStagedScaler : MonoBehaviour
         Vector3 dirNormalized = dir.normalized;
         for (int i = 0; i < magnitude.Count; ++i)
         {
-            Vector3 target = originalScale + magnitude[i] * dirNormalized;
-            if (targets.Count <= i)
-                targets.Add(target);
+            Vector3 offsetTarget = magnitude[i] * dirNormalized;
+            if (offsetTargets.Count <= i)
+                offsetTargets.Add(offsetTarget);
             else
-                targets[i] = target;
+                offsetTargets[i] = offsetTarget;
         }
     }
 
     int NumStages { get { return magnitude.Count; } }
-     
+
 }
