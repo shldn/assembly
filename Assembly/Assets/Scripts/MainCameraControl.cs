@@ -308,7 +308,7 @@ public class MainCameraControl : MonoBehaviour {
     void OnGUI(){
 
         // Assembly health/name/etc. readouts.
-        if(GameManager.Inst.showAssemReadouts){
+        if (GameManager.Inst != null && GameManager.Inst.showAssemReadouts){
             for(int i = 0; i < Assembly.GetAll().Count; i++){
                 Assembly currentAssembly = Assembly.GetAll()[i];
                 Vector3 assemblyScreenPos = Camera.main.WorldToScreenPoint(Assembly.GetAll()[i].WorldPosition);
@@ -411,8 +411,8 @@ public class MainCameraControl : MonoBehaviour {
         GUI.Label(centeredInfoRect, cameraTypeLabel);
 
 
-        
-        if(GameManager.Inst.showControls){
+
+        if (GameManager.Inst && GameManager.Inst.showControls) {
 
             
 
@@ -435,7 +435,7 @@ public class MainCameraControl : MonoBehaviour {
             GUI.Label(MathUtilities.CenteredSquare(selectedNode), nodeSelectTex);
         }
 
-        if(!NodeEngineering.Inst.uiLockout){
+        if(NodeEngineering.Inst != null && !NodeEngineering.Inst.uiLockout){
             if(hoveredNode){
                 GUI.color = new Color(1f, 1f, 1f, 0.3f);
                 GUI.skin.label.alignment = TextAnchor.MiddleCenter;
