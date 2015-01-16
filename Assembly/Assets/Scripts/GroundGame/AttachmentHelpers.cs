@@ -12,9 +12,7 @@ public class AttachmentHelpers{
         spring.transform.position = parent.transform.position + positionOffset;
 
         // randomly rotate spring direction vector, stay on proper side of the plane orthogonal to attachNormal.
-        float minAngleOffset = 5.0f;
-        float maxAngleOffset = 45.0f;
-        float randAngle = Random.Range(minAngleOffset, maxAngleOffset);
+        float randAngle = Random.Range(GroundGameManager.Inst.minSpringAngleOffset, GroundGameManager.Inst.maxAngleOffset);
         float randAngleToRotateAxis = Random.Range(0.0f, 360.0f);
         // get random axis perpendicular to attachNormal
         Vector3 axis = Quaternion.AngleAxis(randAngleToRotateAxis, attachNormal) * GetAnyOrthogonalVector(attachNormal);
