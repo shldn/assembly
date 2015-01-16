@@ -30,7 +30,10 @@ public class GroundGameManager : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.M))
         {
             GameObject hull = ConvexHull.GetRandomHullMesh(randomHullBounds);
+            hull.AddComponent<MeshCollider>();
             hull.AddComponent<Rigidbody>();
+            hull.renderer.material = new Material(Shader.Find("Diffuse"));
+            hull.transform.position = new Vector3(8, 5.5F, 0);
             SpringCreature creature = hull.AddComponent<SpringCreature>();
             creature.numSprings = (int)(randomHullSpringPercent * (float)(hull.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
         }
