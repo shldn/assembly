@@ -12,12 +12,15 @@ public class AttachmentHelpers{
         spring.transform.position = parent.transform.position + positionOffset;
 
         // randomly rotate spring direction vector, stay on proper side of the plane orthogonal to attachNormal.
-        // Random vector on unit hemisphere about y-up vector
-        Vector3 randV = Random.onUnitSphere;
-        randV.y = Mathf.Abs(randV.y);
+        float minAngleOffset = 5.0f;
+        float maxAngleOffset = 45.0f;
+        float randAngle = Random.Range(minAngleOffset, maxAngleOffset);
+        float randAngleToRotateAxis = Random.Range(0.0f, 360.0f);
+        // get random axis perpendicular to attachNormal
+        Vector3 axis = Quaternion.AngleAxis(randAngleToRotateAxis, attachNormal) * GetAnyOrthogonalVector(attachNormal);
 
-        Quaternion adjustment = Quaternion.FromToRotation(Vector3.up, attachNormal);
-        spring.transform.up = adjustment * randV;
+        // rotate a random angle (in range) about a random perpendicular axis -- will keep the vector in a cone maxAngleOffset from attachNormal
+        spring.transform.up = Quaternion.AngleAxis(randAngle, axis) * attachNormal;
 
         // attach spring to parent object
         FixedJoint joint = parent.AddComponent<FixedJoint>();
@@ -42,6 +45,21 @@ public class AttachmentHelpers{
         if (m.normals.Length > vertIdx[0])
             normal = (m.normals[vertIdx[0]] + m.normals[vertIdx[1]] + m.normals[vertIdx[2]]) / 3.0f;
         return (m.vertices[vertIdx[0]] + m.vertices[vertIdx[1]] + m.vertices[vertIdx[2]]) / 3.0f;
+    }
+
+    // returns one of the infinite perpendicular vectors to the input vector.
+    public static Vector3 GetAnyOrthogonalVector(Vector3 v)
+    {
+        if (v.x == 0.0f && v.y == 0.0f)
+        {
+            if (v.z == 0.0f)
+            {
+                Debug.LogError("Invalid input to GetAnyOrthogonalVector, must be non-zero vector");
+                return v;
+            }
+            return Vector3.up;
+        }
+        return new Vector3(-v.y, v.x, 0.0f);
     }
 
 }
