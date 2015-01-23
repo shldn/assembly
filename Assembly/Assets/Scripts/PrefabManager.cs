@@ -14,6 +14,9 @@ public class PrefabManager : MonoBehaviour {
     public GameObject mainTrail = null;
     public GameObject extendedTrail = null;
 
+    public GameObject energyTransferEffect = null;
+    public GameObject reproducePullEffect = null;
+
     public Material assemblySkin = null;
 
     public Color stemColor = new Color(0.4f, 0.4f, 0.4f, 1f);

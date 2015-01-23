@@ -4,6 +4,12 @@ using System.Collections.Generic;
 
 public class ActuateNode : Node {
 
+    float totalSigStrength = 0f;
+    float smoothedTailSize = 0f;
+    float tailSizeVel = 0f;
+    TrailRenderer mainTrail = null;
+    TrailRenderer extendedTrail = null;
+
     public Quaternion worldAcuateRot {
         get{
             if(assembly && assembly.physicsObject)
@@ -42,27 +48,28 @@ public class ActuateNode : Node {
         if(!mainTrailObject){
             mainTrailObject = GameObject.Instantiate(PrefabManager.Inst.mainTrail, worldPosition, Quaternion.identity) as GameObject;
             mainTrailObject.transform.parent = gameObject.transform;
-            mainTrailObject.GetComponent<TrailRenderer>().time = 4f * nodeProperties.muscleStrength;
+            mainTrail = mainTrailObject.GetComponent<TrailRenderer>();
+            mainTrail.time = 4f * nodeProperties.muscleStrength;
         }
 
         if(!extendedTrailObject){
             extendedTrailObject = GameObject.Instantiate(PrefabManager.Inst.extendedTrail, worldPosition, Quaternion.identity) as GameObject;
             extendedTrailObject.transform.parent = gameObject.transform;
-            extendedTrailObject.GetComponent<TrailRenderer>().time = 12f * nodeProperties.muscleStrength;
+            extendedTrail = extendedTrailObject.GetComponent<TrailRenderer>();
+            extendedTrail.time = 12f * nodeProperties.muscleStrength;
         }
+        
+        smoothedTailSize = Mathf.SmoothDamp(smoothedTailSize, totalSigStrength * 0.3f, ref tailSizeVel, 0.1f);
+        mainTrail.startWidth = smoothedTailSize;
+
+        totalSigStrength = 0f;
 
 	    Debug.DrawRay(worldPosition, worldAcuateRot * Vector3.forward * 3f, Color.red);
 
 	} // End of Update().
     
     public void Propel(Quaternion inputQuat, float sigStrength){
-        /*
-        if(trail){
-            trail.startWidth = sigStrength;
-            trail.endWidth = sigStrength;
-        }
-        */
-
+        totalSigStrength += sigStrength;
         assembly.physicsObject.rigidbody.AddForceAtPosition(((nodeProperties.actuateVector * inputQuat) * Vector3.forward) * 10f * sigStrength * nodeProperties.muscleStrength, worldPosition);
     } // End of Propel().
 
