@@ -96,9 +96,10 @@ public class GameManager : MonoBehaviour {
         if( FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD )
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
                 FoodPellet newPellet = FoodPellet.AddNewFoodPellet();
-                float spiralSize = 75f;
                 float spiralDensity = 0.05f;
-                float xPos = UnityEngine.Random.Range(-200f, 200f);
+                float foodSpread = 300f;
+                float xPos = UnityEngine.Random.Range(0f, UnityEngine.Random.Range(-foodSpread, foodSpread));
+                float spiralSize = 50f * (1f + (Mathf.Abs(xPos) * 0.01f));
                 newPellet.worldPosition = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
                 UnityEngine.Object lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity);
 
@@ -214,9 +215,9 @@ public class GameManager : MonoBehaviour {
 
 
     public Assembly SeedNewRandomAssembly(){
-        Assembly newAssembly = Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
+        Assembly newAssembly = Assembly.GetRandomAssembly(UnityEngine.Random.Range(Assembly.MIN_NODES_IN_ASSEMBLY, Assembly.MAX_NODES_IN_ASSEMBLY));
         newAssembly.WorldPosition = MathUtilities.RandomVector3Sphere(worldSize);
-        Instantiate(PrefabManager.Inst.newPelletBurst, newAssembly.WorldPosition, Quaternion.identity);
+        //Instantiate(PrefabManager.Inst.newPelletBurst, newAssembly.WorldPosition, Quaternion.identity);
         return newAssembly;
     }
 

@@ -7,8 +7,8 @@ public class ActuateNode : Node {
     float totalSigStrength = 0f;
     float smoothedTailSize = 0f;
     float tailSizeVel = 0f;
-    TrailRenderer mainTrail = null;
-    TrailRenderer extendedTrail = null;
+    //TrailRenderer mainTrail = null;
+    //TrailRenderer extendedTrail = null;
 
     public Quaternion worldAcuateRot {
         get{
@@ -48,19 +48,22 @@ public class ActuateNode : Node {
         if(!mainTrailObject){
             mainTrailObject = GameObject.Instantiate(PrefabManager.Inst.mainTrail, worldPosition, Quaternion.identity) as GameObject;
             mainTrailObject.transform.parent = gameObject.transform;
-            mainTrail = mainTrailObject.GetComponent<TrailRenderer>();
-            mainTrail.time = 4f * nodeProperties.muscleStrength;
+            //mainTrail = mainTrailObject.GetComponent<TrailRenderer>();
+            //mainTrail.time = 4f * nodeProperties.muscleStrength;
         }
 
         if(!extendedTrailObject){
             extendedTrailObject = GameObject.Instantiate(PrefabManager.Inst.extendedTrail, worldPosition, Quaternion.identity) as GameObject;
             extendedTrailObject.transform.parent = gameObject.transform;
-            extendedTrail = extendedTrailObject.GetComponent<TrailRenderer>();
-            extendedTrail.time = 12f * nodeProperties.muscleStrength;
+            //extendedTrail = extendedTrailObject.GetComponent<TrailRenderer>();
+            //extendedTrail.time = 12f * nodeProperties.muscleStrength;
         }
+
+        mainTrailObject.transform.position = gameObject.transform.position;
+        extendedTrailObject.transform.position = gameObject.transform.position;
         
         smoothedTailSize = Mathf.SmoothDamp(smoothedTailSize, totalSigStrength * 0.3f, ref tailSizeVel, 0.1f);
-        mainTrail.startWidth = smoothedTailSize;
+        //mainTrail.startWidth = smoothedTailSize;
 
         totalSigStrength = 0f;
 
@@ -76,11 +79,11 @@ public class ActuateNode : Node {
     public override void Destroy(){
         if(mainTrailObject){
             mainTrailObject.transform.parent = null;
-            mainTrailObject.AddComponent<DestroyAfterTime>().killTimer = mainTrailObject.GetComponent<TrailRenderer>().time;;
+            mainTrailObject.AddComponent<DestroyAfterTime>().killTimer = mainTrailObject.GetComponent<TimedTrailRenderer>().lifeTime;
         }
         if(extendedTrailObject){
             extendedTrailObject.transform.parent = null;
-            extendedTrailObject.AddComponent<DestroyAfterTime>().killTimer = extendedTrailObject.GetComponent<TrailRenderer>().time;;
+            extendedTrailObject.AddComponent<DestroyAfterTime>().killTimer = extendedTrailObject.GetComponent<TimedTrailRenderer>().lifeTime;
         }
         base.Destroy();
     }

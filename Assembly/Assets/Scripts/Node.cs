@@ -31,6 +31,13 @@ public class Node {
     public bool signalLock = false;
     //public bool activeLogic = false;
 
+    IntVector3 emergeFromLocalHex = IntVector3.zero;
+    bool emerging = false;
+    bool mature = false;
+    float emergeSpeedMod = 1f;
+    protected float emergeLerp = 0f;
+    float emergeEffectRolloff = 2f;
+
 
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
@@ -119,13 +126,6 @@ public class Node {
 
     public virtual void Update(){
 
-        if(assembly && !assembly.imported)
-            gameObject.renderer.material.color = baseColor;
-        else
-            gameObject.renderer.material.color = Color.Lerp(baseColor, Color.green, 0.3f);
-
-
-
         /*
         if(!junkObject){
             int rand = Random.Range(0, RandomJunk.Inst.junkObjects.Length);
@@ -162,8 +162,52 @@ public class Node {
         }
 
         // Update physical location
-        gameObject.transform.position = worldPosition;
         gameObject.transform.rotation = worldRotation;
+
+
+        // First node kicks it off.
+        if((localHexPosition.x == 0) && (localHexPosition.y == 0) && (localHexPosition.z == 0) && !mature){
+            emerging = true;
+            gameObject.renderer.enabled = true;
+            emergeSpeedMod = Random.Range(0.7f, 1.3f);
+        }
+
+        if(emerging){
+            emergeLerp += Time.deltaTime * 0.75f * emergeSpeedMod;
+        }
+
+        if(emerging && (emergeLerp >= 0.7f) && !mature){
+            mature = true;
+            foreach(Node someNeighbor in neighbors){
+                if(someNeighbor.emerging || someNeighbor.mature)
+                    continue;
+
+                someNeighbor.emergeFromLocalHex = localHexPosition;
+                someNeighbor.emerging = true;
+                someNeighbor.gameObject.renderer.enabled = true;
+                emergeSpeedMod = Random.Range(0.8f, 1.2f);
+            }
+        }
+
+        if(emergeLerp >= 1f) {
+            emerging = false;
+            emergeLerp = 1f;
+        }
+
+        if(assembly) {
+            Vector3 emergeFromWorldPos = assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(emergeFromLocalHex));
+
+            float expEmergeLerp = Mathf.Pow(emergeLerp, 0.5f);
+
+            gameObject.transform.position = Vector3.Lerp(emergeFromWorldPos, worldPosition, expEmergeLerp);
+            gameObject.transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, expEmergeLerp);
+        }
+
+        if(mature)
+            emergeEffectRolloff = Mathf.MoveTowards(emergeEffectRolloff, 0f, Time.deltaTime);
+
+        gameObject.renderer.material.color = Color.Lerp(baseColor, Color.white, emergeEffectRolloff);
+
     } // End of UpdateTransform(). 
 
 

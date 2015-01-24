@@ -21,6 +21,9 @@ public class SenseNode : Node {
     public static float detectRange  = 100.0f; //how far can it detect food
     public static float consumeRate = 7.0f; //rate asm consume food
 
+    float arcAlphaSmoothed = 0f;
+    float arcAlphaVel = 0f;
+
     public GameObject senseFieldBillboard = null;
     float arcScale = 5f;
 
@@ -64,7 +67,6 @@ public class SenseNode : Node {
             float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
             senseFieldBillboard.transform.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
         
-            Color tempColor = new Color(0f, 1f, 0f, 0.05f);
             float totalSigStrength = 0f;
             Quaternion totalSigQuat = Quaternion.identity;
             //calling detect food on sense node
@@ -88,7 +90,7 @@ public class SenseNode : Node {
 
             // Send total signal
             totalSigStrength = Mathf.Clamp01(totalSigStrength);
-            tempColor = Color.Lerp(tempColor, Color.green, totalSigStrength);
+            arcAlphaSmoothed = Mathf.SmoothDamp(arcAlphaSmoothed, Mathf.Clamp01(totalSigStrength), ref arcAlphaVel, 0.2f);
             signalLock = true;
             if(neighbors != null)
                 for(int i = 0; i < neighbors.Count; i++){
@@ -100,8 +102,9 @@ public class SenseNode : Node {
             signalLock = false;
 
 
-            if(senseFieldBillboard)
-                senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
+            if(senseFieldBillboard){
+                senseFieldBillboard.renderer.material.SetColor("_TintColor", Color.Lerp(Color.clear, Color.green, (arcAlphaSmoothed + 0.1f) * emergeLerp));
+            }
         
         }
 	} // End of Update().
@@ -146,13 +149,13 @@ public class SenseNode : Node {
 
     //consume food within range
     public void Consume(FoodPellet food){
-        float realConsumeRate = (consumeRate * Time.deltaTime) * SenseNode.consumeRate; 
+        float realConsumeRate = (consumeRate * 3f * Time.deltaTime) * SenseNode.consumeRate; 
         Vector3 foodDist = food.worldPosition - this.worldPosition;
         //consume rate square drop off
         //realConsumeRate *= (1 - foodDist.sqrMagnitude / (Mathf.Pow(consumeRange, 2f)));
         
         food.currentEnergy -= realConsumeRate * Time.deltaTime;
-        assembly.currentEnergy += (realConsumeRate * Time.deltaTime) * 0.2f;
+        assembly.currentEnergy += realConsumeRate * Time.deltaTime;
 
     } // End of Consume().
 } // End of SenseNode.

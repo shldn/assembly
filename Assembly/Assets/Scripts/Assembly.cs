@@ -324,9 +324,8 @@ public class Assembly {
 
 
         // If assembly has 200% health, it reproduces!
-        /*
         if(Health >= 2f){
-            Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            //Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
             
             Assembly offspringAssem = Reproduce();
             offspringAssem.WorldPosition = WorldPosition;
@@ -336,12 +335,11 @@ public class Assembly {
 
             Health = Mathf.Clamp(Health, 0f, 2f) * 0.5f;
         }
-        */
 
         if (showMesh && updateMesh)
             UpdateSkinMesh();
 
-
+        /*
         if(!targetMate && !gentlemanCaller && (Random.Range(0f, 1f) <= 0.001)){
             //Find closest assembly
             float distToClosest = 9999f;
@@ -391,6 +389,7 @@ public class Assembly {
                 mateCooldown = Random.Range(10f, 20f);
             }
         }
+        */
 
     } // End of UpdateTransform().
 
