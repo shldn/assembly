@@ -44,7 +44,7 @@ public class Net_Manager : MonoBehaviour {
     void Update(){
 	    connectCooldown -= Time.deltaTime;
         // Cycle through available IPs to connect to.
-        if((Application.platform == RuntimePlatform.Android) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f)){
+        if ((GameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f)){
 			Network.Connect(connectToIP[ipListConnect], connectionPort);
             ipListConnect++;
             ipListConnect = Mathf.FloorToInt(Mathf.Repeat(ipListConnect, connectToIP.Length));
@@ -53,7 +53,7 @@ public class Net_Manager : MonoBehaviour {
         }
 
         // If player is not connected, run the ConnectWindow function.
-	    if((Application.platform != RuntimePlatform.Android) && (Network.peerType == NetworkPeerType.Disconnected) && Input.GetKeyDown(KeyCode.Space)){
+        if ((!GameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && Input.GetKeyDown(KeyCode.Space)){
             // Create the server.
 			Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
 	    }
@@ -94,14 +94,14 @@ public class Net_Manager : MonoBehaviour {
 
     void OnGUI(){
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
-	 
-        if((Application.platform == RuntimePlatform.Android) && (Network.peerType == NetworkPeerType.Disconnected)){
+
+        if ((GameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             GUI.skin.label.fontSize = 40;
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
             GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Connecting to server...");
         }
 
-        if((Application.platform != RuntimePlatform.Android) && (Network.peerType == NetworkPeerType.Disconnected)){
+        if ((!GameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             GUI.skin.label.fontSize = 20;
             GUI.skin.label.alignment = TextAnchor.LowerCenter;
             GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Press SPACE to initialize server.");
