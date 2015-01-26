@@ -71,6 +71,10 @@ public class Assembly {
     public bool  needBurnRateUpdate = true;
     public static float burnCoefficient = 1.0f;
 
+    public Assembly targetMate = null;
+    public Assembly gentlemanCaller = null;
+    float mateCooldown = 5f;
+
     public float MaxEnergy { get{ return nodes.Count; }}
     public float Health { get{ return currentEnergy / MaxEnergy; }
                           set{ currentEnergy = MaxEnergy * value; }}
@@ -321,7 +325,7 @@ public class Assembly {
 
         // If assembly has 200% health, it reproduces!
         if(Health >= 2f){
-            Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            //Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
             
             Assembly offspringAssem = Reproduce();
             offspringAssem.WorldPosition = WorldPosition;
@@ -334,6 +338,58 @@ public class Assembly {
 
         if (showMesh && updateMesh)
             UpdateSkinMesh();
+
+        /*
+        if(!targetMate && !gentlemanCaller && (Random.Range(0f, 1f) <= 0.001)){
+            //Find closest assembly
+            float distToClosest = 9999f;
+            Assembly closestAssembly = null;
+            for(int i = 0; i < GetAll().Count; i++){
+                if((GetAll()[i] == this) || GetAll()[i].targetMate || GetAll()[i].gentlemanCaller)
+                    continue;
+
+                float distToCurrent = Vector3.SqrMagnitude(WorldPosition - GetAll()[i].WorldPosition);
+                if(distToCurrent < distToClosest){
+                    distToClosest = distToCurrent;
+                    closestAssembly = GetAll()[i];
+                }
+            }
+            if(closestAssembly){
+                MonoBehaviour.print("Got mate!");
+                targetMate = closestAssembly;
+                GameObject newMateEffectGO = MonoBehaviour.Instantiate(PrefabManager.Inst.reproducePullEffect) as GameObject;
+                ReproducePullEffect newMateEffect = newMateEffectGO.GetComponent<ReproducePullEffect>();
+                newMateEffect.assemblyA = this;
+                newMateEffect.assemblyB = targetMate;
+
+                targetMate.gentlemanCaller = this;
+            }
+        }
+         
+        if(targetMate){
+        
+            if(physicsObject)
+                physicsObject.rigidbody.AddForce(targetMate.WorldPosition - WorldPosition, ForceMode.Force);
+
+            if(targetMate.physicsObject)
+                targetMate.physicsObject.rigidbody.AddForce(-(targetMate.WorldPosition - WorldPosition), ForceMode.Force);
+
+            if((Vector3.Distance(WorldPosition,targetMate.WorldPosition) <= 5f) && physicsObject && targetMate.physicsObject) {
+            
+                Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            
+                Assembly offspringAssem = Reproduce();
+                offspringAssem.WorldPosition = WorldPosition;
+                offspringAssem.WorldRotation = WorldRotation;
+                offspringAssem.physicsObject.rigidbody.velocity = physicsObject.rigidbody.velocity;
+                offspringAssem.physicsObject.rigidbody.angularVelocity = physicsObject.rigidbody.angularVelocity;
+            
+                targetMate.gentlemanCaller = null;
+                targetMate = null;
+                mateCooldown = Random.Range(10f, 20f);
+            }
+        }
+        */
 
     } // End of UpdateTransform().
 
