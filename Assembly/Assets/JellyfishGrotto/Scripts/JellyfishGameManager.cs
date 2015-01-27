@@ -50,7 +50,7 @@ public class JellyfishGameManager : MonoBehaviour {
 
 
     void Update(){
-
+        LevelManager.InputHandler();
         if(Input.GetKey(KeyCode.Escape))
             Application.Quit();
     } // End of Update().
