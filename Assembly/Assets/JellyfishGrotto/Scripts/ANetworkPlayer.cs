@@ -3,7 +3,8 @@ using System.Collections;
 
 public class ANetworkPlayer {
 
+    public static ANetworkPlayer me;
 	public NetworkPlayer player;
 	public string playerName = "";
-    public int score;
+
 } // End of ANetworkPlayer.

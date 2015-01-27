@@ -210,6 +210,7 @@ public class GameManager : MonoBehaviour {
             ConsoleScript.Inst.WriteToLog("Created random assemblies.");
         }
 
+        LevelManager.InputHandler();
 
         if(Application.platform == RuntimePlatform.Android){
             // Quit on back button.
@@ -513,5 +514,14 @@ public class GameManager : MonoBehaviour {
         
 
     } // End of OnGUI().
+
+
+    void OnDestroy()
+    {
+        // Clear all static data structures
+        Node.GetAll().Clear();
+        Assembly.GetAll().Clear();
+        FoodPellet.GetAll().Clear();
+    }
 
 }

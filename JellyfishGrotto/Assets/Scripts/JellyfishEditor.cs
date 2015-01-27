@@ -5,13 +5,13 @@ public class JellyfishEditor : MonoBehaviour {
 
 	// Use this for initialization
 	void Awake() {
-	    if(Application.platform != RuntimePlatform.Android)
+        if (!GameManager.IsClient)
             enabled = false;
 	}
 	
 	// Update is called once per frame
 	void OnGUI() {
-        if(Jellyfish.all[0]){
+        if(Jellyfish.all.Count > 0){
 	        Rect controlBarRect = new Rect(Screen.width - (Screen.height / 6f), 0f, Screen.height / 6f, Screen.height);
 
             GUI.skin.button.fontSize = 20;
