@@ -27,7 +27,7 @@ public class PlayerSync : MonoBehaviour {
             cursorObject.gameObject.SetActive(!JellyfishGameManager.Inst.editing);
         }
 
-        if(cursorObject && (JellyfishGameManager.IsClient) && !networkView.isMine)
+        if(cursorObject && (PersistentGameManager.IsClient) && !networkView.isMine)
             Destroy(cursorObject.gameObject);
 
         if (!JellyfishGameManager.Inst.editing && ((Network.peerType == NetworkPeerType.Server) || networkView.isMine))
@@ -143,7 +143,7 @@ public class PlayerSync : MonoBehaviour {
 
     void OnGUI(){
         /*
-        if(!JellyfishGameManager.IsClient){
+        if(!PersistentGameManager.IsClient){
             Rect playerInfoRect = new Rect(screenPosSmoothed.x, screenPosSmoothed.y, 500f, 500f);
             GUI.Label(playerInfoRect, " Player");
         }

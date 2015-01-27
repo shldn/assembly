@@ -5,7 +5,7 @@ public class JellyfishEditor : MonoBehaviour {
 
 	// Use this for initialization
 	void Awake() {
-        if (!JellyfishGameManager.IsClient)
+        if (!PersistentGameManager.IsClient)
             enabled = false;
 	}
 	

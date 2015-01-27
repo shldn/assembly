@@ -47,7 +47,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     void Update(){
 	    connectCooldown -= Time.deltaTime;
         // Cycle through available IPs to connect to.
-        if ((JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f)){
+        if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f)){
 			Network.Connect(connectToIP[ipListConnect], connectionPort);
             ipListConnect++;
             ipListConnect = Mathf.FloorToInt(Mathf.Repeat(ipListConnect, connectToIP.Length));
@@ -56,7 +56,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         }
 
         // If player is not connected, run the ConnectWindow function.
-        if ((!JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
+        if ((!PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             // Create the server.
 			Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
 	    }
@@ -103,13 +103,13 @@ public class CaptureNet_Manager : MonoBehaviour {
     void OnGUI(){
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 
-        if ((JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
+        if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             GUI.skin.label.fontSize = 40;
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
             GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Connecting to server...");
         }
 
-        if ((!JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
+        if ((!PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             GUI.skin.label.fontSize = 20;
             GUI.skin.label.alignment = TextAnchor.LowerCenter;
             GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Initializing server...");

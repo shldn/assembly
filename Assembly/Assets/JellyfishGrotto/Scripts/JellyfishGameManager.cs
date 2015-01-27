@@ -9,8 +9,6 @@ public class JellyfishGameManager : MonoBehaviour {
 
     public Material editorSkybox;
 
-    public static bool IsClient { get { return Application.platform == RuntimePlatform.Android; } }
-
 
     void Awake(){
         PersistentGameManager.Inst.Touch();
@@ -29,7 +27,7 @@ public class JellyfishGameManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start(){
-        if (!IsClient){
+        if (!PersistentGameManager.IsClient){
             for(int i = 0; i < 30; i++){
                 Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, MathUtilities.RandomVector3Sphere(30f), Random.rotation) as Transform;
 

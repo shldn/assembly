@@ -68,7 +68,7 @@ public class CameraControl : MonoBehaviour {
             orbitRunner = Mathf.SmoothDamp(orbitRunner, orbitRunnerTarget, ref orbitRunnerVel, smoothTime);
             orbitTilt = Mathf.SmoothDamp(orbitTilt, orbitTiltTarget, ref orbitTiltVel, smoothTime);
         }
-        else if(JellyfishGameManager.IsClient){
+        else if (PersistentGameManager.IsClient){
             if (Jellyfish.all.Count > 0 && Jellyfish.all[0]){
                 Jellyfish targetJelly = Jellyfish.all[0];
                 orbitTarget = targetJelly.transform.position;

@@ -5,7 +5,7 @@ public class DestroyIfMobile : MonoBehaviour {
 
 
     void Awake(){
-        if (JellyfishGameManager.IsClient)
+        if (PersistentGameManager.IsClient)
             Destroy(gameObject);
     } // End of Awake().
 
