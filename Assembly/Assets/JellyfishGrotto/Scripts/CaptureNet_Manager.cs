@@ -50,7 +50,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         }
 
         // If player is not connected, run the ConnectWindow function.
-        if ((!JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && Input.GetKeyDown(KeyCode.Space)){
+        if ((!JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             // Create the server.
 			Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
 	    }
@@ -106,7 +106,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         if ((!JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             GUI.skin.label.fontSize = 20;
             GUI.skin.label.alignment = TextAnchor.LowerCenter;
-            GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Press SPACE to initialize server.");
+            GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Initializing server...");
         }
 
     } // End of OnGUI().
