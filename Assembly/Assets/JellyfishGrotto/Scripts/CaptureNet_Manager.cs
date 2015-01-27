@@ -33,8 +33,14 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 
     void Awake(){
+        if (GetComponent<NetworkView>() == null)
+        {
+            NetworkView nv = gameObject.AddComponent<NetworkView>();
+            nv.stateSynchronization = NetworkStateSynchronization.Off;
+        }
 	    myNetworkView = networkView;
 	    Network.minimumAllocatableViewIDs = 500;
+        DontDestroyOnLoad(this);
     } // End of Awake().
 
 
@@ -147,7 +153,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         //Net_Amalgam newNetAmalgam = newNetAmalgamGO.GetComponent<Net_Amalgam>();
         //newNetAmalgam.SendAssemblies();
 
-        Network.Instantiate(JellyfishPrefabManager.Inst.playerSyncObject, Vector3.zero, Quaternion.identity, 1);
+        Network.Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity, 1);
 
     } // End of OnConnectedToServer().
 

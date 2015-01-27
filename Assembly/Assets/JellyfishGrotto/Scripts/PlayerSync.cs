@@ -12,11 +12,13 @@ public class PlayerSync : MonoBehaviour {
     List<Vector2> lastPoints = new List<Vector2>();
     bool selecting = false;
 
-    Vector2 deltaPos = Vector2.zero;
-
     public Transform cursorObject;
     public LineRenderer cursorLine;
 
+    void Awake()
+    {
+        DontDestroyOnLoad(this);
+    }
 
     void Update(){
         screenPosSmoothed = Vector3.SmoothDamp(screenPosSmoothed, screenPos, ref screenPosVel, screenPosSmoothTime);
@@ -26,7 +28,7 @@ public class PlayerSync : MonoBehaviour {
         }
 
         if(cursorObject && (JellyfishGameManager.IsClient) && !networkView.isMine)
-            Destroy(cursorObject);
+            Destroy(cursorObject.gameObject);
 
         if (!JellyfishGameManager.Inst.editing && ((Network.peerType == NetworkPeerType.Server) || networkView.isMine))
         {

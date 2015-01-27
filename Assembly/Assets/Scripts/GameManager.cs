@@ -52,6 +52,7 @@ public class GameManager : MonoBehaviour {
 
     void Awake(){
         Inst = this;
+        PersistentGameManager.Inst.Touch();
 
         if(Application.platform == RuntimePlatform.Android){
             maxNumAssemKnob.initialValue = 20;

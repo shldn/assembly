@@ -13,6 +13,7 @@ public class JellyfishGameManager : MonoBehaviour {
 
 
     void Awake(){
+        PersistentGameManager.Inst.Touch();
         Inst = this;
     } // End of Awake().
 
@@ -54,6 +55,13 @@ public class JellyfishGameManager : MonoBehaviour {
         if(Input.GetKey(KeyCode.Escape))
             Application.Quit();
     } // End of Update().
+
+    void OnDestroy()
+    {
+        // Clear all static data structures
+        // - If we reload this level, the objects in them will have been destroyed
+        Jellyfish.all.Clear();
+    }
 	
 
 } // End of GameManager.

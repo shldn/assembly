@@ -11,7 +11,7 @@ public class JellyfishEditor : MonoBehaviour {
 	
 	// Update is called once per frame
 	void OnGUI() {
-        if(Jellyfish.all.Count > 0){
+        if (Jellyfish.all.Count > 0 && Jellyfish.all[0]){
 	        Rect controlBarRect = new Rect(Screen.width - (Screen.height / 6f), 0f, Screen.height / 6f, Screen.height);
 
             GUI.skin.button.fontSize = 20;
