@@ -4,8 +4,17 @@ using System.Collections.Generic;
 
 
 public class FoodPellet{
-	
-	public Vector3 worldPosition = new Vector3( 0, 9 , 0);
+
+    public Vector3 worldPosition {
+        get {
+            if(gameObject)
+                return gameObject.transform.position;
+            return Vector3.zero;
+        }
+        set {
+            gameObject.transform.position = value;
+        }
+    }
 
 	private static List<FoodPellet> allFoodPellets = new List<FoodPellet>();
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
@@ -44,6 +53,8 @@ public class FoodPellet{
         particleObject = gameObject.GetComponentInChildren<ParticleSystem>();
         //particleGlow = gameObject.transform.Find("Particle System").renderer;
 
+        //worldPosition = pos;
+        gameObject.transform.position = pos;
         worldPosition = pos;
         //currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
@@ -57,24 +68,36 @@ public class FoodPellet{
 
     //create random food node
     public static void AddRandomFoodPellet(){
-        Vector3 pos = MathUtilities.RandomVector3Sphere(80f);
+        Vector3 pos = MathUtilities.RandomVector3Sphere(GameManager.Inst.worldSize);
         new FoodPellet(pos);
     }
 
     public void Update(){
         particleEmitCooldown -= Time.deltaTime;
 
-        gameObject.transform.position = worldPosition;
         gameObject.transform.localScale = Vector3.one * (currentEnergy / MAX_ENERGY);
 
         if(currentEnergy <= 0f)
             Destroy();
 
+        worldPosition = gameObject.transform.position;
+
+        for(int i = 0; i < GetAll().Count; i++){
+            if(GetAll()[i] == this)
+                continue;
+
+            Vector3 vecToPellet = gameObject.transform.position - GetAll()[i].worldPosition;
+            gameObject.rigidbody.AddForce(vecToPellet.normalized * (1000f / Mathf.Pow(vecToPellet.sqrMagnitude, 2f)));
+        }
+
+        for(int i = 0; i < Assembly.GetAll().Count; i++){
+            Vector3 vecToAssem = gameObject.transform.position - Assembly.GetAll()[i].WorldPosition;
+            gameObject.rigidbody.AddForce(vecToAssem.normalized * (1000f / Mathf.Pow(vecToAssem.sqrMagnitude, 2f)));
+        }
     }
 
 
     public void EnergyEffect(SenseNode receivingNode){
-
         // Check to see if transfer effect already exists.
         for (int i = 0; i < transferEffects.Count; i++){   
             if(transferEffects[i].receivingNode == receivingNode){
@@ -86,8 +109,12 @@ public class FoodPellet{
         // If not, generate a transfer effect.
         GameObject newEffectTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.energyTransferEffect) as GameObject;
         EnergyTransferEffect newEffect = newEffectTrans.GetComponent<EnergyTransferEffect>();
+        transferEffects.Add(newEffect);
         newEffect.receivingNode = receivingNode;
         newEffect.sendingPellet = this;
+
+        Vector3 attractionVector = receivingNode.gameObject.transform.position - gameObject.transform.position;
+        gameObject.rigidbody.AddForce(attractionVector.normalized * (500f / attractionVector.magnitude));
 
     } // End of EnergyEffect().
 

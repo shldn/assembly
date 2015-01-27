@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour {
     public float fade = 1f;
     public float initialFadeIn = 1f;
 
-    float worldSize = 150f;
+    public float worldSize = 200f;
 
     public bool pauseMenu = false;
 
@@ -96,11 +96,16 @@ public class GameManager : MonoBehaviour {
         if( FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD )
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
                 FoodPellet newPellet = FoodPellet.AddNewFoodPellet();
+
+                /*
+                // Cool spiral
                 float spiralDensity = 0.05f;
                 float foodSpread = 300f;
                 float xPos = UnityEngine.Random.Range(0f, UnityEngine.Random.Range(-foodSpread, foodSpread));
                 float spiralSize = 50f * (1f + (Mathf.Abs(xPos) * 0.01f));
                 newPellet.worldPosition = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
+                */
+                newPellet.worldPosition = MathUtilities.RandomVector3Sphere(worldSize);
                 UnityEngine.Object lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity);
 
                 //destroy effect after 1.5 sec

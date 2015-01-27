@@ -10,6 +10,8 @@ public class EnergyTransferEffect : MonoBehaviour {
     public LineRenderer absorbLineRenderer = null;
     public LineRenderer senseLineRenderer = null;
 
+
+    float phaseOffset = 0f;
     float alpha = 0f;
     float alphaVel = 0f;
     Vector3 sendPos = Vector3.zero;
@@ -18,6 +20,7 @@ public class EnergyTransferEffect : MonoBehaviour {
 
     void Awake(){
         renderer.enabled = false;
+        phaseOffset = Random.RandomRange(0f, 1f);
     } // End of Awake().
 
 
@@ -49,14 +52,22 @@ public class EnergyTransferEffect : MonoBehaviour {
             Quaternion spiralQuat = Quaternion.LookRotation(vectorToNode);
             spiralQuat *= Quaternion.AngleAxis(90, Vector3.up);
 
-            float spiralRadius = 1f;
+            float spiralRadius = 0.5f;
             float spiralStrength = 30f;
             float spiralSpeed = 500f;
 
             //spiralRadius *= 1f - ((float)i / (float)numPoints);
-            spiralQuat *= Quaternion.AngleAxis((i * spiralStrength) - (Time.time * spiralSpeed), Vector3.right);
+            spiralQuat *= Quaternion.AngleAxis((i * spiralStrength) - ((Time.time * spiralSpeed) + (spiralSpeed * phaseOffset)), Vector3.right);
             absorbLineRenderer.SetPosition(i, truePoint + (spiralQuat * Vector3.forward * spiralRadius));
         }
+        /*
+        
+        absorbLineRenderer.SetPosition(0, sendPos);
+        absorbLineRenderer.SetPosition(1, receivePos);
+
+        absorbLineRenderer.material.mainTextureOffset = new Vector2(-Time.time * 5f + (5f * phaseOffset), 0f);
+        absorbLineRenderer.material.mainTextureScale = new Vector2(vectorToNode.magnitude * 0.2f, 1f);
+        */
 
         if(disableCheck){
             if(alpha <= 0.01f){
