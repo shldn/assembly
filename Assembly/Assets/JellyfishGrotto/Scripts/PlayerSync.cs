@@ -60,17 +60,17 @@ public class PlayerSync : MonoBehaviour {
                 if((lastPoints.Count < 2) || (Vector3.Distance(screenPosSmoothed, lastPoints[lastPoints.Count - 1]) > 10f))
                     lastPoints.Add(screenPosSmoothed);
 
-            // Determine circled jellies
+            // Determine circled objects
             if(!selecting && (lastPoints.Count > 0)){
                 if(Network.peerType == NetworkPeerType.Server){
-                    foreach(Jellyfish someJelly in Jellyfish.all){
-                        Vector3 jellyScreenPos = Camera.main.WorldToScreenPoint(someJelly.transform.position);
-                        jellyScreenPos.y = Screen.height - jellyScreenPos.y;
+                    foreach(CaptureObject someObj in PersistentGameManager.CaptureObjects){
+                        Vector3 objScreenPos = Camera.main.WorldToScreenPoint(someObj.Position);
+                        objScreenPos.y = Screen.height - objScreenPos.y;
 
                         float totalAngle = 0f;
                         float lastAngleToJelly = 0f;
                         for(int i = 0; i < lastPoints.Count; i++){
-                            Vector2 currentVec = new Vector2(jellyScreenPos.x, jellyScreenPos.y) - lastPoints[i];
+                            Vector2 currentVec = new Vector2(objScreenPos.x, objScreenPos.y) - lastPoints[i];
                             float angleToJelly = Mathf.Atan2(currentVec.x, currentVec.y) * Mathf.Rad2Deg;
 
                             if(i > 0)
@@ -81,14 +81,7 @@ public class PlayerSync : MonoBehaviour {
 
                         float angleForgiveness = 40f;
                         if(Mathf.Abs(totalAngle) > (360f - angleForgiveness)){
-                            JellyFishCreator someJellyCreator = someJelly.GetComponent<JellyFishCreator>();
-                            networkView.RPC("CaptureJelly", networkView.owner, someJellyCreator.headNum, someJellyCreator.tailNum, someJellyCreator.boballNum, someJellyCreator.wingNum);
-
-                            Instantiate(JellyfishPrefabManager.Inst.pingBurst, someJelly.transform.position, Quaternion.identity);
-
-                            print("Sending jelly, " + someJellyCreator.headNum + " " + someJellyCreator.tailNum + " " + someJellyCreator.boballNum + " " + someJellyCreator.wingNum);
-
-                            someJelly.Destroy();
+                            HandleCapturedObject(someObj);
                             break;
                         }
                     }
@@ -113,6 +106,17 @@ public class PlayerSync : MonoBehaviour {
 
     } // End of Update().
 
+    void HandleCapturedObject(CaptureObject capturedObj)
+    {
+        Jellyfish j = capturedObj as Jellyfish;
+        if (j != null)
+            networkView.RPC("CaptureJelly", networkView.owner, j.creator.headNum, j.creator.tailNum, j.creator.boballNum, j.creator.wingNum);
+        else
+            networkView.RPC("CaptureAssembly", networkView.owner, j.creator.headNum, j.creator.tailNum, j.creator.boballNum, j.creator.wingNum);
+
+        Instantiate(JellyfishPrefabManager.Inst.pingBurst, capturedObj.Position, Quaternion.identity);
+        capturedObj.Destroy();
+    }
 
     [RPC]
     void StartSelect(){
@@ -140,6 +144,17 @@ public class PlayerSync : MonoBehaviour {
         JellyfishGameManager.Inst.editing = true;
     } // End of StartSelect().
 
+    [RPC] // Client receives this when it captures an assembly.
+    void CaptureAssembly()
+    {
+        foreach (Jellyfish someJelly in Jellyfish.all)
+            someJelly.Destroy();
+
+        AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
+        Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, Vector3.zero, Random.rotation) as Transform;
+
+        JellyfishGameManager.Inst.editing = true;
+    } // End of StartSelect().
 
     void OnGUI(){
         /*

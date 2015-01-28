@@ -518,6 +518,7 @@ public class GameManager : MonoBehaviour {
         Node.GetAll().Clear();
         Assembly.GetAll().Clear();
         FoodPellet.GetAll().Clear();
+        Inst = null;
     }
 
 }

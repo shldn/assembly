@@ -2,16 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Jellyfish : MonoBehaviour {
+public class Jellyfish : MonoBehaviour, CaptureObject {
     
     public static List<Jellyfish> all = new List<Jellyfish>();
 
     bool queuedToDestroy = false;
-    JellyFishCreator creator;
+    public JellyFishCreator creator;
 
 
     void Awake(){
         all.Add(this);
+        PersistentGameManager.CaptureObjects.Add(this);
         creator = GetComponent<JellyFishCreator>();
     } // End of Awake().
 
@@ -28,6 +29,10 @@ public class Jellyfish : MonoBehaviour {
         queuedToDestroy = true;
     } // End of Destroy().
 
+    void OnDestroy() {
+        PersistentGameManager.CaptureObjects.Remove(this);
+    }
+
 
     public void NextHead(){
         creator.NextHead();
@@ -41,5 +46,7 @@ public class Jellyfish : MonoBehaviour {
     public void NextWing(){
         creator.NextWing();
     }
+
+    public Vector3 Position { get { return transform.position; } }
 
 } // End of Jellyfish.

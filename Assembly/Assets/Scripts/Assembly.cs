@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Assembly {
+public class Assembly : CaptureObject {
 
     /* all nodes in assembly --------------------------------------*/
     public static List<Assembly> allAssemblies = new List<Assembly>();
@@ -36,6 +36,7 @@ public class Assembly {
     public static int MIN_NODES_IN_ASSEMBLY = 10;
     //public static bool REFACTOR_IF_INERT = false; // If an assembly is created with no logic nets, destroy it immediately.
 
+    public Vector3 Position { get { return WorldPosition; } }
     public Vector3 WorldPosition{
         get { 
             if(physicsObject)
@@ -99,30 +100,33 @@ public class Assembly {
     // Constructors
     public Assembly(){
         allAssemblies.Add(this);
+        PersistentGameManager.CaptureObjects.Add(this);
     }
     public Assembly(List<Node> nodes){
         allAssemblies.Add(this);
+        PersistentGameManager.CaptureObjects.Add(this);
 
         AddNodes(nodes);
         InitPhysicsObject();
         InitEnergyData();
     }
 
-    
-   /*public Assembly(string filePath){
-        List<Node> newNodes = new List<Node>();
-        Vector3 worldPos = new Vector3();
-        IOHelper.LoadAssembly(filePath, ref name, ref worldPos, ref newNodes);
 
-        // ordering a little tricky at the moment, multiple interdependencies
-        InitPhysicsObject();
-        WorldPosition = worldPos;
-        AddNodes(newNodes);
-        RecomputeRigidbody();
-        allAssemblies.Add(this);
-        InitEnergyData();
-    }*/
-    
+    /*public Assembly(string filePath){
+         List<Node> newNodes = new List<Node>();
+         Vector3 worldPos = new Vector3();
+         IOHelper.LoadAssembly(filePath, ref name, ref worldPos, ref newNodes);
+
+         // ordering a little tricky at the moment, multiple interdependencies
+         InitPhysicsObject();
+         WorldPosition = worldPos;
+         AddNodes(newNodes);
+         RecomputeRigidbody();
+         PersistentGameManager.CaptureObjects.Add(this);
+         allAssemblies.Add(this);
+         InitEnergyData();
+     }*/
+
 
     public Assembly Reproduce(){
         Assembly offspring = Duplicate();
@@ -252,6 +256,7 @@ public class Assembly {
 
         physicsObject = null;
         allAssemblies.Remove(this);
+        PersistentGameManager.CaptureObjects.Remove(this);
     }
 
     /*public void Save(){
