@@ -113,8 +113,6 @@ public class FoodPellet{
         newEffect.receivingNode = receivingNode;
         newEffect.sendingPellet = this;
 
-        Vector3 attractionVector = receivingNode.gameObject.transform.position - gameObject.transform.position;
-        gameObject.rigidbody.AddForce(attractionVector.normalized * (500f / attractionVector.magnitude));
 
     } // End of EnergyEffect().
 

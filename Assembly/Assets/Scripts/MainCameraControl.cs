@@ -25,7 +25,8 @@ public class MainCameraControl : MonoBehaviour {
     public Assembly selectedAssembly = null;
 
     public CamType camType = CamType.ORBIT_DEMO;
-    float camOrbitDist = 100f;
+    float camOrbitDist = 500f;
+    float camMaxOrbitDist = 500f;
 
 
     public Texture2D nodeSelectTex = null;
@@ -111,7 +112,8 @@ public class MainCameraControl : MonoBehaviour {
 
         // Gallery-style demo-mode: camera orbits center, zooming in and out slowly.
         if(camType == CamType.ORBIT_DEMO){
-            targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, 1f * (Time.deltaTime));
+            float demoRotateSpeed = 2f;
+            targetRot = Quaternion.RotateTowards(targetRot, targetRot * randomOrbit, demoRotateSpeed * (Time.deltaTime));
 
             camOrbitDist += camOrbitDist * -Input.GetAxis("Mouse ScrollWheel");
             if(Input.GetKey(KeyCode.Period))
@@ -137,6 +139,7 @@ public class MainCameraControl : MonoBehaviour {
             }
 
             // Camera's rotation becomes the rotation of the 'boom' on which it orbits.
+            camOrbitDist = Mathf.Clamp(camOrbitDist, 5f, camMaxOrbitDist);
             targetPos = orbitTarget + (targetRot * -Vector3.forward) * camOrbitDist;
 
             // Orbit distance can be modified using the mousewheel.
@@ -457,7 +460,15 @@ public class MainCameraControl : MonoBehaviour {
             }
             */
         }
+
     } // End of OnGUI().
+
+
+    void OnDrawGizmos(){
+    
+        Gizmos.DrawWireSphere(Vector3.zero, camMaxOrbitDist);
+    
+    } // End of OnDrawGizmos().
 
 
 } // End of MainCameraControl.

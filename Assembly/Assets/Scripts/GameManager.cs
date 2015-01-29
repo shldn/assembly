@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour {
     public float fade = 1f;
     public float initialFadeIn = 1f;
 
-    public float worldSize = 200f;
+    public float worldSize = 100f;
 
     public bool pauseMenu = false;
 
@@ -105,7 +105,7 @@ public class GameManager : MonoBehaviour {
                 float spiralSize = 50f * (1f + (Mathf.Abs(xPos) * 0.01f));
                 newPellet.worldPosition = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
                 */
-                newPellet.worldPosition = MathUtilities.RandomVector3Sphere(worldSize);
+                newPellet.worldPosition = MathUtilities.RandomVector3Cube(worldSize);
                 UnityEngine.Object lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity);
 
                 //destroy effect after 1.5 sec
@@ -202,14 +202,6 @@ public class GameManager : MonoBehaviour {
         }
 
 
-        if(Input.GetKeyDown(KeyCode.P)){
-            for(int i = 0; i < 10; i++){
-                Assembly newAssembly = Assembly.GetRandomAssembly(UnityEngine.Random.Range(5, 30));
-                newAssembly.physicsObject.transform.position = MathUtilities.RandomVector3Sphere(30f);
-            }
-            ConsoleScript.Inst.WriteToLog("Created random assemblies.");
-        }
-
         LevelManager.InputHandler();
 
         if(Application.platform == RuntimePlatform.Android){
@@ -222,7 +214,7 @@ public class GameManager : MonoBehaviour {
 
     public Assembly SeedNewRandomAssembly(){
         Assembly newAssembly = Assembly.GetRandomAssembly(UnityEngine.Random.Range(Assembly.MIN_NODES_IN_ASSEMBLY, Assembly.MAX_NODES_IN_ASSEMBLY));
-        newAssembly.WorldPosition = MathUtilities.RandomVector3Sphere(worldSize);
+        newAssembly.WorldPosition = MathUtilities.RandomVector3Cube(worldSize);
         //Instantiate(PrefabManager.Inst.newPelletBurst, newAssembly.WorldPosition, Quaternion.identity);
         return newAssembly;
     }

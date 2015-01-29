@@ -59,8 +59,8 @@ public class ActuateNode : Node {
             //extendedTrail.time = 12f * nodeProperties.muscleStrength;
         }
 
-        mainTrailObject.transform.position = gameObject.transform.position;
-        extendedTrailObject.transform.position = gameObject.transform.position;
+        //mainTrailObject.transform.position = gameObject.transform.position;
+        //extendedTrailObject.transform.position = gameObject.transform.position;
         
         smoothedTailSize = Mathf.SmoothDamp(smoothedTailSize, totalSigStrength * 0.3f, ref tailSizeVel, 0.1f);
         //mainTrail.startWidth = smoothedTailSize;

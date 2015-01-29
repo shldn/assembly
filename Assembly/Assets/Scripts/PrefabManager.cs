@@ -7,6 +7,7 @@ public class PrefabManager : MonoBehaviour {
 
     public GameObject node = null;
 	public GameObject bond = null;
+    public GameObject assembly = null;
 	public GameObject billboard = null;
 	public GameObject foodPellet = null;
 	public GameObject reproduceBurst = null;

@@ -26,6 +26,7 @@ public class Assembly {
     public bool updateMesh = false; // update the mesh with the node positions every frame
 
     public GameObject physicsObject = null;
+    public GameObject assemblyObject = null;
 
     public bool imported = false;
 
@@ -39,7 +40,7 @@ public class Assembly {
     public Vector3 WorldPosition{
         get { 
             if(physicsObject)
-                return physicsObject.transform.position;
+                return physicsObject.rigidbody.worldCenterOfMass;
             else
                 return Vector3.zero;}
         set { 
@@ -90,6 +91,7 @@ public class Assembly {
         for(int j = 0; j < numNodes; j++)
             newAssembly.AddRandomNode();
 
+        newAssembly.InitAssemblyObject();
         newAssembly.InitPhysicsObject();
         newAssembly.InitEnergyData();
 
@@ -104,6 +106,7 @@ public class Assembly {
         allAssemblies.Add(this);
 
         AddNodes(nodes);
+        InitAssemblyObject();
         InitPhysicsObject();
         InitEnergyData();
     }
@@ -231,6 +234,11 @@ public class Assembly {
     } // End of ComputerPhysics().
 
 
+    public void InitAssemblyObject(){
+        assemblyObject = MonoBehaviour.Instantiate(PrefabManager.Inst.assembly, WorldPosition, Quaternion.identity) as GameObject;
+    } // End of InitAssemblyObject().
+
+
     //initialize energy for the assembly
     public void InitEnergyData(){
         currentEnergy = MaxEnergy;
@@ -249,6 +257,9 @@ public class Assembly {
 
         if(physicsObject)
             Object.Destroy(physicsObject);
+
+        if(assemblyObject)
+            GameObject.Destroy(assemblyObject);
 
         physicsObject = null;
         allAssemblies.Remove(this);
@@ -326,6 +337,7 @@ public class Assembly {
         // If assembly has 200% health, it reproduces!
         if(Health >= 2f){
             //Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            RandomMelody.Inst.PlayNote();
             
             Assembly offspringAssem = Reproduce();
             offspringAssem.WorldPosition = WorldPosition;
@@ -338,6 +350,9 @@ public class Assembly {
 
         if (showMesh && updateMesh)
             UpdateSkinMesh();
+
+        if(assemblyObject && physicsObject)
+            assemblyObject.transform.position = WorldPosition;
 
         /*
         if(!targetMate && !gentlemanCaller && (Random.Range(0f, 1f) <= 0.001)){

@@ -71,7 +71,7 @@ public class SenseNode : Node {
             Quaternion totalSigQuat = Quaternion.identity;
             //calling detect food on sense node
             for(int j = 0; j < FoodPellet.GetAll().Count; ++j){
-                if(this.DetectFood(FoodPellet.GetAll()[j])){
+                if(DetectFood(FoodPellet.GetAll()[j])){
 
                     // Get vector to food:
                     Quaternion quatToFood = RotToFood(FoodPellet.GetAll()[j]);
@@ -156,6 +156,9 @@ public class SenseNode : Node {
         
         food.currentEnergy -= realConsumeRate * Time.deltaTime;
         assembly.currentEnergy += realConsumeRate * Time.deltaTime;
+        
+        Vector3 attractionVector = gameObject.transform.position - food.gameObject.transform.position;
+        food.gameObject.rigidbody.AddForce(attractionVector.normalized * 50f);
 
     } // End of Consume().
 } // End of SenseNode.
