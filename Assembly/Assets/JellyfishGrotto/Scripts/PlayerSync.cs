@@ -147,8 +147,11 @@ public class PlayerSync : MonoBehaviour {
     [RPC] // Client receives this when it captures an assembly.
     void CaptureAssembly(string assemblyStr)
     {
+        float distFromCamToSpawn = 5.0f;
         AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
-        CaptureEditorManager.capturedObj = new Assembly(assemblyStr);
+        Assembly a = new Assembly(assemblyStr);
+        a.WorldPosition = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
+        CaptureEditorManager.capturedObj = a;
     } // End of StartSelect().
 
     void OnGUI(){

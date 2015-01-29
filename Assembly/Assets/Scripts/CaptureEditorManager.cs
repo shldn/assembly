@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class CaptureEditorManager : MonoBehaviour {
+public class CaptureEditorManager {
     public enum CaptureType
     {
         NONE = 0,

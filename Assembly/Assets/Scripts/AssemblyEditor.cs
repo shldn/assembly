@@ -3,6 +3,20 @@ using System.Collections;
 
 public class AssemblyEditor : MonoBehaviour {
 
+    void Update()
+    {
+        if (CaptureEditorManager.captureType == CaptureEditorManager.CaptureType.ASSEMBLY)
+        {
+            // Update assembly.
+            for (int i = Assembly.GetAll().Count - 1; i >= 0; i--)
+                Assembly.GetAll()[i].Update();
+
+            // Update nodes.
+            for (int i = 0; i < Node.GetAll().Count; ++i)
+                Node.GetAll()[i].Update();
+
+        }
+    }
     void OnGUI()
     {
         if( CaptureEditorManager.captureType == CaptureEditorManager.CaptureType.ASSEMBLY )
