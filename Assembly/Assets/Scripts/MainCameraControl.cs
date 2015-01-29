@@ -253,7 +253,7 @@ public class MainCameraControl : MonoBehaviour {
         }
 
         // Return to demo mode with Enter.
-        if(Input.GetKey(KeyCode.Return) && !GameManager.Inst.pauseMenu){
+        if (Input.GetKey(KeyCode.Return) && !GameManager.Inst.pauseMenu && !ConsoleScript.active){
             randomOrbit = Random.rotation;
             selectedAssembly = null;
             selectedNode = null;

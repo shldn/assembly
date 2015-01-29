@@ -157,7 +157,7 @@ public class Node {
 
             // Burn energy if not selected... sucks having the assembly you're following explode into pieces
             //   (and throw a million nullref excepts)
-            if(!assembly.imported && (assembly != MainCameraControl.Inst.selectedAssembly))
+            if (!assembly.imported && !CaptureEditorManager.IsEditing && (MainCameraControl.Inst == null || assembly != MainCameraControl.Inst.selectedAssembly))
                 assembly.currentEnergy -= GetBurnRate() * Assembly.burnCoefficient * Time.deltaTime;
         }
 
@@ -354,7 +354,7 @@ public class Node {
 
     // Save/load -------------------------------------------------------------------------||
     // The string representation of this class for file saving (could use ToString, but want to be explicit)
-    /*public string ToFileString(int format)
+    public string ToFileString(int format)
     {
         return localHexPosition.ToString() + nodeProperties.ToString();
     }
@@ -365,7 +365,7 @@ public class Node {
         IntVector3 pos = IOHelper.IntVector3FromString(str.Substring(0,splitIdx+1));
         NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
         return new Node(pos, props);
-    }*/
+    }
 
     public virtual float GetBurnRate(){return 0f;}
 
@@ -385,13 +385,6 @@ public struct NodeProperties {
     // A fully randomly-seeded NodeProperties.
     public static NodeProperties random{
         get{
-            // Sense
-            Quaternion _senseVector = Random.rotation;
-            float _fieldOfView = 45f;
-
-            // Actuate
-            Quaternion _actuateVector = Random.rotation;
-
             return new NodeProperties(Random.rotation, 45f, Random.rotation, Random.Range(0.1f, 1f));
         }
     } // End of NodeProperties.random.
@@ -404,10 +397,11 @@ public struct NodeProperties {
         muscleStrength = _muscleStrength;
     } // End of NodeProperties constructor.
 
-    /*public NodeProperties(string str){
+    public NodeProperties(string str){
 
         senseVector = Quaternion.identity;
         fieldOfView = 45.0f;
+        muscleStrength = 1.0f;
         actuateVector = Quaternion.identity;
 
         string[] tok = str.Split(';');
@@ -425,17 +419,22 @@ public struct NodeProperties {
                     if(!float.TryParse(pair[1], out fieldOfView))
                         Debug.LogError("fov failed to parse");
                     break;
+                case "m":
+                    if (!float.TryParse(pair[1], out muscleStrength))
+                        Debug.LogError("muscleStrength failed to parse");
+                    break;
                 default:
                     Debug.LogError("Unknown property: " + pair[0]);
                     break;
             }
         }
-    } // End of NodeProperties constructor.*/
+    } // End of NodeProperties constructor.
 
     public override string ToString(){
         return  "sv" + ":" + senseVector.ToString() + ";" +
                 "av" + ":" + actuateVector.ToString() + ";" +
-                "fov" + ":" + fieldOfView.ToString();
+                "fov" + ":" + fieldOfView.ToString() + ";" +
+                "m" + ":" + muscleStrength.ToString();
     }
 
 } // End of NodeProperties.

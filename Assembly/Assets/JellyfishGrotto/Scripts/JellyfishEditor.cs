@@ -5,13 +5,13 @@ public class JellyfishEditor : MonoBehaviour {
 
 	// Use this for initialization
 	void Awake() {
-        if (!JellyfishGameManager.IsClient)
+        if (!PersistentGameManager.IsClient)
             enabled = false;
 	}
 	
 	// Update is called once per frame
 	void OnGUI() {
-        if(Jellyfish.all.Count > 0){
+        if (Jellyfish.all.Count > 0 && Jellyfish.all[0]){
 	        Rect controlBarRect = new Rect(Screen.width - (Screen.height / 6f), 0f, Screen.height / 6f, Screen.height);
 
             GUI.skin.button.fontSize = 20;
@@ -36,14 +36,14 @@ public class JellyfishEditor : MonoBehaviour {
 
             if(Network.peerType == NetworkPeerType.Disconnected){
                 Jellyfish.all[0].Destroy();
-                JellyfishGameManager.Inst.editing = false;
+                CaptureEditorManager.capturedObj = null;
             }
 
             if(GUILayout.Button("Done", GUILayout.ExpandHeight(true))){
                 CaptureNet_Manager.myNetworkView.RPC("PushJelly", RPCMode.Server, creator.headNum, creator.tailNum, creator.boballNum, creator.wingNum);
                 Instantiate(JellyfishPrefabManager.Inst.pingBurst, Jellyfish.all[0].transform.position, Quaternion.identity);
                 Jellyfish.all[0].Destroy();
-                JellyfishGameManager.Inst.editing = false;
+                CaptureEditorManager.capturedObj = null;
             }
             GUILayout.EndArea();
         }

@@ -1,4 +1,4 @@
-﻿/*using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -38,7 +38,7 @@ public class IOHelper
             Debug.Log("Loading directory " + dir);
             string[] filePaths = Directory.GetFiles(dir);
             foreach (string file in filePaths)
-                new Assembly(file);
+                new Assembly(file, true);
         }
         catch (Exception e)
         {
@@ -46,16 +46,43 @@ public class IOHelper
         }
     } // End of LoadDirectory
 
-    public static void LoadAssembly(string filePath, ref string name, ref Vector3 position, ref List<Node> nodes)
+    public static void LoadAssemblyFromFile(string filePath, ref string name, ref Vector3 position, ref List<Node> nodes)
     {
         using (StreamReader sr = new StreamReader(filePath))
         {
-            int fileFormat = int.Parse(sr.ReadLine());
-            name = sr.ReadLine();
-            position = Vector3FromString(sr.ReadLine());
-            while (sr.Peek() >= 0)
-                nodes.Add(Node.FromString(sr.ReadLine()));
+            ReadAssemblyFromStream(sr, ref name, ref position, ref nodes);
         }
+    }
+
+    public static void LoadAssemblyFromString(string assemblyStr, ref string name, ref Vector3 position, ref List<Node> nodes)
+    {
+        StringReader sr = new StringReader(assemblyStr);
+        ReadAssemblyFromStream(sr, ref name, ref position, ref nodes);
+    }
+
+    public static string AssemblyToString(Assembly assembly)
+    {
+        StringWriter sw = new StringWriter();
+        WriteAssemblyToStream(assembly, sw);
+        return sw.ToString();
+    }
+
+    private static void ReadAssemblyFromStream(TextReader stream, ref string name, ref Vector3 position, ref List<Node> nodes)
+    {
+        int fileFormat = int.Parse(stream.ReadLine());
+        name = stream.ReadLine();
+        position = Vector3FromString(stream.ReadLine());
+        while (stream.Peek() >= 0)
+            nodes.Add(Node.FromString(stream.ReadLine()));
+    }
+
+    private static void WriteAssemblyToStream(Assembly assembly, TextWriter stream)
+    {
+        stream.WriteLine(assemblyFileFormatVersion);
+        stream.WriteLine(assembly.name);
+        stream.WriteLine(assembly.WorldPosition);
+        for (int i = 0; i < assembly.nodes.Count; ++i)
+            stream.WriteLine(assembly.nodes[i].ToFileString(assemblyFileFormatVersion));
     }
 
     public static void SaveAssembly(string filePath, Assembly assembly)
@@ -65,11 +92,7 @@ public class IOHelper
             // Create a file to write to. 
             using (StreamWriter sw = File.CreateText(filePath))
             {
-                sw.WriteLine(assemblyFileFormatVersion);
-                sw.WriteLine(assembly.name);
-                sw.WriteLine(assembly.WorldPosition);
-                for (int i = 0; i < assembly.nodes.Count; ++i)
-                    sw.WriteLine(assembly.nodes[i].ToFileString(assemblyFileFormatVersion));
+                WriteAssemblyToStream(assembly, sw);
             }
         }
         else
@@ -122,4 +145,4 @@ public class IOHelper
     {
         return v.x + "," + v.y + "," + v.z;
     }
-}*/
+}

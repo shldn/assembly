@@ -5,14 +5,11 @@ public class JellyfishGameManager : MonoBehaviour {
 
     public static JellyfishGameManager Inst;
 
-    public bool editing = false;
-
     public Material editorSkybox;
-
-    public static bool IsClient { get { return Application.platform == RuntimePlatform.Android; } }
 
 
     void Awake(){
+        PersistentGameManager.Inst.Touch();
         Inst = this;
     } // End of Awake().
 
@@ -28,7 +25,7 @@ public class JellyfishGameManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start(){
-        if (!IsClient){
+        if (!PersistentGameManager.IsClient){
             for(int i = 0; i < 30; i++){
                 Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, MathUtilities.RandomVector3Sphere(30f), Random.rotation) as Transform;
 
@@ -54,6 +51,13 @@ public class JellyfishGameManager : MonoBehaviour {
         if(Input.GetKey(KeyCode.Escape))
             Application.Quit();
     } // End of Update().
+
+    void OnDestroy()
+    {
+        // Clear all static data structures
+        // - If we reload this level, the objects in them will have been destroyed
+        Jellyfish.all.Clear();
+    }
 	
 
 } // End of GameManager.

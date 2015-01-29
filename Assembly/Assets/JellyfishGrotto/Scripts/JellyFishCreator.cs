@@ -135,6 +135,29 @@ public class JellyFishCreator : MonoBehaviour
 		changeBoball(boballNum);
 	}
 
+    public void changeProperty(string name, int number)
+    {
+        switch (name)
+        {
+            case "head":
+                changeHead(number);
+                break;
+            case "tail":
+                changeTail(number);
+                break;
+            case "wing":
+                smallTail(number);
+                break;
+            case "bob":
+            case "boball":
+                changeBoball(number);
+                break;
+            default:
+                Debug.LogError("Unknown property: " + name);
+                break;
+        }
+    }
+
 
 	public void changeHead(int number)
 	{

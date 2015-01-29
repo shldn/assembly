@@ -52,6 +52,7 @@ public class GameManager : MonoBehaviour {
 
     void Awake(){
         Inst = this;
+        PersistentGameManager.Inst.Touch();
 
         if(Application.platform == RuntimePlatform.Android){
             maxNumAssemKnob.initialValue = 20;
@@ -514,6 +515,7 @@ public class GameManager : MonoBehaviour {
         Node.GetAll().Clear();
         Assembly.GetAll().Clear();
         FoodPellet.GetAll().Clear();
+        Inst = null;
     }
 
 }

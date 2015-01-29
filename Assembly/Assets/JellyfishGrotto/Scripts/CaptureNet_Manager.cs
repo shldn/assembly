@@ -33,15 +33,21 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 
     void Awake(){
+        if (GetComponent<NetworkView>() == null)
+        {
+            NetworkView nv = gameObject.AddComponent<NetworkView>();
+            nv.stateSynchronization = NetworkStateSynchronization.Off;
+        }
 	    myNetworkView = networkView;
 	    Network.minimumAllocatableViewIDs = 500;
+        DontDestroyOnLoad(this);
     } // End of Awake().
 
 
     void Update(){
 	    connectCooldown -= Time.deltaTime;
         // Cycle through available IPs to connect to.
-        if ((JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f)){
+        if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f)){
 			Network.Connect(connectToIP[ipListConnect], connectionPort);
             ipListConnect++;
             ipListConnect = Mathf.FloorToInt(Mathf.Repeat(ipListConnect, connectToIP.Length));
@@ -50,7 +56,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         }
 
         // If player is not connected, run the ConnectWindow function.
-        if ((!JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && Input.GetKeyDown(KeyCode.Space)){
+        if ((!PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             // Create the server.
 			Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
 	    }
@@ -97,16 +103,16 @@ public class CaptureNet_Manager : MonoBehaviour {
     void OnGUI(){
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 
-        if ((JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
+        if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             GUI.skin.label.fontSize = 40;
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
             GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Connecting to server...");
         }
 
-        if ((!JellyfishGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
+        if ((!PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             GUI.skin.label.fontSize = 20;
             GUI.skin.label.alignment = TextAnchor.LowerCenter;
-            GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Press SPACE to initialize server.");
+            GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Initializing server...");
         }
 
     } // End of OnGUI().
@@ -147,7 +153,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         //Net_Amalgam newNetAmalgam = newNetAmalgamGO.GetComponent<Net_Amalgam>();
         //newNetAmalgam.SendAssemblies();
 
-        Network.Instantiate(JellyfishPrefabManager.Inst.playerSyncObject, Vector3.zero, Quaternion.identity, 1);
+        Network.Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity, 1);
 
     } // End of OnConnectedToServer().
 
@@ -233,7 +239,13 @@ public class CaptureNet_Manager : MonoBehaviour {
 
         print("Received jelly, " + head + " " + tail + " " + bobble + " " + wing);
 
-    } // End of StartSelect().
+    } // End of PushJelly().
+
+    [RPC] // Server receives this from client when they send an assembly back.
+    void PushAssembly(string assemblyStr)
+    {
+        new Assembly(assemblyStr);
+    } // End of PushAssembly().
 
 } // End of CaptureNet_Manager.
 
