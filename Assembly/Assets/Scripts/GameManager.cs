@@ -519,6 +519,7 @@ public class GameManager : MonoBehaviour {
         Node.GetAll().Clear();
         Assembly.GetAll().Clear();
         FoodPellet.GetAll().Clear();
+        PersistentGameManager.CaptureObjects.Clear();
         Inst = null;
     }
 
