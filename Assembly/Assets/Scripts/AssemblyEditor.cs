@@ -3,6 +3,11 @@ using System.Collections;
 
 public class AssemblyEditor : MonoBehaviour {
 
+    public GuiKnob burnRateKnob = null;
+    public GuiKnob densityKnob = null;
+    public GuiKnob speedKnob = null;
+
+
     void Update()
     {
         if (CaptureEditorManager.captureType == CaptureEditorManager.CaptureType.ASSEMBLY)
@@ -19,6 +24,20 @@ public class AssemblyEditor : MonoBehaviour {
     }
     void OnGUI()
     {
+
+        burnRateKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) - 240f);
+        burnRateKnob.scale = 2f;
+        burnRateKnob.Draw();
+
+        densityKnob.pxlPos = new Vector2(Screen.width - 120f, Screen.height * 0.5f);
+        densityKnob.scale = 2f;
+        densityKnob.Draw();
+
+        speedKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) + 240f);
+        speedKnob.scale = 2f;
+        speedKnob.Draw();
+
+
         if( CaptureEditorManager.captureType == CaptureEditorManager.CaptureType.ASSEMBLY )
         {
             Rect controlBarRect = new Rect(Screen.width - (Screen.height / 6f), 0f, Screen.height / 6f, Screen.height);
