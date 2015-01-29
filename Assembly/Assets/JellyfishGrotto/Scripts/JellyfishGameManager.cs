@@ -57,6 +57,7 @@ public class JellyfishGameManager : MonoBehaviour {
         // Clear all static data structures
         // - If we reload this level, the objects in them will have been destroyed
         Jellyfish.all.Clear();
+        PersistentGameManager.CaptureObjects.Clear();
     }
 	
 

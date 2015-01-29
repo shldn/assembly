@@ -56,6 +56,7 @@ public class ConsoleScript : MonoBehaviour {
         cmdList.Add(new ConsoleCommand("quit"));
         cmdList.Add(new ConsoleCommand("reload"));
         cmdList.Add(new ConsoleCommand("save"));
+        cmdList.Add(new ConsoleCommand("saveselected"));
 
         RegisterCommands(cmdList);
 
@@ -131,6 +132,17 @@ public class ConsoleScript : MonoBehaviour {
             else
                 EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));
         };*/
+
+        commands["saveselected"].func = delegate(string[] args)
+        {
+            if (MainCameraControl.Inst.selectedAssembly == null)
+                WriteToLog("No assembly selected");
+            else
+            {
+                WriteToLog("Writing selected assembly to file");
+                MainCameraControl.Inst.selectedAssembly.Save();
+            }
+        };
 
 
     } // End of RegisterCommands().

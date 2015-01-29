@@ -120,6 +120,12 @@ public class CameraControl : MonoBehaviour {
         }
 	} // End of Update().
 
+    void OnDestroy()
+    {
+        Screen.showCursor = true;
+        Screen.lockCursor = false;
+    }
+
 
     void OnDrawGizmos(){
         Gizmos.color = new Color(0f, 1f, 1f, 0.5f);
