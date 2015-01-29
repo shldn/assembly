@@ -5,8 +5,6 @@ public class JellyfishGameManager : MonoBehaviour {
 
     public static JellyfishGameManager Inst;
 
-    public bool editing = false;
-
     public Material editorSkybox;
 
 

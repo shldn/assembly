@@ -16,12 +16,14 @@ public class PersistentGameManager : MonoBehaviour {
         }
     }
 
-    public static bool IsClient { get { return false || Application.platform == RuntimePlatform.Android; } }
+    public static bool IsClient { get { return Application.loadedLevelName == "CaptureClient"; } }
 
     public static List<CaptureObject> CaptureObjects = new List<CaptureObject>();
 
     CaptureNet_Manager captureMgr;
     public UnityEngine.Object playerSyncObj;
+    public UnityEngine.Object pingBurstObj;
+
 
 	void Awake () {
         DontDestroyOnLoad(this);
@@ -29,6 +31,8 @@ public class PersistentGameManager : MonoBehaviour {
             captureMgr = gameObject.AddComponent<CaptureNet_Manager>();
         if( playerSyncObj == null)
             playerSyncObj = Resources.Load("PlayerObject");
+        if (pingBurstObj == null)
+            pingBurstObj = Resources.Load("Ping_Effect");
 	}
 	
 	void Update () {

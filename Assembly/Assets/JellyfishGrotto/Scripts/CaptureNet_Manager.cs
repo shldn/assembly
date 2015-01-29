@@ -239,7 +239,13 @@ public class CaptureNet_Manager : MonoBehaviour {
 
         print("Received jelly, " + head + " " + tail + " " + bobble + " " + wing);
 
-    } // End of StartSelect().
+    } // End of PushJelly().
+
+    [RPC] // Server receives this from client when they send an assembly back.
+    void PushAssembly(string assemblyStr)
+    {
+        new Assembly(assemblyStr);
+    } // End of PushAssembly().
 
 } // End of CaptureNet_Manager.
 

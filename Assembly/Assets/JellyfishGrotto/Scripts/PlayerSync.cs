@@ -24,13 +24,13 @@ public class PlayerSync : MonoBehaviour {
         screenPosSmoothed = Vector3.SmoothDamp(screenPosSmoothed, screenPos, ref screenPosVel, screenPosSmoothTime);
 
         if(cursorObject){
-            cursorObject.gameObject.SetActive(!JellyfishGameManager.Inst.editing);
+            cursorObject.gameObject.SetActive(!CaptureEditorManager.IsEditing);
         }
 
         if(cursorObject && (PersistentGameManager.IsClient) && !networkView.isMine)
             Destroy(cursorObject.gameObject);
 
-        if (!JellyfishGameManager.Inst.editing && ((Network.peerType == NetworkPeerType.Server) || networkView.isMine))
+        if (!CaptureEditorManager.IsEditing && ((Network.peerType == NetworkPeerType.Server) || networkView.isMine))
         {
             if(networkView.isMine){
                 if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0))
@@ -114,7 +114,7 @@ public class PlayerSync : MonoBehaviour {
         else
             networkView.RPC("CaptureAssembly", networkView.owner, ((Assembly)capturedObj).ToFileString());
 
-        Instantiate(JellyfishPrefabManager.Inst.pingBurst, capturedObj.Position, Quaternion.identity);
+        Instantiate(PersistentGameManager.Inst.pingBurstObj, capturedObj.Position, Quaternion.identity);
         capturedObj.Destroy();
     }
 
@@ -140,16 +140,15 @@ public class PlayerSync : MonoBehaviour {
         newJellyCreator.changeTail(tail);
         newJellyCreator.changeBoball(bobble);
         newJellyCreator.smallTail(wing);
+        CaptureEditorManager.capturedObj = newJellyTrans.GetComponent<Jellyfish>();
 
-        JellyfishGameManager.Inst.editing = true;
     } // End of StartSelect().
 
     [RPC] // Client receives this when it captures an assembly.
     void CaptureAssembly(string assemblyStr)
     {
         AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
-        new Assembly(assemblyStr);
-        JellyfishGameManager.Inst.editing = true;
+        CaptureEditorManager.capturedObj = new Assembly(assemblyStr);
     } // End of StartSelect().
 
     void OnGUI(){

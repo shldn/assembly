@@ -36,14 +36,14 @@ public class JellyfishEditor : MonoBehaviour {
 
             if(Network.peerType == NetworkPeerType.Disconnected){
                 Jellyfish.all[0].Destroy();
-                JellyfishGameManager.Inst.editing = false;
+                CaptureEditorManager.capturedObj = null;
             }
 
             if(GUILayout.Button("Done", GUILayout.ExpandHeight(true))){
                 CaptureNet_Manager.myNetworkView.RPC("PushJelly", RPCMode.Server, creator.headNum, creator.tailNum, creator.boballNum, creator.wingNum);
                 Instantiate(JellyfishPrefabManager.Inst.pingBurst, Jellyfish.all[0].transform.position, Quaternion.identity);
                 Jellyfish.all[0].Destroy();
-                JellyfishGameManager.Inst.editing = false;
+                CaptureEditorManager.capturedObj = null;
             }
             GUILayout.EndArea();
         }
