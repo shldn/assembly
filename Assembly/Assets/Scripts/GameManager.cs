@@ -511,10 +511,6 @@ public class GameManager : MonoBehaviour {
 
     void OnDestroy()
     {
-        // Destroy all assemblies
-        for (int i = Assembly.GetAll().Count - 1; i >= 0; --i)
-            Assembly.GetAll()[i].Destroy();
-
         // Clear all static data structures
         Node.GetAll().Clear();
         Assembly.GetAll().Clear();

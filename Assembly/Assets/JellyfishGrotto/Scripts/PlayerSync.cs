@@ -17,6 +17,8 @@ public class PlayerSync : MonoBehaviour {
 
     void Awake()
     {
+        screenPos = new Vector3(0.5f * Screen.width, 0.5f * Screen.height, 0.0f);
+        screenPosSmoothed = screenPos;
         DontDestroyOnLoad(this);
     }
 
