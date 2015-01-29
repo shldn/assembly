@@ -112,7 +112,7 @@ public class PlayerSync : MonoBehaviour {
         if (j != null)
             networkView.RPC("CaptureJelly", networkView.owner, j.creator.headNum, j.creator.tailNum, j.creator.boballNum, j.creator.wingNum);
         else
-            networkView.RPC("CaptureAssembly", networkView.owner, j.creator.headNum, j.creator.tailNum, j.creator.boballNum, j.creator.wingNum);
+            networkView.RPC("CaptureAssembly", networkView.owner, ((Assembly)capturedObj).ToFileString());
 
         Instantiate(JellyfishPrefabManager.Inst.pingBurst, capturedObj.Position, Quaternion.identity);
         capturedObj.Destroy();
@@ -145,14 +145,10 @@ public class PlayerSync : MonoBehaviour {
     } // End of StartSelect().
 
     [RPC] // Client receives this when it captures an assembly.
-    void CaptureAssembly()
+    void CaptureAssembly(string assemblyStr)
     {
-        foreach (Jellyfish someJelly in Jellyfish.all)
-            someJelly.Destroy();
-
         AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
-        Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, Vector3.zero, Random.rotation) as Transform;
-
+        new Assembly(assemblyStr);
         JellyfishGameManager.Inst.editing = true;
     } // End of StartSelect().
 

@@ -112,10 +112,13 @@ public class Assembly : CaptureObject {
     }
 
 
-    /*public Assembly(string filePath){
+    public Assembly(string str, bool isFilePath = false){
          List<Node> newNodes = new List<Node>();
          Vector3 worldPos = new Vector3();
-         IOHelper.LoadAssembly(filePath, ref name, ref worldPos, ref newNodes);
+         if (isFilePath)
+             IOHelper.LoadAssemblyFromFile(str, ref name, ref worldPos, ref newNodes);
+         else
+             IOHelper.LoadAssemblyFromString(str, ref name, ref worldPos, ref newNodes);
 
          // ordering a little tricky at the moment, multiple interdependencies
          InitPhysicsObject();
@@ -125,7 +128,7 @@ public class Assembly : CaptureObject {
          PersistentGameManager.CaptureObjects.Add(this);
          allAssemblies.Add(this);
          InitEnergyData();
-     }*/
+     }
 
 
     public Assembly Reproduce(){
@@ -259,8 +262,8 @@ public class Assembly : CaptureObject {
         PersistentGameManager.CaptureObjects.Remove(this);
     }
 
-    /*public void Save(){
-        string path = "./saves/" + name + ".txt";
+    public void Save(){
+        string path = "./data/" + name + ".txt";
         Save(path);
     } // End of Save().
 
@@ -268,7 +271,7 @@ public class Assembly : CaptureObject {
     public void Save(string path){
         ConsoleScript.Inst.WriteToLog("Saving " + path);
         IOHelper.SaveAssembly(path, this);
-    } // End of Save().*/
+    } // End of Save().
 
 
     public void AddNode(Node node){
@@ -707,5 +710,10 @@ public class Assembly : CaptureObject {
                 meshFilter.mesh.vertices[i] = HexUtilities.HexToWorld(nodes[i].localHexPosition);
         }
     } // End UpdateSkinMesh
+
+    public string ToFileString()
+    {
+        return IOHelper.AssemblyToString(this);
+    }
 
 } // End of Assembly.
