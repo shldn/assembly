@@ -22,7 +22,7 @@ public class PlayerSync : MonoBehaviour {
         DontDestroyOnLoad(this);
     }
 
-    void Update(){
+    void LateUpdate(){
         screenPosSmoothed = Vector3.SmoothDamp(screenPosSmoothed, screenPos, ref screenPosVel, screenPosSmoothTime);
 
         if(cursorObject){
