@@ -208,4 +208,9 @@ public class PlayerSync : MonoBehaviour {
 		}
     } // End of OnSerializeNetworkView().
 
+    void OnDisconnectedFromServer(NetworkDisconnection info)
+    {
+        Destroy(gameObject);
+    }
+
 } // End of PlayerSync.

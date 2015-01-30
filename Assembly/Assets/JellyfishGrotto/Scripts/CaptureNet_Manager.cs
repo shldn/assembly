@@ -63,12 +63,6 @@ public class CaptureNet_Manager : MonoBehaviour {
     } // End of Update().
 
 
-    void OnDisconnectedFromServer(){
-	    // If connection is lost, restart the level.
-	    Application.LoadLevel(Application.loadedLevel);
-    } // End of OnDisconnectedFromServer().
-
-
     void OnPlayerDisconnected(NetworkPlayer networkPlayer){
 	    // If the server sees a player disconnect, remove their presence across the network.
 	    Network.DestroyPlayerObjects(networkPlayer);
@@ -157,6 +151,11 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     } // End of OnConnectedToServer().
 
+    void OnDisconnectedFromServer(NetworkDisconnection info)
+    {
+        CaptureEditorManager.ReleaseCaptured();
+    } // End of OnDisconnectedFromServer().
+
 
     [RPC] // Receive another player's credentials; if that player is not in my list, add him.
     void Credentials(NetworkPlayer networkPlayer, string newPlayerName){	
@@ -227,6 +226,8 @@ public class CaptureNet_Manager : MonoBehaviour {
     [RPC] // Server receives this from client when they send a jellyfish back.
     void PushJelly(int head, int tail, int bobble, int wing){
 
+        if (!JellyfishGameManager.Inst)
+            return;
         AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.placePingClip, Vector3.zero);
 
         Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, Camera.main.transform.position + (Camera.main.transform.forward * 10f), Random.rotation) as Transform;
@@ -244,6 +245,9 @@ public class CaptureNet_Manager : MonoBehaviour {
     [RPC] // Server receives this from client when they send an assembly back.
     void PushAssembly(string assemblyStr)
     {
+        if (!GameManager.Inst)
+            return;
+
         new Assembly(assemblyStr);
     } // End of PushAssembly().
 

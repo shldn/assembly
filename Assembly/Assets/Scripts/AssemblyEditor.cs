@@ -31,8 +31,7 @@ public class AssemblyEditor : MonoBehaviour {
                 Assembly a = CaptureEditorManager.capturedObj as Assembly;
                 CaptureNet_Manager.myNetworkView.RPC("PushAssembly", RPCMode.Server, a.ToFileString());
                 Instantiate(PersistentGameManager.Inst.pingBurstObj, CaptureEditorManager.capturedObj.Position, Quaternion.identity);
-                CaptureEditorManager.capturedObj.Destroy();
-                CaptureEditorManager.capturedObj = null;
+                CaptureEditorManager.ReleaseCaptured();
             }
             GUILayout.EndArea();
         }

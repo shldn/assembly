@@ -28,4 +28,10 @@ public class CaptureEditorManager {
             } 
     }
     static public bool IsEditing { get { return capturedObjImpl != null; } }
+
+    static public void ReleaseCaptured(){
+        if( capturedObj != null )
+            capturedObj.Destroy();
+        capturedObj = null;
+    }
 }
