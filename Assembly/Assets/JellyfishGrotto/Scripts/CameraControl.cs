@@ -29,6 +29,8 @@ public class CameraControl : MonoBehaviour {
 
     bool pinchRelease = true;
 
+    public Transform target = null;
+
 
     void Awake(){
         Inst = this;
@@ -69,52 +71,48 @@ public class CameraControl : MonoBehaviour {
             orbitTilt = Mathf.SmoothDamp(orbitTilt, orbitTiltTarget, ref orbitTiltVel, smoothTime);
         }
         else if (PersistentGameManager.IsClient){
-            if (Jellyfish.all.Count > 0 && Jellyfish.all[0]){
-                Jellyfish targetJelly = Jellyfish.all[0];
-                orbitTarget = targetJelly.transform.position;
 
-                if (Input.touchCount >= 2){
-                    pinchRelease = false;
+            if(Jellyfish.all.Count > 0 && Jellyfish.all[0])
+                orbitTarget = Jellyfish.all[0].transform.position;
+            if(Assembly.GetAll().Count > 0 && Assembly.GetAll()[0])
+                orbitTarget = Assembly.GetAll()[0].physicsObject.rigidbody.worldCenterOfMass;
 
-                    Vector2 touch0, touch1;
-                    float pinchDist;
-                    touch0 = Input.GetTouch(0).position;
-                    touch1 = Input.GetTouch(1).position;
+            if (Input.touchCount >= 2){
+                pinchRelease = false;
+
+                Vector2 touch0, touch1;
+                float pinchDist;
+                touch0 = Input.GetTouch(0).position;
+                touch1 = Input.GetTouch(1).position;
  
-                    pinchDist = Vector2.Distance(touch0, touch1);
+                pinchDist = Vector2.Distance(touch0, touch1);
 
-                    if(lastPinchDist != -1){
-                        targetOrbitDist -= (pinchDist - lastPinchDist) * 0.1f;
-                    }
-                    lastPinchDist = pinchDist;
+                if(lastPinchDist != -1){
+                    targetOrbitDist -= (pinchDist - lastPinchDist) * 0.1f;
                 }
-                else{
-                    lastPinchDist = -1f;
-
-                    if(Input.touchCount == 0)
-                        pinchRelease = true;
-                }
-
-                if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && pinchRelease){
-                    targetRotEditor *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * 3f, Vector3.up);
-                    targetRotEditor *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * 3f, -Vector3.right);
-                }
-            
-            
-                targetOrbitDist = Mathf.Clamp(targetOrbitDist, 3f, 40f);
-
-
-                orbitDist = Mathf.Lerp(orbitDist, targetOrbitDist, Time.deltaTime * 3f);
-                rotEditor = Quaternion.Lerp(rotEditor, targetRotEditor, Time.deltaTime);
-
-                transform.position = orbitTarget + (targetRotEditor * (-Vector3.forward * orbitDist));
-                transform.rotation = targetRotEditor;
+                lastPinchDist = pinchDist;
             }
             else{
-                orbitDist = 6f;
-                targetOrbitDist = 6f;
+                lastPinchDist = -1f;
+
+                if(Input.touchCount == 0)
+                    pinchRelease = true;
             }
 
+            if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && pinchRelease){
+                targetRotEditor *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * 3f, Vector3.up);
+                targetRotEditor *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * 3f, -Vector3.right);
+            }
+            
+            
+            targetOrbitDist = Mathf.Clamp(targetOrbitDist, 3f, 40f);
+
+
+            orbitDist = Mathf.Lerp(orbitDist, targetOrbitDist, Time.deltaTime * 3f);
+            rotEditor = Quaternion.Lerp(rotEditor, targetRotEditor, Time.deltaTime);
+
+            transform.position = orbitTarget + (targetRotEditor * (-Vector3.forward * orbitDist));
+            transform.rotation = targetRotEditor;
             
             
         }

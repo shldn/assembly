@@ -8,7 +8,7 @@ public class RandomMelody : MonoBehaviour {
     public AudioClip noteClip = null;
     public float noteFreq = 440f;
 
-    public float[] notes = {277.18f, 311.13f, 329.63f, 369.99f, 415.30f, 440f, 493.88f, 554.37f};
+    float[] notes = {277.18f, 311.13f, 329.63f, 349.23f, 369.99f, 415.30f, 440f, 493.88f, 554.37f};
 
     float cooldown = 0f;
 
@@ -46,7 +46,7 @@ public class RandomMelody : MonoBehaviour {
         aSource.clip = noteClip; // define the clip
         // set other aSource properties here, if desired
 
-        aSource.pitch = (notes[Random.Range(0, notes.Length)]) / noteFreq;
+        aSource.pitch = (notes[Random.Range(0, notes.Length)] * Random.Range(1, 3)) / noteFreq;
         aSource.volume = 0.4f;
 
         aSource.Play(); // start the sound
