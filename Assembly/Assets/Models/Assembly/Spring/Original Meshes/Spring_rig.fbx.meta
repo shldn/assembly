@@ -1,0 +1,138 @@
+fileFormatVersion: 2
+guid: 0928d5beefd63534abc3c221f80476df
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: ctrls_grp
+    100002: down_ctrl
+    100004: down_jt
+    100006: jts_grp
+    100008: lower_jt
+    100010: middle_jnt
+    100012: Spring
+    100014: //RootNode
+    100016: spring_rig_grp
+    100018: upper_jt
+    100020: middle_jt
+    100022: Middlejnt
+    100024: up_ctrl
+    100026: up_jt
+    400000: ctrls_grp
+    400002: down_ctrl
+    400004: down_jt
+    400006: jts_grp
+    400008: lower_jt
+    400010: middle_jnt
+    400012: Spring
+    400014: //RootNode
+    400016: spring_rig_grp
+    400018: upper_jt
+    400020: middle_jt
+    400022: Middlejnt
+    400024: up_ctrl
+    400026: up_jt
+    4300000: Spring
+    7400000: single_bounce
+    9500000: //RootNode
+    11100000: //RootNode
+    13700000: Spring
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: single_bounce
+      takeName: Take 001
+      firstFrame: 22
+      lastFrame: 39
+      wrapMode: 2
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: lower_jt
+        weight: 1
+      - path: lower_jt/middle_jnt
+        weight: 1
+      - path: lower_jt/middle_jnt/upper_jt
+        weight: 1
+      - path: Spring
+        weight: 1
+      - path: spring_rig_grp
+        weight: 1
+      - path: spring_rig_grp/ctrls_grp
+        weight: 1
+      - path: spring_rig_grp/ctrls_grp/down_ctrl
+        weight: 1
+      - path: spring_rig_grp/jts_grp
+        weight: 1
+      - path: spring_rig_grp/jts_grp/down_jt
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 1
+  additionalBone: 0
+  userData: 
