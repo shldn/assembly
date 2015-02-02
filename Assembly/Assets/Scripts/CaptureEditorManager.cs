@@ -9,6 +9,11 @@ public class CaptureEditorManager {
         JELLYFISH = 2,
     }
 
+    // Object Captured event
+    public delegate void CaptureEventHandler(object sender, System.EventArgs e);
+    public static event CaptureEventHandler ObjectCaptured;
+
+
     static private CaptureType captureTypeImpl = CaptureType.NONE;
     static public CaptureObject capturedObjImpl = null;
 
@@ -25,6 +30,8 @@ public class CaptureEditorManager {
                     captureTypeImpl = CaptureType.JELLYFISH;
                 else if (capturedObjImpl as Assembly)
                     captureTypeImpl = CaptureType.ASSEMBLY;
+                if (captureTypeImpl != CaptureType.NONE)
+                    RaiseCaptureEvent();
             } 
     }
     static public bool IsEditing { get { return capturedObjImpl != null; } }
@@ -33,5 +40,18 @@ public class CaptureEditorManager {
         if( capturedObj != null )
             capturedObj.Destroy();
         capturedObj = null;
+    }
+
+    static void RaiseCaptureEvent()
+    {
+        try
+        {
+            if (ObjectCaptured != null)
+                ObjectCaptured(null, new System.EventArgs());
+        }
+        catch
+        {
+            Debug.LogError("Exception raised throwing Capture event");
+        }
     }
 }
