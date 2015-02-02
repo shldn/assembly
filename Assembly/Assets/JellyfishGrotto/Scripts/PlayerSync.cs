@@ -11,16 +11,19 @@ public class PlayerSync : MonoBehaviour {
 
     List<Vector2> lastPoints = new List<Vector2>();
     bool selecting = false;
+    bool initialPosSent = false;
 
     public Transform cursorObject;
     public LineRenderer cursorLine;
 
     void Awake()
     {
+        screenPos = new Vector3(0.5f * Screen.width, 0.5f * Screen.height, 0.0f);
+        screenPosSmoothed = screenPos;
         DontDestroyOnLoad(this);
     }
 
-    void Update(){
+    void LateUpdate(){
         screenPosSmoothed = Vector3.SmoothDamp(screenPosSmoothed, screenPos, ref screenPosVel, screenPosSmoothTime);
 
         if(cursorObject){
@@ -45,13 +48,17 @@ public class PlayerSync : MonoBehaviour {
 
 
             if(networkView.isMine && Input.GetMouseButton(0) && !selecting){
-                networkView.RPC("StartSelect", RPCMode.Server);
                 selecting = true;
+                Network.SetSendingEnabled(0, selecting);
+                networkView.RPC("StartSelect", RPCMode.Server);
             }
 
             if(networkView.isMine && !Input.GetMouseButton(0) && selecting){
-                networkView.RPC("StopSelect", RPCMode.Server);
                 selecting = false;
+                networkView.RPC("StopSelect", RPCMode.Server);
+
+                // don't send packets while the client is not selecting anything
+                Network.SetSendingEnabled(0, selecting);
             }
 
 
@@ -118,15 +125,15 @@ public class PlayerSync : MonoBehaviour {
         capturedObj.Destroy();
     }
 
-    [RPC]
+    [RPC] // Server receives this message
     void StartSelect(){
         selecting = true;
     } // End of StartSelect().
 
-    [RPC]
+    [RPC] // Server receives this message
     void StopSelect(){
         selecting = false;
-    } // End of StartSelect().
+    } // End of StopSelect().
 
     [RPC] // Client receives this when it captures a jelly.
     void CaptureJelly(int head, int tail, int bobble, int wing){
@@ -142,7 +149,7 @@ public class PlayerSync : MonoBehaviour {
         newJellyCreator.smallTail(wing);
         CaptureEditorManager.capturedObj = newJellyTrans.GetComponent<Jellyfish>();
 
-    } // End of StartSelect().
+    } // End of CaptureJelly().
 
     [RPC] // Client receives this when it captures an assembly.
     void CaptureAssembly(string assemblyStr)
@@ -152,7 +159,7 @@ public class PlayerSync : MonoBehaviour {
         Assembly a = new Assembly(assemblyStr);
         a.WorldPosition = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
         CaptureEditorManager.capturedObj = a;
-    } // End of StartSelect().
+    } // End of CaptureAssembly().
 
     void OnGUI(){
         /*
@@ -197,13 +204,24 @@ public class PlayerSync : MonoBehaviour {
             screenRelativePos = new Vector3(screenPos.x / Screen.width, screenPos.y / Screen.height);
 
 			stream.Serialize(ref screenRelativePos);
+
+            // after initializing the position, don't send updates until selecting.
+            if (!initialPosSent)
+            {
+                initialPosSent = true;
+                Network.SetSendingEnabled(0, selecting);
+            }
 		}
 		// When receiving data from someone else...
 		else{
             stream.Serialize(ref screenRelativePos);
-
             screenPos = new Vector3(screenRelativePos.x * Screen.width, screenRelativePos.y * Screen.height);
 		}
     } // End of OnSerializeNetworkView().
+
+    void OnDisconnectedFromServer(NetworkDisconnection info)
+    {
+        Destroy(gameObject);
+    }
 
 } // End of PlayerSync.
