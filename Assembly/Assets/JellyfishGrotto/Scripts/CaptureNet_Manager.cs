@@ -33,6 +33,8 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 
     void Awake(){
+        if (Debug.isDebugBuild)
+            connectToIP = new string[] { "127.0.0.1" };
         if (GetComponent<NetworkView>() == null)
         {
             NetworkView nv = gameObject.AddComponent<NetworkView>();
