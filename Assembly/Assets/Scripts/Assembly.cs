@@ -342,6 +342,7 @@ public class Assembly : CaptureObject {
         }
 
 
+        /*
         // If assembly has 200% health, it reproduces!
         if(Health >= 2f){
             //Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
@@ -355,6 +356,7 @@ public class Assembly : CaptureObject {
 
             Health = Mathf.Clamp(Health, 0f, 2f) * 0.5f;
         }
+        */
 
         if (showMesh && updateMesh)
             UpdateSkinMesh();
@@ -362,7 +364,6 @@ public class Assembly : CaptureObject {
         if(assemblyObject && physicsObject)
             assemblyObject.transform.position = WorldPosition;
 
-        /*
         if(!targetMate && !gentlemanCaller && (Random.Range(0f, 1f) <= 0.001)){
             //Find closest assembly
             float distToClosest = 9999f;
@@ -410,9 +411,10 @@ public class Assembly : CaptureObject {
                 targetMate.gentlemanCaller = null;
                 targetMate = null;
                 mateCooldown = Random.Range(10f, 20f);
+
+                RandomMelody.Inst.PlayNote();
             }
         }
-        */
 
     } // End of UpdateTransform().
 
