@@ -68,6 +68,8 @@ public class Assembly : CaptureObject {
     bool needRigidbodyUpdate = true;
     bool rootNodeSet = false;
 
+    Assembly structureFriend = null;
+
 
     /* energy --------------------------------------------------- */
     public float currentEnergy = 0; //should be sum of nodes
@@ -421,6 +423,18 @@ public class Assembly : CaptureObject {
 
                 RandomMelody.Inst.PlayNote();
             }
+        }
+
+
+        if(structureFriend){
+            Vector3 vecToFriend = structureFriend.WorldPosition - WorldPosition;
+            float distToFriend = vecToFriend.magnitude;
+            float friendDist = 20f;
+            float friendForce = 10f;
+            if(distToFriend > friendDist)
+                physicsObject.rigidbody.AddForce(vecToFriend.normalized * friendForce);
+        }else{
+            structureFriend = Assembly.GetAll()[Random.Range(0, Assembly.GetAll().Count)];
         }
 
     } // End of UpdateTransform().
