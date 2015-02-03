@@ -5,13 +5,8 @@ public class JellyfishPrefabManager : MonoBehaviour {
 
     public static JellyfishPrefabManager Inst;
 
-    public Transform playerSyncObject;
-    public Transform pingBurst;
     public Transform jellyfish;
-
     public AudioClip pingClip;
-    public AudioClip placePingClip;
-
 
 
     void Awake(){

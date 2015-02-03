@@ -230,10 +230,11 @@ public class CaptureNet_Manager : MonoBehaviour {
 
         if (!JellyfishGameManager.Inst)
             return;
-        AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.placePingClip, Vector3.zero);
 
-        Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, Camera.main.transform.position + (Camera.main.transform.forward * 10f), Random.rotation) as Transform;
-        Instantiate(JellyfishPrefabManager.Inst.pingBurst, newJellyTrans.position, Quaternion.identity);
+        Vector3 newJellyPos = Camera.main.transform.position + (Camera.main.transform.forward * 10f);
+        PlayInstantiationEffect(newJellyPos);
+
+        Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, newJellyPos, Random.rotation) as Transform;
         JellyFishCreator newJellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
         newJellyCreator.changeHead(head);
         newJellyCreator.changeTail(tail);
@@ -250,8 +251,19 @@ public class CaptureNet_Manager : MonoBehaviour {
         if (!GameManager.Inst)
             return;
 
-        new Assembly(assemblyStr);
+        Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 25f);
+        PlayInstantiationEffect(assemblyNewPos);
+
+        Assembly a = new Assembly(assemblyStr);
+        a.WorldPosition = assemblyNewPos;
+
     } // End of PushAssembly().
+
+    void PlayInstantiationEffect(Vector3 pos)
+    {
+        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.placePingClip, Vector3.zero);
+        Instantiate(PersistentGameManager.Inst.pingBurstObj, pos, Quaternion.identity);
+    }
 
 } // End of CaptureNet_Manager.
 
