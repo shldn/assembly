@@ -67,6 +67,9 @@ public class AssemblyEditor : MonoBehaviour {
     public void HandleObjectCaptured(object sender, System.EventArgs args)
     {
         capturedAssembly = CaptureEditorManager.capturedObj as Assembly;
+        if (!capturedAssembly)
+            return;
+
         burnRateKnob.Value = capturedAssembly.energyBurnRate;
     }
 }
