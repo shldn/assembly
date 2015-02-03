@@ -186,7 +186,7 @@ public class PlayerSync : MonoBehaviour {
     [RPC]
     void Ping(){
         /*
-        Instantiate(JellyfishPrefabManager.Inst.pingBurst, transform.position, Quaternion.identity);
+        Instantiate(PersistentGameManager.Inst.pingBurstObj, transform.position, Quaternion.identity);
         foreach(Jellyfish someJelly in Jellyfish.all){
             Vector3 vecToJelly = someJelly.transform.position - transform.position;
             someJelly.rigidbody.AddForce(vecToJelly.normalized * (10f / (vecToJelly.magnitude * 10f)), ForceMode.Impulse);

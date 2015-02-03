@@ -38,7 +38,7 @@ public class JellyfishEditor : MonoBehaviour {
                 Network.SetSendingEnabled(0, true);
                 CaptureNet_Manager.myNetworkView.RPC("PushJelly", RPCMode.Server, creator.headNum, creator.tailNum, creator.boballNum, creator.wingNum);
                 Network.SetSendingEnabled(0, false);
-                Instantiate(JellyfishPrefabManager.Inst.pingBurst, Jellyfish.all[0].transform.position, Quaternion.identity);
+                Instantiate(PersistentGameManager.Inst.pingBurstObj, Jellyfish.all[0].transform.position, Quaternion.identity);
                 CaptureEditorManager.ReleaseCaptured();
             }
             GUILayout.EndArea();
