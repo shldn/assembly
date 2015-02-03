@@ -66,6 +66,8 @@ public class Assembly : CaptureObject {
 
 
     bool needRigidbodyUpdate = true;
+    bool rootNodeSet = false;
+
 
     /* energy --------------------------------------------------- */
     public float currentEnergy = 0; //should be sum of nodes
@@ -285,12 +287,13 @@ public class Assembly : CaptureObject {
     } // End of Save().
 
 
-    public void AddNode(Node node){
+    public Node AddNode(Node node){
         node.assembly = this;
         nodes.Add(node);
         //UpdateNodes();
         //needBurnRateUpdate = true;
         needRigidbodyUpdate = true;
+        return node;
     } // End of AddNode().
 
 
@@ -324,8 +327,10 @@ public class Assembly : CaptureObject {
             DestroyWithAnimation();
         }
 
-
-        
+        if(!rootNodeSet && (nodes.Count > 0)){
+            nodes[Random.Range(0, nodes.Count)].rootGrowNode = true;
+            rootNodeSet = true;
+        }
 
 
         /*
@@ -364,6 +369,7 @@ public class Assembly : CaptureObject {
         if(assemblyObject && physicsObject)
             assemblyObject.transform.position = WorldPosition;
 
+        /*
         if(!targetMate && !gentlemanCaller && (Random.Range(0f, 1f) <= 0.001)){
             //Find closest assembly
             float distToClosest = 9999f;
@@ -389,6 +395,7 @@ public class Assembly : CaptureObject {
                 targetMate.gentlemanCaller = this;
             }
         }
+        */
          
         if(targetMate){
         
