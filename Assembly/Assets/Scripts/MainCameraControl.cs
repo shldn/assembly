@@ -13,9 +13,11 @@ public class MainCameraControl : MonoBehaviour {
     Vector3 smoothVelRotate = Vector3.zero;
 
     float translateSmoothTime = 0.2f;
-
-    float cameraMoveSpeed = 30f;
-    float cameraRotateSpeed = 2f;
+	
+	public bool gimbalToUp = false;
+	
+    public float cameraMoveSpeed = 30f;
+    public float cameraRotateSpeed = 2f;
 
     float touchRotateSpeed = 0.2f;
 
@@ -195,7 +197,13 @@ public class MainCameraControl : MonoBehaviour {
 
         // Roll camera using Q and E... generally works in every mode.
         targetRot *= Quaternion.AngleAxis(WesInput.rotationThrottle * -cameraRotateSpeed, Vector3.forward);
-
+		
+		
+		// Toggleable Gimbal lock
+		if(gimbalToUp)
+			targetRot = Quaternion.LookRotation(targetRot * Vector3.forward);
+		
+		
         // Determine if a node is being hovered over.
         hoveredNode = null;
         if(selectedAssembly){
