@@ -37,5 +37,18 @@ public class GroundGameManager : MonoBehaviour {
             SpringCreature creature = hull.AddComponent<SpringCreature>();
             creature.numSprings = (int)(randomHullSpringPercent * (float)(hull.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
         }
+
+        if (Input.GetKeyUp(KeyCode.J))
+        {
+            GameObject junk = (GameObject)GameObject.Instantiate(Input.GetKey(KeyCode.RightShift) ? Resources.Load("GroundGame/Block") : Resources.Load("GroundGame/Palette"));
+            SpringCreature creature = junk.AddComponent<SpringCreature>();
+            creature.numSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
+        }
+        if (Input.GetKeyUp(KeyCode.K))
+        {
+            GameObject junk = (GameObject)GameObject.Instantiate(Resources.Load("GroundGame/Airduct"));
+            SpringCreature creature = junk.AddComponent<SpringCreature>();
+            creature.numSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
+        }
 	}
 }
