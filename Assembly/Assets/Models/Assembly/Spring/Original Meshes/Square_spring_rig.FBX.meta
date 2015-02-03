@@ -1,0 +1,146 @@
+fileFormatVersion: 2
+guid: 90264e4f1a2c1194486c207669d91f4a
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: ctrls_grp
+    100002: down_ctrl
+    100004: down_jt
+    100006: jts_grp
+    100008: lower_jt
+    100010: middle_jnt
+    100012: middle_jt
+    100014: Middlejnt
+    100016: spring_rig_grp
+    100018: Square_spring
+    100020: //RootNode
+    100022: up_ctrl
+    100024: up_jt
+    100026: upper_jt
+    400000: ctrls_grp
+    400002: down_ctrl
+    400004: down_jt
+    400006: jts_grp
+    400008: lower_jt
+    400010: middle_jnt
+    400012: middle_jt
+    400014: Middlejnt
+    400016: spring_rig_grp
+    400018: Square_spring
+    400020: //RootNode
+    400022: up_ctrl
+    400024: up_jt
+    400026: upper_jt
+    4300000: Square_spring
+    7400000: square_single_bounce
+    9500000: //RootNode
+    11100000: //RootNode
+    13700000: Square_spring
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: square_single_bounce
+      takeName: Take 001
+      firstFrame: 3
+      lastFrame: 44
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 0
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: lower_jt
+        weight: 1
+      - path: lower_jt/middle_jnt
+        weight: 1
+      - path: lower_jt/middle_jnt/upper_jt
+        weight: 1
+      - path: spring_rig_grp
+        weight: 1
+      - path: spring_rig_grp/ctrls_grp
+        weight: 1
+      - path: spring_rig_grp/ctrls_grp/down_ctrl
+        weight: 1
+      - path: spring_rig_grp/ctrls_grp/up_ctrl
+        weight: 1
+      - path: spring_rig_grp/jts_grp
+        weight: 1
+      - path: spring_rig_grp/jts_grp/down_jt
+        weight: 1
+      - path: spring_rig_grp/jts_grp/Middlejnt
+        weight: 1
+      - path: spring_rig_grp/jts_grp/Middlejnt/middle_jt
+        weight: 1
+      - path: spring_rig_grp/jts_grp/up_jt
+        weight: 1
+      - path: Square_spring
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 1
+  additionalBone: 0
+  userData: 
