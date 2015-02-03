@@ -9,7 +9,13 @@ public class AssemblyEditor : MonoBehaviour {
     public GuiKnob densityKnob = null;
     public GuiKnob speedKnob = null;
 
+    private Assembly capturedAssembly = null;
     public Node selectedNode = null;
+
+    void Start()
+    {
+        CaptureEditorManager.ObjectCaptured += HandleObjectCaptured;
+    }
 
 
     void Awake(){
@@ -19,11 +25,10 @@ public class AssemblyEditor : MonoBehaviour {
 
     void Update()
     {
-        if (CaptureEditorManager.captureType == CaptureEditorManager.CaptureType.ASSEMBLY)
+        if (capturedAssembly)
         {
             // Update assembly.
-            for (int i = Assembly.GetAll().Count - 1; i >= 0; i--)
-                Assembly.GetAll()[i].Update();
+            capturedAssembly.Update();
 
             // Update nodes.
             for (int i = 0; i < Node.GetAll().Count; ++i)
@@ -52,22 +57,22 @@ public class AssemblyEditor : MonoBehaviour {
     }
     void OnGUI()
     {
-
-        burnRateKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) - 240f);
-        burnRateKnob.scale = 2f;
-        burnRateKnob.Draw();
-
-        densityKnob.pxlPos = new Vector2(Screen.width - 120f, Screen.height * 0.5f);
-        densityKnob.scale = 2f;
-        densityKnob.Draw();
-
-        speedKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) + 240f);
-        speedKnob.scale = 2f;
-        speedKnob.Draw();
-
-
-        if( CaptureEditorManager.captureType == CaptureEditorManager.CaptureType.ASSEMBLY )
+        if (capturedAssembly)
         {
+            burnRateKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) - 240f);
+            burnRateKnob.scale = 2f;
+            burnRateKnob.Draw();
+            capturedAssembly.energyBurnRate = burnRateKnob.Value;
+
+            densityKnob.pxlPos = new Vector2(Screen.width - 120f, Screen.height * 0.5f);
+            densityKnob.scale = 2f;
+            densityKnob.Draw();
+
+            speedKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) + 240f);
+            speedKnob.scale = 2f;
+            speedKnob.Draw();
+
+
             Rect controlBarRect = new Rect(Screen.width - (Screen.height / 6f), 0f, Screen.height / 6f, Screen.height);
 
             GUI.skin.button.fontSize = 20;
@@ -81,9 +86,16 @@ public class AssemblyEditor : MonoBehaviour {
                 Network.SetSendingEnabled(0, false);
                 Instantiate(PersistentGameManager.Inst.pingBurstObj, CaptureEditorManager.capturedObj.Position, Quaternion.identity);
                 CaptureEditorManager.ReleaseCaptured();
+                capturedAssembly = null;
                 selectedNode = null;
             }
             GUILayout.EndArea();
         }
+    }
+
+    public void HandleObjectCaptured(object sender, System.EventArgs args)
+    {
+        capturedAssembly = CaptureEditorManager.capturedObj as Assembly;
+        burnRateKnob.Value = capturedAssembly.energyBurnRate;
     }
 }

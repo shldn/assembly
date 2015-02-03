@@ -21,18 +21,26 @@ public class PersistentGameManager : MonoBehaviour {
     public static List<CaptureObject> CaptureObjects = new List<CaptureObject>();
 
     CaptureNet_Manager captureMgr;
+
+    // Prefabs
     public UnityEngine.Object playerSyncObj;
     public UnityEngine.Object pingBurstObj;
+    public AudioClip placePingClip;
 
 
 	void Awake () {
         DontDestroyOnLoad(this);
         if( !captureMgr )
             captureMgr = gameObject.AddComponent<CaptureNet_Manager>();
+
+        // load prefabs
         if( playerSyncObj == null)
             playerSyncObj = Resources.Load("PlayerObject");
         if (pingBurstObj == null)
             pingBurstObj = Resources.Load("Ping_Effect");
+        if (placePingClip == null)
+            placePingClip = Resources.Load("125374__thomasevd__ping") as AudioClip;
+        
 	}
 	
 	void Update () {
