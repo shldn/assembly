@@ -66,6 +66,8 @@ public class Assembly : CaptureObject {
 
 
     bool needRigidbodyUpdate = true;
+    bool rootNodeSet = false;
+
 
     /* energy --------------------------------------------------- */
     public float currentEnergy = 0; //should be sum of nodes
@@ -285,12 +287,13 @@ public class Assembly : CaptureObject {
     } // End of Save().
 
 
-    public void AddNode(Node node){
+    public Node AddNode(Node node){
         node.assembly = this;
         nodes.Add(node);
         //UpdateNodes();
         //needBurnRateUpdate = true;
         needRigidbodyUpdate = true;
+        return node;
     } // End of AddNode().
 
 
@@ -324,8 +327,10 @@ public class Assembly : CaptureObject {
             DestroyWithAnimation();
         }
 
-
-        
+        if(!rootNodeSet && (nodes.Count > 0)){
+            nodes[Random.Range(0, nodes.Count)].rootGrowNode = true;
+            rootNodeSet = true;
+        }
 
 
         /*
@@ -342,6 +347,7 @@ public class Assembly : CaptureObject {
         }
 
 
+        /*
         // If assembly has 200% health, it reproduces!
         if(Health >= 2f){
             //Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
@@ -355,6 +361,7 @@ public class Assembly : CaptureObject {
 
             Health = Mathf.Clamp(Health, 0f, 2f) * 0.5f;
         }
+        */
 
         if (showMesh && updateMesh)
             UpdateSkinMesh();
@@ -388,6 +395,7 @@ public class Assembly : CaptureObject {
                 targetMate.gentlemanCaller = this;
             }
         }
+        */
          
         if(targetMate){
         
@@ -410,9 +418,10 @@ public class Assembly : CaptureObject {
                 targetMate.gentlemanCaller = null;
                 targetMate = null;
                 mateCooldown = Random.Range(10f, 20f);
+
+                RandomMelody.Inst.PlayNote();
             }
         }
-        */
 
     } // End of UpdateTransform().
 

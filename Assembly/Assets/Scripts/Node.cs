@@ -47,6 +47,7 @@ public class Node {
     }
 
     GameObject junkObject = null;
+    public bool rootGrowNode = false;
 
     // ------------------------------------------------------------------------------------ ||
     // Constructors
@@ -166,7 +167,8 @@ public class Node {
 
 
         // First node kicks it off.
-        if((localHexPosition.x == 0) && (localHexPosition.y == 0) && (localHexPosition.z == 0) && !mature){
+        rootGrowNode = true;
+        if(rootGrowNode && !mature){
             emerging = true;
             gameObject.renderer.enabled = true;
             emergeSpeedMod = Random.Range(0.7f, 1.3f);

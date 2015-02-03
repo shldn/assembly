@@ -45,6 +45,8 @@ public class ActuateNode : Node {
 	public override void Update(){
         base.Update();
 
+        localRotation = nodeProperties.actuateVector;
+
         if(!mainTrailObject){
             mainTrailObject = GameObject.Instantiate(PrefabManager.Inst.mainTrail, worldPosition, Quaternion.identity) as GameObject;
             mainTrailObject.transform.parent = gameObject.transform;
@@ -64,6 +66,9 @@ public class ActuateNode : Node {
         
         smoothedTailSize = Mathf.SmoothDamp(smoothedTailSize, totalSigStrength * 0.3f, ref tailSizeVel, 0.1f);
         //mainTrail.startWidth = smoothedTailSize;
+
+        mainTrailObject.transform.position = worldPosition;
+        extendedTrailObject.transform.position = worldPosition;
 
         totalSigStrength = 0f;
 

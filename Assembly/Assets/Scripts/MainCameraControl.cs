@@ -26,7 +26,7 @@ public class MainCameraControl : MonoBehaviour {
 
     public CamType camType = CamType.ORBIT_DEMO;
     float camOrbitDist = 500f;
-    float camMaxOrbitDist = 500f;
+    float camMaxOrbitDist = 4000f;
 
 
     public Texture2D nodeSelectTex = null;

@@ -48,7 +48,10 @@ public class SenseNode : Node {
 	// Update is called once per frame
 	public override void Update(){
         base.Update();
-        if(assembly && (neighbors[0].GetType() == typeof(ControlNode))){
+
+        localRotation = nodeProperties.senseVector;
+
+        if(assembly){
 
             if(!senseFieldBillboard)
                 senseFieldBillboard = GameObject.Instantiate(PrefabManager.Inst.billboard, worldPosition, Quaternion.identity) as GameObject;
@@ -94,16 +97,17 @@ public class SenseNode : Node {
             signalLock = true;
             if(neighbors != null)
                 for(int i = 0; i < neighbors.Count; i++){
-                    if(neighbors[i].GetType() == typeof(ControlNode)){
-
-                        ((ControlNode)neighbors[i]).Process(totalSigQuat, totalSigStrength);
-                    }
+                    Node curNeighbor = neighbors[i];
+                    if(curNeighbor.GetType() == typeof(ControlNode))
+                        ((ControlNode)curNeighbor).Process(totalSigQuat, totalSigStrength);
+                    if(curNeighbor.GetType() == typeof(ActuateNode))
+                        ((ActuateNode)curNeighbor).Propel(totalSigQuat, totalSigStrength);
                 }
             signalLock = false;
 
 
             if(senseFieldBillboard){
-                senseFieldBillboard.renderer.material.SetColor("_TintColor", Color.Lerp(Color.clear, Color.green, (arcAlphaSmoothed + 0.1f) * emergeLerp));
+                senseFieldBillboard.renderer.material.SetColor("_TintColor", Color.Lerp(Color.clear, Color.green, (0.4f + (arcAlphaSmoothed * 0.6f)) * emergeLerp));
             }
         
         }

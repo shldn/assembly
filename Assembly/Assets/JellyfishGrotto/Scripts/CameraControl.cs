@@ -17,6 +17,7 @@ public class CameraControl : MonoBehaviour {
     float orbitDist = 6f;
     float targetOrbitDist = 6f;
     public float orbitSpeed = 1f;
+    float orbitDistVel = 0f;
 
     float lastPinchDist = -1f;
 
@@ -26,6 +27,8 @@ public class CameraControl : MonoBehaviour {
 
     Quaternion rotEditor = Quaternion.identity;
     Quaternion targetRotEditor = Quaternion.identity;
+
+    Vector3 positionVel = Vector3.zero;
 
     bool pinchRelease = true;
 
@@ -74,8 +77,13 @@ public class CameraControl : MonoBehaviour {
 
             if(Jellyfish.all.Count > 0 && Jellyfish.all[0])
                 orbitTarget = Jellyfish.all[0].transform.position;
-            if(Assembly.GetAll().Count > 0 && Assembly.GetAll()[0])
-                orbitTarget = Assembly.GetAll()[0].physicsObject.rigidbody.worldCenterOfMass;
+            if((Assembly.GetAll().Count > 0) && Assembly.GetAll()[0]){
+                Assembly editingAssembly = Assembly.GetAll()[0];
+                if(AssemblyEditor.Inst.selectedNode)
+                    orbitTarget = AssemblyEditor.Inst.selectedNode.gameObject.transform.position;
+                else
+                    orbitTarget = editingAssembly.physicsObject.rigidbody.worldCenterOfMass;
+            }
 
             if (Input.touchCount >= 2){
                 pinchRelease = false;
@@ -88,7 +96,7 @@ public class CameraControl : MonoBehaviour {
                 pinchDist = Vector2.Distance(touch0, touch1);
 
                 if(lastPinchDist != -1){
-                    targetOrbitDist -= (pinchDist - lastPinchDist) * 0.1f;
+                    targetOrbitDist -= (pinchDist - lastPinchDist) * 0.05f;
                 }
                 lastPinchDist = pinchDist;
             }
@@ -99,7 +107,9 @@ public class CameraControl : MonoBehaviour {
                     pinchRelease = true;
             }
 
-            if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && pinchRelease){
+            targetOrbitDist += targetOrbitDist * -Input.GetAxis("Mouse ScrollWheel");
+
+            if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && pinchRelease && !NodeEngineering.Inst.uiLockout && ((Jellyfish.all.Count > 0) || (Assembly.GetAll().Count > 0))){
                 targetRotEditor *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * 3f, Vector3.up);
                 targetRotEditor *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * 3f, -Vector3.right);
             }
@@ -108,15 +118,16 @@ public class CameraControl : MonoBehaviour {
             targetOrbitDist = Mathf.Clamp(targetOrbitDist, 3f, 40f);
 
 
-            orbitDist = Mathf.Lerp(orbitDist, targetOrbitDist, Time.deltaTime * 3f);
+            orbitDist = Mathf.SmoothDamp(orbitDist, targetOrbitDist, ref orbitDistVel, 0.1f);
             rotEditor = Quaternion.Lerp(rotEditor, targetRotEditor, Time.deltaTime);
 
-            transform.position = orbitTarget + (targetRotEditor * (-Vector3.forward * orbitDist));
+            transform.position = Vector3.SmoothDamp(transform.position, orbitTarget + (targetRotEditor * (-Vector3.forward * orbitDist)), ref positionVel, 0.2f);
             transform.rotation = targetRotEditor;
             
             
         }
 	} // End of Update().
+
 
     void OnDestroy()
     {
