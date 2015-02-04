@@ -349,10 +349,17 @@ public class Assembly : CaptureObject {
         }
 
 
-        /*
+        
+
+        if (showMesh && updateMesh)
+            UpdateSkinMesh();
+
+        if(assemblyObject && physicsObject)
+            assemblyObject.transform.position = WorldPosition;
+
         // If assembly has 200% health, it reproduces!
         if(Health >= 2f){
-            //Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
             RandomMelody.Inst.PlayNote();
             
             Assembly offspringAssem = Reproduce();
@@ -363,13 +370,6 @@ public class Assembly : CaptureObject {
 
             Health = Mathf.Clamp(Health, 0f, 2f) * 0.5f;
         }
-        */
-
-        if (showMesh && updateMesh)
-            UpdateSkinMesh();
-
-        if(assemblyObject && physicsObject)
-            assemblyObject.transform.position = WorldPosition;
 
         /*
         if(!targetMate && !gentlemanCaller && (Random.Range(0f, 1f) <= 0.001)){
@@ -399,6 +399,7 @@ public class Assembly : CaptureObject {
         }
         */
          
+        /*
         if(targetMate){
         
             if(physicsObject)
@@ -424,18 +425,31 @@ public class Assembly : CaptureObject {
                 RandomMelody.Inst.PlayNote();
             }
         }
+        */
 
-
+        /*
+        float friendDist = 50f;
+        float friendMargin = 1f;
+        float friendForce = 10f;
         if(structureFriend){
             Vector3 vecToFriend = structureFriend.WorldPosition - WorldPosition;
             float distToFriend = vecToFriend.magnitude;
-            float friendDist = 20f;
-            float friendForce = 10f;
-            if(distToFriend > friendDist)
+            if(physicsObject && physicsObject.rigidbody && (distToFriend > (friendDist + friendMargin)))
                 physicsObject.rigidbody.AddForce(vecToFriend.normalized * friendForce);
+            
         }else{
             structureFriend = Assembly.GetAll()[Random.Range(0, Assembly.GetAll().Count)];
         }
+
+        for(int i = 0; i < Assembly.GetAll().Count; i++){
+            Assembly curAssembly = Assembly.GetAll()[i];
+            if(curAssembly != this){
+                Vector3 vecToOther = curAssembly.WorldPosition - WorldPosition;
+                if(physicsObject && physicsObject.rigidbody && (vecToOther.magnitude < friendDist))
+                    physicsObject.rigidbody.AddForce(-vecToOther.normalized * friendForce);
+            }
+        }
+        */
 
     } // End of UpdateTransform().
 

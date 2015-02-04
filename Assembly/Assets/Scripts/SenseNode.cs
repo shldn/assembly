@@ -18,7 +18,7 @@ public class SenseNode : Node {
 
     // Metabolism ------------------------------------------------------------------------ ||
     public static float consumeRange = 50.0f; //how far away can it consume?
-    public static float detectRange  = 100.0f; //how far can it detect food
+    public static float detectRange  = 200.0f; //how far can it detect food
     public static float consumeRate = 7.0f; //rate asm consume food
 
     float arcAlphaSmoothed = 0f;

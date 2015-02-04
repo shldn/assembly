@@ -133,7 +133,7 @@ public class MainCameraControl : MonoBehaviour {
             else if(selectedAssembly){
                 orbitTarget = selectedAssembly.WorldPosition;
                 if(Input.GetKey(KeyCode.F))
-                    selectedAssembly.WorldPosition += transform.forward * 10f * Time.deltaTime;
+                    selectedAssembly.WorldPosition += Camera.main.transform.forward * 10f * Time.deltaTime;
                 if(Input.GetKey(KeyCode.H))
                     selectedAssembly.currentEnergy += 5f * Time.deltaTime;
             }

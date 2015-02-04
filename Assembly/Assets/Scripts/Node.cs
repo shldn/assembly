@@ -167,7 +167,6 @@ public class Node {
 
 
         // First node kicks it off.
-        rootGrowNode = true;
         if(rootGrowNode && !mature){
             emerging = true;
             gameObject.renderer.enabled = true;

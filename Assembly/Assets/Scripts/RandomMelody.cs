@@ -37,7 +37,7 @@ public class RandomMelody : MonoBehaviour {
 
         if(cooldown > 0f)
             return;
-        cooldown = 1f;
+        cooldown = 0.5f;
 
     
         GameObject tempGO = new GameObject("TempAudio"); // create the temp object
