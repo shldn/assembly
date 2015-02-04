@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 // Networking for the Capturing of entities from Clients such as mobile devices.
 
@@ -11,7 +12,9 @@ public class CaptureNet_Manager : MonoBehaviour {
     static int nextViewID;
 
     string titleMessage = "Assembly --- http://imagination.ucsd.edu/assembly";
-    string[] connectToIP = {"127.0.0.1", "132.239.235.116", "132.239.235.115", "75.80.103.34"};
+    string remoteIpList = "http://132.239.235.40:5000/fbsharing/AT9dONfV"; // This file lives on khan: /Khan/Assembly/app_data/ipList.txt
+    List<string> connectToIP = new List<string>();
+    List<string> backupConnectToIP = new List<string>(){"127.0.0.1", "132.239.235.116", "132.239.235.115", "75.80.103.34", "67.58.54.68"};
     int connectionPort = 25565;
     bool useNAT = false; // Not sure what NAT is... do some research.
     string ipAddress;
@@ -34,7 +37,10 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void Awake(){
         if (Debug.isDebugBuild)
-            connectToIP = new string[] { "127.0.0.1" };
+            connectToIP = new List<string>() { "127.0.0.1" };
+        else
+            gameObject.AddComponent<DownloadHelper>().StartDownload(remoteIpList, HandleRemoteListDownloadComplete);
+
         if (GetComponent<NetworkView>() == null)
         {
             NetworkView nv = gameObject.AddComponent<NetworkView>();
@@ -49,10 +55,9 @@ public class CaptureNet_Manager : MonoBehaviour {
     void Update(){
 	    connectCooldown -= Time.deltaTime;
         // Cycle through available IPs to connect to.
-        if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f)){
+        if (connectToIP.Count > 0 && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f)){
 			Network.Connect(connectToIP[ipListConnect], connectionPort);
-            ipListConnect++;
-            ipListConnect = Mathf.FloorToInt(Mathf.Repeat(ipListConnect, connectToIP.Length));
+            ipListConnect = (ipListConnect + 1) % connectToIP.Count;
 
             connectCooldown = 3f;
         }
@@ -64,6 +69,19 @@ public class CaptureNet_Manager : MonoBehaviour {
 	    }
     } // End of Update().
 
+    // Once the text file with the list of ips is downloaded, add the ips to the connection list.
+    void HandleRemoteListDownloadComplete(WWW downloadObj)
+    {
+        if (!string.IsNullOrEmpty(downloadObj.error) || string.IsNullOrEmpty(downloadObj.text))
+        {
+            Debug.Log("Error getting remote text file, using original list");
+            connectToIP.InsertRange(0,backupConnectToIP);
+            return;
+        }
+        string[] ips = downloadObj.text.Split(',');
+        for (int i = 0; i < ips.Length; ++i)
+            connectToIP.Add(ips[i].Trim());
+    }
 
     void OnPlayerDisconnected(NetworkPlayer networkPlayer){
 	    // If the server sees a player disconnect, remove their presence across the network.
