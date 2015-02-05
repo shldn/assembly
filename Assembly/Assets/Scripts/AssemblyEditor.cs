@@ -85,9 +85,7 @@ public class AssemblyEditor : MonoBehaviour {
                 CaptureNet_Manager.myNetworkView.RPC("PushAssembly", RPCMode.Server, a.ToFileString());
                 Network.SetSendingEnabled(0, false);
                 Instantiate(PersistentGameManager.Inst.pingBurstObj, CaptureEditorManager.capturedObj.Position, Quaternion.identity);
-                CaptureEditorManager.ReleaseCaptured();
-                capturedAssembly = null;
-                selectedNode = null;
+                Cleanup();
             }
             GUILayout.EndArea();
         }
@@ -100,5 +98,12 @@ public class AssemblyEditor : MonoBehaviour {
             return;
 
         burnRateKnob.Value = capturedAssembly.energyBurnRate;
+    }
+
+    public void Cleanup()
+    {
+        CaptureEditorManager.ReleaseCaptured();
+        capturedAssembly = null;
+        selectedNode = null;
     }
 }

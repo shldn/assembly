@@ -20,12 +20,13 @@ public class PersistentGameManager : MonoBehaviour {
 
     public static List<CaptureObject> CaptureObjects = new List<CaptureObject>();
 
-    CaptureNet_Manager captureMgr;
+    public CaptureNet_Manager captureMgr;
 
     // Prefabs
     public UnityEngine.Object playerSyncObj;
     public UnityEngine.Object pingBurstObj;
     public AudioClip placePingClip;
+    public Texture qrCodeTexture;
 
 
 	void Awake () {
@@ -40,6 +41,8 @@ public class PersistentGameManager : MonoBehaviour {
             pingBurstObj = Resources.Load("Ping_Effect");
         if (placePingClip == null)
             placePingClip = Resources.Load("125374__thomasevd__ping") as AudioClip;
+        if (!IsClient && qrCodeTexture == null)
+            qrCodeTexture = Resources.Load("Textures/Capture_QR_Code") as Texture;
         
 	}
 	

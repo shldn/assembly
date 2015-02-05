@@ -26,6 +26,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     string serverNameForClient;
     bool iWantToHost = false;
     bool iWantToConnect = false;
+    bool showQRCode = false;
 
     public static NetworkView myNetworkView;
     public NetworkPlayer myOwner;
@@ -129,6 +130,13 @@ public class CaptureNet_Manager : MonoBehaviour {
             GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Initializing server...");
         }
 
+        if (!PersistentGameManager.IsClient && showQRCode)
+        {
+            int texSize = 100;
+            GUI.DrawTexture(new Rect(Screen.width - texSize - 10, Screen.height - texSize - 10, texSize, texSize), PersistentGameManager.Inst.qrCodeTexture, ScaleMode.ScaleToFit);
+            
+        }
+
     } // End of OnGUI().
 
 
@@ -174,6 +182,8 @@ public class CaptureNet_Manager : MonoBehaviour {
     void OnDisconnectedFromServer(NetworkDisconnection info)
     {
         CaptureEditorManager.ReleaseCaptured();
+        if (AssemblyEditor.Inst)
+            AssemblyEditor.Inst.Cleanup();
     } // End of OnDisconnectedFromServer().
 
 
@@ -276,6 +286,30 @@ public class CaptureNet_Manager : MonoBehaviour {
         a.WorldPosition = assemblyNewPos;
 
     } // End of PushAssembly().
+
+    // Client calls this to send request to server
+    public void RequestNextScene()
+    {
+        networkView.RPC("GoToNextScene", RPCMode.Server);
+    }
+
+    [RPC] // Server receives this request from client
+    void GoToNextScene()
+    {
+        LevelManager.LoadNextLevel();
+    }
+
+    // Client calls this to send request to server
+    public void RequestToggleQRCodeVisibility()
+    {
+        networkView.RPC("ToggleQRCode", RPCMode.Server);
+    }
+
+    [RPC] // Server receives this request from client
+    void ToggleQRCode()
+    {
+        showQRCode = !showQRCode;
+    }
 
     void PlayInstantiationEffect(Vector3 pos)
     {
