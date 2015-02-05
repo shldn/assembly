@@ -358,7 +358,7 @@ public class Assembly : CaptureObject {
             assemblyObject.transform.position = WorldPosition;
 
         // If assembly has 200% health, it reproduces!
-        if(Health >= 2f){
+        if(Health >= 2f && !PersistentGameManager.IsClient){
             Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
             RandomMelody.Inst.PlayNote();
             
