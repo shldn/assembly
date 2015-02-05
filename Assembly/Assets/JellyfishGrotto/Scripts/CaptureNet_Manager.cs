@@ -26,10 +26,13 @@ public class CaptureNet_Manager : MonoBehaviour {
     string serverNameForClient;
     bool iWantToHost = false;
     bool iWantToConnect = false;
+
+    // admin client vars
     bool showQRCode = false;
 
     public static NetworkView myNetworkView;
     public NetworkPlayer myOwner;
+    public PlayerSync playerSync = null;
 
     
     float connectCooldown = 0f;
@@ -175,7 +178,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         //Net_Amalgam newNetAmalgam = newNetAmalgamGO.GetComponent<Net_Amalgam>();
         //newNetAmalgam.SendAssemblies();
 
-        Network.Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity, 1);
+        playerSync = (Network.Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity, 1) as GameObject).GetComponent<PlayerSync>();
 
     } // End of OnConnectedToServer().
 

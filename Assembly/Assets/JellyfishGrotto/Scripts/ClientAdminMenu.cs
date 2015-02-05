@@ -8,10 +8,11 @@ public class ClientAdminMenu : MonoBehaviour {
     int gutter = 10;
     int btnWidth = 50;
     int btnHeight = 50;
+    bool orbitMode = false;
 
     void Awake()
     {
-        enabled = false;
+        enabled = PersistentGameManager.IsAdminClient;
     }
 	
     void OnGUI()
@@ -31,6 +32,12 @@ public class ClientAdminMenu : MonoBehaviour {
                 
             if (GUILayout.Button("Show Download QR Code", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true)))
                 PersistentGameManager.Inst.captureMgr.RequestToggleQRCodeVisibility();
+
+            if (GUILayout.Button(orbitMode ? "Orbit Mode" : "Capture Mode", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true)))
+            {
+                PersistentGameManager.Inst.captureMgr.playerSync.RequestToggleOrbitMode();
+                orbitMode = !orbitMode;
+            }
             GUILayout.EndArea();
         }
     }
