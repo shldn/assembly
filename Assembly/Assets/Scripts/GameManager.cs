@@ -50,6 +50,10 @@ public class GameManager : MonoBehaviour {
     float controlRingFade = 0f;
 
 
+    public Transform assemblyParts = null;
+    public Transform temporaryEffects = null;
+
+
     void Awake(){
         Inst = this;
         PersistentGameManager.Inst.Touch();
@@ -107,7 +111,8 @@ public class GameManager : MonoBehaviour {
                 newPellet.worldPosition = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
                 */
                 newPellet.worldPosition = MathUtilities.RandomVector3Cube(worldSize);
-                UnityEngine.Object lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity);
+                GameObject lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity) as GameObject;
+                lightEffect.transform.parent = GameManager.Inst.temporaryEffects;
 
                 //destroy effect after 1.5 sec
                 UnityEngine.Object.Destroy(lightEffect, 1.5F);

@@ -310,6 +310,13 @@ public class MainCameraControl : MonoBehaviour {
 
     void OnGUI(){
 
+        string info = "";
+        info += "Camera.main.stereoEnabled: " + Camera.main.stereoEnabled + "\n";
+        info += "Camera.main.stereoSeparation: " + Camera.main.stereoSeparation + "\n";
+        info += "Camera.main.stereoConvergence: " + Camera.main.stereoConvergence + "\n";
+        GUI.skin.label.alignment = TextAnchor.UpperLeft;
+        GUI.Label(new Rect(5f, 5f, 1000f, 1000f), info);
+
         // Assembly health/name/etc. readouts.
         if(GameManager.Inst.showAssemReadouts){
             for(int i = 0; i < Assembly.GetAll().Count; i++){
