@@ -18,6 +18,8 @@ public class JellyfishEditor : MonoBehaviour {
 
             JellyFishCreator creator = Jellyfish.all[0].GetComponent<JellyFishCreator>();
 
+            Jellyfish.all[0].transform.position = Vector3.zero;
+
             GUILayout.BeginArea(controlBarRect);
             if(GUILayout.Button("Head " + creator.headNum, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true))){
                 Jellyfish.all[0].NextHead();

@@ -40,6 +40,8 @@ public class AssemblyEditor : MonoBehaviour {
     {
         if (capturedAssembly)
         {
+            capturedAssembly.physicsObject.transform.position = Vector3.zero;
+
             burnRateKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) - 240f);
             burnRateKnob.scale = 2f;
             burnRateKnob.Draw();

@@ -25,6 +25,7 @@ public class CameraControl : MonoBehaviour {
     [HideInInspector] public float radius = 6f;
     [HideInInspector] public float targetRadius = 6f;
     float radiusVel = 0f;
+    public float radiusSensitivity = 1f;
 
     // Camera will be zeroed on centerPos + centerOffset. CenterOffset will tend to Vector3.zero.
     [HideInInspector] public Vector3 center = Vector3.zero;
@@ -62,7 +63,9 @@ public class CameraControl : MonoBehaviour {
 
 	void FixedUpdate(){
         // Smooth time is slowed down if cursor is locked ("cinematic mode")
-        float effectiveSmoothTime = smoothTime * (PersistentGameManager.Inst.CursorLock? 5f : 1f);
+        float effectiveSmoothTime = 0.1f;
+        if(!PersistentGameManager.IsClient)
+             effectiveSmoothTime = smoothTime * (PersistentGameManager.Inst.CursorLock? 5f : 1f);
 
         // Auto-orbit run
 	    targetOrbit.x -= autoOrbitSpeed * Time.deltaTime;
@@ -106,7 +109,7 @@ public class CameraControl : MonoBehaviour {
             pinchDist = Vector2.Distance(touch0, touch1);
 
             if(lastPinchDist != -1)
-                targetRadius -= (pinchDist - lastPinchDist) * 0.05f;
+                targetRadius -= (pinchDist - lastPinchDist) * 0.05f * radiusSensitivity ;
 
             lastPinchDist = pinchDist;
         }else{
@@ -117,7 +120,7 @@ public class CameraControl : MonoBehaviour {
         }
 
         // Mouse zoom
-        targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel");
+        targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel") * radiusSensitivity ;
 
         // Mouse/touch orbit.
         if(Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease)){
