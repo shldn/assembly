@@ -16,16 +16,20 @@ public class PersistentGameManager : MonoBehaviour {
         }
     }
 
+    public static bool IsAdminClient { get { return true; } }
     public static bool IsClient { get { return Application.loadedLevelName == "CaptureClient"; } }
+    
 
     public static List<CaptureObject> CaptureObjects = new List<CaptureObject>();
 
-    CaptureNet_Manager captureMgr;
+    public CaptureNet_Manager captureMgr;
+    public bool optimize = true;
 
     // Prefabs
     public UnityEngine.Object playerSyncObj;
     public UnityEngine.Object pingBurstObj;
     public AudioClip placePingClip;
+    public Texture qrCodeTexture;
 
     // Interface
     bool cursorLock = true;
@@ -44,6 +48,8 @@ public class PersistentGameManager : MonoBehaviour {
             pingBurstObj = Resources.Load("Ping_Effect");
         if (placePingClip == null)
             placePingClip = Resources.Load("125374__thomasevd__ping") as AudioClip;
+        if (!IsClient && qrCodeTexture == null)
+            qrCodeTexture = Resources.Load("Textures/Capture_QR_Code") as Texture;
         
 	}
 

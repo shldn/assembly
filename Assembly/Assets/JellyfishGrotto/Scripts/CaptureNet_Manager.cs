@@ -27,8 +27,12 @@ public class CaptureNet_Manager : MonoBehaviour {
     bool iWantToHost = false;
     bool iWantToConnect = false;
 
+    // admin client vars
+    bool showQRCode = false;
+
     public static NetworkView myNetworkView;
     public NetworkPlayer myOwner;
+    public PlayerSync playerSync = null;
 
     
     float connectCooldown = 0f;
@@ -129,6 +133,16 @@ public class CaptureNet_Manager : MonoBehaviour {
             GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Initializing server...");
         }
 
+        if (!PersistentGameManager.IsClient && showQRCode)
+        {
+            int texSize = Screen.width / 8;
+            int gutter = 20;
+            GUI.DrawTexture(new Rect(Screen.width - texSize - gutter, Screen.height - texSize - gutter, texSize, texSize), PersistentGameManager.Inst.qrCodeTexture, ScaleMode.ScaleToFit);
+            GUI.skin.label.alignment = TextAnchor.UpperRight;
+            GUI.Label(new Rect(Screen.width - texSize - gutter - 500, Screen.height - gutter, texSize + 500, gutter), "http://imagination.ucsd.edu/assembly.apk");
+            
+        }
+
     } // End of OnGUI().
 
 
@@ -167,13 +181,15 @@ public class CaptureNet_Manager : MonoBehaviour {
         //Net_Amalgam newNetAmalgam = newNetAmalgamGO.GetComponent<Net_Amalgam>();
         //newNetAmalgam.SendAssemblies();
 
-        Network.Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity, 1);
+        playerSync = (Network.Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity, 1) as GameObject).GetComponent<PlayerSync>();
 
     } // End of OnConnectedToServer().
 
     void OnDisconnectedFromServer(NetworkDisconnection info)
     {
         CaptureEditorManager.ReleaseCaptured();
+        if (AssemblyEditor.Inst)
+            AssemblyEditor.Inst.Cleanup();
     } // End of OnDisconnectedFromServer().
 
 
@@ -276,6 +292,30 @@ public class CaptureNet_Manager : MonoBehaviour {
         a.WorldPosition = assemblyNewPos;
 
     } // End of PushAssembly().
+
+    // Client calls this to send request to server
+    public void RequestNextScene()
+    {
+        networkView.RPC("GoToNextScene", RPCMode.Server);
+    }
+
+    [RPC] // Server receives this request from client
+    void GoToNextScene()
+    {
+        LevelManager.LoadNextLevel();
+    }
+
+    // Client calls this to send request to server
+    public void RequestToggleQRCodeVisibility()
+    {
+        networkView.RPC("ToggleQRCode", RPCMode.Server);
+    }
+
+    [RPC] // Server receives this request from client
+    void ToggleQRCode()
+    {
+        showQRCode = !showQRCode;
+    }
 
     void PlayInstantiationEffect(Vector3 pos)
     {

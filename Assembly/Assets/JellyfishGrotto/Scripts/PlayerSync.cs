@@ -16,6 +16,9 @@ public class PlayerSync : MonoBehaviour {
     public Transform cursorObject;
     public LineRenderer cursorLine;
 
+    // orbit option
+    HashSet<NetworkPlayer> orbitPlayers = new HashSet<NetworkPlayer>();
+
     void Awake()
     {
         screenPos = new Vector3(0.5f * Screen.width, 0.5f * Screen.height, 0.0f);
@@ -46,6 +49,10 @@ public class PlayerSync : MonoBehaviour {
             Ray cursorRay = Camera.main.ScreenPointToRay(new Vector3(screenPosSmoothed.x, Screen.height - screenPosSmoothed.y, 0f));
             cursorObject.position = cursorRay.origin + cursorRay.direction * 1f;
 
+            if (orbitPlayers.Contains(networkView.owner))
+            {
+                // handle camera orbiting for these players screenPos movements here
+            }
 
             if(networkView.isMine && Input.GetMouseButton(0) && !selecting){
                 selecting = true;
@@ -161,6 +168,18 @@ public class PlayerSync : MonoBehaviour {
         CaptureEditorManager.capturedObj = a;
     } // End of CaptureAssembly().
 
+    // Client calls this to send request to server
+    public void RequestToggleOrbitMode()
+    {
+        networkView.RPC("ToggleOrbitMode", RPCMode.Server, networkView.owner);
+    }
+
+    [RPC] // Server receives this request from client
+    void ToggleOrbitMode(NetworkPlayer player)
+    {
+        ToggleOrbitPlayer(player);
+    }
+
     void OnGUI(){
         /*
         if(!PersistentGameManager.IsClient){
@@ -222,6 +241,21 @@ public class PlayerSync : MonoBehaviour {
     void OnDisconnectedFromServer(NetworkDisconnection info)
     {
         Destroy(gameObject);
+    }
+
+    public void ToggleOrbitPlayer(NetworkPlayer player)
+    {
+        if (orbitPlayers.Contains(player))
+            orbitPlayers.Remove(player);
+        else
+            orbitPlayers.Add(player);
+    }
+
+    // Notifies server when a player sync object is spawned
+    void OnNetworkInstantiate(NetworkMessageInfo info)
+    {
+        if (Network.isServer)
+            PersistentGameManager.Inst.captureMgr.playerSync = this;
     }
 
 } // End of PlayerSync.
