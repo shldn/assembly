@@ -26,18 +26,8 @@ public class JellyfishGameManager : MonoBehaviour {
 	// Use this for initialization
 	void Start(){
         if (!PersistentGameManager.IsClient){
-            for(int i = 0; i < 60; i++){
-                Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, MathUtilities.RandomVector3Sphere(30f), Random.rotation) as Transform;
-
-                JellyFishCreator jellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
-
-                jellyCreator.HeadChange();
-                jellyCreator.TailChange();
-                jellyCreator.SmallTaillChange();
-                jellyCreator.BoballChange();
-
-                transform.localScale *= Random.Range(0.75f, 1.5f);
-            }
+            for(int i = 0; i < 60; i++)
+                SpawnJelly();
         }
         else{
             Camera.main.clearFlags = CameraClearFlags.Skybox;
@@ -45,11 +35,38 @@ public class JellyfishGameManager : MonoBehaviour {
         }
 	}
 
+    void SpawnJelly()
+    {
+        Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, MathUtilities.RandomVector3Sphere(30f), Random.rotation) as Transform;
+
+        JellyFishCreator jellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
+
+        jellyCreator.HeadChange();
+        jellyCreator.TailChange();
+        jellyCreator.SmallTaillChange();
+        jellyCreator.BoballChange();
+
+        transform.localScale *= Random.Range(0.75f, 1.5f);
+    }
+
 
     void Update(){
         LevelManager.InputHandler();
         if(Input.GetKey(KeyCode.Escape))
             Application.Quit();
+        if (Input.GetKeyUp(KeyCode.J))
+        {
+            if(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                if( Jellyfish.all.Count > 0 )
+                    Jellyfish.all[Jellyfish.all.Count-1].Destroy();
+            }
+            else
+                SpawnJelly();
+            Debug.Log("Num Jellies: " + Jellyfish.all.Count);
+        }
+
+
     } // End of Update().
 
     void OnDestroy()
