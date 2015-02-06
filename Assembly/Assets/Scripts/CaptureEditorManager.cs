@@ -26,19 +26,31 @@ public class CaptureEditorManager {
 
                 // set type
                 captureTypeImpl = CaptureType.NONE;
-                if (capturedObjImpl as Jellyfish)
+                if (capturedObjImpl as Jellyfish){
                     captureTypeImpl = CaptureType.JELLYFISH;
-                else if (capturedObjImpl as Assembly)
+                }
+                else if (capturedObjImpl as Assembly){
                     captureTypeImpl = CaptureType.ASSEMBLY;
-                if (captureTypeImpl != CaptureType.NONE)
+                }
+                if (captureTypeImpl != CaptureType.NONE){
                     RaiseCaptureEvent();
+                    CameraControl.Inst.targetRadius = 10f;
+                }
+                
             } 
     }
     static public bool IsEditing { get { return capturedObjImpl != null; } }
 
     static public void ReleaseCaptured(){
-        if( capturedObj != null )
+        if( capturedObj != null ){
             capturedObj.Destroy();
+
+            CameraControl.Inst.selectedJellyfish = null;
+            CameraControl.Inst.selectedAssembly = null;
+            CameraControl.Inst.selectedNode = null;
+            CameraControl.Inst.targetRadius = 100f;
+
+        }
         capturedObj = null;
     }
 

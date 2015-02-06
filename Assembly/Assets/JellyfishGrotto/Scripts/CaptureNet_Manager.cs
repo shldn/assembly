@@ -285,7 +285,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         if (!GameManager.Inst)
             return;
 
-        Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 25f);
+        Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 100f);
         PlayInstantiationEffect(assemblyNewPos);
 
         Assembly a = new Assembly(assemblyStr);

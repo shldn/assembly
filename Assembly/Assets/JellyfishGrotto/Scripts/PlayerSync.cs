@@ -156,6 +156,8 @@ public class PlayerSync : MonoBehaviour {
         newJellyCreator.smallTail(wing);
         CaptureEditorManager.capturedObj = newJellyTrans.GetComponent<Jellyfish>();
 
+
+
     } // End of CaptureJelly().
 
     [RPC] // Client receives this when it captures an assembly.

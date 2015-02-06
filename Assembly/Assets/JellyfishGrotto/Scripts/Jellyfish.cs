@@ -22,6 +22,9 @@ public class Jellyfish : MonoBehaviour, CaptureObject {
             all.Remove(this);
             Destroy(gameObject);
         }
+
+        if(PersistentGameManager.IsClient)
+            rigidbody.isKinematic = true;
     } // End of Update().
 
 
