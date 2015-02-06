@@ -123,7 +123,7 @@ public class CameraControl : MonoBehaviour {
         targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel") * radiusSensitivity ;
 
         // Mouse/touch orbit.
-        if(Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease)){
+        if((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0)) || Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease)){
             targetOrbit.x += Input.GetAxis("Mouse X") * orbitSensitivity;
             targetOrbit.y += -Input.GetAxis("Mouse Y") * orbitSensitivity;
         }
