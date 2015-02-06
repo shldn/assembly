@@ -17,6 +17,9 @@ public class ClientAdminMenu : MonoBehaviour {
 	
     void OnGUI()
     {
+        if( CaptureEditorManager.capturedObj != null )
+            return;
+
         if (GUI.Button(new Rect(Screen.width - btnWidth - gutter, Screen.height - btnHeight - gutter, btnWidth, btnHeight), settingsIconTexture))
             showMenu = !showMenu;
 
