@@ -27,6 +27,10 @@ public class PersistentGameManager : MonoBehaviour {
     public UnityEngine.Object pingBurstObj;
     public AudioClip placePingClip;
 
+    // Interface
+    bool cursorLock = true;
+    public bool CursorLock {get{return cursorLock;}}
+
 
 	void Awake () {
         DontDestroyOnLoad(this);
@@ -42,10 +46,18 @@ public class PersistentGameManager : MonoBehaviour {
             placePingClip = Resources.Load("125374__thomasevd__ping") as AudioClip;
         
 	}
-	
+
+
 	void Update () {
         LevelManager.InputHandler();
+
+        if(Input.GetKeyDown(KeyCode.F1)){
+            cursorLock = !cursorLock;
+        }
+
+        Screen.lockCursor = cursorLock;
 	}
+
 
     // Helper function to make sure singleton instance exists and is initialized
     public void Touch() { }

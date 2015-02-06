@@ -5,142 +5,212 @@ public class CameraControl : MonoBehaviour {
 
     public static CameraControl Inst;
 
+    // How fast the camera orbits under its own power.
+    public float autoOrbitSpeed = 1f;
+    // The 'fluidity' of the camera control. Low values -> snappy movement, higher values -> more 'sweeping' movements.
+    public float smoothTime = 0.5f;
 
-    float orbitRunner = 0f;
-    float orbitRunnerTarget = 0f;
-    float orbitRunnerVel = 0f;
+    // Orbit = pan/tilt x/y of the camera around the centerPos.
+    public float orbitSensitivity = 1f;
+    Vector2 orbit = Vector2.zero;
+    Vector2 targetOrbit = Vector2.zero;
+    Vector2 orbitVel = Vector2.zero;
+    // How high or low the camera can be tilted.
+    public float minTilt = 0f;
+    public float maxTilt = 80f;
 
-    float orbitTilt = 20f;
-    float orbitTiltTarget = 20f;
-    float orbitTiltVel = 0f;
+    // Radius = distance from the center position. "Orbit distance"
+    public float minRadius = 1f;
+    public float maxRadius = 100f;
+    [HideInInspector] public float radius = 6f;
+    [HideInInspector] public float targetRadius = 6f;
+    float radiusVel = 0f;
 
-    float orbitDist = 6f;
-    float targetOrbitDist = 6f;
-    public float orbitSpeed = 1f;
-    float orbitDistVel = 0f;
+    // Camera will be zeroed on centerPos + centerOffset. CenterOffset will tend to Vector3.zero.
+    [HideInInspector] public Vector3 center = Vector3.zero;
+    [HideInInspector] public Vector3 centerOffset = Vector3.zero;
+    Vector3 centerOffsetVel = Vector3.zero;
 
     float lastPinchDist = -1f;
-
-    float smoothTime = 0.5f;
-
-    Vector3 orbitTarget = Vector3.zero;
-
-    Quaternion rotEditor = Quaternion.identity;
-    Quaternion targetRotEditor = Quaternion.identity;
-
-    Vector3 positionVel = Vector3.zero;
-
     bool pinchRelease = true;
 
-    public Transform target = null;
+
+    // Object selections
+    public Jellyfish selectedJellyfish = null;
+    public Assembly selectedAssembly = null;
+    public Node selectedNode = null;
 
 
     void Awake(){
         Inst = this;
     } // End of Awake().
 
-	// Use this for initialization
+
 	void Start(){
+        // Set up camera rendering effects
         RenderSettings.fog = true;
         RenderSettings.fogColor = Camera.main.backgroundColor;
 
-        targetRotEditor = Random.rotation;
-        rotEditor = targetRotEditor;
-        transform.rotation = rotEditor;
+        // Camera initial values
+        targetRadius = maxRadius;
+        radius = targetRadius;
+        targetOrbit.x = Random.Range(0f, 360f);
+        targetOrbit.y = (minTilt + maxTilt) * 0.5f;
+        orbit = targetOrbit;
 	} // End of Start().
 	
 
-	// Update is called once per frame
-	void Update(){
-	    orbitRunnerTarget += Time.deltaTime;
+	void FixedUpdate(){
+        // Smooth time is slowed down if cursor is locked ("cinematic mode")
+        float effectiveSmoothTime = smoothTime * (PersistentGameManager.Inst.CursorLock? 5f : 1f);
 
-        if(Network.peerType == NetworkPeerType.Server){
-            orbitDist = 40f;
-            transform.position = orbitTarget + Quaternion.AngleAxis(-orbitRunner * orbitSpeed, Vector3.up) * Quaternion.AngleAxis(-orbitTilt, Vector3.right) * Vector3.forward * orbitDist;
-            transform.LookAt(orbitTarget);
+        // Auto-orbit run
+	    targetOrbit.x -= autoOrbitSpeed * Time.deltaTime;
 
-            if((Network.peerType == NetworkPeerType.Server)){
-                float orbitSensitivity = 3f;
-                orbitRunnerTarget -= Input.GetAxis("Mouse X") * orbitSensitivity;
-                orbitTiltTarget -= Input.GetAxis("Mouse Y") * orbitSensitivity;
-
-                orbitTiltTarget = Mathf.Clamp(orbitTiltTarget, -35f, 35f);
-
-                Screen.showCursor = false;
-                Screen.lockCursor = true;
-            }
-
-            orbitRunner = Mathf.SmoothDamp(orbitRunner, orbitRunnerTarget, ref orbitRunnerVel, smoothTime);
-            orbitTilt = Mathf.SmoothDamp(orbitTilt, orbitTiltTarget, ref orbitTiltVel, smoothTime);
+        // Determine orbit target, if any.
+        // Jellyfish grotto client
+        if(PersistentGameManager.IsClient && JellyfishGameManager.Inst && Jellyfish.all[0]){
+            selectedJellyfish = Jellyfish.all[0];
+            center = Jellyfish.all[0].transform.position;
         }
-        else if (PersistentGameManager.IsClient){
+        // Assembly client
+        else if(PersistentGameManager.IsClient && (Assembly.GetAll().Count > 0) && Assembly.GetAll()[0]){
+            selectedAssembly = Assembly.GetAll()[0];
+            if(selectedNode)
+                center = selectedNode.gameObject.transform.position;
+            else
+                center = selectedAssembly.WorldPosition;
+        }
+        // Grotto
+        else if(selectedJellyfish)
+            center = selectedJellyfish.transform.position;
+        // Assembly soup
+        else if(selectedNode)
+            center = selectedNode.gameObject.transform.position;
+        else if(selectedAssembly)
+            center = selectedAssembly.WorldPosition;
+        else
+            center = Vector3.zero;
 
-            if(Jellyfish.all.Count > 0 && Jellyfish.all[0])
-                orbitTarget = Jellyfish.all[0].transform.position;
-            if((Assembly.GetAll().Count > 0) && Assembly.GetAll()[0]){
-                Assembly editingAssembly = Assembly.GetAll()[0];
-                if(AssemblyEditor.Inst.selectedNode)
-                    orbitTarget = AssemblyEditor.Inst.selectedNode.gameObject.transform.position;
-                else
-                    orbitTarget = editingAssembly.physicsObject.rigidbody.worldCenterOfMass;
-            }
 
-            if (Input.touchCount >= 2){
-                pinchRelease = false;
+        // General camera controls. ----------------------------------------------- //
+        // Touch-screen pinch-zoom
+        if(Input.touchCount >= 2){
+            pinchRelease = false;
 
-                Vector2 touch0, touch1;
-                float pinchDist;
-                touch0 = Input.GetTouch(0).position;
-                touch1 = Input.GetTouch(1).position;
+            Vector2 touch0, touch1;
+            float pinchDist;
+            touch0 = Input.GetTouch(0).position;
+            touch1 = Input.GetTouch(1).position;
  
-                pinchDist = Vector2.Distance(touch0, touch1);
+            pinchDist = Vector2.Distance(touch0, touch1);
 
-                if(lastPinchDist != -1){
-                    targetOrbitDist -= (pinchDist - lastPinchDist) * 0.05f;
-                }
-                lastPinchDist = pinchDist;
-            }
-            else{
-                lastPinchDist = -1f;
+            if(lastPinchDist != -1)
+                targetRadius -= (pinchDist - lastPinchDist) * 0.05f;
 
-                if(Input.touchCount == 0)
-                    pinchRelease = true;
-            }
+            lastPinchDist = pinchDist;
+        }else{
+            lastPinchDist = -1f;
 
-            targetOrbitDist += targetOrbitDist * -Input.GetAxis("Mouse ScrollWheel");
-
-            if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && pinchRelease && !NodeEngineering.Inst.uiLockout && ((Jellyfish.all.Count > 0) || (Assembly.GetAll().Count > 0))){
-                targetRotEditor *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * 3f, Vector3.up);
-                targetRotEditor *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * 3f, -Vector3.right);
-            }
-            
-            
-            targetOrbitDist = Mathf.Clamp(targetOrbitDist, 3f, 40f);
-
-
-            orbitDist = Mathf.SmoothDamp(orbitDist, targetOrbitDist, ref orbitDistVel, 0.1f);
-            rotEditor = Quaternion.Lerp(rotEditor, targetRotEditor, Time.deltaTime);
-
-            transform.position = Vector3.SmoothDamp(transform.position, orbitTarget + (targetRotEditor * (-Vector3.forward * orbitDist)), ref positionVel, 0.2f);
-            transform.rotation = targetRotEditor;
-            
-            
+            if(Input.touchCount == 0)
+                pinchRelease = true;
         }
+
+        // Mouse zoom
+        targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel");
+
+        // Mouse/touch orbit.
+        if(Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease)){
+            targetOrbit.x += Input.GetAxis("Mouse X") * orbitSensitivity;
+            targetOrbit.y += -Input.GetAxis("Mouse Y") * orbitSensitivity;
+        }
+            
+
+        // Increment values, apply camera position/rotation.
+        targetRadius = Mathf.Clamp(targetRadius, minRadius, maxRadius);
+        radius = Mathf.SmoothDamp(radius, targetRadius, ref radiusVel, effectiveSmoothTime);
+
+        targetOrbit.y = Mathf.Clamp(targetOrbit.y, minTilt, maxTilt);
+        orbit.x = Mathf.SmoothDamp(orbit.x, targetOrbit.x, ref orbitVel.x, effectiveSmoothTime);
+        orbit.y = Mathf.SmoothDamp(orbit.y, targetOrbit.y, ref orbitVel.y, effectiveSmoothTime);
+
+        centerOffset = Vector3.SmoothDamp(centerOffset, Vector3.zero, ref centerOffsetVel, effectiveSmoothTime);
+        Quaternion cameraRot = Quaternion.Euler(-orbit.y, orbit.x, 0f);
+        transform.position = center + centerOffset + (cameraRot * (Vector3.forward * radius));
+        transform.rotation = cameraRot * Quaternion.AngleAxis(180f, Vector3.up);
+
+
+        // Object selection ------------------------------------------- //
+        if(Input.GetMouseButtonDown(0) && (!NodeEngineering.Inst || !NodeEngineering.Inst.uiLockout)){
+            Ray selectionRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit selectRay = new RaycastHit();
+
+            // We have an assembly selected -- try to select a node within it.
+            bool selectedSomething = false;
+            if(selectedAssembly){
+                int objectsMask = 1 << LayerMask.NameToLayer("Nodes");
+                if(Physics.Raycast(selectionRay, out selectRay, 1000f, objectsMask)){
+                    Node rayHitNode = null;
+                    for(int i = 0; i < Node.GetAll().Count; i++){
+                        Node curNode = Node.GetAll()[i];
+                        if((selectRay.transform.gameObject == curNode.gameObject) && (curNode.assembly == selectedAssembly)){
+                            rayHitNode = curNode;
+                            break;
+                        }
+                    }
+                    if(rayHitNode){
+                        print("Hit node!");
+                        if(rayHitNode.assembly == selectedAssembly){
+                            selectedNode = rayHitNode;
+                            centerOffset = center - selectedNode.worldPosition;
+                            selectedSomething = true;
+                        }
+                    }
+                }
+            }
+            
+            // No selected assembly, so we're looking for those.
+            if(!selectedSomething){
+                int objectsMask = 1 << LayerMask.NameToLayer("Assemblies");
+                if(Physics.Raycast(selectionRay, out selectRay, 1000f, objectsMask)){
+                    Assembly rayHitAssembly = null;
+                    for(int i = 0; i < Assembly.GetAll().Count; i++){
+                        Assembly curAssem = Assembly.GetAll()[i];
+                        if((selectRay.transform.gameObject == curAssem.physicsObject) && (curAssem != selectedAssembly)){
+                            rayHitAssembly = curAssem;
+                        }
+                    }
+                    if(rayHitAssembly && (rayHitAssembly != selectedAssembly)){
+                        // Select new assembly.
+                        selectedAssembly = rayHitAssembly;
+                        centerOffset = center - selectedAssembly.WorldPosition;
+                        targetRadius = 20f;
+                        selectedSomething = true;
+                    }
+                }
+            }
+        }
+
+        if(Input.GetKeyDown(KeyCode.Return)){
+            if(selectedNode){
+                selectedNode = null;
+                centerOffset = center - selectedAssembly.WorldPosition;
+            // Deselect all--return to main orbit.
+            }else if(selectedAssembly){
+                selectedAssembly = null;
+                centerOffset = center - Vector3.zero;
+                targetRadius = maxRadius;
+            }
+        }
+
 	} // End of Update().
-
-
-    void OnDestroy()
-    {
-        Screen.showCursor = true;
-        Screen.lockCursor = false;
-    }
 
 
     void OnDrawGizmos(){
         Gizmos.color = new Color(0f, 1f, 1f, 0.5f);
-        Gizmos.DrawWireSphere(Vector3.zero, orbitDist);
+        Gizmos.DrawWireSphere(Vector3.zero, minRadius);
         Gizmos.color = new Color(0f, 1f, 1f, 0.05f);
-        Gizmos.DrawSphere(Vector3.zero, orbitDist);
+        Gizmos.DrawSphere(Vector3.zero, maxRadius);
     } // End of OnDrawGizmos().
 
 } // End of CameraOrbit.

@@ -182,6 +182,8 @@ public class Assembly : CaptureObject {
             //physicsObject.renderer.material.SetColor("_TintColor", new Color(0.05f, 0.05f, 0.07f, 1f));
 
             physicsObject.renderer.material = PrefabManager.Inst.assemblySkin;
+            physicsObject.renderer.castShadows = false;
+            physicsObject.renderer.receiveShadows = false;
         }
 
         // get node positions
@@ -726,7 +728,8 @@ public class Assembly : CaptureObject {
 
     //energy that is being used
     public void CalculateEnergyUse(){
-        currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient * 0.1f);
+        if(this != CameraControl.Inst.selectedAssembly)
+            currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient * 0.1f);
     }
 
     //update burn rate for asmbly

@@ -34,25 +34,6 @@ public class AssemblyEditor : MonoBehaviour {
             for (int i = 0; i < Node.GetAll().Count; ++i)
                 Node.GetAll()[i].Update();
 
-            // Select nodes with raycast
-            if(Input.GetMouseButtonDown(0) && !NodeEngineering.Inst.uiLockout){
-                Ray touchRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit touchRayHit = new RaycastHit();
-                int nodesLayer = 1 << LayerMask.NameToLayer("Nodes");
-                if(Physics.Raycast(touchRay, out touchRayHit, 1000f, nodesLayer)){
-                    Node newSelectedNode = null;
-                    for(int i = 0; i < Node.GetAll().Count; i++){
-                        Node curNode = Node.GetAll()[i];
-                        if(touchRayHit.transform.gameObject == curNode.gameObject){
-                            newSelectedNode = curNode;
-                        }
-                    }
-                    if(newSelectedNode == selectedNode)
-                        selectedNode = null;
-                    else
-                        selectedNode = newSelectedNode;
-                }
-            }
         }
     }
     void OnGUI()

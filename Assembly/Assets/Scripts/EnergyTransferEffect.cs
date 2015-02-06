@@ -34,7 +34,11 @@ public class EnergyTransferEffect : MonoBehaviour {
         if(receivingNode != null)
             receivePos = receivingNode.worldPosition;
 
-        renderer.enabled = true;
+        if(sendPos.Equals(Vector3.zero) || receivePos.Equals(Vector3.zero))
+            renderer.enabled = false;
+        else
+            renderer.enabled = true;
+
         float pointResolution = 1f;
 
         Vector3 vectorToNode = receivePos - sendPos;
@@ -60,8 +64,8 @@ public class EnergyTransferEffect : MonoBehaviour {
             spiralQuat *= Quaternion.AngleAxis((i * spiralStrength) - ((Time.time * spiralSpeed) + (spiralSpeed * phaseOffset)), Vector3.right);
             absorbLineRenderer.SetPosition(i, truePoint + (spiralQuat * Vector3.forward * spiralRadius));
         }
+
         /*
-        
         absorbLineRenderer.SetPosition(0, sendPos);
         absorbLineRenderer.SetPosition(1, receivePos);
 

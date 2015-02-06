@@ -26,7 +26,7 @@ public class JellyfishGameManager : MonoBehaviour {
 	// Use this for initialization
 	void Start(){
         if (!PersistentGameManager.IsClient){
-            for(int i = 0; i < 30; i++){
+            for(int i = 0; i < 60; i++){
                 Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, MathUtilities.RandomVector3Sphere(30f), Random.rotation) as Transform;
 
                 JellyFishCreator jellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();

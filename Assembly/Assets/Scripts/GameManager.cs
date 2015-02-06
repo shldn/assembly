@@ -32,8 +32,6 @@ public class GameManager : MonoBehaviour {
 
     public float worldSize = 100f;
 
-    public bool pauseMenu = false;
-
     public float deltaRealTime = 0f;
 
     public GuiKnob timeScaleKnob = null;
@@ -76,14 +74,7 @@ public class GameManager : MonoBehaviour {
         deltaRealTime = Time.deltaTime / Time.timeScale;
         
         if(Input.GetKeyDown(KeyCode.Escape))
-            pauseMenu = !pauseMenu;
-
-        initialFadeIn = Mathf.MoveTowards(initialFadeIn, 0f, (Time.deltaTime / Time.timeScale) * 0.3f);
-        
-        fade = Mathf.Lerp(fade, pauseMenu? 0.8f : 0f, Time.deltaTime * 10f);
-
-        if(initialFadeIn > fade)
-            fade = initialFadeIn;
+            Application.Quit();
 
 
         Time.timeScale = Mathf.MoveTowards(Time.timeScale, targetTimeScale, (deltaRealTime));
@@ -110,6 +101,7 @@ public class GameManager : MonoBehaviour {
                 float spiralSize = 50f * (1f + (Mathf.Abs(xPos) * 0.01f));
                 newPellet.worldPosition = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
                 */
+
                 newPellet.worldPosition = MathUtilities.RandomVector3Cube(worldSize);
                 GameObject lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity) as GameObject;
                 lightEffect.transform.parent = GameManager.Inst.temporaryEffects;
@@ -235,12 +227,6 @@ public class GameManager : MonoBehaviour {
 
 
     void OnGUI(){
-
-        // Game fade
-        GUI.color = new Color(0f, 0f, 0f, fade);
-        GUI.DrawTexture(new Rect(-10, -10, Screen.width + 10, Screen.height + 10), GUIHelper.Inst.white);
-        GUI.color = Color.white;
-
         // World controls
         GUI.skin.label.fontSize = 12;
         GUI.skin.toggle.fontSize = 12;
@@ -266,15 +252,22 @@ public class GameManager : MonoBehaviour {
             numFoodPelletsKnob.maxValue = 30f;
         }
         
-
+        // Don't worry about drawing the knobs if cursor is locked. ----------------- //
+        if(PersistentGameManager.Inst.CursorLock)
+            return;
         
-        float ringRadius = 250f;
-        float ringAngleRatio = 0.25f;
+        float controlsScale = Screen.width / 1000f;
+
+        float ringRadius = 200f * controlsScale;
+        float ringAngleRatio = 0.25f * controlsScale;
 
         controlRingAngleMod = Mathf.SmoothDamp(controlRingAngleMod, (Mathf.PI * 2f) - (((Screen.width * 0.5f) - Input.mousePosition.x) * 0.0045f), ref controlRingAngleModVel, 0.2f);
         float controlRingAngle = 0f + controlRingAngleMod;
 
-        Vector2 circleCenter = new Vector2(Screen.width * 0.5f, Screen.height - (Screen.height * 0.225f));
+        Vector2 circleCenter = new Vector2(Screen.width * 0.5f, Screen.height - (Screen.height * (0.15f * controlsScale)));
+
+        float mouseOffsetCircleCenter = circleCenter.y - (Screen.height - Input.mousePosition.y);
+
         bool controlBeingUsed = false;
         for(int i = 0; i < 10; i++){
             GuiKnob currentKnob = null;
@@ -310,9 +303,9 @@ public class GameManager : MonoBehaviour {
             if(currentKnob != null){
                 // Auto-rotate ring on desktop systems
                 if(Application.platform != RuntimePlatform.Android){
-                    currentKnob.pxlPos = circleCenter + new Vector2(Mathf.Cos(controlRingAngle) * ringRadius, Mathf.Sin(controlRingAngle) * ringRadius * ringAngleRatio);
+                    currentKnob.pxlPos = circleCenter + new Vector2(Mathf.Cos(controlRingAngle) * ringRadius, Mathf.Sin(controlRingAngle) * ringRadius * ringAngleRatio * (1f + (mouseOffsetCircleCenter * 0.002f)));
                     float closeness = 0.5f + (Mathf.Cos(controlRingAngle - (Mathf.PI * 0.5f)) * 0.5f);
-                    currentKnob.scale = 0.25f + (closeness * 0.7f);
+                    currentKnob.scale = (0.25f + (closeness * 0.7f) * controlsScale);
                     currentKnob.alpha = closeness * controlRingFade;
                 }
                 // Static controls on handheld systems

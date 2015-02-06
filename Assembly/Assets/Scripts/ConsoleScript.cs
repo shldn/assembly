@@ -109,10 +109,12 @@ public class ConsoleScript : MonoBehaviour {
 
         commands["demo"].func = delegate(string[] args)
         {
+            /*
             if(MainCameraControl.Inst.camType != CamType.ORBIT_DEMO){
                 MainCameraControl.Inst.randomOrbit = Random.rotation;
                 MainCameraControl.Inst.camType = CamType.ORBIT_DEMO;
             }
+            */
         };
 
         commands["quit"].func = delegate(string[] args)
@@ -135,6 +137,7 @@ public class ConsoleScript : MonoBehaviour {
 
         commands["saveselected"].func = delegate(string[] args)
         {
+            /*
             if (MainCameraControl.Inst.selectedAssembly == null)
                 WriteToLog("No assembly selected");
             else
@@ -142,6 +145,7 @@ public class ConsoleScript : MonoBehaviour {
                 WriteToLog("Writing selected assembly to file");
                 MainCameraControl.Inst.selectedAssembly.Save();
             }
+            */
         };
 
 

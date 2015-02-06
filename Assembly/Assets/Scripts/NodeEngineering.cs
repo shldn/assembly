@@ -32,9 +32,9 @@ public class NodeEngineering : MonoBehaviour {
         Node selectedNode = null;
         Assembly selectedAssembly = null;
 
-        if(MainCameraControl.Inst){
-            selectedNode = MainCameraControl.Inst.selectedNode;
-            selectedAssembly = MainCameraControl.Inst.selectedAssembly;
+        if(CameraControl.Inst){
+            selectedNode = CameraControl.Inst.selectedNode;
+            selectedAssembly = CameraControl.Inst.selectedAssembly;
         }
         else if(AssemblyEditor.Inst && AssemblyEditor.Inst.selectedNode){
             selectedNode = AssemblyEditor.Inst.selectedNode;

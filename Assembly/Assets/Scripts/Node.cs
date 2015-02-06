@@ -153,12 +153,12 @@ public class Node {
         } 
 
         if(assembly){
-            worldPosition = assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition));
+            worldPosition = assembly.physicsObject.transform.position + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition));
             worldRotation = assembly.WorldRotation * localRotation;
 
             // Burn energy if not selected... sucks having the assembly you're following explode into pieces
             //   (and throw a million nullref excepts)
-            if (!assembly.imported && !CaptureEditorManager.IsEditing && (MainCameraControl.Inst == null || assembly != MainCameraControl.Inst.selectedAssembly))
+            if(!assembly.imported && !CaptureEditorManager.IsEditing && (!CameraControl.Inst.selectedAssembly || (CameraControl.Inst.selectedAssembly != assembly)))
                 assembly.currentEnergy -= GetBurnRate() * Assembly.burnCoefficient * Time.deltaTime;
         }
 

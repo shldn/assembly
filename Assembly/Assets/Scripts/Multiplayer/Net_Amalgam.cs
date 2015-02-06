@@ -14,8 +14,8 @@ public class Net_Amalgam : MonoBehaviour {
         }
 
         if(networkView.isMine){
-            transform.position = MainCameraControl.Inst.transform.position;
-            transform.rotation = MainCameraControl.Inst.transform.rotation;
+            transform.position = CameraControl.Inst.transform.position;
+            transform.rotation = CameraControl.Inst.transform.rotation;
 
             Renderer[] allRenderers = transform.GetComponentsInChildren<Renderer>();
             foreach(Renderer someRenderer in allRenderers)

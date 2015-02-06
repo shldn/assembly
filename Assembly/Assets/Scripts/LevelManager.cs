@@ -21,12 +21,13 @@ public class LevelManager {
     public static void InputHandler()
     {
         if (Input.GetKeyUp(KeyCode.Equals))
-            LoadNextLevel();
+            TransitionManager.Inst.NextLevel();
         if (Input.GetKeyUp(KeyCode.Minus))
-            LoadPrevLevel();
+            TransitionManager.Inst.PreviousLevel();
         if (Input.GetKeyUp(KeyCode.Alpha1))
-            LoadLevel(0);
+            TransitionManager.Inst.ChangeLevel(0);
         if (Input.GetKeyUp(KeyCode.Alpha2))
-            LoadLevel(1);
+            TransitionManager.Inst.ChangeLevel(1);
+
     }
 }
