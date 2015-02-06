@@ -69,7 +69,7 @@ public class CameraControl : MonoBehaviour {
 
         // Determine orbit target, if any.
         // Jellyfish grotto client
-        if(PersistentGameManager.IsClient && JellyfishGameManager.Inst && Jellyfish.all[0]){
+        if(PersistentGameManager.IsClient && JellyfishGameManager.Inst && (Jellyfish.all.Count > 0f)){
             selectedJellyfish = Jellyfish.all[0];
             center = Jellyfish.all[0].transform.position;
         }
