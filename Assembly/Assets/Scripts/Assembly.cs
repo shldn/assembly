@@ -67,6 +67,7 @@ public class Assembly : CaptureObject {
 
     bool needRigidbodyUpdate = true;
     bool rootNodeSet = false;
+    public bool nodeStructureDirty = true;
 
     Assembly structureFriend = null;
 
@@ -292,9 +293,10 @@ public class Assembly : CaptureObject {
     public Node AddNode(Node node){
         node.assembly = this;
         nodes.Add(node);
+        nodeStructureDirty = true;
         //UpdateNodes();
         //needBurnRateUpdate = true;
-        needRigidbodyUpdate = true;
+        needRigidbodyUpdate = true;        
         return node;
     } // End of AddNode().
 
@@ -304,6 +306,7 @@ public class Assembly : CaptureObject {
         for (int i = 0; i < newNodes.Count; ++i)
             newNodes[i].assembly = this;
         nodes.AddRange(newNodes);
+        nodeStructureDirty = true;
         UpdateNodes();
         needBurnRateUpdate = true;
         needRigidbodyUpdate = true;
@@ -313,6 +316,7 @@ public class Assembly : CaptureObject {
     public void RemoveNode(Node node)
     {
         nodes.Remove(node);
+        nodeStructureDirty = true;
         UpdateNodes();
         needBurnRateUpdate = true;
         needRigidbodyUpdate = true;
@@ -322,6 +326,7 @@ public class Assembly : CaptureObject {
     public void Update(){
         numFramesAlive++;
         UpdateNodes();
+        nodeStructureDirty = false;
 
 
         // Dead assemblies should be destroyed with animation.

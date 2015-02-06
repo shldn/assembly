@@ -288,11 +288,18 @@ public class Node {
 
     // Neighbors ---------------------------------------------------------------------------||
     public List<Node> GetNeighbors(){
+        if (assembly && assembly.nodeStructureDirty || !PersistentGameManager.Inst.optimize)
+            ComputeNeighbors();
+        return neighbors;
+    }
+
+    public void ComputeNeighbors(){
+        neighbors = new List<Node>();
+    
         // No assembly... no neighbors!
         if(!assembly)
-            return null;
+            return;
 
-        neighbors = new List<Node>();
         // Loop through all adjacent positions and see if they are occupied.
         for(int i = 0; i < 12; i++){
             IntVector3 currentNeighborPos = localHexPosition + HexUtilities.Adjacent(i);
@@ -302,7 +309,7 @@ public class Node {
                 }
             }
         }
-        return neighbors;
+
     } // End of GetNeighbors().
 
     public int CountNeighbors(){

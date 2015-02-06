@@ -23,6 +23,7 @@ public class PersistentGameManager : MonoBehaviour {
     public static List<CaptureObject> CaptureObjects = new List<CaptureObject>();
 
     public CaptureNet_Manager captureMgr;
+    public bool optimize = true;
 
     // Prefabs
     public UnityEngine.Object playerSyncObj;

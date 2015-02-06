@@ -125,13 +125,17 @@ public class SenseNode : Node {
     public bool DetectFood(FoodPellet food){
 
         Vector3 foodDir = food.worldPosition - this.worldPosition;
-        float angle = Vector3.Angle(worldSenseRot * Vector3.forward, foodDir);
-
-        if((angle <= nodeProperties.fieldOfView) && (foodDir.magnitude <= detectRange)){ //detect through view angle
-            return true;
+        if (PersistentGameManager.Inst.optimize)
+            return (foodDir.magnitude <= detectRange) && (Vector3.Angle(worldSenseRot * Vector3.forward, foodDir) <= nodeProperties.fieldOfView);
+        else
+        {
+            float angle = Vector3.Angle(worldSenseRot * Vector3.forward, foodDir);
+            if ((angle <= nodeProperties.fieldOfView) && (foodDir.magnitude <= detectRange)){ //detect through view angle
+                return true;
+            }
+            // Return false if no food pellets found.
+            return false;
         }
-        // Return false if no food pellets found.
-        return false;
     } // End of DetectFood().
 
 
