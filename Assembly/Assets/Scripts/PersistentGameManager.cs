@@ -28,7 +28,8 @@ public class PersistentGameManager : MonoBehaviour {
     // Prefabs
     public UnityEngine.Object playerSyncObj;
     public UnityEngine.Object pingBurstObj;
-    public AudioClip placePingClip;
+    public AudioClip pushClip;
+    public AudioClip captureClip;
     public Texture qrCodeTexture;
 
     // Interface
@@ -46,8 +47,10 @@ public class PersistentGameManager : MonoBehaviour {
             playerSyncObj = Resources.Load("PlayerObject");
         if (pingBurstObj == null)
             pingBurstObj = Resources.Load("Ping_Effect");
-        if (placePingClip == null)
-            placePingClip = Resources.Load("125374__thomasevd__ping") as AudioClip;
+        if (captureClip == null)
+            captureClip = Resources.Load("pushClip") as AudioClip;
+        if (pushClip == null)
+            pushClip = Resources.Load("captureClip") as AudioClip;
         if (!IsClient && qrCodeTexture == null)
             qrCodeTexture = Resources.Load("Textures/Capture_QR_Code") as Texture;
         
@@ -63,6 +66,21 @@ public class PersistentGameManager : MonoBehaviour {
 
         Screen.lockCursor = cursorLock;
 	}
+
+
+    public void EnviroImpulse(Vector3 pos, float force){
+        // Apply physics
+        for(int i = 0; i < Assembly.GetAll().Count; i++){
+            Assembly curAssem = Assembly.GetAll()[i];
+            
+            Vector3 vecToAssem = pos - curAssem.WorldPosition;
+            if(vecToAssem.Equals(Vector3.zero))
+                continue;
+
+            if(curAssem.physicsObject.rigidbody)
+                curAssem.physicsObject.rigidbody.AddForce(vecToAssem.normalized * (-force / (1f + (vecToAssem.magnitude * 0.01f))), ForceMode.Impulse);
+        }
+    } // End of EnviroImpulse().
 
 
     // Helper function to make sure singleton instance exists and is initialized

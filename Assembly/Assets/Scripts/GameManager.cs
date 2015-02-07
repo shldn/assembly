@@ -102,7 +102,7 @@ public class GameManager : MonoBehaviour {
                 newPellet.worldPosition = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
                 */
 
-                newPellet.worldPosition = MathUtilities.RandomVector3Cube(worldSize);
+                newPellet.worldPosition = UnityEngine.Random.insideUnitSphere * worldSize;
                 GameObject lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity) as GameObject;
                 lightEffect.transform.parent = GameManager.Inst.temporaryEffects;
 
@@ -212,7 +212,7 @@ public class GameManager : MonoBehaviour {
 
     public Assembly SeedNewRandomAssembly(){
         Assembly newAssembly = Assembly.GetRandomAssembly(UnityEngine.Random.Range(Assembly.MIN_NODES_IN_ASSEMBLY, Assembly.MAX_NODES_IN_ASSEMBLY));
-        newAssembly.WorldPosition = MathUtilities.RandomVector3Cube(worldSize);
+        newAssembly.WorldPosition = UnityEngine.Random.insideUnitSphere * worldSize;
         //Instantiate(PrefabManager.Inst.newPelletBurst, newAssembly.WorldPosition, Quaternion.identity);
         return newAssembly;
     }
@@ -252,6 +252,7 @@ public class GameManager : MonoBehaviour {
             numFoodPelletsKnob.maxValue = 30f;
         }
         
+
         // Don't worry about drawing the knobs if cursor is locked. ----------------- //
         if(PersistentGameManager.Inst.CursorLock)
             return;
@@ -259,7 +260,7 @@ public class GameManager : MonoBehaviour {
         float controlsScale = Screen.width / 1000f;
 
         float ringRadius = 200f * controlsScale;
-        float ringAngleRatio = 0.25f * controlsScale;
+        float ringAngleRatio = 0.25f;
 
         controlRingAngleMod = Mathf.SmoothDamp(controlRingAngleMod, (Mathf.PI * 2f) - (((Screen.width * 0.5f) - Input.mousePosition.x) * 0.0045f), ref controlRingAngleModVel, 0.2f);
         float controlRingAngle = 0f + controlRingAngleMod;

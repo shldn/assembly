@@ -37,7 +37,7 @@ public class JellyfishGameManager : MonoBehaviour {
 
     void SpawnJelly()
     {
-        Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, MathUtilities.RandomVector3Sphere(30f), Random.rotation) as Transform;
+        Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, Random.insideUnitSphere * 30f, Random.rotation) as Transform;
 
         JellyFishCreator jellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
 

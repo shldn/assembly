@@ -68,7 +68,7 @@ public class FoodPellet{
 
     //create random food node
     public static void AddRandomFoodPellet(){
-        Vector3 pos = MathUtilities.RandomVector3Sphere(GameManager.Inst.worldSize);
+        Vector3 pos = Random.insideUnitSphere * GameManager.Inst.worldSize;
         new FoodPellet(pos);
     }
 

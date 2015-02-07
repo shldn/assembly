@@ -16,6 +16,8 @@ public class PlayerSync : MonoBehaviour {
     public Transform cursorObject;
     public LineRenderer cursorLine;
 
+    bool editing = false;
+
     // orbit option
     HashSet<NetworkPlayer> orbitPlayers = new HashSet<NetworkPlayer>();
 
@@ -30,7 +32,7 @@ public class PlayerSync : MonoBehaviour {
         screenPosSmoothed = Vector3.SmoothDamp(screenPosSmoothed, screenPos, ref screenPosVel, screenPosSmoothTime);
 
         if(cursorObject){
-            cursorObject.gameObject.SetActive(!CaptureEditorManager.IsEditing);
+            cursorObject.gameObject.SetActive(!editing);
         }
 
         if(cursorObject && (PersistentGameManager.IsClient) && !networkView.isMine)
@@ -122,13 +124,19 @@ public class PlayerSync : MonoBehaviour {
 
     void HandleCapturedObject(CaptureObject capturedObj)
     {
+        PersistentGameManager.Inst.EnviroImpulse(capturedObj.Position, -30f);
+        
         Jellyfish j = capturedObj as Jellyfish;
-        if (j != null)
+        if (j != null){
             networkView.RPC("CaptureJelly", networkView.owner, j.creator.headNum, j.creator.tailNum, j.creator.boballNum, j.creator.wingNum);
-        else
+        }
+        else{
             networkView.RPC("CaptureAssembly", networkView.owner, ((Assembly)capturedObj).ToFileString());
+        }
 
         Instantiate(PersistentGameManager.Inst.pingBurstObj, capturedObj.Position, Quaternion.identity);
+        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.captureClip, capturedObj.Position);
+        editing = true;
         capturedObj.Destroy();
     }
 
@@ -147,7 +155,7 @@ public class PlayerSync : MonoBehaviour {
         foreach(Jellyfish someJelly in Jellyfish.all)
             someJelly.Destroy();
 
-        AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
+        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.captureClip, Vector3.zero);
         Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, Vector3.zero, Random.rotation) as Transform;
         JellyFishCreator newJellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
         newJellyCreator.changeHead(head);
@@ -155,8 +163,6 @@ public class PlayerSync : MonoBehaviour {
         newJellyCreator.changeBoball(bobble);
         newJellyCreator.smallTail(wing);
         CaptureEditorManager.capturedObj = newJellyTrans.GetComponent<Jellyfish>();
-
-
 
     } // End of CaptureJelly().
 
@@ -222,6 +228,7 @@ public class PlayerSync : MonoBehaviour {
 
 		// When sending my own data out...
 		if(stream.isWriting){
+
             screenRelativePos = new Vector3(screenPos.x / Screen.width, screenPos.y / Screen.height);
 
 			stream.Serialize(ref screenRelativePos);
@@ -235,6 +242,8 @@ public class PlayerSync : MonoBehaviour {
 		}
 		// When receiving data from someone else...
 		else{
+            editing = false;
+
             stream.Serialize(ref screenRelativePos);
             screenPos = new Vector3(screenRelativePos.x * Screen.width, screenRelativePos.y * Screen.height);
 		}

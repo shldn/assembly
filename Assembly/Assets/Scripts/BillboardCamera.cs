@@ -8,10 +8,7 @@ public class BillboardCamera : MonoBehaviour {
 
 	void Update(){
 	
-		transform.LookAt(Camera.main.transform, Camera.main.transform.up);
-		
-		if(deg90fix)
-			transform.rotation *= Quaternion.AngleAxis (90, Vector3.right);
+		transform.rotation = Camera.main.transform.rotation;
 		
 	} // End of Update().
 }

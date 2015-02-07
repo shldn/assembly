@@ -287,6 +287,8 @@ public class CaptureNet_Manager : MonoBehaviour {
 
         Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 100f);
         PlayInstantiationEffect(assemblyNewPos);
+        PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
+
 
         Assembly a = new Assembly(assemblyStr);
         a.WorldPosition = assemblyNewPos;
@@ -319,7 +321,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void PlayInstantiationEffect(Vector3 pos)
     {
-        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.placePingClip, Vector3.zero);
+        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.pushClip, Vector3.zero);
         Instantiate(PersistentGameManager.Inst.pingBurstObj, pos, Quaternion.identity);
     }
 

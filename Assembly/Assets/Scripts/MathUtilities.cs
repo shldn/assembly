@@ -10,11 +10,6 @@ public class MathUtilities {
 	} // End of RandomVector3Cube().
 
 
-    public static Vector3 RandomVector3Sphere(float radius){
-        return Random.rotation * Vector3.forward * Random.Range(0f, radius);
-	} // End of RandomVector3Cube().
-
-
     // Rotates a vector in a random direction by the deviation.
     public static Quaternion SkewRot(Quaternion rot, float deviation){
         Vector3 randomVect = Random.rotation * Vector3.forward;
