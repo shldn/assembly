@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class CameraControl : MonoBehaviour {
 
@@ -123,7 +124,7 @@ public class CameraControl : MonoBehaviour {
         targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel") * radiusSensitivity ;
 
         // Mouse/touch orbit.
-        if((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount == 1)) || Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease)){
+        if((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) && CaptureEditorManager.IsEditing && !NodeEngineering.Inst.uiLockout && !AssemblyEditor.Inst.uiLockout) || Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease)){
             targetOrbit.x += Input.GetAxis("Mouse X") * orbitSensitivity;
             targetOrbit.y += -Input.GetAxis("Mouse Y") * orbitSensitivity;
         }
@@ -207,6 +208,29 @@ public class CameraControl : MonoBehaviour {
         }
 
 	} // End of Update().
+
+
+    void OnGUI(){
+        if(Input.GetKey(KeyCode.F2)){
+            GUILayout.BeginVertical(GUILayout.Width(Screen.width * 0.2f));
+
+            GUI.skin.label.alignment = TextAnchor.MiddleLeft;
+            GUI.skin.label.fontSize = 14;
+            GUILayout.Label((1f / Time.smoothDeltaTime).ToString("F1"));
+
+            foreach(Camera c in Camera.allCameras){
+                List<MonoBehaviour> components = new List<MonoBehaviour>(c.gameObject.GetComponents<MonoBehaviour>());
+                for(int i = 0; i < components.Count; i++){
+                    if(components[i] == this)
+                        continue;
+
+                    components[i].enabled = GUILayout.Toggle(components[i].enabled, components[i].ToString());
+                }
+            }
+
+            GUILayout.EndVertical();
+        }
+    } // End of OnGUI().
 
 
     void OnDrawGizmos(){

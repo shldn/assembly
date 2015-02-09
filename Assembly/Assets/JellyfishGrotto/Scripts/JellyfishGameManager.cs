@@ -26,7 +26,7 @@ public class JellyfishGameManager : MonoBehaviour {
 	// Use this for initialization
 	void Start(){
         if (!PersistentGameManager.IsClient){
-            for(int i = 0; i < 60; i++)
+            for(int i = 0; i < 40; i++)
                 SpawnJelly();
         }
         else{

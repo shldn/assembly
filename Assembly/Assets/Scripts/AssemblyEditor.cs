@@ -12,6 +12,8 @@ public class AssemblyEditor : MonoBehaviour {
     private Assembly capturedAssembly = null;
     public Node selectedNode = null;
 
+    public bool uiLockout {get{return burnRateKnob.clicked || densityKnob.clicked || speedKnob.clicked;}}
+
     void Start()
     {
         CaptureEditorManager.ObjectCaptured += HandleObjectCaptured;
