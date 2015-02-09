@@ -58,7 +58,7 @@ public class PlayerSync : MonoBehaviour {
 
             if(networkView.isMine && Input.GetMouseButton(0) && !selecting){
                 selecting = true;
-                Network.SetSendingEnabled(0, selecting);
+                //Network.SetSendingEnabled(0, selecting);
                 networkView.RPC("StartSelect", RPCMode.Server);
             }
 
@@ -67,7 +67,7 @@ public class PlayerSync : MonoBehaviour {
                 networkView.RPC("StopSelect", RPCMode.Server);
 
                 // don't send packets while the client is not selecting anything
-                Network.SetSendingEnabled(0, selecting);
+                //Network.SetSendingEnabled(0, selecting);
             }
 
 
@@ -237,7 +237,7 @@ public class PlayerSync : MonoBehaviour {
             if (!initialPosSent)
             {
                 initialPosSent = true;
-                Network.SetSendingEnabled(0, selecting);
+                //Network.SetSendingEnabled(0, selecting);
             }
 		}
 		// When receiving data from someone else...
