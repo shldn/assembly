@@ -265,7 +265,7 @@ public class GameManager : MonoBehaviour {
         controlRingAngleMod = Mathf.SmoothDamp(controlRingAngleMod, (Mathf.PI * 2f) - (((Screen.width * 0.5f) - Input.mousePosition.x) * 0.0045f), ref controlRingAngleModVel, 0.2f);
         float controlRingAngle = 0f + controlRingAngleMod;
 
-        Vector2 circleCenter = new Vector2(Screen.width * 0.5f, Screen.height - (Screen.height * (0.15f * controlsScale)));
+        Vector2 circleCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.8f);
 
         float mouseOffsetCircleCenter = circleCenter.y - (Screen.height - Input.mousePosition.y);
 

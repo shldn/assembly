@@ -216,7 +216,7 @@ public class CameraControl : MonoBehaviour {
 
             GUI.skin.label.alignment = TextAnchor.MiddleLeft;
             GUI.skin.label.fontSize = 14;
-            GUILayout.Label((1f / Time.smoothDeltaTime).ToString("F1"));
+            GUILayout.Label(Network.player.ToString());
 
             foreach(Camera c in Camera.allCameras){
                 List<MonoBehaviour> components = new List<MonoBehaviour>(c.gameObject.GetComponents<MonoBehaviour>());

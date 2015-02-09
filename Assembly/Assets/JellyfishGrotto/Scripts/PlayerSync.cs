@@ -131,6 +131,7 @@ public class PlayerSync : MonoBehaviour {
             networkView.RPC("CaptureJelly", networkView.owner, j.creator.headNum, j.creator.tailNum, j.creator.boballNum, j.creator.wingNum);
         }
         else{
+            print("Sending assembly to player " + networkView.owner);
             networkView.RPC("CaptureAssembly", networkView.owner, ((Assembly)capturedObj).ToFileString());
         }
 
