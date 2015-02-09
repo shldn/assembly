@@ -66,9 +66,9 @@ public class AssemblyEditor : MonoBehaviour {
             if (GUILayout.Button("Done", GUILayout.Height(Screen.height / 8f)))
             {
                 Assembly a = CaptureEditorManager.capturedObj as Assembly;
-                //Network.SetSendingEnabled(0, true);
+                Network.SetSendingEnabled(0, true);
                 CaptureNet_Manager.myNetworkView.RPC("PushAssembly", RPCMode.Server, a.ToFileString());
-                //Network.SetSendingEnabled(0, false);
+                Network.SetSendingEnabled(0, false);
                 Instantiate(PersistentGameManager.Inst.pingBurstObj, CaptureEditorManager.capturedObj.Position, Quaternion.identity);
                 Cleanup();
             }
