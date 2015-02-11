@@ -1,0 +1,83 @@
+fileFormatVersion: 2
+guid: a3b82f17c57f01f4f8fa3f46139e5c46
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: Eyeball_half
+    100004: eyeball_jnt
+    100006: Eyelid_eye
+    100008: MainControl
+    100010: root
+    100012: Sclera
+    100014: Sclera001
+    400000: //RootNode
+    400002: Eyeball_half
+    400004: eyeball_jnt
+    400006: Eyelid_eye
+    400008: MainControl
+    400010: root
+    400012: Sclera
+    400014: Sclera001
+    4300000: Eyelid_eye
+    4300002: Sclera001
+    4300004: Sclera
+    7400000: Take 001
+    9500000: //RootNode
+    13700000: Eyelid_eye
+    13700002: Sclera
+    13700004: Sclera001
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: root
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  additionalBone: 0
+  userData: 
