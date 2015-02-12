@@ -58,13 +58,13 @@ linked to either the website http://www.acegikmo.com/shaderforge/ or the asset s
 Quick start:
 ------------
    Opening Shader Forge = Window -> Shader Forge
- 	     	    Panning = Click and drag empty space
-	     	    Zooming = Mouse wheel
+ 		 		Panning = Click and drag empty space
+		 		Zooming = Mouse wheel
 		   Adding nodes = RMB + select node OR drag from right panel and place
 		   Moving nodes = Click and drag
-	    Selecting nodes = Click to select, shift/control click to add to selection
+		Selecting nodes = Click to select, shift/control click to add to selection
 	   Box select nodes = Hold Alt + Drag. Shift/control click to add to selection
-      	 Deleting nodes = Select and press delete
+	  	 Deleting nodes = Select and press delete
    Deleting connections = Hold alt and drag RMB in empty space to start cutting lines.
   Disconnect connectors = Alt+RMB on connectors to disconnect them. Alternatively, hover the cursor over a connector and press backspace
 
