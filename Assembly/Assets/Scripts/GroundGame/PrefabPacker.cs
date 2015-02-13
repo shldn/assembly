@@ -8,6 +8,7 @@ public class PrefabPacker : MonoBehaviour {
     public Mesh packShape = null;
 
     public bool alignWithFaces = false;
+    public int skipCount = 0; // the behavior of this depends on the ordering of the mesh, so it may not skip the triangles you expect.
     public Vector3 scale = Vector3.one;
 
     int prefabIdx = 0;
@@ -27,7 +28,7 @@ public class PrefabPacker : MonoBehaviour {
         Matrix4x4 scaleAdjust = Matrix4x4.Scale(scale);
         Vector3 posAdjust = transform.position;
         Vector3 normal = Vector3.up;
-        for (int i = 0; i < packShape.triangles.Length / 3; ++i)
+        for (int i = 0; i < packShape.triangles.Length / 3; i += (skipCount + 1))
         {
             Vector3 pos = scaleAdjust * AttachmentHelpers.GetAttachPoint(packShape, i, out normal);
             GameObject go = GameObject.Instantiate(prefabs[NextPrefabIdx], pos + posAdjust, Quaternion.LookRotation(normal)) as GameObject;
