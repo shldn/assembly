@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class AttachmentHelpers{
 
@@ -10,6 +11,7 @@ public class AttachmentHelpers{
         Object prefabObj = Resources.Load("GroundGame/Spring");
         GameObject spring = GameObject.Instantiate(prefabObj) as GameObject;
         spring.transform.position = parent.transform.position + positionOffset;
+        spring.transform.parent = parent.transform;
 
         // randomly rotate spring direction vector, stay on proper side of the plane orthogonal to attachNormal.
         float randAngle = Random.Range(GroundGameManager.Inst.minSpringAngleOffset, GroundGameManager.Inst.maxAngleOffset);
@@ -32,6 +34,24 @@ public class AttachmentHelpers{
     {
         int triangleIdx = Random.Range(0, (m.triangles.Length / 3));
         return GetAttachPoint(m, triangleIdx, out normal);
+    }
+
+    public static Vector3 GetRandomAttachPoint(Mesh m, out Vector3 normal, out int triangleIdx, HashSet<int> avoidTris = null)
+    {
+        if (m.triangles.Length / 3 > avoidTris.Count)
+        {
+            int numTries = 100;
+            for (int i = 0; i < numTries; ++i)
+            {
+                triangleIdx = Random.Range(0, (m.triangles.Length / 3));
+                if (!avoidTris.Contains(triangleIdx))
+                    return GetAttachPoint(m, triangleIdx, out normal);
+            }
+        }
+
+        triangleIdx = -1;
+        normal = Vector3.up;
+        return Vector3.zero;
     }
 
     // returns the position of the center of the indicated triangle on mesh m.
