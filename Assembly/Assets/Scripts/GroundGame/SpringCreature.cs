@@ -4,23 +4,25 @@ using System.Collections.Generic;
 
 public class SpringCreature : MonoBehaviour {
 
-    public int numInitSprings = 5;
+    public int numSprings = 5;
     public int repeatDelayMin = 1;
     public int repeatDelayMax = 6;
     Matrix4x4 scaleAdjust;
     HashSet<int> attachedTriangles = new HashSet<int>();
-
-    private int springCount = 0;
-    public int SpringCount { get { return springCount; } set { springCount = value; } }
 	
 	void Start () {
-        if (numInitSprings < 0)
+        if (numSprings < 0)
             AddSpringsToAllFaces();
-        for (int i = 0; i < numInitSprings; ++i)
-            AddSpring();
+        for (int i = 0; i < numSprings; ++i)
+            AddSpringImpl(false);
 	}
 
     public bool AddSpring()
+    {
+        return AddSpringImpl(true);
+    }
+
+    private bool AddSpringImpl(bool incrementNumSprings = true)
     {
         Vector3 normal = Vector3.up;
         scaleAdjust = Matrix4x4.Scale(gameObject.transform.localScale);
@@ -35,7 +37,8 @@ public class SpringCreature : MonoBehaviour {
         BoxColliderStagedScaler scaler = spring.GetComponent<BoxColliderStagedScaler>();
         scaler.repeatDelay = Random.Range((float)repeatDelayMin, (float)repeatDelayMax);
 
-        ++springCount;
+        if (incrementNumSprings)
+            ++numSprings;
         return true;
     }
 
@@ -44,9 +47,9 @@ public class SpringCreature : MonoBehaviour {
         Vector3 normal = Vector3.up;
         scaleAdjust = Matrix4x4.Scale(gameObject.transform.localScale);
         int numTris = gameObject.GetComponent<MeshFilter>().mesh.triangles.Length / 3;
-        for (springCount = 0; springCount < numTris; ++springCount)
+        for (numSprings = 0; numSprings < numTris; ++numSprings)
         {
-            GameObject spring = AttachmentHelpers.AttachSpringToObject(gameObject, transform.rotation * (scaleAdjust * AttachmentHelpers.GetAttachPoint(gameObject.GetComponent<MeshFilter>().mesh, springCount, out normal)), transform.rotation * normal);
+            GameObject spring = AttachmentHelpers.AttachSpringToObject(gameObject, transform.rotation * (scaleAdjust * AttachmentHelpers.GetAttachPoint(gameObject.GetComponent<MeshFilter>().mesh, numSprings, out normal)), transform.rotation * normal);
             
             // set repeat delay
             BoxColliderStagedScaler scaler = spring.GetComponent<BoxColliderStagedScaler>();

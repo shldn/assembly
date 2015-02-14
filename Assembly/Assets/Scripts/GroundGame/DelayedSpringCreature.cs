@@ -19,14 +19,14 @@ public class DelayedSpringCreature : MonoBehaviour {
     void CreateSpringCreature()
     {
         creature = gameObject.AddComponent<SpringCreature>();
-        creature.numInitSprings = 1;
+        creature.numSprings = 1;
         Invoke("AddSpring", timeBetweenSprings);
     }
 
     void AddSpring()
     {
         creature.AddSpring();
-        if (creature.SpringCount < numSprings)
+        if (creature.numSprings < numSprings)
             Invoke("AddSpring", timeBetweenSprings);
     }
 

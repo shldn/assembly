@@ -27,7 +27,7 @@ public class JunkCloud : MonoBehaviour {
             if (false)
             {
                 SpringCreature creature = go.AddComponent<SpringCreature>();
-                creature.numInitSprings = 5;
+                creature.numSprings = 5;
             }
             else
             {

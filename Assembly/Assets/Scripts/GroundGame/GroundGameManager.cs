@@ -35,20 +35,20 @@ public class GroundGameManager : MonoBehaviour {
             hull.renderer.material = new Material(Shader.Find("Diffuse"));
             hull.transform.position = new Vector3(8, 5.5F, 0);
             SpringCreature creature = hull.AddComponent<SpringCreature>();
-            creature.numInitSprings = (int)(randomHullSpringPercent * (float)(hull.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
+            creature.numSprings = (int)(randomHullSpringPercent * (float)(hull.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
         }
 
         if (Input.GetKeyUp(KeyCode.J))
         {
             GameObject junk = (GameObject)GameObject.Instantiate(Input.GetKey(KeyCode.RightShift) ? Resources.Load("GroundGame/Block") : Resources.Load("GroundGame/Palette"));
             SpringCreature creature = junk.AddComponent<SpringCreature>();
-            creature.numInitSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
+            creature.numSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
         }
         if (Input.GetKeyUp(KeyCode.K))
         {
             GameObject junk = (GameObject)GameObject.Instantiate(Resources.Load("GroundGame/Airduct"));
             SpringCreature creature = junk.AddComponent<SpringCreature>();
-            creature.numInitSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
+            creature.numSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
         }
 	}
 }
