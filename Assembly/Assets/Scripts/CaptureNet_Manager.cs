@@ -6,6 +6,8 @@ using System.Collections.Generic;
 
 public class CaptureNet_Manager : MonoBehaviour {
 
+	public static CaptureNet_Manager Inst = null;
+
     // Multiplayer variables
     public static ANetworkPlayer[] playerList = new ANetworkPlayer[0];
 
@@ -15,7 +17,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     string remoteIpList = "http://132.239.235.40:5000/fbsharing/AT9dONfV"; // This file lives on khan: /Khan/Assembly/app_data/ipList.txt
     List<string> connectToIP = new List<string>();
     List<string> backupConnectToIP = new List<string>(){"127.0.0.1", "132.239.235.116", "132.239.235.115", "75.80.103.34", "67.58.54.68"};
-    int connectionPort = 25565;
+    public int connectionPort = 25565;
     bool useNAT = false; // Not sure what NAT is... do some research.
     string ipAddress;
     string port;
@@ -40,6 +42,8 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 
     void Awake(){
+		Inst = this;
+
         if (Debug.isDebugBuild)
             connectToIP = new List<string>() { "127.0.0.1" };
         else
@@ -59,7 +63,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     void Update(){
 	    connectCooldown -= Time.deltaTime;
         // Cycle through available IPs to connect to.
-        if (connectToIP.Count > 0 && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f)){
+        if (connectToIP.Count > 0 && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f) && !ClientAdminMenu.Inst.showMenu){
 			Network.Connect(connectToIP[ipListConnect], connectionPort);
             ipListConnect = (ipListConnect + 1) % connectToIP.Count;
 
@@ -121,28 +125,29 @@ public class CaptureNet_Manager : MonoBehaviour {
     void OnGUI(){
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 
-        if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
-            GUI.skin.label.fontSize = 40;
-            GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-            GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Connecting to server...");
-        }
+		if (!ClientAdminMenu.Inst.showMenu){
+			if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
+				GUI.skin.label.fontSize = 40;
+				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+				GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Connecting to server...");
+			}
 
-        if ((!PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
-            GUI.skin.label.fontSize = 20;
-            GUI.skin.label.alignment = TextAnchor.LowerCenter;
-            GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Initializing server...");
-        }
+			if ((!PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
+				GUI.skin.label.fontSize = 20;
+				GUI.skin.label.alignment = TextAnchor.LowerCenter;
+				GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Initializing server...");
+			}
 
-        if (!PersistentGameManager.IsClient && showQRCode)
-        {
-            int texSize = Screen.width / 8;
-            int gutter = 20;
-            GUI.DrawTexture(new Rect(Screen.width - texSize - gutter, Screen.height - texSize - gutter, texSize, texSize), PersistentGameManager.Inst.qrCodeTexture, ScaleMode.ScaleToFit);
-            GUI.skin.label.alignment = TextAnchor.UpperRight;
-            GUI.Label(new Rect(Screen.width - texSize - gutter - 500, Screen.height - gutter, texSize + 500, gutter), "http://imagination.ucsd.edu/assembly.apk");
+			if (!PersistentGameManager.IsClient && showQRCode)
+			{
+				int texSize = Screen.width / 8;
+				int gutter = 20;
+				GUI.DrawTexture(new Rect(Screen.width - texSize - gutter, Screen.height - texSize - gutter, texSize, texSize), PersistentGameManager.Inst.qrCodeTexture, ScaleMode.ScaleToFit);
+				GUI.skin.label.alignment = TextAnchor.UpperRight;
+				GUI.Label(new Rect(Screen.width - texSize - gutter - 500, Screen.height - gutter, texSize + 500, gutter), "http://imagination.ucsd.edu/assembly.apk");
             
-        }
-
+			}
+		}
     } // End of OnGUI().
 
 
