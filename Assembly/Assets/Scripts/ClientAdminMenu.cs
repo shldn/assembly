@@ -8,28 +8,32 @@ public class ClientAdminMenu : MonoBehaviour {
     public bool showMenu = false;
     public Texture settingsIconTexture = null;
     int gutter = 10;
-    int btnWidth = 50;
-    int btnHeight = 50;
     bool orbitMode = false;
 	bool showIPNumpad = false;
 	string ipString = "";
+
+	public bool isOpen {get{return showMenu || showIPNumpad;}}
+
 
     void Awake()
     {
 		Inst = this;
         enabled = PersistentGameManager.IsAdminClient;
-    }
+    } // End of Awake().
 	
+
     void OnGUI()
     {
         if( CaptureEditorManager.capturedObj != null )
             return;
 
-        if (GUI.Button(new Rect(Screen.width - btnWidth - gutter, Screen.height - btnHeight - gutter, btnWidth, btnHeight), settingsIconTexture))
+		int cogSize = Mathf.CeilToInt(Screen.height * 0.1f);
+        if (GUI.Button(new Rect(Screen.width - cogSize - gutter, Screen.height - cogSize - gutter, cogSize, cogSize), settingsIconTexture))
             showMenu = !showMenu;
 
 		Rect controlBarRect = new Rect(0.25f * Screen.width, gutter, 0.5f * Screen.width, Screen.height - 2 * gutter);
-		GUI.skin.button.fontSize = 20;
+		GUI.skin.button.fontSize = Mathf.CeilToInt(Mathf.Min(Screen.width, Screen.height) * 0.05f);
+		GUI.skin.label.fontSize = Mathf.CeilToInt(Mathf.Min(Screen.width, Screen.height) * 0.05f);
 
         if (showMenu)
         {
@@ -38,14 +42,16 @@ public class ClientAdminMenu : MonoBehaviour {
 				GUILayout.Label(ipString, GUILayout.Height(Screen.height * 0.1f), GUILayout.ExpandWidth(true));
 
 				int hitButton = -1;
-				string[] buttonList = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "del"};
+				string[] buttonList = {"1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "\u2190"};
 				hitButton = GUILayout.SelectionGrid(hitButton, buttonList, 3, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
-				if(hitButton == 10)
+				if(hitButton == 9)
 					ipString += ".";
+				if(hitButton == 10)
+					ipString += "0";
 				else if(hitButton == 11)
 					ipString = ipString.Substring(0, ipString.Length - 1);
 				else if(hitButton >= 0)
-					ipString += hitButton.ToString();
+					ipString += (hitButton + 1).ToString();
 
 				GUILayout.Space(Screen.height * 0.05f);
 				if(GUILayout.Button("<b>\u221A Connect to IP</b>", GUILayout.Height(Screen.height * 0.1f), GUILayout.ExpandWidth(true))){
@@ -71,8 +77,18 @@ public class ClientAdminMenu : MonoBehaviour {
 				if (GUILayout.Button("Manual IP Connect", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true))){
 					showIPNumpad = true;
 				}
+
+				if(Input.GetKeyDown(KeyCode.Escape))
+					showMenu = false;
 			}
 			GUILayout.EndArea();
         }
-    }
-}
+    } // End of OnGUI().
+
+
+	public void CloseAll(){
+		showMenu = false;
+		showIPNumpad = false;
+	} // End of CloseAll().
+
+} // End of ClientAdminMenu.

@@ -177,6 +177,8 @@ public class CaptureNet_Manager : MonoBehaviour {
 	    playerList[0].player = Network.player;
 	    playerList[0].playerName = playerName;
         ANetworkPlayer.me = playerList[0];
+
+		ClientAdminMenu.Inst.CloseAll();
 	
 	    networkView.RPC("Credentials", RPCMode.Others, Network.player, playerName);
 	    //ConsoleScript.Inst.GlobalWriteToLog("![" + playerName + "] has connected.", RPCMode.Others);

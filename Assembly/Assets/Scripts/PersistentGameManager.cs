@@ -68,6 +68,7 @@ public class PersistentGameManager : MonoBehaviour {
         }
 
         Screen.lockCursor = cursorLock;
+
 	}
 
 
