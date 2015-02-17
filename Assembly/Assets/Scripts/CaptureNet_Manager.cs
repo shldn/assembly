@@ -63,7 +63,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 			Network.Connect(connectToIP[ipListConnect], connectionPort);
             ipListConnect = (ipListConnect + 1) % connectToIP.Count;
 
-            connectCooldown = 3f;
+            connectCooldown = 0f;
         }
 
         // If player is not connected, run the ConnectWindow function.

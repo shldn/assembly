@@ -590,7 +590,7 @@ public class Assembly : CaptureObject {
         for(int i = 0; i < numNodesModify; i++){
             if(Random.Range(0f, 1f) <= 0.5)
                 AddRandomNode();
-            else if(nodes.Count > 1)
+            else if(nodes.Count > GameManager.Inst.minNumNodes)
                 RemoveRandomNode();
         }
 
