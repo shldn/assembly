@@ -87,6 +87,7 @@ public class IOHelper
 
     public static void SaveAssembly(string filePath, Assembly assembly)
     {
+#if UNITY_STANDALONE
         if (!File.Exists(filePath))
         {
             // Create a file to write to. 
@@ -97,6 +98,9 @@ public class IOHelper
         }
         else
             Debug.LogError(filePath + " already exists, save aborted");
+#else
+        Debug.LogError("Save Assembly only supported in standalone builds.");
+#endif
     }
 
     static public List<Vector3> Vector3ListFromString(string str)
