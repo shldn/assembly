@@ -73,10 +73,6 @@ public class GameManager : MonoBehaviour {
     void LateUpdate(){
         deltaRealTime = Time.deltaTime / Time.timeScale;
         
-        if(Input.GetKeyDown(KeyCode.Escape))
-            Application.Quit();
-
-
         Time.timeScale = Mathf.MoveTowards(Time.timeScale, targetTimeScale, (deltaRealTime));
         Time.fixedDeltaTime = 0.05f * Time.timeScale;
 
@@ -202,11 +198,6 @@ public class GameManager : MonoBehaviour {
 
         LevelManager.InputHandler();
 
-        if(Application.platform == RuntimePlatform.Android){
-            // Quit on back button.
-            if(Input.GetKeyDown(KeyCode.Escape))
-                Application.Quit();
-        }
     } // End of Update().
 
 

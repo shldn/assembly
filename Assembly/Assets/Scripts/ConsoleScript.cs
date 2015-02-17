@@ -119,7 +119,8 @@ public class ConsoleScript : MonoBehaviour {
 
         commands["quit"].func = delegate(string[] args)
         {
-            Application.Quit();
+			if((Application.platform != RuntimePlatform.Android) || !ClientAdminMenu.Inst.isOpen)
+				Application.Quit();
         };
 
         commands["reload"].func = delegate(string[] args)

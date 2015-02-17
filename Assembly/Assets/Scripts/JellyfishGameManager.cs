@@ -52,8 +52,7 @@ public class JellyfishGameManager : MonoBehaviour {
 
     void Update(){
         LevelManager.InputHandler();
-        if(Input.GetKey(KeyCode.Escape))
-            Application.Quit();
+        
         if (Input.GetKeyUp(KeyCode.J))
         {
             if(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
