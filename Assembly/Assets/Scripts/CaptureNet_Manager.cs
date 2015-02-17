@@ -40,7 +40,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     float connectCooldown = 0f;
     int ipListConnect = 0;
 
-
+	 
     void Awake(){
 		Inst = this;
 
