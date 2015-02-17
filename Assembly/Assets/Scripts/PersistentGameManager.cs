@@ -53,6 +53,9 @@ public class PersistentGameManager : MonoBehaviour {
             pushClip = Resources.Load("captureClip") as AudioClip;
         if (!IsClient && qrCodeTexture == null)
             qrCodeTexture = Resources.Load("Textures/Capture_QR_Code") as Texture;
+
+        if (IsClient)
+            cursorLock = false;
         
 	}
 
