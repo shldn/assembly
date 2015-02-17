@@ -7,6 +7,7 @@ public class ClientAdminMenu : MonoBehaviour {
 
     public bool showMenu = false;
     public Texture settingsIconTexture = null;
+	public GUIStyle clientGUISkin = null;
     int gutter = 10;
     int btnWidth = 50;
     int btnHeight = 50;
@@ -29,7 +30,7 @@ public class ClientAdminMenu : MonoBehaviour {
             showMenu = !showMenu;
 
 		Rect controlBarRect = new Rect(0.25f * Screen.width, gutter, 0.5f * Screen.width, Screen.height - 2 * gutter);
-		GUI.skin.button.fontSize = 20;
+		GUI.skin.button.fontSize = Mathf.CeilToInt(Mathf.Min(Screen.width, Screen.height) * 0.1f);
 
         if (showMenu)
         {
@@ -71,6 +72,9 @@ public class ClientAdminMenu : MonoBehaviour {
 				if (GUILayout.Button("Manual IP Connect", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true))){
 					showIPNumpad = true;
 				}
+
+				if(Input.GetKeyDown(KeyCode.Escape))
+					showMenu = false;
 			}
 			GUILayout.EndArea();
         }
