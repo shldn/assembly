@@ -80,7 +80,7 @@ public class Assembly : CaptureObject {
 
     public Assembly targetMate = null;
     public Assembly gentlemanCaller = null;
-    float mateCooldown = 5f;
+    float mateCooldown = 10f;
 
     public float MaxEnergy { get{ return nodes.Count; }}
     public float Health { get{ return currentEnergy / MaxEnergy; }
@@ -166,7 +166,7 @@ public class Assembly : CaptureObject {
         physicsObject.layer = LayerMask.NameToLayer("Assemblies");
         physicsObject.AddComponent<Rigidbody>();
         physicsObject.rigidbody.useGravity = false;
-        physicsObject.rigidbody.angularDrag = 0.1f;
+        physicsObject.rigidbody.angularDrag = 1f;
         physicsObject.rigidbody.drag = 0.3f;
 
     } // End of InitPhysicsObject().
@@ -365,7 +365,8 @@ public class Assembly : CaptureObject {
             assemblyObject.transform.position = WorldPosition;
 
         // If assembly has 200% health, it reproduces!
-        if(Health >= 2f && !PersistentGameManager.IsClient){
+		mateCooldown -= Time.deltaTime;
+        if(Health >= 2f && !PersistentGameManager.IsClient && (mateCooldown <= 0f)){
             Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
             RandomMelody.Inst.PlayNote();
             

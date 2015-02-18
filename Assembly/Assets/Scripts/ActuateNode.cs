@@ -78,7 +78,7 @@ public class ActuateNode : Node {
     
     public void Propel(Quaternion inputQuat, float sigStrength){
         totalSigStrength += sigStrength;
-        assembly.physicsObject.rigidbody.AddForceAtPosition(((nodeProperties.actuateVector * inputQuat) * Vector3.forward) * 10f * sigStrength * nodeProperties.muscleStrength, worldPosition);
+        assembly.physicsObject.rigidbody.AddForceAtPosition(((assembly.WorldRotation * nodeProperties.actuateVector * inputQuat) * Vector3.forward) * 10f * sigStrength * nodeProperties.muscleStrength, worldPosition);
     } // End of Propel().
 
     public override void Destroy(){

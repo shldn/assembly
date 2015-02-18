@@ -125,7 +125,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     void OnGUI(){
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 
-		if (!ClientAdminMenu.Inst.showMenu){
+		if (ClientAdminMenu.Inst && !ClientAdminMenu.Inst.showMenu){
 			if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
 				GUI.skin.label.fontSize = 40;
 				GUI.skin.label.alignment = TextAnchor.MiddleCenter;

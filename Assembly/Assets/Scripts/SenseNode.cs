@@ -157,7 +157,7 @@ public class SenseNode : Node {
 
     //consume food within range
     public void Consume(FoodPellet food){
-        float realConsumeRate = (consumeRate * 10f * Time.deltaTime) * SenseNode.consumeRate; 
+        float realConsumeRate = (consumeRate * 8f * Time.deltaTime) * SenseNode.consumeRate; 
         Vector3 foodDist = food.worldPosition - this.worldPosition;
         //consume rate square drop off
         //realConsumeRate *= (1 - foodDist.sqrMagnitude / (Mathf.Pow(consumeRange, 2f)));

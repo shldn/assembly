@@ -8,7 +8,7 @@ public class RandomMelody : MonoBehaviour {
     public AudioClip noteClip = null;
     public float noteFreq = 440f;
 
-    float[] notes = {277.18f, 311.13f, 329.63f, 349.23f, 369.99f, 415.30f, 440f, 493.88f, 554.37f};
+    float[] notes = {277.18f, 311.13f, /*329.63f, */349.23f, 369.99f, 415.30f, 440f, 493.88f, 554.37f};
 
     float cooldown = 0f;
 

@@ -64,6 +64,7 @@ public class TransitionManager : MonoBehaviour {
             }
             if(GameManager.Inst){
                 CameraControl.Inst.radius = 1000f;
+				CameraControl.Inst.targetRadius = 200f;
             }
 
 
