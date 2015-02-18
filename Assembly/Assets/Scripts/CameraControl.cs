@@ -129,6 +129,11 @@ public class CameraControl : MonoBehaviour {
         // Mouse zoom
         targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel") * radiusSensitivity ;
 
+		if(Input.GetKey(KeyCode.Comma))
+	        targetRadius += targetRadius * -Time.deltaTime * radiusSensitivity ;
+		if(Input.GetKey(KeyCode.Period))
+	        targetRadius += targetRadius * Time.deltaTime * radiusSensitivity ;
+
         // Mouse/touch orbit.
         if((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) && CaptureEditorManager.IsEditing && !NodeEngineering.Inst.uiLockout && !AssemblyEditor.Inst.uiLockout) || Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease)){
             targetOrbit.x += Input.GetAxis("Mouse X") * orbitSensitivity;

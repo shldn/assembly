@@ -119,7 +119,7 @@ public class ConsoleScript : MonoBehaviour {
 
         commands["quit"].func = delegate(string[] args)
         {
-			if((Application.platform != RuntimePlatform.Android) || !ClientAdminMenu.Inst.isOpen)
+			if((Application.platform != RuntimePlatform.Android) || (ClientAdminMenu.Inst && !ClientAdminMenu.Inst.isOpen))
 				Application.Quit();
         };
 
@@ -194,6 +194,9 @@ public class ConsoleScript : MonoBehaviour {
                 WesInput.active = true;
             }
         }
+
+		if(Input.GetKeyDown(KeyCode.Escape))
+			InterperetCommand("quit");
 	}
 
 
