@@ -1,0 +1,89 @@
+fileFormatVersion: 2
+guid: 77bf611ba57ccda4c81e520a479af245
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: CATRigHub001
+    100002: CATRigTail1
+    100004: CATRigTail1 1
+    100006: CATRigTail1 2
+    100008: CATRigTail2
+    100010: CATRigTail3
+    100012: CATRigTail4
+    100014: CATRigTail5
+    100016: CATRigTail6
+    100018: CATRigTail7
+    100020: CATRigTail8
+    100022: //RootNode
+    100024: Tentacleblob
+    400000: CATRigHub001
+    400002: CATRigTail1
+    400004: CATRigTail1 1
+    400006: CATRigTail1 2
+    400008: CATRigTail2
+    400010: CATRigTail3
+    400012: CATRigTail4
+    400014: CATRigTail5
+    400016: CATRigTail6
+    400018: CATRigTail7
+    400020: CATRigTail8
+    400022: //RootNode
+    400024: Tentacleblob
+    4300000: Tentacleblob
+    7400000: Take 001
+    9500000: //RootNode
+    13700000: Tentacleblob
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  additionalBone: 0
+  userData: 
