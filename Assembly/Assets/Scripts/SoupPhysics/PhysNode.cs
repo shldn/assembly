@@ -17,8 +17,11 @@ public class PhysNode : MonoBehaviour {
 	} // End of PhysNeighbor.
 
 	Vector3 rotationVector = Random.onUnitSphere;
-	float wigglePhase = Random.Range(0.1f, 20f);
-	float wiggleMaxAngVel = Random.Range(0f, 300f);
+	float wigglePhase = Random.Range(0.2f, 10f);
+	float wiggleMaxAngVel = Random.Range(0f, 500f);
+
+	float flailMaxDeflection = Random.Range(0f, 60f);
+	Quaternion lastFlailOffset = Quaternion.identity; // For determining connection rotations.
 
 	public Transform cubeTransform = null;
 
@@ -35,20 +38,41 @@ public class PhysNode : MonoBehaviour {
 
 
 	void Update(){
-		float wiggleVel = Mathf.Sin(Time.time * (2f * Mathf.PI) * (1f / wigglePhase));
-		transform.Rotate(rotationVector, wiggleMaxAngVel * wiggleVel * Time.deltaTime);
+		float wiggle = Mathf.Sin(Time.time * (2f * Mathf.PI) * (1f / wigglePhase));
+		// -- Comment out to remove 'torqueing'
+		transform.Rotate(rotationVector, wiggleMaxAngVel * wiggle * Time.deltaTime);
+
+
+		Quaternion flailOffset = Quaternion.identity;
+		// -- Comment out to remove 'flailing'
+		flailOffset = Quaternion.Euler(rotationVector * wiggle * flailMaxDeflection);
+
 
 		// Node tests each neighbor's target position in relation to it.
 		for(int i = 0; i < neighbors.Count; i++){
 			PhysNeighbor curNeighbor = neighbors[i];
 			PhysNode curNeighborNode = curNeighbor.physNode;
-			Vector3 vecToNeighborTargetPos = curNeighborNode.transform.position - (transform.position + ((transform.rotation * curNeighbor.dir) * Vector3.forward)); 
+			if((curNeighbor == null) || !curNeighborNode){
+				neighbors.Remove(curNeighbor);
+				continue;
+			}
+
+			Vector3 vecToNeighborTargetPos = curNeighborNode.transform.position - (transform.position + ((transform.rotation * curNeighbor.dir * flailOffset) * Vector3.forward)); 
 
 			transform.position += vecToNeighborTargetPos * 0.5f;
 			curNeighborNode.transform.position -= vecToNeighborTargetPos * 0.5f;
 
 			transform.rotation = Quaternion.Lerp(transform.rotation, curNeighborNode.transform.rotation, 0.5f);
 			curNeighborNode.transform.rotation = Quaternion.Lerp(curNeighborNode.transform.rotation, transform.rotation, 0.5f);
+
+			Quaternion ΔFlailOffset = Quaternion.Inverse(flailOffset) * lastFlailOffset;
+			lastFlailOffset = flailOffset;
+			// -- Comment out to remove 'flail relative torqueing'
+			transform.rotation *= Quaternion.Inverse(ΔFlailOffset);
+			curNeighborNode.transform.rotation *= ΔFlailOffset;
+
+			// -- Comment out to remove 'swimming propulsion'
+			transform.position += (transform.rotation * curNeighbor.dir) * Vector3.forward * (flailMaxDeflection / wigglePhase) * Time.deltaTime * 0.2f;
 
 			Debug.DrawLine(curNeighborNode.transform.position, transform.position + ((transform.rotation)* curNeighbor.dir) * Vector3.forward);
 

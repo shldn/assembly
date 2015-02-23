@@ -244,7 +244,7 @@ public class CameraControl : MonoBehaviour {
     } // End of OnGUI().
 
 
-    void OnDrawGizmos(){
+    void OnDrawGizmosSelected(){
         Gizmos.color = new Color(0f, 1f, 1f, 0.5f);
         Gizmos.DrawWireSphere(Vector3.zero, minRadius);
         Gizmos.color = new Color(0f, 1f, 1f, 0.05f);
