@@ -50,8 +50,10 @@ public class CameraControl : MonoBehaviour {
 
 	void Start(){
         // Set up camera rendering effects
-        RenderSettings.fog = true;
-        RenderSettings.fogColor = Camera.main.backgroundColor;
+		if(Application.loadedLevelName != "SoupPhysics"){
+			RenderSettings.fog = true;
+			RenderSettings.fogColor = Camera.main.backgroundColor;
+		}
 
         // Camera initial values
         targetRadius = maxRadius;
@@ -93,12 +95,14 @@ public class CameraControl : MonoBehaviour {
             center = selectedNode.gameObject.transform.position;
         else if(selectedAssembly)
             center = selectedAssembly.WorldPosition;
+		
 		else if(PhysNode.all.Count > 0){
 			center = Vector3.zero;
 			for(int i = 0; i < PhysNode.all.Count; i++)
 				center += PhysNode.all[i].transform.position;
 			center /= PhysNode.all.Count;
 		}
+		
         else
             center = Vector3.zero;
 

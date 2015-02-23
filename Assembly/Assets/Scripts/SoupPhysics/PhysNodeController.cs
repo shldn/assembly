@@ -9,7 +9,7 @@ public class PhysNodeController : MonoBehaviour {
 	void Start(){ 
 		// Create some random nodes adjacent to each other.
 		IntVector3 spawnHexPos = IntVector3.zero;
-		for(int i = 0; i < 3000; i++){
+		for(int i = 0; i < 1000; i++){
 			// Make sure no phys node is here currently.
 			bool spaceOccupied = false;
 			for(int j = 0; j < PhysNode.all.Count; j++){
@@ -25,8 +25,8 @@ public class PhysNodeController : MonoBehaviour {
 				newPhysNode.transform.position = HexUtilities.HexToWorld(spawnHexPos);
 			}
 			//spawnHexPos += HexUtilities.RandomAdjacent();
-			//spawnHexPos += HexUtilities.RandomAdjacent() + new IntVector3(Random.Range(0, 2), 0, 0);
-			spawnHexPos += new IntVector3(1, 0, 0);
+			spawnHexPos += HexUtilities.RandomAdjacent() + new IntVector3(Random.Range(0, 2), 0, 0);
+			//spawnHexPos += new IntVector3(1, 0, 0);
 		}
 
 		// Assign neighbors.
@@ -43,9 +43,9 @@ public class PhysNodeController : MonoBehaviour {
 			}
 		}
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-}
+
+
+	void Update(){
+	} // End of Update().
+
+} // End of PhysNodeController.
