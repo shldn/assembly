@@ -9,7 +9,7 @@ public class PhysNodeController : MonoBehaviour {
 	void Start(){ 
 		// Create some random nodes adjacent to each other.
 		IntVector3 spawnHexPos = IntVector3.zero;
-		for(int i = 0; i < 1000; i++){
+		for(int i = 0; i < 2000; i++){
 			// Make sure no phys node is here currently.
 			bool spaceOccupied = false;
 			for(int j = 0; j < PhysNode.all.Count; j++){

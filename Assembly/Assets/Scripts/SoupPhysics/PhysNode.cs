@@ -54,6 +54,7 @@ public class PhysNode : MonoBehaviour {
 
 
 		// Node tests each neighbor's target position in relation to it.
+		Vector3 positionOffset = Vector3.zero;
 		for(int i = 0; i < neighbors.Count; i++){
 			PhysNeighbor curNeighbor = neighbors[i];
 			PhysNode curNeighborNode = curNeighbor.physNode;
@@ -61,10 +62,17 @@ public class PhysNode : MonoBehaviour {
 				neighbors.Remove(curNeighbor);
 				continue;
 			}
+			Debug.DrawLine(transform.position, curNeighborNode.transform.position, new Color(1f, 1f, 1f, 0.3f));
 
 			Vector3 vecToNeighborTargetPos = curNeighborNode.transform.position - (transform.position + ((transform.rotation * curNeighbor.dir * flailOffset) * Vector3.forward)); 
 
-			transform.position += vecToNeighborTargetPos * 0.45f;
+			// Trace motor nodes' neighbors and relative rotations.
+			if(neighbors.Count == 2){
+				Debug.DrawLine(transform.position, transform.position + (transform.rotation * curNeighbor.dir * Vector3.forward), Color.white);
+				Debug.DrawLine(transform.position, transform.position + (transform.rotation * curNeighbor.dir * flailOffset * Vector3.forward), Color.cyan);
+			}
+
+			positionOffset += vecToNeighborTargetPos * 0.45f;
 			curNeighborNode.transform.position -= vecToNeighborTargetPos * 0.45f;
 
 			transform.rotation = Quaternion.Lerp(transform.rotation, curNeighborNode.transform.rotation, 0.5f);
@@ -77,10 +85,12 @@ public class PhysNode : MonoBehaviour {
 			curNeighborNode.transform.rotation *= ΔFlailOffset;
 
 			// -- Comment out to remove 'swimming propulsion'
-			transform.position += (transform.rotation * curNeighbor.dir) * Vector3.forward * (flailMaxDeflection / Mathf.Pow(wigglePhase, 2f)) * Time.deltaTime * 0.2f;
-
-			Debug.DrawLine(curNeighborNode.transform.position, transform.position + ((transform.rotation)* curNeighbor.dir) * Vector3.forward);
+			if(neighbors.Count == 2){
+				positionOffset = (transform.rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / Mathf.Pow(wigglePhase, 2f)) * Time.deltaTime * 0.2f;
+				Debug.DrawRay(transform.position, (transform.rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / Mathf.Pow(wigglePhase, 2f)) * 0.1f, Color.red);
+			}
 		}
+		transform.position += positionOffset;
 		
 		// Update node type?
 		if(neighbors.Count != lastNeighborCount){
@@ -108,7 +118,7 @@ public class PhysNode : MonoBehaviour {
 		switch(neighbors.Count){
 			case 1 : 
 				float viewConeSize = 2.5f;
-				Debug.DrawRay(transform.position, transform.forward * 3f, Color.green);
+				//Debug.DrawRay(transform.position, transform.forward * 3f, Color.green);
 
 				viewCone.position = transform.position + transform.forward * viewConeSize;
 				viewCone.localScale = Vector3.one * viewConeSize;
