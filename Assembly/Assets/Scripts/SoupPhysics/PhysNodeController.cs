@@ -9,7 +9,7 @@ public class PhysNodeController : MonoBehaviour {
 	void Start(){ 
 		// Create some random nodes adjacent to each other.
 		IntVector3 spawnHexPos = IntVector3.zero;
-		for(int i = 0; i < 2000; i++){
+		for(int i = 0; i < 5000; i++){
 			// Make sure no phys node is here currently.
 			bool spaceOccupied = false;
 			for(int j = 0; j < PhysNode.all.Count; j++){
@@ -24,8 +24,8 @@ public class PhysNodeController : MonoBehaviour {
 				newPhysNode.hexPos = spawnHexPos;
 				newPhysNode.transform.position = HexUtilities.HexToWorld(spawnHexPos);
 			}
-			//spawnHexPos += HexUtilities.RandomAdjacent();
-			spawnHexPos += HexUtilities.RandomAdjacent() + new IntVector3(Random.Range(0, 2), 0, 0);
+			spawnHexPos += HexUtilities.RandomAdjacent();
+			//spawnHexPos += HexUtilities.RandomAdjacent() + new IntVector3(Random.Range(0, 2), 0, 0);
 			//spawnHexPos += new IntVector3(1, 0, 0);
 		}
 
@@ -42,10 +42,28 @@ public class PhysNodeController : MonoBehaviour {
 				}
 			}
 		}
-	}
 
+		// Clean up useless nodes.
+		for(int i = 0; i < PhysNode.all.Count; i++){
+			PhysNode thisNode = PhysNode.all[i];
+			if(thisNode.neighbors.Count == 0)
+				Destroy(thisNode.gameObject);
+			else if((thisNode.neighbors.Count == 1) && (thisNode.neighbors[0].physNode.neighbors.Count == 1)){
+				Destroy(thisNode.neighbors[0].physNode.gameObject);
+				Destroy(thisNode.gameObject);
+			}
+		}
+
+	} // End of Start().
 
 	void Update(){
+
+		for(int i = 0; i < PhysNode.all.Count; i++)
+			PhysNode.all[i].DoMath();
+
+		for(int i = 0; i < PhysNode.all.Count; i++)
+			PhysNode.all[i].UpdateTransform();
+
 	} // End of Update().
 
 } // End of PhysNodeController.
