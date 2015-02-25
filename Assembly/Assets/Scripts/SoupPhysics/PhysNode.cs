@@ -53,13 +53,16 @@ public class PhysNode : MonoBehaviour {
 
 	public void DoMath(){
 		float wiggle = Mathf.Sin(Time.time * (2f * Mathf.PI) * (1f / wigglePhase));
+
+		bool functioningMuscle = (neighbors.Count == 2) && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
+
 		// -- Comment out to remove 'torqueing'
-		if(neighbors.Count == 2)
+		if(functioningMuscle)
 			transform.Rotate(rotationVector, wiggleMaxAngVel * wiggle * Time.deltaTime);
 
 		Quaternion flailOffset = Quaternion.identity;
 		// -- Comment out to remove 'flailing'
-		if(neighbors.Count == 2)
+		if(functioningMuscle)
 			flailOffset = Quaternion.Euler(rotationVector * wiggle * flailMaxDeflection);
 
 		Quaternion ΔFlailOffset = Quaternion.Inverse(flailOffset) * lastFlailOffset;
@@ -77,13 +80,12 @@ public class PhysNode : MonoBehaviour {
 
 			Vector3 vecToNeighborTargetPos = curNeighborNode.transform.position - (transform.position + ((transform.rotation * curNeighbor.dir * flailOffset) * Vector3.forward)); 
 
-			
 
-			float updateLerpBias = 0.35f;
-
+			// All nodes try to align to their 'resting position' with their neighbors.
 			delayPosition += vecToNeighborTargetPos * 0.4f / neighbors.Count;
 			curNeighborNode.delayPosition -= vecToNeighborTargetPos * 0.4f / neighbors.Count;
 			
+			float updateLerpBias = 0.35f;
 			if((neighbors.Count == 2) && (curNeighborNode.neighbors.Count != 2)){
 				// Trace motor nodes' neighbors and relative rotations.
 				Debug.DrawLine(transform.position, transform.position + (transform.rotation * curNeighbor.dir * Vector3.forward), Color.cyan);
@@ -97,23 +99,19 @@ public class PhysNode : MonoBehaviour {
 					delayRotation *= Quaternion.Inverse(transform.rotation) * Quaternion.Lerp(transform.rotation, curNeighborNode.transform.rotation * flailOffset, updateLerpBias);
 					curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.transform.rotation) * Quaternion.Lerp(curNeighborNode.transform.rotation, transform.rotation * Quaternion.Inverse(flailOffset), updateLerpBias);
 				}
+
+				delayPosition += (transform.rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * Time.deltaTime * 0.2f;
+				Debug.DrawRay(transform.position, (transform.rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * 0.1f, Color.red);
 			}
+			// Inert nodes simply try to torque to match their neighbors.
 			else if((curNeighborNode.neighbors.Count != 2) || ((neighbors.Count == 2) && (curNeighborNode.neighbors.Count == 2))){
 				delayRotation = Quaternion.Lerp(delayRotation, curNeighborNode.transform.rotation, updateLerpBias);
 				//delayRotation *= Quaternion.Inverse(transform.rotation) * Quaternion.Lerp(transform.rotation, curNeighborNode.transform.rotation, 0.5f);
 
 				//curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.transform.rotation) * Quaternion.Lerp(curNeighborNode.transform.rotation, transform.rotation, 0.5f);
 			}
-			
-			// -- Comment out to remove 'flail relative torqueing'
-			//transform.rotation *= Quaternion.Inverse(ΔFlailOffset);
-			//curNeighborNode.transform.rotation *= ΔFlailOffset;
 
-			// -- Comment out to remove 'swimming propulsion'
-			if(neighbors.Count == 2){
-				delayPosition += (transform.rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * Time.deltaTime * 0.2f;
-				Debug.DrawRay(transform.position, (transform.rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * 0.1f, Color.red);
-			}
+			GLDebug.DrawLine(transform.position, curNeighborNode.transform.position, new Color(1f, 1f, 1f, 0.1f), 0, false);
 		}
 		
 		// Update node type?
