@@ -5,7 +5,7 @@ public class ClientAdminMenu : MonoBehaviour {
 
 	public static ClientAdminMenu Inst = null;
 
-    public bool showMenu = false;
+    public bool showMenu = true;
     public Texture settingsIconTexture = null;
 	public GUIStyle clientGUISkin = null;
     int gutter = 10;
@@ -19,6 +19,7 @@ public class ClientAdminMenu : MonoBehaviour {
     void Awake(){
 		Inst = this;
         enabled = PersistentGameManager.IsAdminClient;
+		showMenu = true;
 
 		if(PlayerPrefs.HasKey("manualIP"))
 			ipString = PlayerPrefs.GetString("manualIP");
@@ -54,6 +55,7 @@ public class ClientAdminMenu : MonoBehaviour {
         {
 			GUILayout.BeginArea(controlBarRect);
 			if(showIPNumpad){
+				GUI.skin.label.fontSize = Mathf.CeilToInt(Mathf.Min(Screen.width, Screen.height) * 0.06f);
 				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 				GUILayout.Label(ipString, GUILayout.Height(Screen.height * 0.1f), GUILayout.ExpandWidth(true));
 
