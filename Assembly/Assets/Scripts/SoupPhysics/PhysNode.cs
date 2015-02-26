@@ -23,6 +23,7 @@ public class PhysNode : MonoBehaviour {
 	public class PhysNeighbor {
 		public PhysNode physNode = null;
 		public Quaternion dir = Quaternion.identity;
+		public float arrowDist = 1f;
 	} // End of PhysNeighbor.
 
 	Vector3 rotationVector = Random.onUnitSphere;
@@ -37,6 +38,9 @@ public class PhysNode : MonoBehaviour {
 	Vector3 delayPosition = Vector3.zero;
 	Quaternion delayRotation = Quaternion.identity;
 
+	float power = 0f;
+	float waveformRunner = 0f;
+
 
 
 	void Awake(){
@@ -45,19 +49,24 @@ public class PhysNode : MonoBehaviour {
 
 
 	void Start(){
-		//cubeTransform.rotation = Random.rotation;
+		cubeTransform.rotation = Random.rotation;
 		delayPosition = transform.position;
 		delayRotation = transform.rotation;
 	} // End of Start().
 
 
 	public void DoMath(){
-		float wiggle = Mathf.Sin(Time.time * (2f * Mathf.PI) * (1f / wigglePhase));
+		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / wigglePhase));
+
+		if(Input.GetKey(KeyCode.T) || Input.GetKey(KeyCode.Y))
+			waveformRunner += Time.deltaTime * power;
+		else
+			waveformRunner += Time.deltaTime;
 
 		bool functioningMuscle = (neighbors.Count == 2) && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
 
 		// -- Comment out to remove 'torqueing'
-		if(functioningMuscle)
+		if(functioningMuscle && (Input.GetKey(KeyCode.T) || Input.GetKey(KeyCode.Y)))
 			transform.Rotate(rotationVector, wiggleMaxAngVel * wiggle * Time.deltaTime);
 
 		Quaternion flailOffset = Quaternion.identity;
@@ -67,6 +76,11 @@ public class PhysNode : MonoBehaviour {
 
 		Quaternion ΔFlailOffset = Quaternion.Inverse(flailOffset) * lastFlailOffset;
 		lastFlailOffset = flailOffset;
+
+
+		float sizeMult = 1f + (/*(0.5f + (Mathf.Sin(Time.time * 2f) * 0.5f)) **/ ((neighbors.Count - 1f) * 0.1f));
+			cubeTransform.localScale = Vector3.one * sizeMult;
+
 
 		// Node tests each neighbor's target position in relation to it.
 		for(int i = 0; i < neighbors.Count; i++){
@@ -78,7 +92,7 @@ public class PhysNode : MonoBehaviour {
 			}
 			Debug.DrawLine(transform.position, curNeighborNode.transform.position, new Color(1f, 1f, 1f, 0.15f));
 
-			Vector3 vecToNeighborTargetPos = curNeighborNode.transform.position - (transform.position + ((transform.rotation * curNeighbor.dir * flailOffset) * Vector3.forward)); 
+			Vector3 vecToNeighborTargetPos = curNeighborNode.transform.position - (transform.position + ((transform.rotation * curNeighbor.dir * flailOffset) * Vector3.forward * sizeMult)); 
 
 
 			// All nodes try to align to their 'resting position' with their neighbors.
@@ -100,8 +114,11 @@ public class PhysNode : MonoBehaviour {
 					curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.transform.rotation) * Quaternion.Lerp(curNeighborNode.transform.rotation, transform.rotation * Quaternion.Inverse(flailOffset), updateLerpBias);
 				}
 
-				delayPosition += (transform.rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * Time.deltaTime * 0.2f;
-				Debug.DrawRay(transform.position, (transform.rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * 0.1f, Color.red);
+				// Muscle propulsion
+				Vector3 propulsion = (transform.rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * Time.deltaTime * (1f - Mathf.Abs(wiggle)) * ((Input.GetKey(KeyCode.T) || Input.GetKey(KeyCode.Y))? power : 1f);
+				
+				delayPosition += propulsion;
+				Debug.DrawRay(transform.position, propulsion * 6f, Color.red);
 			}
 			// Inert nodes simply try to torque to match their neighbors.
 			else if((curNeighborNode.neighbors.Count != 2) || ((neighbors.Count == 2) && (curNeighborNode.neighbors.Count == 2))){
@@ -112,6 +129,7 @@ public class PhysNode : MonoBehaviour {
 			}
 
 			GLDebug.DrawLine(transform.position, curNeighborNode.transform.position, new Color(1f, 1f, 1f, 0.1f), 0, false);
+			//GLDebug.DrawLine(transform.position, curNeighborNode.transform.position, cubeTransform.renderer.material.color, 0, false);
 		}
 		
 		// Update node type?
@@ -162,6 +180,9 @@ public class PhysNode : MonoBehaviour {
 			case 3 : 
 				break;
 			}
+
+		// Reset power
+		power = 0f;
 	} // End of DoMath().
 
 
@@ -171,6 +192,15 @@ public class PhysNode : MonoBehaviour {
 
 		delayPosition = transform.position;
 		delayRotation = transform.rotation;
+
+		foreach(PhysNeighbor someNeighbor in neighbors){
+			if(Random.Range(0f, 1f) < 0.2f)
+				someNeighbor.arrowDist = Random.Range(0.25f, 0.4f);
+		}
+
+		if((Input.GetKey(KeyCode.T) || Input.GetKey(KeyCode.Y)) && (neighbors.Count == 1)){
+			Transmit(new HashSet<PhysNode>(new PhysNode[]{this}), 1f);
+		}
 	} // End of UpdateTransform().
 
 
@@ -191,6 +221,47 @@ public class PhysNode : MonoBehaviour {
 	void OnDestroy(){
 		all.Remove(this);
 	} // End of OnDestroy().
+
+
+
+	public void Transmit(HashSet<PhysNode> checkedNodes, float signalStrength){
+		checkedNodes.Add(this);
+		if(signalStrength < 0.02f)
+			return;
+
+		for(int i = 0; i < neighbors.Count; i++){
+			PhysNode curNeighbor = neighbors[i].physNode;
+			if(!checkedNodes.Contains(curNeighbor) && (curNeighbor.neighbors.Count > 1)){
+				float sig = signalStrength / Mathf.Max(1f, (neighbors.Count - 1));
+				curNeighbor.Transmit(new HashSet<PhysNode>(checkedNodes), sig * 0.95f);
+				//curNeighbor.Transmit(checkedNodes);
+
+				// Trace effect
+				if(Input.GetKey(KeyCode.T))
+					GLDebug.DrawLineArrow(transform.position, Vector3.Lerp(transform.position, curNeighbor.transform.position, neighbors[i].arrowDist), 0.1f, 20f, new Color(1f, 1f, 0f, signalStrength), 0f, false);
+			}
+		}
+		power += signalStrength;
+
+	} // End of Transmit().
+
+
+	void OnGUI(){
+		if(Input.GetKey(KeyCode.T)){
+			Vector3 nodeScreenPos = Camera.main.WorldToScreenPoint(transform.position);
+			if((nodeScreenPos.z < 0f) || power.Equals(0f))
+				return;
+
+			GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+			//GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.width * 0.009f);
+			GUI.skin.label.fontSize = 10;
+			GUI.skin.label.fontStyle = FontStyle.Bold;
+			GUI.color = Color.black;
+			GUI.Label(MathUtilities.CenteredSquare(nodeScreenPos.x, nodeScreenPos.y, 200f), power.ToString("F2"));
+			GUI.color = Color.yellow;
+			GUI.Label(MathUtilities.CenteredSquare(nodeScreenPos.x - 1f, nodeScreenPos.y + 1f, 200f), power.ToString("F2"));
+		}
+	} // End of OnGUI().
 
 
 } // End of PhysNode.
