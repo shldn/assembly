@@ -66,6 +66,14 @@ public class PersistentGameManager : MonoBehaviour {
         if(Input.GetKeyDown(KeyCode.F1)){
             cursorLock = !cursorLock;
         }
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            DisplayIP displayIP = gameObject.GetComponent<DisplayIP>();
+            if (displayIP == null)
+                displayIP = gameObject.AddComponent<DisplayIP>();
+            else
+                displayIP.enabled = !displayIP.enabled;
+        }
 
         Screen.lockCursor = cursorLock;
 
