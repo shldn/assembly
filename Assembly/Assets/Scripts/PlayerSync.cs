@@ -55,6 +55,7 @@ public class PlayerSync : MonoBehaviour {
             if (orbitPlayers.Contains(networkView.owner))
             {
                 // handle camera orbiting for these players screenPos movements here
+				CameraControl.Inst.targetOrbit += new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y")) * 10f;
             }
 
             if(networkView.isMine && Input.GetMouseButton(0) && !selecting){

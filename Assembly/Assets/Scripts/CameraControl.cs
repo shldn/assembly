@@ -14,7 +14,7 @@ public class CameraControl : MonoBehaviour {
     // Orbit = pan/tilt x/y of the camera around the centerPos.
     public float orbitSensitivity = 1f;
     Vector2 orbit = Vector2.zero;
-    Vector2 targetOrbit = Vector2.zero;
+    public Vector2 targetOrbit = Vector2.zero;
     Vector2 orbitVel = Vector2.zero;
     // How high or low the camera can be tilted.
     public float minTilt = 0f;
