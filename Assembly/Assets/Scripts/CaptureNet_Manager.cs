@@ -28,6 +28,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     string serverNameForClient;
     bool iWantToHost = false;
     bool iWantToConnect = false;
+	public bool autoIPConnect = true;
 
     // admin client vars
     bool showQRCode = false;
@@ -57,13 +58,16 @@ public class CaptureNet_Manager : MonoBehaviour {
 	    myNetworkView = networkView;
 	    Network.minimumAllocatableViewIDs = 500;
         DontDestroyOnLoad(this);
+
+		if(PersistentGameManager.IsAdminClient)
+			autoIPConnect = false;
     } // End of Awake().
 
 
     void Update(){
 	    connectCooldown -= Time.deltaTime;
         // Cycle through available IPs to connect to.
-        if (connectToIP.Count > 0 && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f) && !ClientAdminMenu.Inst.showMenu){
+        if (autoIPConnect && (connectToIP.Count > 0) && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f) && !ClientAdminMenu.Inst.showMenu){
 			Network.Connect(connectToIP[ipListConnect], connectionPort);
             ipListConnect = (ipListConnect + 1) % connectToIP.Count;
 
@@ -125,7 +129,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     void OnGUI(){
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 
-		if (ClientAdminMenu.Inst && !ClientAdminMenu.Inst.showMenu){
+		if (ClientAdminMenu.Inst && !ClientAdminMenu.Inst.showMenu && autoIPConnect){
 			if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
 				GUI.skin.label.fontSize = 40;
 				GUI.skin.label.alignment = TextAnchor.MiddleCenter;

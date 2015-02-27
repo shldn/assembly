@@ -84,11 +84,14 @@ public class ActuateNode : Node {
     public override void Destroy(){
         if(mainTrailObject){
             mainTrailObject.transform.parent = null;
-            mainTrailObject.AddComponent<DestroyAfterTime>().killTimer = mainTrailObject.GetComponent<TimedTrailRenderer>().lifeTime;
+            mainTrailObject.gameObject.AddComponent<DestroyAfterTime>().killTimer = mainTrailObject.GetComponent<TimedTrailRenderer>().lifeTime;
+			extendedTrailObject.gameObject.name = "Doomed mainTrail";
+
         }
         if(extendedTrailObject){
             extendedTrailObject.transform.parent = null;
-            extendedTrailObject.AddComponent<DestroyAfterTime>().killTimer = extendedTrailObject.GetComponent<TimedTrailRenderer>().lifeTime;
+            extendedTrailObject.gameObject.AddComponent<DestroyAfterTime>().killTimer = extendedTrailObject.GetComponent<TimedTrailRenderer>().lifeTime;
+			extendedTrailObject.gameObject.name = "Doomed extTrail";
         }
         base.Destroy();
     }

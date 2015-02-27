@@ -33,6 +33,8 @@ public class PhysNode : MonoBehaviour {
 	float flailMaxDeflection = Random.Range(10f, 80f);
 	Quaternion lastFlailOffset = Quaternion.identity; // For determining connection rotations.
 
+	float pushMult = Random.Range(0.5f, 2f);
+
 
 	// These store position/rotation to be updated after neighbor math is done.
 	Vector3 delayPosition = Vector3.zero;
@@ -78,8 +80,8 @@ public class PhysNode : MonoBehaviour {
 		lastFlailOffset = flailOffset;
 
 
-		float sizeMult = 1f + (/*(0.5f + (Mathf.Sin(Time.time * 2f) * 0.5f)) **/ ((neighbors.Count - 1f) * 0.1f));
-			cubeTransform.localScale = Vector3.one * sizeMult;
+		float sizeMult = 1f + (/*(0.5f + (Mathf.Sin(Time.time * 2f) * 0.5f)) **/ ((neighbors.Count - 1f) * 0.1f)) * (Mathf.Lerp(1f, pushMult, 0.5f + (wiggle * 0.5f)));
+		cubeTransform.localScale = Vector3.one * sizeMult;
 
 
 		// Node tests each neighbor's target position in relation to it.

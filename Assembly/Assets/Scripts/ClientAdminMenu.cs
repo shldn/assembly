@@ -5,7 +5,7 @@ public class ClientAdminMenu : MonoBehaviour {
 
 	public static ClientAdminMenu Inst = null;
 
-    public bool showMenu = false;
+    public bool showMenu = true;
     public Texture settingsIconTexture = null;
 	public GUIStyle clientGUISkin = null;
     int gutter = 10;
@@ -13,14 +13,30 @@ public class ClientAdminMenu : MonoBehaviour {
 	bool showIPNumpad = false;
 	string ipString = "";
 
-	public bool isOpen {get{return showMenu || showIPNumpad;}}
+	public bool isOpen = false;
+	float isOpenCooldown = 0f;
 
-
-    void Awake()
-    {
+    void Awake(){
 		Inst = this;
         enabled = PersistentGameManager.IsAdminClient;
+		showMenu = true;
+
+		if(PlayerPrefs.HasKey("manualIP"))
+			ipString = PlayerPrefs.GetString("manualIP");
     } // End of Awake().
+
+
+	void Update(){
+		if(showMenu || showIPNumpad){
+			isOpen = true;
+			isOpenCooldown = 0.2f;
+		}
+		else{
+			isOpenCooldown -= Time.deltaTime;
+			if(isOpenCooldown < 0f)
+				isOpen = false;
+		}
+	} // End of Update().
 	
 
     void OnGUI()
@@ -33,12 +49,14 @@ public class ClientAdminMenu : MonoBehaviour {
             showMenu = !showMenu;
 
 		Rect controlBarRect = new Rect(0.25f * Screen.width, gutter, 0.5f * Screen.width, Screen.height - 2 * gutter);
-		GUI.skin.button.fontSize = Mathf.CeilToInt(Mathf.Min(Screen.width, Screen.height) * 0.1f);
+		GUI.skin.button.fontSize = Mathf.CeilToInt(Mathf.Min(Screen.width, Screen.height) * 0.06f);
 
         if (showMenu)
         {
 			GUILayout.BeginArea(controlBarRect);
 			if(showIPNumpad){
+				GUI.skin.label.fontSize = Mathf.CeilToInt(Mathf.Min(Screen.width, Screen.height) * 0.06f);
+				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 				GUILayout.Label(ipString, GUILayout.Height(Screen.height * 0.1f), GUILayout.ExpandWidth(true));
 
 				int hitButton = -1;
@@ -46,7 +64,7 @@ public class ClientAdminMenu : MonoBehaviour {
 				hitButton = GUILayout.SelectionGrid(hitButton, buttonList, 3, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
 				if(hitButton == 9)
 					ipString += ".";
-				if(hitButton == 10)
+				else if(hitButton == 10)
 					ipString += "0";
 				else if(hitButton == 11)
 					ipString = ipString.Substring(0, ipString.Length - 1);
@@ -55,6 +73,7 @@ public class ClientAdminMenu : MonoBehaviour {
 
 				GUILayout.Space(Screen.height * 0.05f);
 				if(GUILayout.Button("<b>\u221A Connect to IP</b>", GUILayout.Height(Screen.height * 0.1f), GUILayout.ExpandWidth(true))){
+					PlayerPrefs.SetString("manualIP", ipString);
 					Network.Disconnect();
 					Network.Connect(ipString, CaptureNet_Manager.Inst.connectionPort);
 				}
@@ -76,6 +95,16 @@ public class ClientAdminMenu : MonoBehaviour {
 
 				if (GUILayout.Button("Manual IP Connect", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true))){
 					showIPNumpad = true;
+				}
+
+				if(!CaptureNet_Manager.Inst.autoIPConnect){
+					if (GUILayout.Button("Auto-Connect (IP list)", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true))){
+						CaptureNet_Manager.Inst.autoIPConnect = true;
+					}
+				}else{
+					if (GUILayout.Button("Auto-connecting...", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true))){
+						CaptureNet_Manager.Inst.autoIPConnect = false;
+					}
 				}
 
 				if(Input.GetKeyDown(KeyCode.Escape))
