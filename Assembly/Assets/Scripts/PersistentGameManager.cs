@@ -18,6 +18,7 @@ public class PersistentGameManager : MonoBehaviour {
 
     public static bool IsAdminClient { get { return true; } }
     public static bool IsClient { get { return Application.loadedLevelName == "CaptureClient"; } }
+    public static bool IsServer { get { return !IsClient; } }
     
 
     public static List<CaptureObject> CaptureObjects = new List<CaptureObject>();
