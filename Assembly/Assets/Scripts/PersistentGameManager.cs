@@ -63,12 +63,13 @@ public class PersistentGameManager : MonoBehaviour {
 	void Update () {
         LevelManager.InputHandler();
 
-        if(Input.GetKeyDown(KeyCode.F1)){
-            cursorLock = !cursorLock;
-        }
+		if(Time.time > 3f){
+			if(Input.GetKeyDown(KeyCode.F1)){
+				cursorLock = !cursorLock;
+			}
 
-        Screen.lockCursor = cursorLock;
-
+			Screen.lockCursor = cursorLock;
+		}
 	}
 
 

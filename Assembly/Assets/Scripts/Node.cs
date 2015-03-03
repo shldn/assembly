@@ -16,7 +16,7 @@ public class Node {
     public Assembly assembly = null;
 
     public Vector3 worldPosition = Vector3.zero;
-    public IntVector3 localHexPosition = IntVector3.zero;
+    public Triplet localHexPosition = Triplet.zero;
 
     public bool doomed = false;
     public Vector3 sendOffVector = Vector3.zero;
@@ -31,7 +31,7 @@ public class Node {
     public bool signalLock = false;
     //public bool activeLogic = false;
 
-    IntVector3 emergeFromLocalHex = IntVector3.zero;
+    Triplet emergeFromLocalHex = Triplet.zero;
     bool emerging = false;
     bool mature = false;
     float emergeSpeedMod = 1f;
@@ -54,11 +54,11 @@ public class Node {
 	public Node(){
         Initialize(Vector3.zero);
     }
-	public Node(IntVector3 hexPos){
+	public Node(Triplet hexPos){
         localHexPosition = hexPos;
         Initialize(HexUtilities.HexToWorld(localHexPosition));
     }
-    public Node(IntVector3 hexPos, NodeProperties props){
+    public Node(Triplet hexPos, NodeProperties props){
         localHexPosition = hexPos;
         nodeProperties = props;
         Initialize(HexUtilities.HexToWorld(localHexPosition));
@@ -302,7 +302,7 @@ public class Node {
 
         // Loop through all adjacent positions and see if they are occupied.
         for(int i = 0; i < 12; i++){
-            IntVector3 currentNeighborPos = localHexPosition + HexUtilities.Adjacent(i);
+            Triplet currentNeighborPos = localHexPosition + HexUtilities.Adjacent(i);
             for(int j = 0; j < assembly.nodes.Count; j++){
                 if(assembly.nodes[j].localHexPosition == currentNeighborPos){
                     neighbors.Add(assembly.nodes[j]);
@@ -316,7 +316,7 @@ public class Node {
         // Count number of neighbors for the new position. If 3 or more, move on.
         int neighborCount = 0;
         for(int k = 0; k < 12; k++){
-            IntVector3 currentNeighborPos = localHexPosition + HexUtilities.Adjacent(k);
+            Triplet currentNeighborPos = localHexPosition + HexUtilities.Adjacent(k);
             for(int m = 0; m < assembly.nodes.Count; m++){
                 if(assembly.nodes[m].localHexPosition == currentNeighborPos){
                     neighborCount++;
@@ -370,7 +370,7 @@ public class Node {
     public static Node FromString(string str, int format=1)
     {
         int splitIdx = str.IndexOf(')');
-        IntVector3 pos = IOHelper.IntVector3FromString(str.Substring(0,splitIdx+1));
+        Triplet pos = IOHelper.TripletFromString(str.Substring(0,splitIdx+1));
         NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
         return new Node(pos, props);
     }
