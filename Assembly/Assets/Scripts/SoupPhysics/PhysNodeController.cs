@@ -24,8 +24,8 @@ public class PhysNodeController : MonoBehaviour {
 				newPhysNode.hexPos = spawnHexPos;
 				newPhysNode.transform.position = HexUtilities.HexToWorld(spawnHexPos);
 			}
-			//spawnHexPos += HexUtilities.RandomAdjacent();
-			spawnHexPos += HexUtilities.RandomAdjacent() + new IntVector3(Mathf.FloorToInt(Random.Range(0, 1.5f)), 0, 0);
+			spawnHexPos += HexUtilities.RandomAdjacent();
+			//spawnHexPos += HexUtilities.RandomAdjacent() + new IntVector3(Mathf.FloorToInt(Random.Range(0, 1.5f)), 0, 0);
 		}
 
 		// Assign neighbors.

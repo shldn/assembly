@@ -9,7 +9,7 @@ public class ClientAdminMenu : MonoBehaviour {
     public Texture settingsIconTexture = null;
 	public GUIStyle clientGUISkin = null;
     int gutter = 10;
-    bool orbitMode = false;
+    public bool orbitMode = false;
 	bool showIPNumpad = false;
 	string ipString = "";
 
@@ -100,6 +100,7 @@ public class ClientAdminMenu : MonoBehaviour {
 				if(!CaptureNet_Manager.Inst.autoIPConnect){
 					if (GUILayout.Button("Auto-Connect (IP list)", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true))){
 						CaptureNet_Manager.Inst.autoIPConnect = true;
+						showMenu = false;
 					}
 				}else{
 					if (GUILayout.Button("Auto-connecting...", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true))){

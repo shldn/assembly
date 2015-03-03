@@ -41,6 +41,9 @@ public class CaptureNet_Manager : MonoBehaviour {
     float connectCooldown = 0f;
     int ipListConnect = 0;
 
+	// orbit option
+    public HashSet<NetworkPlayer> orbitPlayers = new HashSet<NetworkPlayer>();
+
 
     void Awake(){
 		Inst = this;

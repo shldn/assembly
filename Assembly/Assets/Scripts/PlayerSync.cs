@@ -18,8 +18,8 @@ public class PlayerSync : MonoBehaviour {
 
     bool editing = false;
 
-    // orbit option
-    HashSet<NetworkPlayer> orbitPlayers = new HashSet<NetworkPlayer>();
+	bool pinchRelease = true;
+	float lastPinchDist = -1f;
 
     void Awake()
     {
@@ -39,10 +39,44 @@ public class PlayerSync : MonoBehaviour {
         if(cursorObject && (PersistentGameManager.IsClient) && !networkView.isMine)
             Destroy(cursorObject.gameObject);
 
-        if (!CaptureEditorManager.IsEditing && ((Network.peerType == NetworkPeerType.Server) || networkView.isMine))
+		if(CaptureNet_Manager.Inst.orbitPlayers.Contains(networkView.owner))
         {
+            // handle camera orbiting for these players screenPos movements here
+			CameraControl.Inst.targetOrbit += (new Vector2(screenPos.x, screenPos.y) - new Vector2(Screen.width * 0.5f, Screen.height * 0.5f)) * 0.4f;
+			CameraControl.Inst.targetRadius += screenPos.z;
+			screenPos = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
+        }
+        else if (!CaptureEditorManager.IsEditing && ((Network.peerType == NetworkPeerType.Server) || networkView.isMine))
+        {
+			// Remote orbit control.
+			if(ClientAdminMenu.Inst && ClientAdminMenu.Inst.orbitMode){
+				screenPos = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
+
+				// Touch-screen pinch-zoom
+				if(Input.touchCount >= 2){
+					pinchRelease = false;
+
+					Vector2 touch0, touch1;
+					float pinchDist;
+					touch0 = Input.GetTouch(0).position;
+					touch1 = Input.GetTouch(1).position;
+ 
+					pinchDist = Vector2.Distance(touch0, touch1);
+
+					if(lastPinchDist != -1)
+						screenPos.z -= (pinchDist - lastPinchDist);
+
+					lastPinchDist = pinchDist;
+				}else{
+					lastPinchDist = -1f;
+
+					if(Input.touchCount == 0)
+						pinchRelease = true;
+				}
+			}
+
             if(networkView.isMine){
-                if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0))
+                if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && (Input.touchCount == 1))
                     screenPos += new Vector3(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y")) * 10f;
             }
 
@@ -51,12 +85,6 @@ public class PlayerSync : MonoBehaviour {
 
             Ray cursorRay = Camera.main.ScreenPointToRay(new Vector3(screenPosSmoothed.x, Screen.height - screenPosSmoothed.y, 0f));
             cursorObject.position = cursorRay.origin + cursorRay.direction * 1f;
-
-            if (orbitPlayers.Contains(networkView.owner))
-            {
-                // handle camera orbiting for these players screenPos movements here
-				CameraControl.Inst.targetOrbit += new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y")) * 10f;
-            }
 
             if(networkView.isMine && Input.GetMouseButton(0) && !selecting){
                 selecting = true;
@@ -182,12 +210,14 @@ public class PlayerSync : MonoBehaviour {
     // Client calls this to send request to server
     public void RequestToggleOrbitMode()
     {
+		print("RequestToggleOrbitMode()");
         networkView.RPC("ToggleOrbitMode", RPCMode.Server, networkView.owner);
     }
 
     [RPC] // Server receives this request from client
     void ToggleOrbitMode(NetworkPlayer player)
     {
+		print("ToggleOrbitMode()");
         ToggleOrbitPlayer(player);
     }
 
@@ -232,7 +262,7 @@ public class PlayerSync : MonoBehaviour {
 		// When sending my own data out...
 		if(stream.isWriting){
 
-            screenRelativePos = new Vector3(screenPos.x / Screen.width, screenPos.y / Screen.height);
+            screenRelativePos = new Vector3(screenPos.x / Screen.width, screenPos.y / Screen.height, screenPos.z);
 
 			stream.Serialize(ref screenRelativePos);
 
@@ -249,7 +279,7 @@ public class PlayerSync : MonoBehaviour {
             editing = false;
 
             stream.Serialize(ref screenRelativePos);
-            screenPos = new Vector3(screenRelativePos.x * Screen.width, screenRelativePos.y * Screen.height);
+            screenPos = new Vector3(screenRelativePos.x * Screen.width, screenRelativePos.y * Screen.height, screenRelativePos.z);
 		}
     } // End of OnSerializeNetworkView().
 
@@ -260,10 +290,10 @@ public class PlayerSync : MonoBehaviour {
 
     public void ToggleOrbitPlayer(NetworkPlayer player)
     {
-        if (orbitPlayers.Contains(player))
-            orbitPlayers.Remove(player);
+        if (CaptureNet_Manager.Inst.orbitPlayers.Contains(player))
+            CaptureNet_Manager.Inst.orbitPlayers.Remove(player);
         else
-            orbitPlayers.Add(player);
+            CaptureNet_Manager.Inst.orbitPlayers.Add(player);
     }
 
     // Notifies server when a player sync object is spawned

@@ -66,12 +66,15 @@ public class CameraControl : MonoBehaviour {
 
 	void FixedUpdate(){
         // Smooth time is slowed down if cursor is locked ("cinematic mode")
-        float effectiveSmoothTime = 0.1f;
-        if(!PersistentGameManager.IsClient)
-             effectiveSmoothTime = smoothTime * (PersistentGameManager.Inst.CursorLock? 5f : 1f);
+        float effectiveSmoothTime = smoothTime;
+        if(!PersistentGameManager.IsClient){
+			if(PersistentGameManager.Inst.CursorLock && (CaptureNet_Manager.Inst.orbitPlayers.Count == 0)){
+				effectiveSmoothTime *= 5f;
 
-        // Auto-orbit run
-	    targetOrbit.x -= autoOrbitSpeed * Time.deltaTime;
+				// Auto-orbit run
+				targetOrbit.x -= autoOrbitSpeed * Time.deltaTime;
+			}
+		}
 
         // Determine orbit target, if any.
         // Jellyfish grotto client
