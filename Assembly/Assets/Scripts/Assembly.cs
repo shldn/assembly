@@ -484,7 +484,7 @@ public class Assembly : CaptureObject {
                 // Loop through all nodes, determine if any of them occupy currentPos.
                 bool occupied = false;
                 for(int k = 0; k < nodes.Count; k++){
-                    if(nodes[k].localHexPosition == currentPos){
+                    if(nodes[k].localHexPosition.Equals(currentPos)){
                         occupied = true;
                         break;
                     }
@@ -566,7 +566,7 @@ public class Assembly : CaptureObject {
         for(int k = 0; k < 12; k++){
             Triplet currentNeighborPos = hexPos + HexUtilities.Adjacent(k);
             for(int m = 0; m < nodes.Count; m++){
-                if(nodes[m].localHexPosition == currentNeighborPos){
+                if(nodes[m].localHexPosition.Equals(currentNeighborPos)){
                     neighbors.Add(nodes[m]);
                 }
             }

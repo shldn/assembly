@@ -21,6 +21,8 @@ public class PlayerSync : MonoBehaviour {
 	bool pinchRelease = true;
 	float lastPinchDist = -1f;
 
+	bool orbitModeInit = false;
+
     void Awake()
     {
         screenPos = new Vector3(0.5f * Screen.width, 0.5f * Screen.height, 0.0f);
@@ -42,12 +44,18 @@ public class PlayerSync : MonoBehaviour {
 		if(CaptureNet_Manager.Inst.orbitPlayers.Contains(networkView.owner))
         {
             // handle camera orbiting for these players screenPos movements here
-			CameraControl.Inst.targetOrbit += (new Vector2(screenPos.x, screenPos.y) - new Vector2(Screen.width * 0.5f, Screen.height * 0.5f)) * 0.4f;
-			CameraControl.Inst.targetRadius += screenPos.z;
+			if(orbitModeInit){
+				CameraControl.Inst.targetOrbit += (new Vector2(screenPos.x, screenPos.y) - new Vector2(Screen.width * 0.5f, Screen.height * 0.5f)) * 0.4f;
+				CameraControl.Inst.targetRadius += screenPos.z;
+			}
+
 			screenPos = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
+			orbitModeInit = true;
         }
         else if (!CaptureEditorManager.IsEditing && ((Network.peerType == NetworkPeerType.Server) || networkView.isMine))
         {
+			orbitModeInit = false;
+
 			// Remote orbit control.
 			if(ClientAdminMenu.Inst && ClientAdminMenu.Inst.orbitMode){
 				screenPos = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);

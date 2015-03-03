@@ -321,7 +321,7 @@ public class Node {
         for(int k = 0; k < 12; k++){
             Triplet currentNeighborPos = localHexPosition + HexUtilities.Adjacent(k);
             for(int m = 0; m < assembly.nodes.Count; m++){
-                if(assembly.nodes[m].localHexPosition == currentNeighborPos){
+                if(assembly.nodes[m].localHexPosition.Equals(currentNeighborPos)){
                     neighborCount++;
                 }
             }
