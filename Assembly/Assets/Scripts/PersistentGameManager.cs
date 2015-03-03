@@ -18,6 +18,7 @@ public class PersistentGameManager : MonoBehaviour {
 
     public static bool IsAdminClient { get { return true; } }
     public static bool IsClient { get { return Application.loadedLevelName == "CaptureClient"; } }
+    public static bool IsServer { get { return !IsClient; } }
     
 
     public static List<CaptureObject> CaptureObjects = new List<CaptureObject>();
@@ -67,6 +68,14 @@ public class PersistentGameManager : MonoBehaviour {
 			if(Input.GetKeyDown(KeyCode.F1)){
 				cursorLock = !cursorLock;
 			}
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            DisplayIP displayIP = gameObject.GetComponent<DisplayIP>();
+            if (displayIP == null)
+                displayIP = gameObject.AddComponent<DisplayIP>();
+            else
+                displayIP.enabled = !displayIP.enabled;
+        }
 
 			Screen.lockCursor = cursorLock;
 		}
