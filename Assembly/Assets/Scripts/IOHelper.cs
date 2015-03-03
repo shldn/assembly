@@ -137,13 +137,13 @@ public class IOHelper
         return new Quaternion(x, y, z, w);
     }
 
-    static public IntVector3 IntVector3FromString(string str)
+    static public Triplet TripletFromString(string str)
     {
         string[] tok = str.Substring(1, str.Length - 2).Split(',');
         int x = int.Parse(tok[0]);
         int y = int.Parse(tok[1]);
         int z = int.Parse(tok[2]);
-        return new IntVector3(x, y, z);
+        return new Triplet(x, y, z);
     }
     static public string ToCommaString(Vector3 v)
     {

@@ -479,7 +479,7 @@ public class Assembly : CaptureObject {
             for(int j = 0; j < 12; j++){
                 int currentDir = (dirStart + j) % 12;
 
-                IntVector3 currentPos = currentNode.localHexPosition + HexUtilities.Adjacent(currentDir);
+                Triplet currentPos = currentNode.localHexPosition + HexUtilities.Adjacent(currentDir);
 
                 // Loop through all nodes, determine if any of them occupy currentPos.
                 bool occupied = false;
@@ -561,10 +561,10 @@ public class Assembly : CaptureObject {
     } // End of UpdateNodes(). 
 
 
-    List<Node> GetNeighborsToPos(IntVector3 hexPos){
+    List<Node> GetNeighborsToPos(Triplet hexPos){
         List<Node> neighbors = new List<Node>();
         for(int k = 0; k < 12; k++){
-            IntVector3 currentNeighborPos = hexPos + HexUtilities.Adjacent(k);
+            Triplet currentNeighborPos = hexPos + HexUtilities.Adjacent(k);
             for(int m = 0; m < nodes.Count; m++){
                 if(nodes[m].localHexPosition == currentNeighborPos){
                     neighbors.Add(nodes[m]);

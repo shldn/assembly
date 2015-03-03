@@ -4,7 +4,7 @@ using System.Collections;
 public class HexUtilities {
 
     // Converts hex coordinates to world coordinates.
-    public static Vector3 HexToWorld(IntVector3 hexCoords){
+    public static Vector3 HexToWorld(Triplet hexCoords){
         return new Vector3(
             hexCoords.x + (hexCoords.y * 0.5f) + (hexCoords.z * 0.5f),
             (hexCoords.y * Apothem) + (hexCoords.z * 0.288675f),
@@ -16,34 +16,35 @@ public class HexUtilities {
         get{ return 0.8660254f; }
     } // End of Apothem.
 
-    public static IntVector3 RandomAdjacent(){
+    public static Triplet RandomAdjacent(){
         return Adjacent(Random.Range(0, 12));
     } // End of RandomAdjacent().
 
-    public static IntVector3 Adjacent(int dir){
+    public static Triplet Adjacent(int dir){
         if((dir < 0) || (dir > 11))
-            return IntVector3.zero;
+            return Triplet.zero;
 
-        return IntVector3.hexDirection[dir];
+        return Triplet.hexDirection[dir];
     } // End of Adjacent().
 
     public static Quaternion HexDirToRot(int dir){
         if((dir < 0) || (dir > 11))
             return Quaternion.identity;
 
-        return Quaternion.LookRotation(HexToWorld(IntVector3.hexDirection[dir]));
+        return Quaternion.LookRotation(HexToWorld(Triplet.hexDirection[dir]));
     } // End of HexDirToRot().
 
 } // End of HexUtilities.
 
 
-public struct IntVector3 {
+/*
+public struct Triplet {
 
     public int x;
     public int y;
     public int z;
 
-    public IntVector3(int x, int y, int z){
+    public Triplet(int x, int y, int z){
         this.x = x;
         this.y = y;
         this.z = z;
@@ -54,19 +55,19 @@ public struct IntVector3 {
         return "(" + x + "," + y + "," + z + ")";
     }
  
-    public static IntVector3 operator +(IntVector3 a, IntVector3 b){
-        return new IntVector3(a.x + b.x, a.y + b.y, a.z + b.z);
+    public static Triplet operator +(Triplet a, Triplet b){
+        return new Triplet(a.x + b.x, a.y + b.y, a.z + b.z);
     } // End of +.
 
-    public static IntVector3 operator -(IntVector3 a, IntVector3 b){
-        return new IntVector3(a.x - b.x, a.y - b.y, a.z - b.z);
+    public static Triplet operator -(Triplet a, Triplet b){
+        return new Triplet(a.x - b.x, a.y - b.y, a.z - b.z);
     } // End of -.
 
-    public static bool operator ==(IntVector3 a, IntVector3 b){
+    public static bool operator ==(Triplet a, Triplet b){
         return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
     } // End of ==.
 
-    public static bool operator !=(IntVector3 a, IntVector3 b){
+    public static bool operator !=(Triplet a, Triplet b){
         return (a.x != b.x) || (a.y != b.y) || (a.z != b.z);
     } // End of !=.
 
@@ -75,31 +76,32 @@ public struct IntVector3 {
     } // End of sqrMagnitude.
 
 
-    public static float Distance(IntVector3 a, IntVector3 b){
+    public static float Distance(Triplet a, Triplet b){
         return Vector3.Distance(HexUtilities.HexToWorld(a), HexUtilities.HexToWorld(b));
     } // End of Distance().
 
-    public static IntVector3 zero{
-        get{ return new IntVector3(0, 0, 0); }
+    public static Triplet zero{
+        get{ return new Triplet(0, 0, 0); }
     } // End of zero{}.
 
-    public static IntVector3 one{
-        get{ return new IntVector3(1, 1, 1); }
+    public static Triplet one{
+        get{ return new Triplet(1, 1, 1); }
     } // End of one{}.
 
-    public static IntVector3[] hexDirection{
-        get{ return new IntVector3[]{   new IntVector3(1, 0, 0),
-                                        new IntVector3(0, 1, 0),
-                                        new IntVector3(-1, 1, 0),
-                                        new IntVector3(-1, 0, 0),
-                                        new IntVector3(0, -1, 0),
-                                        new IntVector3(1, -1, 0),
-                                        new IntVector3(0, 0, 1),
-                                        new IntVector3(-1, 0, 1),
-                                        new IntVector3(0, -1, 1),
-                                        new IntVector3(0, 0, -1),
-                                        new IntVector3(1, 0, -1),
-                                        new IntVector3(0, 1, -1) }; }
+    public static Triplet[] hexDirection{
+        get{ return new Triplet[]{   new Triplet(1, 0, 0),
+                                        new Triplet(0, 1, 0),
+                                        new Triplet(-1, 1, 0),
+                                        new Triplet(-1, 0, 0),
+                                        new Triplet(0, -1, 0),
+                                        new Triplet(1, -1, 0),
+                                        new Triplet(0, 0, 1),
+                                        new Triplet(-1, 0, 1),
+                                        new Triplet(0, -1, 1),
+                                        new Triplet(0, 0, -1),
+                                        new Triplet(1, 0, -1),
+                                        new Triplet(0, 1, -1) }; }
     } // End of directions{}.
 
-} // End of IntVector3.
+} // End of Triplet.
+*/

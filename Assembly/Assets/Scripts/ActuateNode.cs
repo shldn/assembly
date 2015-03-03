@@ -30,7 +30,7 @@ public class ActuateNode : Node {
     }
     public ActuateNode(Node node, Assembly assem) : base(node, assem){
         Initialize();
-    }public ActuateNode(IntVector3 localHex) : base(localHex){
+    }public ActuateNode(Triplet localHex) : base(localHex){
         Initialize();
     }
 

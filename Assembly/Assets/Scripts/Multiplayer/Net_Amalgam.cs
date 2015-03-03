@@ -122,7 +122,7 @@ public class Net_Amalgam : MonoBehaviour {
         string[]nodeData = assemblyData.Split('n');
         for(int j = 0; j < nodeData.Length - 1; j++){
             string currentNodeData = nodeData[j];
-            IntVector3 newNodeHexPos = IntVector3.zero;
+            Triplet newNodeHexPos = Triplet.zero;
 
             newNodeHexPos.x = ExtractInt(ref currentNodeData, 'x');
             newNodeHexPos.y = ExtractInt(ref currentNodeData, 'y');

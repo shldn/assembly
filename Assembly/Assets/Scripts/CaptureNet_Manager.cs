@@ -132,20 +132,25 @@ public class CaptureNet_Manager : MonoBehaviour {
     void OnGUI(){
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 
+        // Client GUI
 		if (ClientAdminMenu.Inst && !ClientAdminMenu.Inst.showMenu && autoIPConnect){
 			if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
 				GUI.skin.label.fontSize = 40;
 				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 				GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Connecting to server...");
 			}
+        }
 
-			if ((!PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
+        // Server GUI
+        if( PersistentGameManager.IsServer ) {
+
+			if (Network.peerType == NetworkPeerType.Disconnected){
 				GUI.skin.label.fontSize = 20;
 				GUI.skin.label.alignment = TextAnchor.LowerCenter;
 				GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Initializing server...");
 			}
 
-			if (!PersistentGameManager.IsClient && showQRCode)
+			if (showQRCode)
 			{
 				int texSize = Screen.width / 8;
 				int gutter = 20;

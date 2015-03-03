@@ -33,7 +33,7 @@ public class SenseNode : Node {
     public SenseNode(Node node, Assembly assem) : base(node, assem){
         Initialize();
     }
-    public SenseNode(IntVector3 localHex) : base(localHex){
+    public SenseNode(Triplet localHex) : base(localHex){
         Initialize();
     }
 

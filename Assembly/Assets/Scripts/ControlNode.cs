@@ -13,7 +13,7 @@ public class ControlNode : Node {
     public ControlNode(Node node, Assembly assem) : base(node, assem){
         Initialize();
     }
-    public ControlNode(IntVector3 localHex) : base(localHex){
+    public ControlNode(Triplet localHex) : base(localHex){
         Initialize();
     }
 
