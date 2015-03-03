@@ -26,7 +26,7 @@ public class PhysNodeController : MonoBehaviour {
 		// Create random assemblies.
 		int numAssemblies = 100;
 		int minNodes = 3;
-		int maxNodes = 3;
+		int maxNodes = 20;
 
 		for(int i = 0; i < numAssemblies; i++){
 			PhysAssembly newAssembly = new PhysAssembly(Random.insideUnitSphere * worldSize);

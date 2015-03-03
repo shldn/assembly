@@ -8,7 +8,6 @@ public class PhysAssembly {
 	public static HashSet<PhysAssembly> getAll {get{return all;}}
 	public static implicit operator bool(PhysAssembly exists){return exists != null;}
 
-
 	Dictionary<Triplet, PhysNode> nodeDict = new Dictionary<Triplet, PhysNode>();
 	public Dictionary<Triplet, PhysNode> NodeDict {get{return nodeDict;}}
 

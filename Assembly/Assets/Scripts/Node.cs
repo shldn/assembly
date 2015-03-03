@@ -165,6 +165,9 @@ public class Node {
         // Update physical location
         gameObject.transform.rotation = worldRotation;
 
+		//if(Random.Range(0f, 1f) < 0.01f)
+			//MonoBehaviour.print(neighbors.Count);
+
 
         // First node kicks it off.
         if(rootGrowNode && !mature){
@@ -304,7 +307,7 @@ public class Node {
         for(int i = 0; i < 12; i++){
             Triplet currentNeighborPos = localHexPosition + HexUtilities.Adjacent(i);
             for(int j = 0; j < assembly.nodes.Count; j++){
-                if(assembly.nodes[j].localHexPosition == currentNeighborPos){
+                if(assembly.nodes[j].localHexPosition.Equals(currentNeighborPos)){
                     neighbors.Add(assembly.nodes[j]);
                 }
             }

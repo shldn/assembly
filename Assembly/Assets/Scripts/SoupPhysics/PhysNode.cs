@@ -109,17 +109,17 @@ public class PhysNode {
 			curNeighborNode.delayPosition -= vecToNeighborTargetPos * 0.4f / neighbors.Count;
 			
 			float updateLerpBias = 0.25f;
-			//if((neighbors.Count == 2) && (curNeighborNode.neighbors.Count != 2)){
+			if((neighbors.Count == 2) && (curNeighborNode.neighbors.Count != 2)){
 				// Trace motor nodes' neighbors and relative rotations.
 				//Debug.DrawLine(position, position + (rotation * curNeighbor.dir * Vector3.forward), Color.cyan);
 				//Debug.DrawLine(position, position + (rotation * curNeighbor.dir * flailOffset * Vector3.forward), Color.blue);
 
 				if(i == 0){
-					//delayRotation *= Quaternion.Inverse(rotation) * Quaternion.Lerp(rotation, curNeighborNode.rotation * Quaternion.Inverse(flailOffset), updateLerpBias);
+					delayRotation *= Quaternion.Inverse(rotation) * Quaternion.Lerp(rotation, curNeighborNode.rotation * Quaternion.Inverse(flailOffset), updateLerpBias);
 					//curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.rotation) * Quaternion.Lerp(curNeighborNode.rotation, rotation * flailOffset, updateLerpBias);
 				}
 				if(i == 1){
-					//delayRotation *= Quaternion.Inverse(rotation) * Quaternion.Lerp(rotation, curNeighborNode.rotation * flailOffset, updateLerpBias);
+					delayRotation *= Quaternion.Inverse(rotation) * Quaternion.Lerp(rotation, curNeighborNode.rotation * flailOffset, updateLerpBias);
 					//curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.rotation) * Quaternion.Lerp(curNeighborNode.rotation, rotation * Quaternion.Inverse(flailOffset), updateLerpBias);
 				}
 
@@ -128,7 +128,7 @@ public class PhysNode {
 				
 				delayPosition += propulsion;
 				Debug.DrawRay(position, propulsion * 6f, Color.red);
-			//}
+			}
 			// Inert nodes simply try to torque to match their neighbors.
 			//else if((curNeighborNode.neighbors.Count != 2) || ((neighbors.Count == 2) && (curNeighborNode.neighbors.Count == 2))){
 				delayRotation = Quaternion.Lerp(delayRotation, curNeighborNode.rotation, updateLerpBias);
