@@ -51,6 +51,9 @@ public class PhysNode {
 	public Vector3 position = Vector3.zero;
 	public Quaternion rotation = Quaternion.identity;
 
+	// If true, node will be destroyed.
+	public bool cull = false;
+
 
 	public PhysNode(PhysAssembly physAssembly, Triplet localHexPos){
 		all.Add(this);
@@ -74,13 +77,13 @@ public class PhysNode {
 		bool functioningMuscle = (neighbors.Count == 2) && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
 
 		// -- Comment out to remove 'torqueing'
-		if(functioningMuscle)
-			delayRotation *= Quaternion.AngleAxis(wiggleMaxAngVel * wiggle * PhysNodeController.physicsStep, rotationVector);
+		//if(functioningMuscle)
+			//delayRotation *= Quaternion.AngleAxis(wiggleMaxAngVel * wiggle * PhysNodeController.physicsStep, rotationVector);
 
 		Quaternion flailOffset = Quaternion.identity;
 		// -- Comment out to remove 'flailing'
 		if(functioningMuscle)
-			flailOffset = Quaternion.Euler(rotationVector * wiggle * flailMaxDeflection * 0.00001f);
+			flailOffset = Quaternion.Euler(rotationVector * wiggle * flailMaxDeflection);
 
 		Quaternion ΔFlailOffset = Quaternion.Inverse(flailOffset) * lastFlailOffset;
 		lastFlailOffset = flailOffset;
@@ -108,19 +111,19 @@ public class PhysNode {
 			delayPosition += vecToNeighborTargetPos * 0.4f / neighbors.Count;
 			curNeighborNode.delayPosition -= vecToNeighborTargetPos * 0.4f / neighbors.Count;
 			
-			float updateLerpBias = 0.25f;
+			float updateLerpBias = 0.45f;
 			if((neighbors.Count == 2) && (curNeighborNode.neighbors.Count != 2)){
 				// Trace motor nodes' neighbors and relative rotations.
-				//Debug.DrawLine(position, position + (rotation * curNeighbor.dir * Vector3.forward), Color.cyan);
-				//Debug.DrawLine(position, position + (rotation * curNeighbor.dir * flailOffset * Vector3.forward), Color.blue);
+				Debug.DrawLine(position, position + (rotation * curNeighbor.dir * Vector3.forward), Color.cyan);
+				Debug.DrawLine(position, position + (rotation * curNeighbor.dir * flailOffset * Vector3.forward), Color.blue);
 
 				if(i == 0){
 					delayRotation *= Quaternion.Inverse(rotation) * Quaternion.Lerp(rotation, curNeighborNode.rotation * Quaternion.Inverse(flailOffset), updateLerpBias);
-					//curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.rotation) * Quaternion.Lerp(curNeighborNode.rotation, rotation * flailOffset, updateLerpBias);
+					curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.rotation) * Quaternion.Lerp(curNeighborNode.rotation, rotation * flailOffset, updateLerpBias);
 				}
 				if(i == 1){
 					delayRotation *= Quaternion.Inverse(rotation) * Quaternion.Lerp(rotation, curNeighborNode.rotation * flailOffset, updateLerpBias);
-					//curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.rotation) * Quaternion.Lerp(curNeighborNode.rotation, rotation * Quaternion.Inverse(flailOffset), updateLerpBias);
+					curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.rotation) * Quaternion.Lerp(curNeighborNode.rotation, rotation * Quaternion.Inverse(flailOffset), updateLerpBias);
 				}
 
 				// Muscle propulsion
@@ -130,12 +133,10 @@ public class PhysNode {
 				Debug.DrawRay(position, propulsion * 6f, Color.red);
 			}
 			// Inert nodes simply try to torque to match their neighbors.
-			//else if((curNeighborNode.neighbors.Count != 2) || ((neighbors.Count == 2) && (curNeighborNode.neighbors.Count == 2))){
+			else if((curNeighborNode.neighbors.Count != 2) || ((neighbors.Count == 2) && (curNeighborNode.neighbors.Count == 2))){
 				delayRotation = Quaternion.Lerp(delayRotation, curNeighborNode.rotation, updateLerpBias);
-				//delayRotation *= Quaternion.Inverse(transform.rotation) * Quaternion.Lerp(transform.rotation, curNeighborNode.transform.rotation, 0.5f);
-
-				//curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.transform.rotation) * Quaternion.Lerp(curNeighborNode.transform.rotation, transform.rotation, 0.5f);
-			//}
+				curNeighborNode.delayRotation = Quaternion.Lerp(curNeighborNode.rotation, delayRotation, updateLerpBias);
+			}
 
 			//GLDebug.DrawLine(transform.position, curNeighborNode.transform.position, new Color(1f, 1f, 1f, 0.1f), 0, false);
 			//GLDebug.DrawLine(transform.position, curNeighborNode.transform.position, cubeTransform.renderer.material.color, 0, false);
@@ -196,8 +197,8 @@ public class PhysNode {
 
 
 	public void UpdateTransform(){
-		position = delayPosition;
-		rotation = delayRotation;
+		position = Vector3.Lerp(position, delayPosition, 0.5f);
+		rotation = Quaternion.Lerp(rotation, delayRotation, 0.5f);
 
 		cubeTransform.position = position;
 		cubeTransform.rotation = rotation;
@@ -234,7 +235,10 @@ public class PhysNode {
 		if(cubeTransform)
 			MonoBehaviour.Destroy(cubeTransform.gameObject);
 
-		all.Remove(this);
+		if(viewCone)
+			MonoBehaviour.Destroy(viewCone.gameObject);
+
+		cull = true;
 	} // End of OnDestroy().
 
 

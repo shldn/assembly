@@ -24,12 +24,16 @@ public class PhysNodeController : MonoBehaviour {
 		CameraControl.Inst.maxRadius = worldSize * 3f;
 
 		// Create random assemblies.
-		int numAssemblies = 100;
+		int numAssemblies = 300;
 		int minNodes = 3;
-		int maxNodes = 20;
+		int maxNodes = 15;
 
 		for(int i = 0; i < numAssemblies; i++){
-			PhysAssembly newAssembly = new PhysAssembly(Random.insideUnitSphere * worldSize);
+			Vector3 assemblySpawnPos = Vector3.zero;
+			if(numAssemblies > 1)
+				assemblySpawnPos = Random.insideUnitSphere * worldSize;
+
+			PhysAssembly newAssembly = new PhysAssembly(assemblySpawnPos);
 
 			int numNodes = Random.Range(minNodes, maxNodes);
 			Triplet spawnHexPos = Triplet.zero;
@@ -65,6 +69,11 @@ public class PhysNodeController : MonoBehaviour {
 		foreach(PhysNode someNode in PhysNode.getAll)
 			someNode.UpdateTransform();
 
+		PhysNode[] tempHoldNodes = new PhysNode[PhysNode.getAll.Count];
+		PhysNode.getAll.CopyTo(tempHoldNodes);
+		for(int i = 0; i < tempHoldNodes.Length; i++)
+			if(tempHoldNodes[i].cull)
+				PhysNode.getAll.Remove(tempHoldNodes[i]);
 	} // End of Update().
 
 } // End of PhysNodeController.
