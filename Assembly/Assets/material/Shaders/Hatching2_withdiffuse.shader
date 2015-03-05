@@ -16,8 +16,6 @@ Shader "Custom/Silhoutted Hatching" {
  
          _SpecularTex ("Specular Map", 2D) = "gray" {}
  
-         _Ramp ("Shading Ramp", 2D) = "gray" {}
- 
          _Hatch0 ("Hatch 0", 2D) = "white" {}
  
          _Hatch1 ("Hatch 1", 2D) = "gray" {}
@@ -178,8 +176,7 @@ Shader "Custom/Silhoutted Hatching" {
  
          sampler2D _SpecularTex;
  
-         sampler2D _Ramp;
- 
+         
   
  
          float _ShinPower;
@@ -218,11 +215,10 @@ Shader "Custom/Silhoutted Hatching" {
  
              
  
-             fixed3 ramp = tex2D (_Ramp, float2(intensity)).rgb;
- 
+              
              half4 c;
  
-             c.rgb = s.Albedo * ramp * _LightColor0.rgb * hatch;
+             c.rgb = s.Albedo * _LightColor0.rgb * hatch;
  
              c.a = 0.5;
  
