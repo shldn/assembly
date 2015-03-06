@@ -39,18 +39,6 @@ public class GroundGameManager : MonoBehaviour {
             if (GroundGameManager.Inst.LocalPlayer)
                 cube.transform.position = GroundGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * GroundGameManager.Inst.LocalPlayer.gameObject.transform.forward;
         }
- 
-        if (Input.GetKeyUp(KeyCode.M))
-        {
-            GameObject hull = ConvexHull.GetRandomHullMesh(randomHullBounds);
-            hull.AddComponent<MeshCollider>();
-            hull.AddComponent<Rigidbody>();
-            hull.renderer.material = new Material(Shader.Find("Diffuse"));
-            hull.transform.position = new Vector3(8, 5.5F, 0);
-            SpringCreature creature = hull.AddComponent<SpringCreature>();
-            creature.numSprings = (int)(randomHullSpringPercent * (float)(hull.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
-        }
-
         if (Input.GetKeyUp(KeyCode.J))
         {
             GameObject junk = (GameObject)GameObject.Instantiate(Input.GetKey(KeyCode.RightShift) ? Resources.Load("GroundGame/Block") : Resources.Load("GroundGame/Palette"));
@@ -71,5 +59,43 @@ public class GroundGameManager : MonoBehaviour {
         {
             localPlayer.SwitchModel(localPlayer.Model + 1);
         }
+        if( Input.GetKeyUp(KeyCode.B))
+        {
+            GroundGameManager.Inst.LocalPlayer.gameObject.GetComponent<AnimatorHelper>().StartAnim("Putdownball", true);
+            PutDownBallCallback(GroundGameManager.Inst.LocalPlayer);
+        }
+        if (Input.GetKeyUp(KeyCode.M))
+        {
+            GroundGameManager.Inst.LocalPlayer.gameObject.GetComponent<AnimatorHelper>().StartAnim("Swing", true);
+            float showTime = 4.0f;
+            StartCoroutine(HideBall(GroundGameManager.Inst.LocalPlayer, 0));
+            StartCoroutine(ShowBall(GroundGameManager.Inst.LocalPlayer, showTime));
+        }
 	}
+
+
+    void PutDownBallCallback(Player p)
+    {
+        float distanceOffset = 0.2f;
+        float timeOffset = 2.0f;
+        Vector3 newPos = p.gameObject.transform.position + distanceOffset * p.gameObject.transform.forward.normalized;
+        Quaternion newRot = p.gameObject.transform.rotation;
+        StartCoroutine(CroquetBall.CreateDelayedImpl(newPos, newRot, timeOffset));
+        StartCoroutine(HideBall(p, timeOffset));
+        StartCoroutine(ShowBall(p, timeOffset + 2));
+    }
+
+    IEnumerator HideBall(Player p, float waitSeconds)
+    {
+        yield return new WaitForSeconds(waitSeconds);
+        CroquetBall ball = p.gameObject.GetComponentInChildren<CroquetBall>();
+        ball.renderer.enabled = false;
+    }
+    IEnumerator ShowBall(Player p, float waitSeconds)
+    {
+        yield return new WaitForSeconds(waitSeconds);
+        CroquetBall ball = p.gameObject.GetComponentInChildren<CroquetBall>();
+        if (ball != null)
+            ball.renderer.enabled = true;
+    }
 }
