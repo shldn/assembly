@@ -9,11 +9,33 @@ public class GroundGameManager : MonoBehaviour {
     public Bounds randomHullBounds = new Bounds(new Vector3(0, 5, 0), new Vector3(3, 1, 2));
     public float randomHullSpringPercent = 0.1f;
 
+
+    // Player variables
+    private static string[] playerModelNames = { "Avatars/box_man", "Avatars/ribbon_man" };
+    private Player localPlayer = null;
+    public Player LocalPlayer { get { return localPlayer; } set { localPlayer = value; } }
+
     public static GroundGameManager Inst = null;
 
     void Awake()
     {
         Inst = this;
+
+        SpawnLocalPlayer(0, new Vector3(-228.1f, -11.38f, -334.8f), Quaternion.EulerAngles(0.0f, 90.0f, 0.0f));
+    }
+
+    void SpawnLocalPlayer(int id, Vector3 pos, Quaternion rot)
+    {
+        GameObject go = GameObject.Instantiate(Resources.Load(playerModelNames[id % playerModelNames.Length])) as GameObject;
+        //GameObject go = GameObject.Find("box_man");
+        if (go != null)
+        {
+            localPlayer = new Player(go);
+            go.AddComponent<PlayerInputManager>();
+            go.transform.position = pos;
+            go.transform.rotation = rot;
+            go.GetComponent<PlayerController>().forwardAngle = rot.eulerAngles.y;
+        }
     }
 
 	// Update is called once per frame
@@ -25,6 +47,8 @@ public class GroundGameManager : MonoBehaviour {
             cube.AddComponent<Rigidbody>();
             cube.AddComponent<SpringCreature>();
             cube.transform.position = new Vector3(8, 5.5F, 0);
+            if (GroundGameManager.Inst.LocalPlayer)
+                cube.transform.position = GroundGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * GroundGameManager.Inst.LocalPlayer.gameObject.transform.forward;
         }
  
         if (Input.GetKeyUp(KeyCode.M))
@@ -41,12 +65,16 @@ public class GroundGameManager : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.J))
         {
             GameObject junk = (GameObject)GameObject.Instantiate(Input.GetKey(KeyCode.RightShift) ? Resources.Load("GroundGame/Block") : Resources.Load("GroundGame/Palette"));
+            if (GroundGameManager.Inst.LocalPlayer)
+                junk.transform.position = GroundGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * GroundGameManager.Inst.LocalPlayer.gameObject.transform.forward;
             SpringCreature creature = junk.AddComponent<SpringCreature>();
             creature.numSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
         }
         if (Input.GetKeyUp(KeyCode.K))
         {
-            GameObject junk = (GameObject)GameObject.Instantiate(Resources.Load("GroundGame/Airduct"));
+            GameObject junk = (GameObject)GameObject.Instantiate(Resources.Load("GroundGame/Palette"));
+            if (GroundGameManager.Inst.LocalPlayer)
+                junk.transform.position = GroundGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * GroundGameManager.Inst.LocalPlayer.gameObject.transform.forward;
             SpringCreature creature = junk.AddComponent<SpringCreature>();
             creature.numSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
         }
