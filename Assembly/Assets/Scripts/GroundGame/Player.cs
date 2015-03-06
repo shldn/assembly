@@ -3,17 +3,41 @@ using System.Collections.Generic;
 
 public class Player {
 
+    private static string[] playerModelNames = { "Avatars/box_man", "Avatars/ribbon_man" };
+
     // Boolean 'exists' comparison; replaces "!= null".
     public static implicit operator bool(Player exists){
         return exists != null;
     } // End of boolean operator.
 
-    public Player(GameObject go_)
+    public Player(int _modelIdx, Vector3 pos, Quaternion rot)
     {
-        gameObject = go_;
+        SpawnPlayer(_modelIdx, pos, rot);
+    }
+
+    public void SwitchModel(int newModel)
+    {
+        if( newModel != modelIdx )
+        {
+            Vector3 pos = gameObject.transform.position;
+            Quaternion rot = gameObject.transform.rotation;
+            GameObject.Destroy(gameObject);
+            SpawnPlayer(newModel, pos, rot);
+        }
+    }
+
+    private void SpawnPlayer(int newModel, Vector3 pos, Quaternion rot)
+    {
+        modelIdx = newModel % playerModelNames.Length;
+        gameObject = GameObject.Instantiate(Resources.Load(playerModelNames[modelIdx])) as GameObject;
+        gameObject.AddComponent<PlayerInputManager>();
+        gameObject.transform.position = pos;
+        gameObject.transform.rotation = rot;
+        gameObject.GetComponent<PlayerController>().forwardAngle = rot.eulerAngles.y;   
     }
 
     private GameObject go;
+    private int modelIdx;
     private bool visible = true;
     private bool visibilityHasBeenSet = false;
     public PlayerController playerController = null;
@@ -29,6 +53,7 @@ public class Player {
             playerController.playerScript = this;
         } 
     }
+    public int Model { get { return modelIdx; } }
     public Vector3 HeadPosition { get { return gameObject.transform.position + (Vector3.up * 3f); } }
     public bool IsLocal { get { return true; } } // is this the player I'm controlling
     public bool IsRemote { get { return !IsLocal; } }
