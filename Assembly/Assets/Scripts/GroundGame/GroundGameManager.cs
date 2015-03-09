@@ -30,6 +30,15 @@ public class GroundGameManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+        if (Input.GetKeyUp(KeyCode.C))
+        {
+            GameObject junk = (GameObject)GameObject.Instantiate(Input.GetKey(KeyCode.RightShift) ? Resources.Load("GroundGame/Fence") : Resources.Load("GroundGame/Palette"));
+            if (GroundGameManager.Inst.LocalPlayer)
+                junk.transform.position = GroundGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * GroundGameManager.Inst.LocalPlayer.gameObject.transform.forward;
+            Creature creature = junk.AddComponent<Creature>();
+            creature.numAttachments = 5;
+        }
+
         if (Input.GetKeyUp(KeyCode.N))
         {
             GameObject cube = GameObject.CreatePrimitive(Input.GetKey(KeyCode.RightShift) ? PrimitiveType.Sphere : PrimitiveType.Cube);

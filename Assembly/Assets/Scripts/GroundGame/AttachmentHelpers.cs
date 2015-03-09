@@ -4,29 +4,59 @@ using System.Collections.Generic;
 
 public class AttachmentHelpers{
 
+    private static string[] actionPrefabPaths = { "GroundGame/Spring", "GroundGame/Propeller", "GroundGame/Oarfin" };
+    private static string[] sensePrefabPaths = { "GroundGame/Nose", "GroundGame/Ear", "GroundGame/EyeLeft", "GroundGame/TVAntenna" };
+
+
     // Attaches a spring to the parent game object and returns the spring
     public static GameObject AttachSpringToObject(GameObject parent, Vector3 positionOffset, Vector3 attachNormal)
     {
-        // create spring
-        Object prefabObj = Resources.Load("GroundGame/Spring");
-        GameObject spring = GameObject.Instantiate(prefabObj) as GameObject;
-        spring.transform.position = parent.transform.position + positionOffset;
-        spring.transform.parent = parent.transform;
+        return AttachObjectToObject(parent, "GroundGame/Spring", positionOffset, attachNormal, true);
+    }
 
-        // randomly rotate spring direction vector, stay on proper side of the plane orthogonal to attachNormal.
-        float randAngle = Random.Range(GroundGameManager.Inst.minSpringAngleOffset, GroundGameManager.Inst.maxAngleOffset);
-        float randAngleToRotateAxis = Random.Range(0.0f, 360.0f);
-        // get random axis perpendicular to attachNormal
-        Vector3 axis = Quaternion.AngleAxis(randAngleToRotateAxis, attachNormal) * GetAnyOrthogonalVector(attachNormal);
+    public static GameObject AttachObjectToObject(GameObject parent, string childPrefabPath, Vector3 positionOffset, Vector3 attachNormal, bool rotateChildObject = false)
+    {
+        // create child
+        Object prefabObj = Resources.Load(childPrefabPath);
+        GameObject child = GameObject.Instantiate(prefabObj) as GameObject;
+        child.transform.position = parent.transform.position + positionOffset;
+        child.transform.parent = parent.transform;
+        child.transform.up = attachNormal;
 
-        // rotate a random angle (in range) about a random perpendicular axis -- will keep the vector in a cone maxAngleOffset from attachNormal
-        spring.transform.up = Quaternion.AngleAxis(randAngle, axis) * attachNormal;
+        // randomly rotate direction vector, stay on proper side of the plane orthogonal to attachNormal.
+        if( rotateChildObject )
+        {
+            float randAngle = Random.Range(GroundGameManager.Inst.minSpringAngleOffset, GroundGameManager.Inst.maxAngleOffset);
+            float randAngleToRotateAxis = Random.Range(0.0f, 360.0f);
+            // get random axis perpendicular to attachNormal
+            Vector3 axis = Quaternion.AngleAxis(randAngleToRotateAxis, attachNormal) * GetAnyOrthogonalVector(attachNormal);
 
-        // attach spring to parent object
-        FixedJoint joint = parent.AddComponent<FixedJoint>();
-        joint.connectedBody = spring.rigidbody;
+            // rotate a random angle (in range) about a random perpendicular axis -- will keep the vector in a cone maxAngleOffset from attachNormal
+            child.transform.up = Quaternion.AngleAxis(randAngle, axis) * attachNormal;
 
-        return spring;
+        }
+
+
+        // attach child to parent object
+        if( child.GetComponent<Rigidbody>() )
+        {
+            FixedJoint joint = parent.AddComponent<FixedJoint>();
+            joint.connectedBody = child.rigidbody;
+        }
+
+        return child;
+    }
+
+    public static GameObject AttachActionObjectToObject(GameObject parent, Vector3 positionOffset, Vector3 attachNormal, bool rotateChildObject = false)
+    {
+        int randomObjectIdx = Random.Range(0, actionPrefabPaths.Length);
+        return AttachObjectToObject(parent, actionPrefabPaths[randomObjectIdx], positionOffset, attachNormal, rotateChildObject);
+    }
+
+    public static GameObject AttachSenseObjectToObject(GameObject parent, Vector3 positionOffset, Vector3 attachNormal, bool rotateChildObject = false)
+    {
+        int randomObjectIdx = Random.Range(0, sensePrefabPaths.Length);
+        return AttachObjectToObject(parent, sensePrefabPaths[randomObjectIdx], positionOffset, attachNormal, rotateChildObject);
     }
 
     // Chooses a random triangle on the mesh and returns the position of the center of the triangle.
