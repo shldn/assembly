@@ -5,6 +5,7 @@ public class AnimatorHelper : MonoBehaviour {
 
     private int customAnimStartFrame = -1;
     private bool orbitStartedByThis = false;
+    private string lastAnimName = "";
 	public Animator anim;
     private Dictionary<int, string> availableAnims = new Dictionary<int, string>()
     {
@@ -63,7 +64,21 @@ public class AnimatorHelper : MonoBehaviour {
         }
 
         if (customAnimationDone)
+        {
             customAnimStartFrame = -1;
+            if (lastAnimName == "Swing" || lastAnimName == "Putt")
+            {
+                Animation malletAnimPrep = gameObject.GetComponentInChildren<Animation>();
+                if (malletAnimPrep)
+                {
+                    malletAnimPrep.Rewind();
+                    malletAnimPrep.Play();
+                    malletAnimPrep.Sample();
+                    malletAnimPrep.Stop();
+                }
+            }
+            lastAnimName = "";
+        }
     }
 
     public bool IsValidAnim(string animName) {
@@ -75,6 +90,7 @@ public class AnimatorHelper : MonoBehaviour {
         if (toggleAnims.Contains(animName))
             anim.SetBool(animName + "Exit", false);
         anim.SetBool(animName, true);
+        lastAnimName = animName;
         if (sendToServer) {
 #if SFS_NETWORKING
             ISFSObject animUpdateObj = new SFSObject();
@@ -87,6 +103,14 @@ public class AnimatorHelper : MonoBehaviour {
         MainCameraController.Inst.followPlayerDistance = CameraFollowOrbitController.Inst.IsLerpingDistance ? CameraFollowOrbitController.Inst.StartDistance : MainCameraController.Inst.followPlayerDistance;
         orbitStartedByThis = true;
         CameraFollowOrbitController.Inst.Orbit(180, 0.2f, MainCameraController.Inst.followPlayerDistance + 1);
+
+        if (animName == "Swing" || animName == "Putt")
+        {
+            Animation malletAnimPrep = gameObject.GetComponentInChildren<Animation>();
+            if (malletAnimPrep)
+                malletAnimPrep.Play();
+        }
+
     }
 
     // This is only applicable for anims that require this action to stop. Sitting for example.
