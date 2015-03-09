@@ -4,6 +4,7 @@ using System.Collections.Generic;
 public class AnimatorHelper : MonoBehaviour {
 
     private int customAnimStartFrame = -1;
+    private bool orbitStartedByThis = false;
 	public Animator anim;
     private Dictionary<int, string> availableAnims = new Dictionary<int, string>()
     {
@@ -55,8 +56,11 @@ public class AnimatorHelper : MonoBehaviour {
             anim.SetBool(availableAnims[currentStateHash], false);
 
         bool customAnimationDone = IsIdle() && !HasNextAnimation() && Time.frameCount > customAnimStartFrame + 3;
-        if (!CameraFollowOrbitController.Inst.InStartPosition && !CameraFollowOrbitController.Inst.IsCancelling && GroundGameManager.Inst.LocalPlayer != null && GroundGameManager.Inst.LocalPlayer.gameObject == gameObject && customAnimationDone)
+        if (!CameraFollowOrbitController.Inst.InStartPosition && !CameraFollowOrbitController.Inst.IsCancelling && GroundGameManager.Inst.LocalPlayer != null && GroundGameManager.Inst.LocalPlayer.gameObject == gameObject && customAnimationDone && orbitStartedByThis)
+        {
             CameraFollowOrbitController.Inst.CancelOrbit(0.5f);
+             orbitStartedByThis = false;
+        }
 
         if (customAnimationDone)
             customAnimStartFrame = -1;
@@ -81,6 +85,7 @@ public class AnimatorHelper : MonoBehaviour {
         }
 
         MainCameraController.Inst.followPlayerDistance = CameraFollowOrbitController.Inst.IsLerpingDistance ? CameraFollowOrbitController.Inst.StartDistance : MainCameraController.Inst.followPlayerDistance;
+        orbitStartedByThis = true;
         CameraFollowOrbitController.Inst.Orbit(180, 0.2f, MainCameraController.Inst.followPlayerDistance + 1);
     }
 
