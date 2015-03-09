@@ -7,12 +7,16 @@ public class PrefabManager : MonoBehaviour {
 
     public GameObject node = null;
 	public GameObject bond = null;
+    public GameObject assembly = null;
 	public GameObject billboard = null;
 	public GameObject foodPellet = null;
 	public GameObject reproduceBurst = null;
 	public GameObject newPelletBurst = null;
     public GameObject mainTrail = null;
     public GameObject extendedTrail = null;
+
+    public GameObject energyTransferEffect = null;
+    public GameObject reproducePullEffect = null;
 
     public Material assemblySkin = null;
 

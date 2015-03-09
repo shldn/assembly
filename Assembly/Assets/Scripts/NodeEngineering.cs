@@ -29,8 +29,18 @@ public class NodeEngineering : MonoBehaviour {
 	
 	void OnGUI(){
 	
-        Node selectedNode = MainCameraControl.Inst.selectedNode;
-        Assembly selectedAssembly = MainCameraControl.Inst.selectedAssembly;
+        Node selectedNode = null;
+        Assembly selectedAssembly = null;
+
+        if(CameraControl.Inst){
+            selectedNode = CameraControl.Inst.selectedNode;
+            selectedAssembly = CameraControl.Inst.selectedAssembly;
+        }
+        else if(AssemblyEditor.Inst && AssemblyEditor.Inst.selectedNode){
+            selectedNode = AssemblyEditor.Inst.selectedNode;
+            selectedAssembly = selectedNode.assembly;
+        }
+
         if(selectedNode){
             GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 
@@ -38,56 +48,62 @@ public class NodeEngineering : MonoBehaviour {
 
             Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(selectedNode.worldPosition);
 
-            // Sense
-            senseVec = (selectedNode.assembly.physicsObject.transform.rotation * selectedNode.nodeProperties.senseVector) * Vector3.forward * 2f;
-            Vector3 senseVecEnd = selectedNode.worldPosition + senseVec;
-            Vector3 senseVecEndScreenPos = Camera.main.WorldToScreenPoint(senseVecEnd);
-
-            senseHandle.rect = MathUtilities.CenteredSquare(senseVecEndScreenPos.x, senseVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, senseVecEnd));
-
-            if(senseHandle.held){
-                selectedNode.nodeProperties.senseVector = Quaternion.Lerp(selectedNode.nodeProperties.senseVector, Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale));
-            }
-
-            // Actuate
-            actuateVec = (selectedNode.assembly.physicsObject.transform.rotation * selectedNode.nodeProperties.actuateVector) * Vector3.forward * 2f;
-            Vector3 actuateVecEnd = selectedNode.worldPosition + actuateVec;
-            Vector3 actuateVecEndScreenPos = Camera.main.WorldToScreenPoint(actuateVecEnd);
-
-            actuateHandle.rect = MathUtilities.CenteredSquare(actuateVecEndScreenPos.x, actuateVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, actuateVecEnd));
-
-            if(actuateHandle.held)
-                selectedNode.nodeProperties.actuateVector = Quaternion.Lerp(selectedNode.nodeProperties.actuateVector, Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale));
 
             // Vector indications
             int numDots = 6;
             float dotSize = 150f;
-            for(int i = 0; i < numDots; i++){
-                Vector3 dotPos = MainCameraControl.Inst.selectedNode.worldPosition + (((NodeEngineering.Inst.senseVec) / (numDots + 1)) * (i + 1));
-                Vector3 dotScreenPos = Camera.main.WorldToScreenPoint(dotPos);
 
-                float thisDotSize = ((dotSize / Vector3.Distance(Camera.main.transform.position, dotPos)) / numDots) * (i + 1);
+            // Sense handle dots
+            if(selectedNode is SenseNode){
+                senseVec = (selectedNode.assembly.physicsObject.transform.rotation * selectedNode.nodeProperties.senseVector) * Vector3.forward * 2f;
+                Vector3 senseVecEnd = selectedNode.worldPosition + senseVec;
+                Vector3 senseVecEndScreenPos = Camera.main.WorldToScreenPoint(senseVecEnd);
 
-                if(Vector3.Angle(Camera.main.transform.forward, NodeEngineering.Inst.senseVec) >= 90f)
-                    GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotTex);
-                else
-                    GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotEmptyTex);
+                senseHandle.rect = MathUtilities.CenteredSquare(senseVecEndScreenPos.x, senseVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, senseVecEnd));
+
+                if(senseHandle.held)
+                    selectedNode.nodeProperties.senseVector = Quaternion.Lerp(selectedNode.nodeProperties.senseVector, Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale));
+
+                GUI.color = new Color(1f, 1f, 1f, senseHandle.color.a);
+                for(int i = 0; i < numDots; i++){
+                    Vector3 dotPos = selectedNode.worldPosition + (((NodeEngineering.Inst.senseVec) / (numDots + 1)) * (i + 1));
+                    Vector3 dotScreenPos = Camera.main.WorldToScreenPoint(dotPos);
+
+                    float thisDotSize = ((dotSize / Vector3.Distance(Camera.main.transform.position, dotPos)) / numDots) * (i + 1);
+
+                    if(Vector3.Angle(Camera.main.transform.forward, NodeEngineering.Inst.senseVec) >= 90f)
+                        GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotTex);
+                    else
+                        GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotEmptyTex);
+                }
+                senseHandle.Draw();
             }
-            for(int i = 0; i < numDots; i++){
-                Vector3 dotPos = MainCameraControl.Inst.selectedNode.worldPosition + (((NodeEngineering.Inst.actuateVec) / (numDots + 1)) * (i + 1));
-                Vector3 dotScreenPos = Camera.main.WorldToScreenPoint(dotPos);
 
-                float thisDotSize = ((dotSize / Vector3.Distance(Camera.main.transform.position, dotPos)) / numDots) * (i + 1);
+            // Actuator handle dots
+            if(selectedNode is ActuateNode){
+                actuateVec = (selectedNode.assembly.physicsObject.transform.rotation * selectedNode.nodeProperties.actuateVector) * Vector3.forward * 2f;
+                Vector3 actuateVecEnd = selectedNode.worldPosition + actuateVec;
+                Vector3 actuateVecEndScreenPos = Camera.main.WorldToScreenPoint(actuateVecEnd);
 
-                if(Vector3.Angle(Camera.main.transform.forward, NodeEngineering.Inst.actuateVec) >= 90f)
-                    GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotTex);
-                else
-                    GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotEmptyTex);
+                actuateHandle.rect = MathUtilities.CenteredSquare(actuateVecEndScreenPos.x, actuateVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, actuateVecEnd));
+
+                if(actuateHandle.held)
+                    selectedNode.nodeProperties.actuateVector = Quaternion.Lerp(selectedNode.nodeProperties.actuateVector, Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale));
+
+                GUI.color = new Color(1f, 1f, 1f, actuateHandle.color.a);
+                for(int i = 0; i < numDots; i++){
+                    Vector3 dotPos = selectedNode.worldPosition + (((NodeEngineering.Inst.actuateVec) / (numDots + 1)) * (i + 1));
+                    Vector3 dotScreenPos = Camera.main.WorldToScreenPoint(dotPos);
+
+                    float thisDotSize = ((dotSize / Vector3.Distance(Camera.main.transform.position, dotPos)) / numDots) * (i + 1);
+
+                    if(Vector3.Angle(Camera.main.transform.forward, NodeEngineering.Inst.actuateVec) >= 90f)
+                        GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotTex);
+                    else
+                        GUI.Label(MathUtilities.CenteredSquare(dotScreenPos.x, dotScreenPos.y, thisDotSize), NodeEngineering.Inst.dotEmptyTex);
+                }
+                actuateHandle.Draw();
             }
-
-            // Buttons
-            senseHandle.Draw();
-            actuateHandle.Draw();
 
             uiLockout = senseHandle.hovered || senseHandle.held || actuateHandle.hovered || actuateHandle.held;
         }
@@ -96,7 +112,7 @@ public class NodeEngineering : MonoBehaviour {
             selectedAssembly.physicsObject.transform.rotation *= Quaternion.Inverse(Quaternion.AngleAxis(WesInput.editHorizontalThrottle * 90f * (Time.deltaTime / Time.timeScale), Quaternion.Inverse(selectedAssembly.physicsObject.transform.rotation) * Camera.main.transform.up));
             selectedAssembly.physicsObject.transform.rotation *= Quaternion.Inverse(Quaternion.AngleAxis(WesInput.editVerticalThrottle * 90f * (Time.deltaTime / Time.timeScale), Quaternion.Inverse(selectedAssembly.physicsObject.transform.rotation) * -Camera.main.transform.right));
         }
-	} // End of Update().
+	} // End of OnGUI().
 } // End of NodeEngineering.
 
 
@@ -108,6 +124,7 @@ public class ActiveButton {
     public bool hovered = false;
     public bool clicked = false;
     public bool held = false;
+    public Color color = Color.clear;
 
     public ActiveButton(Rect newRect, Texture2D newTex){
         rect = newRect;
@@ -131,12 +148,13 @@ public class ActiveButton {
             held = false;
 
         if(held)
-            GUI.color = Color.green;
+            color = Color.green;
         else if(hovered)
-            GUI.color = Color.white;
+            color = Color.white;
         else
-            GUI.color = new Color(1f, 1f, 1f, 0.5f);
+            color = new Color(1f, 1f, 1f, 0.5f);
 
+        GUI.color = color;
         GUI.Label(rect, tex);
 
     } // End of Draw().

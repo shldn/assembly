@@ -25,7 +25,7 @@ public class PlayerSync : MonoBehaviour {
             cursorObject.gameObject.SetActive(!GameManager.Inst.editing);
         }
 
-        if(cursorObject && (Application.platform == RuntimePlatform.Android) && !networkView.isMine)
+        if(cursorObject && (GameManager.IsClient) && !networkView.isMine)
             Destroy(cursorObject);
 
         if(!GameManager.Inst.editing && ((Network.peerType == NetworkPeerType.Server) || networkView.isMine)){
@@ -140,7 +140,7 @@ public class PlayerSync : MonoBehaviour {
 
     void OnGUI(){
         /*
-        if(Application.platform != RuntimePlatform.Android){
+        if(!GameManager.IsClient){
             Rect playerInfoRect = new Rect(screenPosSmoothed.x, screenPosSmoothed.y, 500f, 500f);
             GUI.Label(playerInfoRect, " Player");
         }

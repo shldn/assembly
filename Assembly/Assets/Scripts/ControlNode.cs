@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 public class ControlNode : Node {
 
+    public Quaternion signalRotation = Quaternion.identity;
+
+
     public ControlNode(Node node) : base(node){
         Initialize();
     }
@@ -19,6 +22,7 @@ public class ControlNode : Node {
 
     void Initialize(){
         baseColor = PrefabManager.Inst.controlColor;
+        signalRotation = Random.rotation;
     } // End of Initialize().
 
 	// Update is called once per frame
@@ -32,12 +36,15 @@ public class ControlNode : Node {
             return;
 
         signalLock = true;
+
+        //Quaternion processedQuat = inputQuat *= signalRotation;
+        Quaternion processedQuat = inputQuat;
         for(int i = 0; i < neighbors.Count; i++){
             if(neighbors[i].GetType() == typeof(ActuateNode)){
-                ((ActuateNode)neighbors[i]).Propel(inputQuat, sigStrength);
+                ((ActuateNode)neighbors[i]).Propel(processedQuat, sigStrength);
             }
             else if(neighbors[i].GetType() == typeof(ControlNode)){
-                ((ControlNode)neighbors[i]).Process(inputQuat, sigStrength);
+                ((ControlNode)neighbors[i]).Process(processedQuat, sigStrength);
             }
         }
         signalLock = false;

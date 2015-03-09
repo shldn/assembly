@@ -1,3 +1,4 @@
+//#define ASSEMBLY_MULTIPLAYER
 using UnityEngine;
 using System.Collections;
 
@@ -56,7 +57,7 @@ public class Net_Manager : MonoBehaviour {
 
     public GameObject netAmalgamPrefab;
 
-
+#if ASSEMBLY_MULTIPLAYER
     void Awake(){
 	    myNetworkView = networkView;
 	    Network.minimumAllocatableViewIDs = 500;
@@ -393,6 +394,8 @@ public class Net_Manager : MonoBehaviour {
     {
 	    Network.RemoveRPCs(viewID);
     } // End of ServerRemoveBufferedRPCs().
+
+#endif
 }
 
 

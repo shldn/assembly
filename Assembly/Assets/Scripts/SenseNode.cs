@@ -18,8 +18,11 @@ public class SenseNode : Node {
 
     // Metabolism ------------------------------------------------------------------------ ||
     public static float consumeRange = 50.0f; //how far away can it consume?
-    public static float detectRange  = 150.0f; //how far can it detect food
+    public static float detectRange  = 200.0f; //how far can it detect food
     public static float consumeRate = 7.0f; //rate asm consume food
+
+    float arcAlphaSmoothed = 0f;
+    float arcAlphaVel = 0f;
 
     public GameObject senseFieldBillboard = null;
     float arcScale = 5f;
@@ -45,16 +48,10 @@ public class SenseNode : Node {
 	// Update is called once per frame
 	public override void Update(){
         base.Update();
+
+        localRotation = nodeProperties.senseVector;
+
         if(assembly){
-
-            /*
-            if(!neighborsChecked){
-                neighbors = GetNeighbors();
-                LogicCheck();
-                neighborsChecked = true;
-            }
-            */
-
 
             if(!senseFieldBillboard)
                 senseFieldBillboard = GameObject.Instantiate(PrefabManager.Inst.billboard, worldPosition, Quaternion.identity) as GameObject;
@@ -73,12 +70,11 @@ public class SenseNode : Node {
             float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
             senseFieldBillboard.transform.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
         
-            Color tempColor = Color.green;
             float totalSigStrength = 0f;
             Quaternion totalSigQuat = Quaternion.identity;
             //calling detect food on sense node
             for(int j = 0; j < FoodPellet.GetAll().Count; ++j){
-                if(this.DetectFood(FoodPellet.GetAll()[j])){
+                if(DetectFood(FoodPellet.GetAll()[j])){
 
                     // Get vector to food:
                     Quaternion quatToFood = RotToFood(FoodPellet.GetAll()[j]);
@@ -90,46 +86,33 @@ public class SenseNode : Node {
                     if(Vector3.Distance(worldPosition, FoodPellet.GetAll()[j].worldPosition) <= SenseNode.consumeRange){
                         //sense node consume food source
                         Consume(FoodPellet.GetAll()[j]);
-                        FoodPellet.GetAll()[j].ParticleStream(FoodPellet.GetAll()[j].gameObject.transform.position - gameObject.transform.position);
+                        FoodPellet.GetAll()[j].EnergyEffect(this);
                     }
                 }
             }
 
             // Send total signal
             totalSigStrength = Mathf.Clamp01(totalSigStrength);
-            tempColor = Color.Lerp(tempColor, Color.white, totalSigStrength);
+            arcAlphaSmoothed = Mathf.SmoothDamp(arcAlphaSmoothed, Mathf.Clamp01(totalSigStrength), ref arcAlphaVel, 0.2f);
             signalLock = true;
             if(neighbors != null)
                 for(int i = 0; i < neighbors.Count; i++){
-                    if(neighbors[i].GetType() == typeof(ControlNode)){
-
-                        ((ControlNode)neighbors[i]).Process(totalSigQuat, totalSigStrength);
-                    }
+                    Node curNeighbor = neighbors[i];
+                    if(curNeighbor.GetType() == typeof(ControlNode))
+                        ((ControlNode)curNeighbor).Process(totalSigQuat, totalSigStrength);
+                    if(curNeighbor.GetType() == typeof(ActuateNode))
+                        ((ActuateNode)curNeighbor).Propel(totalSigQuat, totalSigStrength);
                 }
             signalLock = false;
 
 
-            if(senseFieldBillboard)
-                senseFieldBillboard.renderer.material.SetColor("_TintColor", tempColor);
+            if(senseFieldBillboard){
+                senseFieldBillboard.renderer.material.SetColor("_TintColor", Color.Lerp(Color.clear, Color.green, (0.4f + (arcAlphaSmoothed * 0.6f)) * emergeLerp));
+            }
         
         }
 	} // End of Update().
 
-
-    // Returns true is this sense node could possibly send data to a muscle node, and also informs those nodes
-    //   that they are involved in a functioning logic net.
-    /*
-    public void LogicCheck(){
-        for(int i = 0; i < neighbors.Count; i++){
-            if(neighbors[i].GetType() == typeof(ControlNode)){
-                if(((ControlNode)neighbors[i]).LogicCheck()){
-                    activeLogic = true;
-                    assembly.hasFunctioningNodes = true;
-                }
-            }
-        }
-    } // End of logicCheck().
-    */
 
     public override void Destroy(){
         if(senseFieldBillboard)
@@ -142,37 +125,19 @@ public class SenseNode : Node {
     public bool DetectFood(FoodPellet food){
 
         Vector3 foodDir = food.worldPosition - this.worldPosition;
-        float angle = Vector3.Angle(worldSenseRot * Vector3.forward, foodDir);
-
-        if((angle <= nodeProperties.fieldOfView) && (foodDir.magnitude <= detectRange)) //detect through view angle
-            return true;
-        // Return false if no food pellets found.
-        return false;
-    } // End of DetectFood().
-
-    /*
-    // 'General' detect food... returns true if node detects any food pellet.
-    public bool DetectFood(){
-        for(int i = 0; i < FoodPellet.GetAll().Count; i++)
-            if(DetectFood(FoodPellet.GetAll()[i]))
+        if (PersistentGameManager.Inst.optimize)
+            return (foodDir.magnitude <= detectRange) && (Vector3.Angle(worldSenseRot * Vector3.forward, foodDir) <= nodeProperties.fieldOfView);
+        else
+        {
+            float angle = Vector3.Angle(worldSenseRot * Vector3.forward, foodDir);
+            if ((angle <= nodeProperties.fieldOfView) && (foodDir.magnitude <= detectRange)){ //detect through view angle
                 return true;
-        // Return false if no food pellets found.
-        return false;
+            }
+            // Return false if no food pellets found.
+            return false;
+        }
     } // End of DetectFood().
 
-    // Same as general DetectFood() but references a list of all detected food pellets.
-    public bool DetectFood(ref List<FoodPellet> allFood){
-        bool sensedFood = false;
-        for(int i = 0; i < FoodPellet.GetAll().Count; i++)
-            if(DetectFood(FoodPellet.GetAll()[i])){
-                allFood.Add(FoodPellet.GetAll()[i]);
-                sensedFood = true;
-            }
-        // Return false if no food pellets found.
-        return sensedFood;
-    } // End of DetectFood().
-    */
-    
 
     // Gets the rotation from the node to a certain foodPellet.
     public Quaternion RotToFood(FoodPellet food){
@@ -192,22 +157,16 @@ public class SenseNode : Node {
 
     //consume food within range
     public void Consume(FoodPellet food){
-        float realConsumeRate = (consumeRate * Time.deltaTime) * SenseNode.consumeRate; 
+        float realConsumeRate = (consumeRate * 10f * Time.deltaTime) * SenseNode.consumeRate; 
         Vector3 foodDist = food.worldPosition - this.worldPosition;
         //consume rate square drop off
         //realConsumeRate *= (1 - foodDist.sqrMagnitude / (Mathf.Pow(consumeRange, 2f)));
         
         food.currentEnergy -= realConsumeRate * Time.deltaTime;
-        assembly.currentEnergy += (realConsumeRate * Time.deltaTime) * 0.2f;
+        assembly.currentEnergy += realConsumeRate * Time.deltaTime;
+        
+        Vector3 attractionVector = gameObject.transform.position - food.gameObject.transform.position;
+        food.gameObject.rigidbody.AddForce(attractionVector.normalized * 50f);
 
-        /*
-        if( food.currentEnergy < 0){
-            assembly.currentEnergy += ( food.currentEnergy + realConsumeRate);
-            //destroy and create
-            food.Destroy();
-        }else {
-            assembly.currentEnergy += realConsumeRate;
-        }
-        */
     } // End of Consume().
 } // End of SenseNode.

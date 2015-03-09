@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Assembly {
+public class Assembly : CaptureObject {
 
     /* all nodes in assembly --------------------------------------*/
     public static List<Assembly> allAssemblies = new List<Assembly>();
@@ -26,6 +26,7 @@ public class Assembly {
     public bool updateMesh = false; // update the mesh with the node positions every frame
 
     public GameObject physicsObject = null;
+    public GameObject assemblyObject = null;
 
     public bool imported = false;
 
@@ -36,10 +37,11 @@ public class Assembly {
     public static int MIN_NODES_IN_ASSEMBLY = 10;
     //public static bool REFACTOR_IF_INERT = false; // If an assembly is created with no logic nets, destroy it immediately.
 
+    public Vector3 Position { get { return WorldPosition; } }
     public Vector3 WorldPosition{
         get { 
             if(physicsObject)
-                return physicsObject.transform.position;
+                return physicsObject.rigidbody.worldCenterOfMass;
             else
                 return Vector3.zero;}
         set { 
@@ -64,12 +66,21 @@ public class Assembly {
 
 
     bool needRigidbodyUpdate = true;
+    bool rootNodeSet = false;
+    public bool nodeStructureDirty = true;
+
+    Assembly structureFriend = null;
+
 
     /* energy --------------------------------------------------- */
     public float currentEnergy = 0; //should be sum of nodes
     public float energyBurnRate = 0; //rate asm burn energy
     public bool  needBurnRateUpdate = true;
     public static float burnCoefficient = 1.0f;
+
+    public Assembly targetMate = null;
+    public Assembly gentlemanCaller = null;
+    float mateCooldown = 5f;
 
     public float MaxEnergy { get{ return nodes.Count; }}
     public float Health { get{ return currentEnergy / MaxEnergy; }
@@ -86,6 +97,7 @@ public class Assembly {
         for(int j = 0; j < numNodes; j++)
             newAssembly.AddRandomNode();
 
+        newAssembly.InitAssemblyObject();
         newAssembly.InitPhysicsObject();
         newAssembly.InitEnergyData();
 
@@ -95,30 +107,37 @@ public class Assembly {
     // Constructors
     public Assembly(){
         allAssemblies.Add(this);
+        PersistentGameManager.CaptureObjects.Add(this);
     }
     public Assembly(List<Node> nodes){
         allAssemblies.Add(this);
+        PersistentGameManager.CaptureObjects.Add(this);
 
         AddNodes(nodes);
+        InitAssemblyObject();
         InitPhysicsObject();
         InitEnergyData();
     }
 
-    
-   /*public Assembly(string filePath){
-        List<Node> newNodes = new List<Node>();
-        Vector3 worldPos = new Vector3();
-        IOHelper.LoadAssembly(filePath, ref name, ref worldPos, ref newNodes);
 
-        // ordering a little tricky at the moment, multiple interdependencies
-        InitPhysicsObject();
-        WorldPosition = worldPos;
-        AddNodes(newNodes);
-        RecomputeRigidbody();
-        allAssemblies.Add(this);
-        InitEnergyData();
-    }*/
-    
+    public Assembly(string str, bool isFilePath = false){
+         List<Node> newNodes = new List<Node>();
+         Vector3 worldPos = new Vector3();
+         if (isFilePath)
+             IOHelper.LoadAssemblyFromFile(str, ref name, ref worldPos, ref newNodes);
+         else
+             IOHelper.LoadAssemblyFromString(str, ref name, ref worldPos, ref newNodes);
+
+         // ordering a little tricky at the moment, multiple interdependencies
+         InitPhysicsObject();
+         WorldPosition = worldPos;
+         AddNodes(newNodes);
+         RecomputeRigidbody();
+         PersistentGameManager.CaptureObjects.Add(this);
+         allAssemblies.Add(this);
+         InitEnergyData();
+     }
+
 
     public Assembly Reproduce(){
         Assembly offspring = Duplicate();
@@ -164,6 +183,8 @@ public class Assembly {
             //physicsObject.renderer.material.SetColor("_TintColor", new Color(0.05f, 0.05f, 0.07f, 1f));
 
             physicsObject.renderer.material = PrefabManager.Inst.assemblySkin;
+            physicsObject.renderer.castShadows = false;
+            physicsObject.renderer.receiveShadows = false;
         }
 
         // get node positions
@@ -227,6 +248,11 @@ public class Assembly {
     } // End of ComputerPhysics().
 
 
+    public void InitAssemblyObject(){
+        assemblyObject = MonoBehaviour.Instantiate(PrefabManager.Inst.assembly, WorldPosition, Quaternion.identity) as GameObject;
+    } // End of InitAssemblyObject().
+
+
     //initialize energy for the assembly
     public void InitEnergyData(){
         currentEnergy = MaxEnergy;
@@ -246,12 +272,16 @@ public class Assembly {
         if(physicsObject)
             Object.Destroy(physicsObject);
 
+        if(assemblyObject)
+            GameObject.Destroy(assemblyObject);
+
         physicsObject = null;
         allAssemblies.Remove(this);
+        PersistentGameManager.CaptureObjects.Remove(this);
     }
 
-    /*public void Save(){
-        string path = "./saves/" + name + ".txt";
+    public void Save(){
+        string path = "./data/" + name + ".txt";
         Save(path);
     } // End of Save().
 
@@ -259,15 +289,17 @@ public class Assembly {
     public void Save(string path){
         ConsoleScript.Inst.WriteToLog("Saving " + path);
         IOHelper.SaveAssembly(path, this);
-    } // End of Save().*/
+    } // End of Save().
 
 
-    public void AddNode(Node node){
+    public Node AddNode(Node node){
         node.assembly = this;
         nodes.Add(node);
+        nodeStructureDirty = true;
         //UpdateNodes();
         //needBurnRateUpdate = true;
-        needRigidbodyUpdate = true;
+        needRigidbodyUpdate = true;        
+        return node;
     } // End of AddNode().
 
 
@@ -276,6 +308,7 @@ public class Assembly {
         for (int i = 0; i < newNodes.Count; ++i)
             newNodes[i].assembly = this;
         nodes.AddRange(newNodes);
+        nodeStructureDirty = true;
         UpdateNodes();
         needBurnRateUpdate = true;
         needRigidbodyUpdate = true;
@@ -285,6 +318,7 @@ public class Assembly {
     public void RemoveNode(Node node)
     {
         nodes.Remove(node);
+        nodeStructureDirty = true;
         UpdateNodes();
         needBurnRateUpdate = true;
         needRigidbodyUpdate = true;
@@ -294,6 +328,7 @@ public class Assembly {
     public void Update(){
         numFramesAlive++;
         UpdateNodes();
+        nodeStructureDirty = false;
 
 
         // Dead assemblies should be destroyed with animation.
@@ -301,8 +336,10 @@ public class Assembly {
             DestroyWithAnimation();
         }
 
-
-        
+        if(!rootNodeSet && (nodes.Count > 0)){
+            nodes[Random.Range(0, nodes.Count)].rootGrowNode = true;
+            rootNodeSet = true;
+        }
 
 
         /*
@@ -319,9 +356,18 @@ public class Assembly {
         }
 
 
+        
+
+        if (showMesh && updateMesh)
+            UpdateSkinMesh();
+
+        if(assemblyObject && physicsObject)
+            assemblyObject.transform.position = WorldPosition;
+
         // If assembly has 200% health, it reproduces!
-        if(Health >= 2f){
+        if(Health >= 2f && !PersistentGameManager.IsClient){
             Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            RandomMelody.Inst.PlayNote();
             
             Assembly offspringAssem = Reproduce();
             offspringAssem.WorldPosition = WorldPosition;
@@ -332,8 +378,85 @@ public class Assembly {
             Health = Mathf.Clamp(Health, 0f, 2f) * 0.5f;
         }
 
-        if (showMesh && updateMesh)
-            UpdateSkinMesh();
+        /*
+        if(!targetMate && !gentlemanCaller && (Random.Range(0f, 1f) <= 0.001)){
+            //Find closest assembly
+            float distToClosest = 9999f;
+            Assembly closestAssembly = null;
+            for(int i = 0; i < GetAll().Count; i++){
+                if((GetAll()[i] == this) || GetAll()[i].targetMate || GetAll()[i].gentlemanCaller)
+                    continue;
+
+                float distToCurrent = Vector3.SqrMagnitude(WorldPosition - GetAll()[i].WorldPosition);
+                if(distToCurrent < distToClosest){
+                    distToClosest = distToCurrent;
+                    closestAssembly = GetAll()[i];
+                }
+            }
+            if(closestAssembly){
+                MonoBehaviour.print("Got mate!");
+                targetMate = closestAssembly;
+                GameObject newMateEffectGO = MonoBehaviour.Instantiate(PrefabManager.Inst.reproducePullEffect) as GameObject;
+                ReproducePullEffect newMateEffect = newMateEffectGO.GetComponent<ReproducePullEffect>();
+                newMateEffect.assemblyA = this;
+                newMateEffect.assemblyB = targetMate;
+
+                targetMate.gentlemanCaller = this;
+            }
+        }
+        */
+         
+        /*
+        if(targetMate){
+        
+            if(physicsObject)
+                physicsObject.rigidbody.AddForce(targetMate.WorldPosition - WorldPosition, ForceMode.Force);
+
+            if(targetMate.physicsObject)
+                targetMate.physicsObject.rigidbody.AddForce(-(targetMate.WorldPosition - WorldPosition), ForceMode.Force);
+
+            if((Vector3.Distance(WorldPosition,targetMate.WorldPosition) <= 5f) && physicsObject && targetMate.physicsObject) {
+            
+                Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
+            
+                Assembly offspringAssem = Reproduce();
+                offspringAssem.WorldPosition = WorldPosition;
+                offspringAssem.WorldRotation = WorldRotation;
+                offspringAssem.physicsObject.rigidbody.velocity = physicsObject.rigidbody.velocity;
+                offspringAssem.physicsObject.rigidbody.angularVelocity = physicsObject.rigidbody.angularVelocity;
+            
+                targetMate.gentlemanCaller = null;
+                targetMate = null;
+                mateCooldown = Random.Range(10f, 20f);
+
+                RandomMelody.Inst.PlayNote();
+            }
+        }
+        */
+
+        /*
+        float friendDist = 50f;
+        float friendMargin = 1f;
+        float friendForce = 10f;
+        if(structureFriend){
+            Vector3 vecToFriend = structureFriend.WorldPosition - WorldPosition;
+            float distToFriend = vecToFriend.magnitude;
+            if(physicsObject && physicsObject.rigidbody && (distToFriend > (friendDist + friendMargin)))
+                physicsObject.rigidbody.AddForce(vecToFriend.normalized * friendForce);
+            
+        }else{
+            structureFriend = Assembly.GetAll()[Random.Range(0, Assembly.GetAll().Count)];
+        }
+
+        for(int i = 0; i < Assembly.GetAll().Count; i++){
+            Assembly curAssembly = Assembly.GetAll()[i];
+            if(curAssembly != this){
+                Vector3 vecToOther = curAssembly.WorldPosition - WorldPosition;
+                if(physicsObject && physicsObject.rigidbody && (vecToOther.magnitude < friendDist))
+                    physicsObject.rigidbody.AddForce(-vecToOther.normalized * friendForce);
+            }
+        }
+        */
 
     } // End of UpdateTransform().
 
@@ -610,7 +733,8 @@ public class Assembly {
 
     //energy that is being used
     public void CalculateEnergyUse(){
-        currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient * 0.1f);
+        if(this != CameraControl.Inst.selectedAssembly)
+            currentEnergy -= (energyBurnRate * Time.deltaTime * burnCoefficient * 0.1f);
     }
 
     //update burn rate for asmbly
@@ -646,5 +770,10 @@ public class Assembly {
                 meshFilter.mesh.vertices[i] = HexUtilities.HexToWorld(nodes[i].localHexPosition);
         }
     } // End UpdateSkinMesh
+
+    public string ToFileString()
+    {
+        return IOHelper.AssemblyToString(this);
+    }
 
 } // End of Assembly.

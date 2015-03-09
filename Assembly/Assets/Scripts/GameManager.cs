@@ -30,9 +30,7 @@ public class GameManager : MonoBehaviour {
     public float fade = 1f;
     public float initialFadeIn = 1f;
 
-    float worldSize = 150f;
-
-    public bool pauseMenu = false;
+    public float worldSize = 100f;
 
     public float deltaRealTime = 0f;
 
@@ -50,8 +48,13 @@ public class GameManager : MonoBehaviour {
     float controlRingFade = 0f;
 
 
+    public Transform assemblyParts = null;
+    public Transform temporaryEffects = null;
+
+
     void Awake(){
         Inst = this;
+        PersistentGameManager.Inst.Touch();
 
         if(Application.platform == RuntimePlatform.Android){
             maxNumAssemKnob.initialValue = 20;
@@ -71,14 +74,7 @@ public class GameManager : MonoBehaviour {
         deltaRealTime = Time.deltaTime / Time.timeScale;
         
         if(Input.GetKeyDown(KeyCode.Escape))
-            pauseMenu = !pauseMenu;
-
-        initialFadeIn = Mathf.MoveTowards(initialFadeIn, 0f, (Time.deltaTime / Time.timeScale) * 0.3f);
-        
-        fade = Mathf.Lerp(fade, pauseMenu? 0.8f : 0f, Time.deltaTime * 10f);
-
-        if(initialFadeIn > fade)
-            fade = initialFadeIn;
+            Application.Quit();
 
 
         Time.timeScale = Mathf.MoveTowards(Time.timeScale, targetTimeScale, (deltaRealTime));
@@ -96,11 +92,19 @@ public class GameManager : MonoBehaviour {
         if( FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD )
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
                 FoodPellet newPellet = FoodPellet.AddNewFoodPellet();
-                float spiralSize = 75f;
+
+                /*
+                // Cool spiral
                 float spiralDensity = 0.05f;
-                float xPos = UnityEngine.Random.Range(-200f, 200f);
+                float foodSpread = 300f;
+                float xPos = UnityEngine.Random.Range(0f, UnityEngine.Random.Range(-foodSpread, foodSpread));
+                float spiralSize = 50f * (1f + (Mathf.Abs(xPos) * 0.01f));
                 newPellet.worldPosition = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
-                UnityEngine.Object lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity);
+                */
+
+                newPellet.worldPosition = UnityEngine.Random.insideUnitSphere * worldSize;
+                GameObject lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity) as GameObject;
+                lightEffect.transform.parent = GameManager.Inst.temporaryEffects;
 
                 //destroy effect after 1.5 sec
                 UnityEngine.Object.Destroy(lightEffect, 1.5F);
@@ -196,14 +200,7 @@ public class GameManager : MonoBehaviour {
         }
 
 
-        if(Input.GetKeyDown(KeyCode.P)){
-            for(int i = 0; i < 10; i++){
-                Assembly newAssembly = Assembly.GetRandomAssembly(UnityEngine.Random.Range(5, 30));
-                newAssembly.physicsObject.transform.position = MathUtilities.RandomVector3Sphere(30f);
-            }
-            ConsoleScript.Inst.WriteToLog("Created random assemblies.");
-        }
-
+        LevelManager.InputHandler();
 
         if(Application.platform == RuntimePlatform.Android){
             // Quit on back button.
@@ -214,9 +211,9 @@ public class GameManager : MonoBehaviour {
 
 
     public Assembly SeedNewRandomAssembly(){
-        Assembly newAssembly = Assembly.GetRandomAssembly(Assembly.MAX_NODES_IN_ASSEMBLY);
-        newAssembly.WorldPosition = MathUtilities.RandomVector3Sphere(worldSize);
-        Instantiate(PrefabManager.Inst.newPelletBurst, newAssembly.WorldPosition, Quaternion.identity);
+        Assembly newAssembly = Assembly.GetRandomAssembly(UnityEngine.Random.Range(Assembly.MIN_NODES_IN_ASSEMBLY, Assembly.MAX_NODES_IN_ASSEMBLY));
+        newAssembly.WorldPosition = UnityEngine.Random.insideUnitSphere * worldSize;
+        //Instantiate(PrefabManager.Inst.newPelletBurst, newAssembly.WorldPosition, Quaternion.identity);
         return newAssembly;
     }
 
@@ -230,12 +227,6 @@ public class GameManager : MonoBehaviour {
 
 
     void OnGUI(){
-
-        // Game fade
-        GUI.color = new Color(0f, 0f, 0f, fade);
-        GUI.DrawTexture(new Rect(-10, -10, Screen.width + 10, Screen.height + 10), GUIHelper.Inst.white);
-        GUI.color = Color.white;
-
         // World controls
         GUI.skin.label.fontSize = 12;
         GUI.skin.toggle.fontSize = 12;
@@ -262,14 +253,22 @@ public class GameManager : MonoBehaviour {
         }
         
 
+        // Don't worry about drawing the knobs if cursor is locked. ----------------- //
+        if(PersistentGameManager.Inst.CursorLock)
+            return;
         
-        float ringRadius = 250f;
+        float controlsScale = Screen.width / 1000f;
+
+        float ringRadius = 200f * controlsScale;
         float ringAngleRatio = 0.25f;
 
         controlRingAngleMod = Mathf.SmoothDamp(controlRingAngleMod, (Mathf.PI * 2f) - (((Screen.width * 0.5f) - Input.mousePosition.x) * 0.0045f), ref controlRingAngleModVel, 0.2f);
         float controlRingAngle = 0f + controlRingAngleMod;
 
-        Vector2 circleCenter = new Vector2(Screen.width * 0.5f, Screen.height - (Screen.height * 0.225f));
+        Vector2 circleCenter = new Vector2(Screen.width * 0.5f, Screen.height - (Screen.height * (0.15f * controlsScale)));
+
+        float mouseOffsetCircleCenter = circleCenter.y - (Screen.height - Input.mousePosition.y);
+
         bool controlBeingUsed = false;
         for(int i = 0; i < 10; i++){
             GuiKnob currentKnob = null;
@@ -305,9 +304,9 @@ public class GameManager : MonoBehaviour {
             if(currentKnob != null){
                 // Auto-rotate ring on desktop systems
                 if(Application.platform != RuntimePlatform.Android){
-                    currentKnob.pxlPos = circleCenter + new Vector2(Mathf.Cos(controlRingAngle) * ringRadius, Mathf.Sin(controlRingAngle) * ringRadius * ringAngleRatio);
+                    currentKnob.pxlPos = circleCenter + new Vector2(Mathf.Cos(controlRingAngle) * ringRadius, Mathf.Sin(controlRingAngle) * ringRadius * ringAngleRatio * (1f + (mouseOffsetCircleCenter * 0.002f)));
                     float closeness = 0.5f + (Mathf.Cos(controlRingAngle - (Mathf.PI * 0.5f)) * 0.5f);
-                    currentKnob.scale = 0.25f + (closeness * 0.7f);
+                    currentKnob.scale = (0.25f + (closeness * 0.7f) * controlsScale);
                     currentKnob.alpha = closeness * controlRingFade;
                 }
                 // Static controls on handheld systems
@@ -507,5 +506,16 @@ public class GameManager : MonoBehaviour {
         
 
     } // End of OnGUI().
+
+
+    void OnDestroy()
+    {
+        // Clear all static data structures
+        Node.GetAll().Clear();
+        Assembly.GetAll().Clear();
+        FoodPellet.GetAll().Clear();
+        PersistentGameManager.CaptureObjects.Clear();
+        Inst = null;
+    }
 
 }

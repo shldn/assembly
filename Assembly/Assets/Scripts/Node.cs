@@ -31,6 +31,13 @@ public class Node {
     public bool signalLock = false;
     //public bool activeLogic = false;
 
+    IntVector3 emergeFromLocalHex = IntVector3.zero;
+    bool emerging = false;
+    bool mature = false;
+    float emergeSpeedMod = 1f;
+    protected float emergeLerp = 0f;
+    float emergeEffectRolloff = 2f;
+
 
     // Graphics -------------------------------------------------------------------------- ||
     public GameObject gameObject = null;
@@ -40,6 +47,7 @@ public class Node {
     }
 
     GameObject junkObject = null;
+    public bool rootGrowNode = false;
 
     // ------------------------------------------------------------------------------------ ||
     // Constructors
@@ -119,13 +127,6 @@ public class Node {
 
     public virtual void Update(){
 
-        if(assembly && !assembly.imported)
-            gameObject.renderer.material.color = baseColor;
-        else
-            gameObject.renderer.material.color = Color.Lerp(baseColor, Color.green, 0.3f);
-
-
-
         /*
         if(!junkObject){
             int rand = Random.Range(0, RandomJunk.Inst.junkObjects.Length);
@@ -152,18 +153,62 @@ public class Node {
         } 
 
         if(assembly){
-            worldPosition = assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition));
+            worldPosition = assembly.physicsObject.transform.position + (assembly.WorldRotation * HexUtilities.HexToWorld(localHexPosition));
             worldRotation = assembly.WorldRotation * localRotation;
 
             // Burn energy if not selected... sucks having the assembly you're following explode into pieces
             //   (and throw a million nullref excepts)
-            if(!assembly.imported && (assembly != MainCameraControl.Inst.selectedAssembly))
+            if(!assembly.imported && !CaptureEditorManager.IsEditing && (!CameraControl.Inst.selectedAssembly || (CameraControl.Inst.selectedAssembly != assembly)))
                 assembly.currentEnergy -= GetBurnRate() * Assembly.burnCoefficient * Time.deltaTime;
         }
 
         // Update physical location
-        gameObject.transform.position = worldPosition;
         gameObject.transform.rotation = worldRotation;
+
+
+        // First node kicks it off.
+        if(rootGrowNode && !mature){
+            emerging = true;
+            gameObject.renderer.enabled = true;
+            emergeSpeedMod = Random.Range(0.7f, 1.3f);
+        }
+
+        if(emerging){
+            emergeLerp += Time.deltaTime * 0.75f * emergeSpeedMod;
+        }
+
+        if(emerging && (emergeLerp >= 0.7f) && !mature){
+            mature = true;
+            foreach(Node someNeighbor in neighbors){
+                if(someNeighbor.emerging || someNeighbor.mature)
+                    continue;
+
+                someNeighbor.emergeFromLocalHex = localHexPosition;
+                someNeighbor.emerging = true;
+                someNeighbor.gameObject.renderer.enabled = true;
+                emergeSpeedMod = Random.Range(0.8f, 1.2f);
+            }
+        }
+
+        if(emergeLerp >= 1f) {
+            emerging = false;
+            emergeLerp = 1f;
+        }
+
+        if(assembly) {
+            Vector3 emergeFromWorldPos = assembly.WorldPosition + (assembly.WorldRotation * HexUtilities.HexToWorld(emergeFromLocalHex));
+
+            float expEmergeLerp = Mathf.Pow(emergeLerp, 0.5f);
+
+            gameObject.transform.position = Vector3.Lerp(emergeFromWorldPos, worldPosition, expEmergeLerp);
+            gameObject.transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, expEmergeLerp);
+        }
+
+        if(mature)
+            emergeEffectRolloff = Mathf.MoveTowards(emergeEffectRolloff, 0f, Time.deltaTime);
+
+        gameObject.renderer.material.color = Color.Lerp(baseColor, Color.white, emergeEffectRolloff);
+
     } // End of UpdateTransform(). 
 
 
@@ -243,11 +288,18 @@ public class Node {
 
     // Neighbors ---------------------------------------------------------------------------||
     public List<Node> GetNeighbors(){
+        if (assembly && assembly.nodeStructureDirty || !PersistentGameManager.Inst.optimize)
+            ComputeNeighbors();
+        return neighbors;
+    }
+
+    public void ComputeNeighbors(){
+        neighbors = new List<Node>();
+    
         // No assembly... no neighbors!
         if(!assembly)
-            return null;
+            return;
 
-        neighbors = new List<Node>();
         // Loop through all adjacent positions and see if they are occupied.
         for(int i = 0; i < 12; i++){
             IntVector3 currentNeighborPos = localHexPosition + HexUtilities.Adjacent(i);
@@ -257,7 +309,7 @@ public class Node {
                 }
             }
         }
-        return neighbors;
+
     } // End of GetNeighbors().
 
     public int CountNeighbors(){
@@ -310,7 +362,7 @@ public class Node {
 
     // Save/load -------------------------------------------------------------------------||
     // The string representation of this class for file saving (could use ToString, but want to be explicit)
-    /*public string ToFileString(int format)
+    public string ToFileString(int format)
     {
         return localHexPosition.ToString() + nodeProperties.ToString();
     }
@@ -321,7 +373,7 @@ public class Node {
         IntVector3 pos = IOHelper.IntVector3FromString(str.Substring(0,splitIdx+1));
         NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
         return new Node(pos, props);
-    }*/
+    }
 
     public virtual float GetBurnRate(){return 0f;}
 
@@ -341,13 +393,6 @@ public struct NodeProperties {
     // A fully randomly-seeded NodeProperties.
     public static NodeProperties random{
         get{
-            // Sense
-            Quaternion _senseVector = Random.rotation;
-            float _fieldOfView = 45f;
-
-            // Actuate
-            Quaternion _actuateVector = Random.rotation;
-
             return new NodeProperties(Random.rotation, 45f, Random.rotation, Random.Range(0.1f, 1f));
         }
     } // End of NodeProperties.random.
@@ -360,10 +405,11 @@ public struct NodeProperties {
         muscleStrength = _muscleStrength;
     } // End of NodeProperties constructor.
 
-    /*public NodeProperties(string str){
+    public NodeProperties(string str){
 
         senseVector = Quaternion.identity;
         fieldOfView = 45.0f;
+        muscleStrength = 1.0f;
         actuateVector = Quaternion.identity;
 
         string[] tok = str.Split(';');
@@ -381,17 +427,22 @@ public struct NodeProperties {
                     if(!float.TryParse(pair[1], out fieldOfView))
                         Debug.LogError("fov failed to parse");
                     break;
+                case "m":
+                    if (!float.TryParse(pair[1], out muscleStrength))
+                        Debug.LogError("muscleStrength failed to parse");
+                    break;
                 default:
                     Debug.LogError("Unknown property: " + pair[0]);
                     break;
             }
         }
-    } // End of NodeProperties constructor.*/
+    } // End of NodeProperties constructor.
 
     public override string ToString(){
         return  "sv" + ":" + senseVector.ToString() + ";" +
                 "av" + ":" + actuateVector.ToString() + ";" +
-                "fov" + ":" + fieldOfView.ToString();
+                "fov" + ":" + fieldOfView.ToString() + ";" +
+                "m" + ":" + muscleStrength.ToString();
     }
 
 } // End of NodeProperties.
