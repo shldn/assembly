@@ -39,6 +39,7 @@ public class EnvironmentManager {
 
     public static void Save(string file)
     {
+#if UNITY_STANDALONE
         if (!File.Exists(file) && !string.IsNullOrEmpty(file))
         {
             string nowStr = DateTime.Now.ToString("MMddyyHHmmssff");
@@ -62,10 +63,14 @@ public class EnvironmentManager {
         }
         else
             Debug.LogError(file + " already exists, save aborted");
+#else
+        Debug.LogError("Save Assembly only supported in standalone builds.");
+#endif
     }
 
     public static void SavePositionsOnly(string file)
     {
+ #if UNITY_STANDALONE 
         if (!File.Exists(file))
         {
             // Create a file to write to. 
@@ -86,6 +91,9 @@ public class EnvironmentManager {
         }
         else
             Debug.LogError(file + " already exists, save aborted");
+#else
+        Debug.LogError("Save Assembly only supported in standalone builds.");
+#endif 
     }
 
     // If seed is supplied, places mutated assemblies of the seed assembly at each assembly position in the assemblyPositions list

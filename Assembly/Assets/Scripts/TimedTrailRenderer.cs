@@ -68,6 +68,12 @@ public class TimedTrailRenderer : MonoBehaviour
       o.AddComponent(typeof(MeshRenderer));
       o.renderer.material = material;
    }
+
+
+	void OnDestroy(){
+		Destroy(o);
+	} // End of OnDestroy().
+
  
    void OnDisable ()
    {

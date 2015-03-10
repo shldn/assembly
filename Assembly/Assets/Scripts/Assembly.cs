@@ -80,7 +80,7 @@ public class Assembly : CaptureObject {
 
     public Assembly targetMate = null;
     public Assembly gentlemanCaller = null;
-    float mateCooldown = 5f;
+    float mateCooldown = 10f;
 
     public float MaxEnergy { get{ return nodes.Count; }}
     public float Health { get{ return currentEnergy / MaxEnergy; }
@@ -166,7 +166,7 @@ public class Assembly : CaptureObject {
         physicsObject.layer = LayerMask.NameToLayer("Assemblies");
         physicsObject.AddComponent<Rigidbody>();
         physicsObject.rigidbody.useGravity = false;
-        physicsObject.rigidbody.angularDrag = 0.1f;
+        physicsObject.rigidbody.angularDrag = 1f;
         physicsObject.rigidbody.drag = 0.3f;
 
     } // End of InitPhysicsObject().
@@ -365,7 +365,8 @@ public class Assembly : CaptureObject {
             assemblyObject.transform.position = WorldPosition;
 
         // If assembly has 200% health, it reproduces!
-        if(Health >= 2f && !PersistentGameManager.IsClient){
+		mateCooldown -= Time.deltaTime;
+        if(Health >= 2f && !PersistentGameManager.IsClient && (mateCooldown <= 0f)){
             Object.Instantiate(PrefabManager.Inst.reproduceBurst, WorldPosition, Quaternion.identity);
             RandomMelody.Inst.PlayNote();
             
@@ -478,12 +479,12 @@ public class Assembly : CaptureObject {
             for(int j = 0; j < 12; j++){
                 int currentDir = (dirStart + j) % 12;
 
-                IntVector3 currentPos = currentNode.localHexPosition + HexUtilities.Adjacent(currentDir);
+                Triplet currentPos = currentNode.localHexPosition + HexUtilities.Adjacent(currentDir);
 
                 // Loop through all nodes, determine if any of them occupy currentPos.
                 bool occupied = false;
                 for(int k = 0; k < nodes.Count; k++){
-                    if(nodes[k].localHexPosition == currentPos){
+                    if(nodes[k].localHexPosition.Equals(currentPos)){
                         occupied = true;
                         break;
                     }
@@ -560,12 +561,12 @@ public class Assembly : CaptureObject {
     } // End of UpdateNodes(). 
 
 
-    List<Node> GetNeighborsToPos(IntVector3 hexPos){
+    List<Node> GetNeighborsToPos(Triplet hexPos){
         List<Node> neighbors = new List<Node>();
         for(int k = 0; k < 12; k++){
-            IntVector3 currentNeighborPos = hexPos + HexUtilities.Adjacent(k);
+            Triplet currentNeighborPos = hexPos + HexUtilities.Adjacent(k);
             for(int m = 0; m < nodes.Count; m++){
-                if(nodes[m].localHexPosition == currentNeighborPos){
+                if(nodes[m].localHexPosition.Equals(currentNeighborPos)){
                     neighbors.Add(nodes[m]);
                 }
             }
@@ -590,7 +591,7 @@ public class Assembly : CaptureObject {
         for(int i = 0; i < numNodesModify; i++){
             if(Random.Range(0f, 1f) <= 0.5)
                 AddRandomNode();
-            else if(nodes.Count > 1)
+            else if(nodes.Count > GameManager.Inst.minNumNodes)
                 RemoveRandomNode();
         }
 

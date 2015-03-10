@@ -87,6 +87,7 @@ public class IOHelper
 
     public static void SaveAssembly(string filePath, Assembly assembly)
     {
+#if UNITY_STANDALONE
         if (!File.Exists(filePath))
         {
             // Create a file to write to. 
@@ -97,6 +98,9 @@ public class IOHelper
         }
         else
             Debug.LogError(filePath + " already exists, save aborted");
+#else
+        Debug.LogError("Save Assembly only supported in standalone builds.");
+#endif
     }
 
     static public List<Vector3> Vector3ListFromString(string str)
@@ -133,13 +137,13 @@ public class IOHelper
         return new Quaternion(x, y, z, w);
     }
 
-    static public IntVector3 IntVector3FromString(string str)
+    static public Triplet TripletFromString(string str)
     {
         string[] tok = str.Substring(1, str.Length - 2).Split(',');
         int x = int.Parse(tok[0]);
         int y = int.Parse(tok[1]);
         int z = int.Parse(tok[2]);
-        return new IntVector3(x, y, z);
+        return new Triplet(x, y, z);
     }
     static public string ToCommaString(Vector3 v)
     {

@@ -73,10 +73,6 @@ public class GameManager : MonoBehaviour {
     void LateUpdate(){
         deltaRealTime = Time.deltaTime / Time.timeScale;
         
-        if(Input.GetKeyDown(KeyCode.Escape))
-            Application.Quit();
-
-
         Time.timeScale = Mathf.MoveTowards(Time.timeScale, targetTimeScale, (deltaRealTime));
         Time.fixedDeltaTime = 0.05f * Time.timeScale;
 
@@ -202,11 +198,6 @@ public class GameManager : MonoBehaviour {
 
         LevelManager.InputHandler();
 
-        if(Application.platform == RuntimePlatform.Android){
-            // Quit on back button.
-            if(Input.GetKeyDown(KeyCode.Escape))
-                Application.Quit();
-        }
     } // End of Update().
 
 
@@ -265,7 +256,7 @@ public class GameManager : MonoBehaviour {
         controlRingAngleMod = Mathf.SmoothDamp(controlRingAngleMod, (Mathf.PI * 2f) - (((Screen.width * 0.5f) - Input.mousePosition.x) * 0.0045f), ref controlRingAngleModVel, 0.2f);
         float controlRingAngle = 0f + controlRingAngleMod;
 
-        Vector2 circleCenter = new Vector2(Screen.width * 0.5f, Screen.height - (Screen.height * (0.15f * controlsScale)));
+        Vector2 circleCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.8f);
 
         float mouseOffsetCircleCenter = circleCenter.y - (Screen.height - Input.mousePosition.y);
 

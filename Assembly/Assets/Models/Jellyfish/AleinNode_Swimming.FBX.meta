@@ -1,0 +1,225 @@
+fileFormatVersion: 2
+guid: 3845be6d4b37add4eb2c3644a7d9cb73
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: CATRigHub001
+    100004: CATRigTail011
+    100006: CATRigTail012
+    100008: CATRigTail013
+    100010: CATRigTail014
+    100012: CATRigTail015
+    100014: CATRigTail021
+    100016: CATRigTail022
+    100018: CATRigTail023
+    100020: CATRigTail024
+    100022: CATRigTail025
+    100024: CATRigTail031
+    100026: CATRigTail032
+    100028: CATRigTail033
+    100030: CATRigTail034
+    100032: CATRigTail035
+    100034: CATRigTail041
+    100036: CATRigTail042
+    100038: CATRigTail043
+    100040: CATRigTail044
+    100042: CATRigTail045
+    100044: CATRigTail051
+    100046: CATRigTail052
+    100048: CATRigTail053
+    100050: CATRigTail054
+    100052: CATRigTail055
+    100054: CATRigTail061
+    100056: CATRigTail062
+    100058: CATRigTail063
+    100060: CATRigTail064
+    100062: CATRigTail065
+    100064: Character001
+    100066: polySurface1
+    400000: //RootNode
+    400002: CATRigHub001
+    400004: CATRigTail011
+    400006: CATRigTail012
+    400008: CATRigTail013
+    400010: CATRigTail014
+    400012: CATRigTail015
+    400014: CATRigTail021
+    400016: CATRigTail022
+    400018: CATRigTail023
+    400020: CATRigTail024
+    400022: CATRigTail025
+    400024: CATRigTail031
+    400026: CATRigTail032
+    400028: CATRigTail033
+    400030: CATRigTail034
+    400032: CATRigTail035
+    400034: CATRigTail041
+    400036: CATRigTail042
+    400038: CATRigTail043
+    400040: CATRigTail044
+    400042: CATRigTail045
+    400044: CATRigTail051
+    400046: CATRigTail052
+    400048: CATRigTail053
+    400050: CATRigTail054
+    400052: CATRigTail055
+    400054: CATRigTail061
+    400056: CATRigTail062
+    400058: CATRigTail063
+    400060: CATRigTail064
+    400062: CATRigTail065
+    400064: Character001
+    400066: polySurface1
+    4300000: polySurface1
+    7400000: Swimming
+    9500000: //RootNode
+    13700000: polySurface1
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: Swimming
+      takeName: Take 001
+      firstFrame: 0
+      lastFrame: 100
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 1
+      loopBlend: 1
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: CATRigHub001
+        weight: 1
+      - path: CATRigHub001/CATRigTail011
+        weight: 1
+      - path: CATRigHub001/CATRigTail011/CATRigTail012
+        weight: 1
+      - path: CATRigHub001/CATRigTail011/CATRigTail012/CATRigTail013
+        weight: 1
+      - path: CATRigHub001/CATRigTail011/CATRigTail012/CATRigTail013/CATRigTail014
+        weight: 1
+      - path: CATRigHub001/CATRigTail011/CATRigTail012/CATRigTail013/CATRigTail014/CATRigTail015
+        weight: 1
+      - path: CATRigHub001/CATRigTail021
+        weight: 1
+      - path: CATRigHub001/CATRigTail021/CATRigTail022
+        weight: 1
+      - path: CATRigHub001/CATRigTail021/CATRigTail022/CATRigTail023
+        weight: 1
+      - path: CATRigHub001/CATRigTail021/CATRigTail022/CATRigTail023/CATRigTail024
+        weight: 1
+      - path: CATRigHub001/CATRigTail021/CATRigTail022/CATRigTail023/CATRigTail024/CATRigTail025
+        weight: 1
+      - path: CATRigHub001/CATRigTail031
+        weight: 1
+      - path: CATRigHub001/CATRigTail031/CATRigTail032
+        weight: 1
+      - path: CATRigHub001/CATRigTail031/CATRigTail032/CATRigTail033
+        weight: 1
+      - path: CATRigHub001/CATRigTail031/CATRigTail032/CATRigTail033/CATRigTail034
+        weight: 1
+      - path: CATRigHub001/CATRigTail031/CATRigTail032/CATRigTail033/CATRigTail034/CATRigTail035
+        weight: 1
+      - path: CATRigHub001/CATRigTail041
+        weight: 1
+      - path: CATRigHub001/CATRigTail041/CATRigTail042
+        weight: 1
+      - path: CATRigHub001/CATRigTail041/CATRigTail042/CATRigTail043
+        weight: 1
+      - path: CATRigHub001/CATRigTail041/CATRigTail042/CATRigTail043/CATRigTail044
+        weight: 1
+      - path: CATRigHub001/CATRigTail041/CATRigTail042/CATRigTail043/CATRigTail044/CATRigTail045
+        weight: 1
+      - path: CATRigHub001/CATRigTail051
+        weight: 1
+      - path: CATRigHub001/CATRigTail051/CATRigTail052
+        weight: 1
+      - path: CATRigHub001/CATRigTail051/CATRigTail052/CATRigTail053
+        weight: 1
+      - path: CATRigHub001/CATRigTail051/CATRigTail052/CATRigTail053/CATRigTail054
+        weight: 1
+      - path: CATRigHub001/CATRigTail051/CATRigTail052/CATRigTail053/CATRigTail054/CATRigTail055
+        weight: 1
+      - path: CATRigHub001/CATRigTail061
+        weight: 1
+      - path: CATRigHub001/CATRigTail061/CATRigTail062
+        weight: 1
+      - path: CATRigHub001/CATRigTail061/CATRigTail062/CATRigTail063
+        weight: 1
+      - path: CATRigHub001/CATRigTail061/CATRigTail062/CATRigTail063/CATRigTail064
+        weight: 1
+      - path: CATRigHub001/CATRigTail061/CATRigTail062/CATRigTail063/CATRigTail064/CATRigTail065
+        weight: 1
+      - path: Character001
+        weight: 1
+      - path: polySurface1
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  additionalBone: 0
+  userData: 

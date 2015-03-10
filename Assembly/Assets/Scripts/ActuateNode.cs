@@ -30,7 +30,7 @@ public class ActuateNode : Node {
     }
     public ActuateNode(Node node, Assembly assem) : base(node, assem){
         Initialize();
-    }public ActuateNode(IntVector3 localHex) : base(localHex){
+    }public ActuateNode(Triplet localHex) : base(localHex){
         Initialize();
     }
 
@@ -78,17 +78,20 @@ public class ActuateNode : Node {
     
     public void Propel(Quaternion inputQuat, float sigStrength){
         totalSigStrength += sigStrength;
-        assembly.physicsObject.rigidbody.AddForceAtPosition(((nodeProperties.actuateVector * inputQuat) * Vector3.forward) * 10f * sigStrength * nodeProperties.muscleStrength, worldPosition);
+        assembly.physicsObject.rigidbody.AddForceAtPosition(((assembly.WorldRotation * nodeProperties.actuateVector * inputQuat) * Vector3.forward) * 10f * sigStrength * nodeProperties.muscleStrength, worldPosition);
     } // End of Propel().
 
     public override void Destroy(){
         if(mainTrailObject){
             mainTrailObject.transform.parent = null;
-            mainTrailObject.AddComponent<DestroyAfterTime>().killTimer = mainTrailObject.GetComponent<TimedTrailRenderer>().lifeTime;
+            mainTrailObject.gameObject.AddComponent<DestroyAfterTime>().killTimer = mainTrailObject.GetComponent<TimedTrailRenderer>().lifeTime;
+			extendedTrailObject.gameObject.name = "Doomed mainTrail";
+
         }
         if(extendedTrailObject){
             extendedTrailObject.transform.parent = null;
-            extendedTrailObject.AddComponent<DestroyAfterTime>().killTimer = extendedTrailObject.GetComponent<TimedTrailRenderer>().lifeTime;
+            extendedTrailObject.gameObject.AddComponent<DestroyAfterTime>().killTimer = extendedTrailObject.GetComponent<TimedTrailRenderer>().lifeTime;
+			extendedTrailObject.gameObject.name = "Doomed extTrail";
         }
         base.Destroy();
     }
