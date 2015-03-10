@@ -140,8 +140,8 @@ public class MainCameraController : MonoBehaviour {
 
 
         // Find the local player's player controller.
-        if (!playerController && GroundGameManager.Inst.LocalPlayer != null)
-            playerController = GroundGameManager.Inst.LocalPlayer.gameObject.GetComponent<PlayerController>();
+        if (!playerController && UtopiaGameManager.Inst.LocalPlayer != null)
+            playerController = UtopiaGameManager.Inst.LocalPlayer.gameObject.GetComponent<PlayerController>();
 
 
         Vector2 mouseScreenNormalized = new Vector2(MathHelper.Remap(Input.mousePosition.x, 0f, Screen.width, 0f, 1f), MathHelper.Remap(Input.mousePosition.y, 0f, Screen.height, 0f, 1f));
@@ -151,11 +151,11 @@ public class MainCameraController : MonoBehaviour {
         }
 
         // Camera following the player.
-        if ((cameraType == CameraType.FOLLOWPLAYER) && (playerController != null) && (GroundGameManager.Inst.LocalPlayer != null)){
+        if ((cameraType == CameraType.FOLLOWPLAYER) && (playerController != null) && (UtopiaGameManager.Inst.LocalPlayer != null)){
 
-            GroundGameManager.Inst.LocalPlayer.Visible = true;
+            UtopiaGameManager.Inst.LocalPlayer.Visible = true;
 
-            Transform playerTransform = GroundGameManager.Inst.LocalPlayer.gameObject.transform;
+            Transform playerTransform = UtopiaGameManager.Inst.LocalPlayer.gameObject.transform;
 
             // Handy vectors for camera offsets.
             Vector3 playerForwardVector = MathHelper.MoveAngleUnitVector(playerController.forwardAngle);
@@ -176,7 +176,7 @@ public class MainCameraController : MonoBehaviour {
             cameraTargetPos = playerTransform.position + (cameraTargetQuat * Vector3.forward * cameraTargetVector.magnitude);
 
             // experimental ------------------------
-            Vector3 playerHead = GroundGameManager.Inst.LocalPlayer.HeadPosition;
+            Vector3 playerHead = UtopiaGameManager.Inst.LocalPlayer.HeadPosition;
             Ray followPlayerRay = new Ray(playerHead, cameraTargetPos - playerHead);
             RaycastHit followPlayerHit = new RaycastHit();
             float castRadius = 0.7f;
@@ -194,10 +194,10 @@ public class MainCameraController : MonoBehaviour {
         }
 
         // First-person mouse-controlled camera.
-        if ((cameraType == CameraType.FIRSTPERSON) && (playerController != null) && (GroundGameManager.Inst.LocalPlayer != null)){
-            cameraTargetPos = GroundGameManager.Inst.LocalPlayer.HeadPosition;
+        if ((cameraType == CameraType.FIRSTPERSON) && (playerController != null) && (UtopiaGameManager.Inst.LocalPlayer != null)){
+            cameraTargetPos = UtopiaGameManager.Inst.LocalPlayer.HeadPosition;
 
-            Quaternion targetRot = GroundGameManager.Inst.LocalPlayer.playerController.transform.rotation;
+            Quaternion targetRot = UtopiaGameManager.Inst.LocalPlayer.playerController.transform.rotation;
             targetRot *= Quaternion.AngleAxis(maxGazePanFirstPerson * gazePanTiltNormalized.y, Vector3.up);
             targetRot *= Quaternion.AngleAxis(maxGazeTiltFirstPerson * -gazePanTiltNormalized.x, Vector3.right);
 
@@ -228,20 +228,20 @@ public class MainCameraController : MonoBehaviour {
             playerController.lockMovement = true;
         }
 
-        if (GroundGameManager.Inst.LocalPlayer && GroundGameManager.Inst.LocalPlayer.gameObject && !initializedPosition){
+        if (UtopiaGameManager.Inst.LocalPlayer && UtopiaGameManager.Inst.LocalPlayer.gameObject && !initializedPosition){
             CameraToInitialPos();
             initializedPosition = true;
         }
 
         // Hide player if camera is too close.
-        if (GroundGameManager.Inst.LocalPlayer != null)
+        if (UtopiaGameManager.Inst.LocalPlayer != null)
         {
-            float distToCam = Vector3.Distance(GroundGameManager.Inst.LocalPlayer.HeadPosition, mainCamera.transform.position);
+            float distToCam = Vector3.Distance(UtopiaGameManager.Inst.LocalPlayer.HeadPosition, mainCamera.transform.position);
             float distHidePlayer = 1.5f;
-            if ((distToCam < distHidePlayer) && GroundGameManager.Inst.LocalPlayer.Visible)
-                GroundGameManager.Inst.LocalPlayer.Visible = false;
-            if ((distToCam > distHidePlayer) && !GroundGameManager.Inst.LocalPlayer.Visible)
-                GroundGameManager.Inst.LocalPlayer.Visible = true;
+            if ((distToCam < distHidePlayer) && UtopiaGameManager.Inst.LocalPlayer.Visible)
+                UtopiaGameManager.Inst.LocalPlayer.Visible = false;
+            if ((distToCam > distHidePlayer) && !UtopiaGameManager.Inst.LocalPlayer.Visible)
+                UtopiaGameManager.Inst.LocalPlayer.Visible = true;
 
             // No click to move while in Snap Cam
             if (cameraType == CameraType.SNAPCAM)
@@ -249,7 +249,7 @@ public class MainCameraController : MonoBehaviour {
 
             // Make player invisible if in SNAP mode.
             if ((cameraType == CameraType.SNAPCAM) && playerInvisibleIfSnapCam)
-                GroundGameManager.Inst.LocalPlayer.Visible = false;
+                UtopiaGameManager.Inst.LocalPlayer.Visible = false;
 
             // Exit snap mode if movement (if applicable)
             if ((cameraType == CameraType.SNAPCAM) && playerMovementExitsSnapCam && PlayerController.Local.nonzeroThrottle)
@@ -281,10 +281,10 @@ public class MainCameraController : MonoBehaviour {
 
     public void CameraToInitialPos(){
 
-        if (!GroundGameManager.Inst.LocalPlayer)
+        if (!UtopiaGameManager.Inst.LocalPlayer)
             return;
 
-        Transform playerTransform = GroundGameManager.Inst.LocalPlayer.gameObject.transform;
+        Transform playerTransform = UtopiaGameManager.Inst.LocalPlayer.gameObject.transform;
         Vector3 playerHead = playerTransform.position + (Vector3.up * 3f);
 
         mainCamera.transform.position = playerHead;
@@ -319,7 +319,7 @@ public class MainCameraController : MonoBehaviour {
         }
         cameraTypeImpl = cType;
         //if (cameraTypeImpl == CameraType.FIRSTPERSON)
-        //    cameraTargetEulers = GroundGameManager.Inst.LocalPlayer.gameObject.transform.eulerAngles;
+        //    cameraTargetEulers = UtopiaGameManager.Inst.LocalPlayer.gameObject.transform.eulerAngles;
 
     } // End SetCameraType().
 

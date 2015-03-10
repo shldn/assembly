@@ -5,7 +5,7 @@ public class CroquetBall : MonoBehaviour {
 
     public static void Create(Vector3 pos, Quaternion rot)
     {
-        GameObject go = (GameObject)GameObject.Instantiate(Resources.Load("GroundGame/CroquetBall"));
+        GameObject go = (GameObject)GameObject.Instantiate(Resources.Load("Utopia/CroquetBall"));
         go.transform.position = pos;
         go.transform.rotation = rot;
     }
@@ -18,7 +18,7 @@ public class CroquetBall : MonoBehaviour {
 
     void OnMouseUpAsButton()
     {
-        Transform playerTransform = GroundGameManager.Inst.LocalPlayer.gameObject.transform;
+        Transform playerTransform = UtopiaGameManager.Inst.LocalPlayer.gameObject.transform;
 
         // put player in position
         float distanceFromBall = 1.0f;

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GroundGameManager : MonoBehaviour {
+public class UtopiaGameManager : MonoBehaviour {
 
     public float minSpringAngleOffset = 5.0f;
     public float maxAngleOffset = 60.0f;
@@ -14,7 +14,7 @@ public class GroundGameManager : MonoBehaviour {
     private Player localPlayer = null;
     public Player LocalPlayer { get { return localPlayer; } set { localPlayer = value; } }
 
-    public static GroundGameManager Inst = null;
+    public static UtopiaGameManager Inst = null;
 
     void Awake()
     {
@@ -32,9 +32,9 @@ public class GroundGameManager : MonoBehaviour {
 
         if (Input.GetKeyUp(KeyCode.C))
         {
-            GameObject junk = (GameObject)GameObject.Instantiate(Input.GetKey(KeyCode.RightShift) ? Resources.Load("GroundGame/Fence") : Resources.Load("GroundGame/Palette"));
-            if (GroundGameManager.Inst.LocalPlayer)
-                junk.transform.position = GroundGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * GroundGameManager.Inst.LocalPlayer.gameObject.transform.forward;
+            GameObject junk = (GameObject)GameObject.Instantiate(Input.GetKey(KeyCode.RightShift) ? Resources.Load("Utopia/Fence") : Resources.Load("Utopia/Palette"));
+            if (UtopiaGameManager.Inst.LocalPlayer)
+                junk.transform.position = UtopiaGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * UtopiaGameManager.Inst.LocalPlayer.gameObject.transform.forward;
             Creature creature = junk.AddComponent<Creature>();
             creature.numAttachments = 5;
         }
@@ -45,22 +45,22 @@ public class GroundGameManager : MonoBehaviour {
             cube.AddComponent<Rigidbody>();
             cube.AddComponent<SpringCreature>();
             cube.transform.position = new Vector3(8, 5.5F, 0);
-            if (GroundGameManager.Inst.LocalPlayer)
-                cube.transform.position = GroundGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * GroundGameManager.Inst.LocalPlayer.gameObject.transform.forward;
+            if (UtopiaGameManager.Inst.LocalPlayer)
+                cube.transform.position = UtopiaGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * UtopiaGameManager.Inst.LocalPlayer.gameObject.transform.forward;
         }
         if (Input.GetKeyUp(KeyCode.J))
         {
-            GameObject junk = (GameObject)GameObject.Instantiate(Input.GetKey(KeyCode.RightShift) ? Resources.Load("GroundGame/Block") : Resources.Load("GroundGame/Palette"));
-            if (GroundGameManager.Inst.LocalPlayer)
-                junk.transform.position = GroundGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * GroundGameManager.Inst.LocalPlayer.gameObject.transform.forward;
+            GameObject junk = (GameObject)GameObject.Instantiate(Input.GetKey(KeyCode.RightShift) ? Resources.Load("Utopia/Block") : Resources.Load("Utopia/Palette"));
+            if (UtopiaGameManager.Inst.LocalPlayer)
+                junk.transform.position = UtopiaGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * UtopiaGameManager.Inst.LocalPlayer.gameObject.transform.forward;
             SpringCreature creature = junk.AddComponent<SpringCreature>();
             creature.numSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
         }
         if (Input.GetKeyUp(KeyCode.K))
         {
-            GameObject junk = (GameObject)GameObject.Instantiate(Resources.Load("GroundGame/Palette"));
-            if (GroundGameManager.Inst.LocalPlayer)
-                junk.transform.position = GroundGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * GroundGameManager.Inst.LocalPlayer.gameObject.transform.forward;
+            GameObject junk = (GameObject)GameObject.Instantiate(Resources.Load("Utopia/Palette"));
+            if (UtopiaGameManager.Inst.LocalPlayer)
+                junk.transform.position = UtopiaGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * UtopiaGameManager.Inst.LocalPlayer.gameObject.transform.forward;
             SpringCreature creature = junk.AddComponent<SpringCreature>();
             creature.numSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
         }
@@ -70,15 +70,15 @@ public class GroundGameManager : MonoBehaviour {
         }
         if( Input.GetKeyUp(KeyCode.B))
         {
-            GroundGameManager.Inst.LocalPlayer.gameObject.GetComponent<AnimatorHelper>().StartAnim("Putdownball", true);
-            PutDownBallCallback(GroundGameManager.Inst.LocalPlayer);
+            UtopiaGameManager.Inst.LocalPlayer.gameObject.GetComponent<AnimatorHelper>().StartAnim("Putdownball", true);
+            PutDownBallCallback(UtopiaGameManager.Inst.LocalPlayer);
         }
         if (Input.GetKeyUp(KeyCode.M))
         {
-            GroundGameManager.Inst.LocalPlayer.gameObject.GetComponent<AnimatorHelper>().StartAnim("Swing", true);
+            UtopiaGameManager.Inst.LocalPlayer.gameObject.GetComponent<AnimatorHelper>().StartAnim("Swing", true);
             float showTime = 4.0f;
-            StartCoroutine(HideBall(GroundGameManager.Inst.LocalPlayer, 0));
-            StartCoroutine(ShowBall(GroundGameManager.Inst.LocalPlayer, showTime));
+            StartCoroutine(HideBall(UtopiaGameManager.Inst.LocalPlayer, 0));
+            StartCoroutine(ShowBall(UtopiaGameManager.Inst.LocalPlayer, showTime));
         }
 	}
 

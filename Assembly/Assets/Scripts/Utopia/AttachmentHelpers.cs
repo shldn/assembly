@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 public class AttachmentHelpers{
 
-    private static string[] actionPrefabPaths = { "GroundGame/Spring", "GroundGame/Propeller", "GroundGame/Oarfin" };
-    private static string[] sensePrefabPaths = { "GroundGame/Nose", "GroundGame/Ear", "GroundGame/EyeLeft", "GroundGame/TVAntenna" };
+    private static string[] actionPrefabPaths = { "Utopia/Spring", "Utopia/Propeller", "Utopia/Oarfin" };
+    private static string[] sensePrefabPaths = { "Utopia/Nose", "Utopia/Ear", "Utopia/EyeLeft", "Utopia/TVAntenna" };
 
 
     // Attaches a spring to the parent game object and returns the spring
     public static GameObject AttachSpringToObject(GameObject parent, Vector3 positionOffset, Vector3 attachNormal)
     {
-        return AttachObjectToObject(parent, "GroundGame/Spring", positionOffset, attachNormal, true);
+        return AttachObjectToObject(parent, "Utopia/Spring", positionOffset, attachNormal, true);
     }
 
     public static GameObject AttachObjectToObject(GameObject parent, string childPrefabPath, Vector3 positionOffset, Vector3 attachNormal, bool rotateChildObject = false)
@@ -26,7 +26,7 @@ public class AttachmentHelpers{
         // randomly rotate direction vector, stay on proper side of the plane orthogonal to attachNormal.
         if( rotateChildObject )
         {
-            float randAngle = Random.Range(GroundGameManager.Inst.minSpringAngleOffset, GroundGameManager.Inst.maxAngleOffset);
+            float randAngle = Random.Range(UtopiaGameManager.Inst.minSpringAngleOffset, UtopiaGameManager.Inst.maxAngleOffset);
             float randAngleToRotateAxis = Random.Range(0.0f, 360.0f);
             // get random axis perpendicular to attachNormal
             Vector3 axis = Quaternion.AngleAxis(randAngleToRotateAxis, attachNormal) * GetAnyOrthogonalVector(attachNormal);

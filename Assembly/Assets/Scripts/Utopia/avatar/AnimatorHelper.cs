@@ -57,7 +57,7 @@ public class AnimatorHelper : MonoBehaviour {
             anim.SetBool(availableAnims[currentStateHash], false);
 
         bool customAnimationDone = IsIdle() && !HasNextAnimation() && Time.frameCount > customAnimStartFrame + 3;
-        if (!CameraFollowOrbitController.Inst.InStartPosition && !CameraFollowOrbitController.Inst.IsCancelling && GroundGameManager.Inst.LocalPlayer != null && GroundGameManager.Inst.LocalPlayer.gameObject == gameObject && customAnimationDone && orbitStartedByThis)
+        if (!CameraFollowOrbitController.Inst.InStartPosition && !CameraFollowOrbitController.Inst.IsCancelling && UtopiaGameManager.Inst.LocalPlayer != null && UtopiaGameManager.Inst.LocalPlayer.gameObject == gameObject && customAnimationDone && orbitStartedByThis)
         {
             CameraFollowOrbitController.Inst.CancelOrbit(0.5f);
              orbitStartedByThis = false;

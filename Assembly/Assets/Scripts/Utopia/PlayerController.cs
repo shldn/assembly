@@ -27,8 +27,8 @@ public class PlayerController : MonoBehaviour {
 
     public static bool headTiltEnabled = true;
 
-    public bool isLocalPlayer { get { return GroundGameManager.Inst.LocalPlayer == playerScript; } }
-    public static PlayerController Local { get { return GroundGameManager.Inst.LocalPlayer.playerController; } }
+    public bool isLocalPlayer { get { return UtopiaGameManager.Inst.LocalPlayer == playerScript; } }
+    public static PlayerController Local { get { return UtopiaGameManager.Inst.LocalPlayer.playerController; } }
 
     Animator animator = null;
     AnimatorHelper animatorHelper = null;
@@ -503,8 +503,8 @@ public class PlayerController : MonoBehaviour {
 
 
     public static void ClickToMoveInterrupt(){
-        if( GroundGameManager.Inst.LocalPlayer )
-            GroundGameManager.Inst.LocalPlayer.playerController.ctmiFrames = 3;
+        if( UtopiaGameManager.Inst.LocalPlayer )
+            UtopiaGameManager.Inst.LocalPlayer.playerController.ctmiFrames = 3;
     } // ClickToMoveInterrupt().
 
 

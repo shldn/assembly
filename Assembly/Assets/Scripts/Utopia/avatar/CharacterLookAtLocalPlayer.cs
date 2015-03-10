@@ -4,7 +4,7 @@ public class CharacterLookAtLocalPlayer : CharacterLookAt {
     {
         base.Start();
         UseCharacterOffset();
-        if (lookAtGameObject == null && GroundGameManager.Inst.LocalPlayer != null)
-            lookAtGameObject = GroundGameManager.Inst.LocalPlayer.gameObject;
+        if (lookAtGameObject == null && UtopiaGameManager.Inst.LocalPlayer != null)
+            lookAtGameObject = UtopiaGameManager.Inst.LocalPlayer.gameObject;
     }	
 }
