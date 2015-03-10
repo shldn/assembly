@@ -2,14 +2,21 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class SpringCreature : MonoBehaviour {
+public class SpringCreature : MonoBehaviour, CaptureObject {
 
     public int numSprings = 5;
     public int repeatDelayMin = 1;
     public int repeatDelayMax = 6;
     Matrix4x4 scaleAdjust;
     HashSet<int> attachedTriangles = new HashSet<int>();
-	
+
+    public Vector3 Position { get { return transform.position; } }
+
+    void Awake()
+    {
+        PersistentGameManager.CaptureObjects.Add(this);
+    }
+
 	void Start () {
         if (numSprings < 0)
             AddSpringsToAllFaces();
@@ -57,6 +64,15 @@ public class SpringCreature : MonoBehaviour {
                 scaler.repeatDelay = Random.Range((float)repeatDelayMin, (float)repeatDelayMax);
         }
 
+    }
+
+    public void Destroy(){
+        Destroy(gameObject);
+    }
+
+    void OnDestroy()
+    {
+        PersistentGameManager.CaptureObjects.Remove(this);
     }
 	
 
