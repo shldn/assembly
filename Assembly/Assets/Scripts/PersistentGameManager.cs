@@ -34,7 +34,7 @@ public class PersistentGameManager : MonoBehaviour {
     public Texture qrCodeTexture;
 
     // Interface
-    bool cursorLock = true;
+    bool cursorLock = false;
     public bool CursorLock {get{return cursorLock;}}
 
 
@@ -64,10 +64,6 @@ public class PersistentGameManager : MonoBehaviour {
 	void Update () {
         LevelManager.InputHandler();
 
-		if(Time.time > 3f){
-			if(Input.GetKeyDown(KeyCode.F1)){
-				cursorLock = !cursorLock;
-			}
         if (Input.GetKeyDown(KeyCode.I))
         {
             DisplayIP displayIP = gameObject.GetComponent<DisplayIP>();
@@ -77,8 +73,7 @@ public class PersistentGameManager : MonoBehaviour {
                 displayIP.enabled = !displayIP.enabled;
         }
 
-			Screen.lockCursor = cursorLock;
-		}
+		Screen.lockCursor = cursorLock;
 	}
 
 
