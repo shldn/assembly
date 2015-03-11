@@ -1,0 +1,135 @@
+fileFormatVersion: 2
+guid: f598b524cddb0a34e954b3c6efde3589
+ModelImporter:
+  serializedVersion: 15
+  fileIDToRecycleName:
+    100000: Aperature base
+    100002: //RootNode
+    100004: AperatureBlades
+    100006: blade1
+    100008: blade2
+    100010: blade3
+    100012: blade4
+    100014: blade5
+    100016: blade6
+    100018: blade7
+    100020: blade8
+    100022: rivetpiece_low
+    400000: Aperature base
+    400002: //RootNode
+    400004: AperatureBlades
+    400006: blade1
+    400008: blade2
+    400010: blade3
+    400012: blade4
+    400014: blade5
+    400016: blade6
+    400018: blade7
+    400020: blade8
+    400022: rivetpiece_low
+    2300000: Aperature base
+    2300002: blade1
+    2300004: blade2
+    2300006: blade3
+    2300008: blade4
+    2300010: blade5
+    2300012: blade6
+    2300014: blade7
+    2300016: blade8
+    2300018: rivetpiece_low
+    3300000: Aperature base
+    3300002: blade1
+    3300004: blade2
+    3300006: blade3
+    3300008: blade4
+    3300010: blade5
+    3300012: blade6
+    3300014: blade7
+    3300016: blade8
+    3300018: rivetpiece_low
+    4300000: Aperature base
+    4300002: rivetpiece_low
+    4300004: blade1
+    4300006: blade2
+    4300008: blade3
+    4300010: blade4
+    4300012: blade5
+    4300014: blade6
+    4300016: blade7
+    4300018: blade8
+    7400000: iris_openclose
+    9500000: //RootNode
+    11100000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    clipAnimations:
+    - name: iris_openclose
+      takeName: Take 001
+      firstFrame: 0
+      lastFrame: 60
+      wrapMode: 2
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopBlend: 1
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      transformMask: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    handles: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  additionalBone: 1
+  animationType: 1
+  userData: 

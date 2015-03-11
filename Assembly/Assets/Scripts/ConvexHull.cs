@@ -5,6 +5,17 @@ using System.Collections.Generic;
 
 public class ConvexHull
 {
+    // creates a mesh from a random set of points within a defined range
+    public static GameObject GetRandomHullMesh(Bounds b, int numPts = 30)
+    {
+        List<Vector3> pts = new List<Vector3>();
+
+        for(int i=0; i < numPts; ++i)
+            pts.Add(new Vector3(Random.Range(b.min.x, b.max.x), Random.Range(b.min.y, b.max.y),Random.Range(b.min.z, b.max.z)));
+
+        return GetMeshFromPoints(pts);
+    }
+
     // creates a new game object with the convex hull mesh from the input pts
     public static GameObject GetMeshFromPoints(List<Vector3> pts)
     {

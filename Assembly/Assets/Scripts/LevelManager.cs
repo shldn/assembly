@@ -14,7 +14,8 @@ public class LevelManager {
 
     public static void LoadLevel(int i)
     {
-        TransitionManager.Inst.ChangeLevel(i);
+        //TransitionManager.Inst.ChangeLevel(i);
+        Application.LoadLevel(i);
     }
 
     // Must be called from each level's game manager - or we refactor to have a game manager that is never destroyed across levels.
@@ -28,6 +29,8 @@ public class LevelManager {
             LoadLevel(0);
         if (Input.GetKeyUp(KeyCode.Alpha2))
             LoadLevel(1);
+        if (Input.GetKeyUp(KeyCode.Alpha2))
+            LoadLevel(2);
 
     }
 }

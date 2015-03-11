@@ -170,7 +170,11 @@ public class PlayerSync : MonoBehaviour {
         }
         else{
             print("Sending assembly to player " + networkView.owner);
-            networkView.RPC("CaptureAssembly", networkView.owner, ((Assembly)capturedObj).ToFileString());
+            Assembly a = capturedObj as Assembly;
+            if( a != null )
+                networkView.RPC("CaptureAssembly", networkView.owner, (a).ToFileString());
+            else
+                networkView.RPC("CaptureUCreature", networkView.owner);
         }
 
         Instantiate(PersistentGameManager.Inst.pingBurstObj, capturedObj.Position, Quaternion.identity);
@@ -213,6 +217,16 @@ public class PlayerSync : MonoBehaviour {
         Assembly a = new Assembly(assemblyStr);
         a.WorldPosition = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
         CaptureEditorManager.capturedObj = a;
+    } // End of CaptureAssembly().
+
+    [RPC] // Client receives this when it captures a Utopia Creature
+    void CaptureUCreature()
+    {
+        float distFromCamToSpawn = 5.0f;
+        AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
+        SpringCreature c = new SpringCreature();
+        c.transform.position = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
+        CaptureEditorManager.capturedObj = c;
     } // End of CaptureAssembly().
 
     // Client calls this to send request to server
