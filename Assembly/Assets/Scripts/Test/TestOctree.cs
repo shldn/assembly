@@ -56,4 +56,14 @@ public class TestOctree {
         return elems.Count == 1;
     }
 
+    static private bool TestInsertOutOfBoundary()
+    {
+        Bounds bounds = new Bounds(Vector3.zero, new Vector3(100, 100, 100));
+        Octree<TestClass> tree = new Octree<TestClass>(bounds, (TestClass x) => x.pos, 10);
+        TestClass tc = new TestClass(new Vector3(101, 1, 1));
+        tree.Insert(tc);
+        List<TestClass> elems = new List<TestClass>();
+        tree.GetElementsInRange(new Bounds(new Vector3(101, 1, 1), new Vector3(0.5f, 0.5f, 0.5f)), ref elems);
+        return elems.Count == 1;
+    }
 }

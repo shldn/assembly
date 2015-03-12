@@ -16,7 +16,7 @@ public class OctreeNode<T>
 // Octree
 //
 // Data structure to hold objects in spacial proximity to optimize searching for nearby objects.
-
+// Note: If a node is inserted outside the tree boundary, Root will hold these nodes.
 public class Octree<T>{
 
     static bool nodesOnlyInLeaves = true;
@@ -49,8 +49,15 @@ public class Octree<T>{
     public bool Insert(T elem)
     {
         if (!boundary.Contains(GetPosition(elem)))
+        {
+            if (IsRoot)
+            {
+                nodes.Add(elem);
+                return true;
+            }
+            else
                 return false;
-
+        }
         if (IsLeaf && nodes.Count < maxNodesPerLevel) {
             nodes.Add(elem);
             return true;
@@ -120,7 +127,7 @@ public class Octree<T>{
     // more efficient than returning a list of elements in range and then applying the function on them
     // use this when you can, no copying
     public void RunActionInRange(Action<T> action, Bounds subsetBounds) {
-        if (!boundary.Intersects(subsetBounds))
+        if (!boundary.Intersects(subsetBounds) && !IsRoot)
             return;
         for (int i = 0; i < nodes.Count; ++i)
             if (subsetBounds.Contains(GetPosition(nodes[i])))
@@ -136,7 +143,7 @@ public class Octree<T>{
     // prefer RunActionInRange to avoid the copy of elements from the octree to the list
     public void GetElementsInRange(Bounds subsetBounds, ref List<T> elements) {
 
-        if (!boundary.Intersects(subsetBounds))
+        if (!boundary.Intersects(subsetBounds) && !IsRoot) // Root may have nodes outside the boundary
             return;
         for (int i = 0; i < nodes.Count; ++i)
             if (subsetBounds.Contains(GetPosition(nodes[i])))
@@ -163,9 +170,22 @@ public class Octree<T>{
         children[7] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, -hw, -hw), newSize), GetPosition, maxNodesPerLevel, this);
 
         if (nodesOnlyInLeaves) {
-            for( int i=0; i < nodes.Count; ++i )
-                Insert(nodes[i]);
-            nodes.Clear();
+            if( IsRoot )
+            {
+                // Handle keeping nodes outside of the boundary in the root node list.
+                for (int i = nodes.Count-1; i >= 0; --i)
+                    if (boundary.Contains(GetPosition(nodes[i])))
+                    {
+                        Insert(nodes[i]);
+                        nodes.RemoveAt(i);
+                    }
+            }
+            else
+            {
+                for (int i = 0; i < nodes.Count; ++i)
+                    Insert(nodes[i]);
+                nodes.Clear();
+            }
             //GetRoot().leaves.Remove(this); // let the Maintanence step do this for now.
         }
     }

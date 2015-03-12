@@ -18,6 +18,7 @@ public class FoodPellet{
 
 	private static List<FoodPellet> allFoodPellets = new List<FoodPellet>();
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
+    public static Octree<FoodPellet> allFoodTree;
     public static int MAX_FOOD = 1;
 
     float particleEmitCooldown = 0f;
@@ -37,12 +38,16 @@ public class FoodPellet{
 
     public FoodPellet(){
 
+        // Create Octree
+        if (allFoodTree == null)
+            allFoodTree = new Octree<FoodPellet>(new Bounds(Vector3.zero, 1.0f * GameManager.Inst.worldSize * Vector3.one), (FoodPellet x) => x.worldPosition, 20);
 
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Random.rotation) as GameObject;
 
         particleObject = gameObject.GetComponentInChildren<ParticleSystem>();
 
         allFoodPellets.Add(this);
+        allFoodTree.Insert(this);
     }
 
     public FoodPellet(Vector3 pos){
@@ -58,6 +63,7 @@ public class FoodPellet{
         worldPosition = pos;
         //currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
+        allFoodTree.Insert(this);
 
     }
 
@@ -124,6 +130,12 @@ public class FoodPellet{
         particleObject.gameObject.AddComponent("ParticleEffects");
 
         allFoodPellets.Remove(this);
+        if (!allFoodTree.Remove(this))
+        {
+            allFoodTree.Maintain();
+            if (!allFoodTree.Remove(this))
+                Debug.LogError("Failed to remove Food Node");
+        }
         Object.Destroy(gameObject);
     }
 

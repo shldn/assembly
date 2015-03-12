@@ -195,6 +195,9 @@ public class GameManager : MonoBehaviour {
             }
         }
 
+        // Keep octree maintained so nodes that have moved are kept in their proper boundaries
+        if(PersistentGameManager.Inst.optimize)
+            FoodPellet.allFoodTree.Maintain();
 
         LevelManager.InputHandler();
 
@@ -506,6 +509,7 @@ public class GameManager : MonoBehaviour {
         Assembly.GetAll().Clear();
         FoodPellet.GetAll().Clear();
         PersistentGameManager.CaptureObjects.Clear();
+        FoodPellet.allFoodTree = null;
         Inst = null;
     }
 
