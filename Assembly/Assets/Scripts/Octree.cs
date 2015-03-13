@@ -20,6 +20,7 @@ public class OctreeNode<T>
 public class Octree<T>{
 
     static bool nodesOnlyInLeaves = true;
+    static bool enableViewer = false;
     int maxNodesPerLevel;
     Bounds boundary;
     List<T> nodes;
@@ -28,14 +29,17 @@ public class Octree<T>{
     LinkedList<Octree<T>> leaves; // should only be populated for the root node, will help us maintain changes in positions efficiently, can't have a sorted data structure with just keys in C#?
     Func<T, Vector3> GetPosition; // TODO: optimization - grab function from the root instead of each node holding a pointer to it?
 
-    public Octree(Bounds bounds, Func<T, Vector3> GetPosition_, int maxNodesPerLevel_ = 10, Octree<T> parent = null)
+    public Octree(Bounds bounds, Func<T, Vector3> GetPosition_, int maxNodesPerLevel_ = 10, Octree<T> parent_ = null)
     {
         boundary = bounds;
         GetPosition = GetPosition_;
         maxNodesPerLevel = maxNodesPerLevel_;        
         nodes = new List<T>(maxNodesPerLevel);
+        parent = parent_;
         if (IsRoot)
             leaves = new LinkedList<Octree<T>>();
+        if (enableViewer)
+            OctreeViewer.Inst.AddBounds(bounds);
     }
 
 
@@ -187,6 +191,12 @@ public class Octree<T>{
                 nodes.Clear();
             }
             //GetRoot().leaves.Remove(this); // let the Maintanence step do this for now.
+        }
+
+        if( enableViewer )
+        {
+            for (int i = 0; i < 8; ++i )
+                OctreeViewer.Inst.AddBounds(children[i].boundary);
         }
     }
 
