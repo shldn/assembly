@@ -20,7 +20,7 @@ public class OctreeNode<T>
 public class Octree<T>{
 
     static bool nodesOnlyInLeaves = true;
-    static bool enableViewer = false;
+    static bool enableViewer = true;
     int maxNodesPerLevel;
     Bounds boundary;
     List<T> nodes;
@@ -82,7 +82,7 @@ public class Octree<T>{
             return true;
         if( !IsLeaf )
             for (int i = 0; i < children.Length; ++i)
-                if (children[i].Remove(elem))
+                if (children[i].Remove(elem, checkPos))
                     return true;
         return false;
 
@@ -96,12 +96,19 @@ public class Octree<T>{
             Debug.LogError("Octree: Please only call Maintain on the Root node");
             return;
         }
-
         if( leaves == null || leaves.Count == 0 )
             return;
 
+        // Check Root level nodes, may be in bounds now
+        for (int i = nodes.Count-1; i >= 0; --i)
+            if (boundary.Contains(GetPosition(nodes[i])))
+            {
+                Insert(nodes[i]);
+                nodes.RemoveAt(i);
+            }
+
         LinkedListNode<Octree<T>> current = leaves.First;
-        while(current != leaves.Last)
+        while(current != null)
         {
             current.Value.MaintainImpl();
             if (!current.Value.IsLeaf) {
@@ -173,6 +180,7 @@ public class Octree<T>{
         children[6] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, hw, -hw), newSize), GetPosition, maxNodesPerLevel, this);
         children[7] = new Octree<T>(new Bounds(boundary.center + new Vector3(-hw, -hw, -hw), newSize), GetPosition, maxNodesPerLevel, this);
 
+        Octree<T> root = GetRoot();
         if (nodesOnlyInLeaves) {
             if( IsRoot )
             {
@@ -190,14 +198,38 @@ public class Octree<T>{
                     Insert(nodes[i]);
                 nodes.Clear();
             }
-            //GetRoot().leaves.Remove(this); // let the Maintanence step do this for now.
+            root.leaves.Remove(this);
         }
+
+        // Add new leaves to roots leaves list
+        for (int i = 0; i < children.Length; ++i)
+            root.leaves.AddLast(children[i]);
 
         if( enableViewer )
         {
-            for (int i = 0; i < 8; ++i )
+            for (int i = 0; i < children.Length; ++i)
                 OctreeViewer.Inst.AddBounds(children[i].boundary);
         }
+    }
+
+    // Debug Function
+    public void PrintLeaves()
+    {
+        if (!IsRoot)
+            return;
+        LinkedListNode<Octree<T>> current = leaves.First;
+        while (current != null)
+        {
+            string leafInfo = "Leaf: " + current.Value.boundary.center.ToString() + "-" + current.Value.boundary.extents.ToString() + "n: " + current.Value.nodes.Count + "\n";
+            for (int i = 0; i < current.Value.nodes.Count; ++i)
+            {
+                leafInfo += "\t" + GetPosition(current.Value.nodes[i]).ToString() + "\n";
+            }
+            Debug.LogError(leafInfo);
+
+            current = current.Next;
+        }
+
     }
 
     // Accessors
