@@ -30,6 +30,8 @@ public class TestOctree {
             Debug.LogError("TestRemoveMovedElementFromInsideToOutsideBounds failed");
         if (!TestRemoveMovedElementFromLastSubTree())
             Debug.LogError("TestRemoveMovedElementFromLastSubTree failed");
+        if (!TestSubdivingPointsAtSamePositionDoesntCauseStackOverflow())
+            Debug.LogError("TestSubdivingPointsAtSamePositionDoesntCauseStackOverflow failed");
 
         // Stop editor
         UnityEditor.EditorApplication.isPlaying = false;
@@ -157,5 +159,20 @@ public class TestOctree {
         tc.pos.x = f;
         tree.Maintain();
         return tree.Remove(tc);
+    }
+
+    static private bool TestSubdivingPointsAtSamePositionDoesntCauseStackOverflow()
+    {
+        Bounds bounds = new Bounds(Vector3.zero, new Vector3(100, 100, 100));
+        Octree<TestClass> tree = new Octree<TestClass>(bounds, (TestClass x) => x.pos, 2);
+        
+        tree.Insert(new TestClass(new Vector3(1, 1, 1)));
+        tree.Insert(new TestClass(new Vector3(1, 1, 1)));
+        tree.Insert(new TestClass(new Vector3(1, 1, 1)));
+        tree.Insert(new TestClass(new Vector3(1, 1, 1)));
+
+        List<TestClass> elems = new List<TestClass>();
+        tree.GetElementsInRange(new Bounds(new Vector3(1, 1, 1), new Vector3(0.5f, 0.5f, 0.5f)), ref elems);
+        return elems.Count == 4;
     }
 }

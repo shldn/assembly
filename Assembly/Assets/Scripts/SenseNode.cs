@@ -82,7 +82,7 @@ public class SenseNode : Node {
             if( PersistentGameManager.Inst.optimize )
             {
                 Bounds boundary = new Bounds(worldPosition, detectRange * (new Vector3(1, 1, 1)));
-                FoodPellet.allFoodTree.RunActionInRange(new System.Action<FoodPellet>(HandleDetectedFood), boundary);
+                FoodPellet.AllFoodTree.RunActionInRange(new System.Action<FoodPellet>(HandleDetectedFood), boundary);
             }
             else
             {

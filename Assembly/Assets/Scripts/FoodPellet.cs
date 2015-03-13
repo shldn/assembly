@@ -18,7 +18,18 @@ public class FoodPellet{
 
 	private static List<FoodPellet> allFoodPellets = new List<FoodPellet>();
     public static List<FoodPellet> GetAll() { return allFoodPellets; }
-    public static Octree<FoodPellet> allFoodTree;
+    private static Octree<FoodPellet> allFoodTree;
+    public static Octree<FoodPellet> AllFoodTree
+    { 
+        get {
+            if( allFoodTree == null )
+                allFoodTree = new Octree<FoodPellet>(new Bounds(Vector3.zero, 2.0f * GameManager.Inst.worldSize * Vector3.one), (FoodPellet x) => x.worldPosition, 5);
+            return allFoodTree;
+        }
+        set{
+            allFoodTree = value;
+        }
+    }
     public static int MAX_FOOD = 1;
 
     float particleEmitCooldown = 0f;
@@ -37,10 +48,6 @@ public class FoodPellet{
     private Renderer particleGlow = null;
 
     public FoodPellet(){
-
-        // Create Octree
-        if (allFoodTree == null)
-            allFoodTree = new Octree<FoodPellet>(new Bounds(Vector3.zero, 1.0f * GameManager.Inst.worldSize * Vector3.one), (FoodPellet x) => x.worldPosition, 20);
 
         gameObject = GameObject.Instantiate(PrefabManager.Inst.foodPellet, worldPosition, Random.rotation) as GameObject;
 
@@ -63,13 +70,17 @@ public class FoodPellet{
         worldPosition = pos;
         //currentEnergy = random.Next(0,10); //not all food are created equal
         allFoodPellets.Add(this);
-        allFoodTree.Insert(this);
+        AllFoodTree.Insert(this);
 
     }
 
     //create new food node and add it to list
     public static FoodPellet AddNewFoodPellet(){
     	return new FoodPellet();
+    }
+
+    public static FoodPellet AddNewFoodPellet(Vector3 pos){
+        return new FoodPellet(pos);
     }
 
     //create random food node
@@ -130,11 +141,10 @@ public class FoodPellet{
         particleObject.gameObject.AddComponent("ParticleEffects");
 
         allFoodPellets.Remove(this);
-        if (!allFoodTree.Remove(this))
+        if (!AllFoodTree.Remove(this))
         {
-            allFoodTree.Maintain();
-            if (!allFoodTree.Remove(this))
-                Debug.LogError("Failed to remove Food Node");
+            if (!AllFoodTree.Remove(this, false))
+                Debug.LogError("Failed to remove Food Node: " + gameObject.transform.position.ToString());
         }
         Object.Destroy(gameObject);
     }

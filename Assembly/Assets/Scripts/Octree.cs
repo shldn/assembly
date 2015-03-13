@@ -21,13 +21,15 @@ public class Octree<T>{
 
     static bool nodesOnlyInLeaves = true;
     static bool enableViewer = true;
-    int maxNodesPerLevel;
+    static int maxDepth = 500;
     Bounds boundary;
     List<T> nodes;
     Octree<T> parent = null; // if null this is the root of the tree.
     Octree<T>[] children;
     LinkedList<Octree<T>> leaves; // should only be populated for the root node, will help us maintain changes in positions efficiently, can't have a sorted data structure with just keys in C#?
     Func<T, Vector3> GetPosition; // TODO: optimization - grab function from the root instead of each node holding a pointer to it?
+    int maxNodesPerLevel; // max nodes per tree, after reaching this bound the tree subdivides.
+    int depth = 0;
 
     public Octree(Bounds bounds, Func<T, Vector3> GetPosition_, int maxNodesPerLevel_ = 10, Octree<T> parent_ = null)
     {
@@ -36,6 +38,8 @@ public class Octree<T>{
         maxNodesPerLevel = maxNodesPerLevel_;        
         nodes = new List<T>(maxNodesPerLevel);
         parent = parent_;
+        if( parent != null)
+            depth = parent.depth + 1;
         if (IsRoot)
             leaves = new LinkedList<Octree<T>>();
         if (enableViewer)
@@ -62,7 +66,7 @@ public class Octree<T>{
             else
                 return false;
         }
-        if (IsLeaf && nodes.Count < maxNodesPerLevel) {
+        if (IsLeaf && CanAddMoreNodes()){
             nodes.Add(elem);
             return true;
         }
@@ -73,6 +77,11 @@ public class Octree<T>{
                 return true;
         }
         return false;
+    }
+
+    private bool CanAddMoreNodes()
+    {
+        return nodes.Count < maxNodesPerLevel || depth >= maxDepth;
     }
 
     public bool Remove(T elem, bool checkPos = true) {
