@@ -4,6 +4,11 @@ using System.Collections.Generic;
 
 public class JunkCloud : MonoBehaviour {
 
+    // Limit the number of Junk pieces in the scene.
+    private static int maxJunkObjects = 150;
+    private static LinkedList<GameObject> allJunkObjects = new LinkedList<GameObject>();
+    public static void Clear() { allJunkObjects = null; }
+
     public List<GameObject> rainPrefabs = new List<GameObject>();
 
 	public Bounds cloudBounds = new Bounds(new Vector3(0,5,0), new Vector3(10,3,10));
@@ -21,6 +26,10 @@ public class JunkCloud : MonoBehaviour {
 
     void Rain()
     {
+        // Remove one first if max junk level has been reached
+        if (allJunkObjects.Count >= maxJunkObjects)
+            RemoveOldestJunkNotVisible();
+
         GameObject go = GameObject.Instantiate(rainPrefabs[NextPrefabIdx], RandomPointInCloud(), Random.rotation) as GameObject;
         if (createCreatures && creatureCount % skipCount == 0)
         {
@@ -40,11 +49,30 @@ public class JunkCloud : MonoBehaviour {
             Invoke("Rain", delayBetweenDrops);
 
         creatureCount++;
+        allJunkObjects.AddLast(go);
     }
 
     Vector3 RandomPointInCloud()
     {
         return transform.position + (new Vector3(Random.Range(cloudBounds.min.x, cloudBounds.max.x), Random.Range(cloudBounds.min.y, cloudBounds.max.y), Random.Range(cloudBounds.min.z, cloudBounds.max.z)));
+    }
+
+    void RemoveOldestJunkNotVisible()
+    {
+        Plane[] cameraPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
+
+        // Find the oldest node that is not in the camera's view
+        LinkedListNode<GameObject> current = allJunkObjects.First;
+        while (current != null)
+        {
+            if (!GeometryUtility.TestPlanesAABB(cameraPlanes, current.Value.renderer.bounds))
+            {
+                allJunkObjects.Remove(current);
+                Destroy(current.Value);
+                return;
+            }
+            current = current.Next;
+        }
     }
 
 

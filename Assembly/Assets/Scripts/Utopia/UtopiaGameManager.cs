@@ -107,4 +107,9 @@ public class UtopiaGameManager : MonoBehaviour {
         if (ball != null)
             ball.renderer.enabled = true;
     }
+
+    void OnDestroy()
+    {
+        JunkCloud.Clear();
+    }
 }
