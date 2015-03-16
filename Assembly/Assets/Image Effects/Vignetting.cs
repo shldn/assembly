@@ -40,7 +40,7 @@ public class Vignetting /* And Chromatic Aberration */ : PostEffectsBase
 	
 	bool CheckResources ()
 	{	
-		 CheckSupport (false);	
+		CheckSupport (false);	
 	
 		vignetteMaterial = CheckShaderAndCreateMaterial (vignetteShader, vignetteMaterial);
 		separableBlurMaterial = CheckShaderAndCreateMaterial (separableBlurShader, separableBlurMaterial);

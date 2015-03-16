@@ -33,8 +33,10 @@ public class TestOctree {
         if (!TestSubdivingPointsAtSamePositionDoesntCauseStackOverflow())
             Debug.LogError("TestSubdivingPointsAtSamePositionDoesntCauseStackOverflow failed");
 
+#if UNITY_EDITOR
         // Stop editor
         UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 
     static private bool TestMultipleInsert() {

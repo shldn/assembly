@@ -11,12 +11,14 @@ public class PhysNodeController : MonoBehaviour {
 	public Transform physFoodPrefab = null;
 	MarchingCubes myCubes;
 
-	public int worldSize = 500;
+	int worldSize = 100;
+	public int WorldSize {get{return worldSize;}}
+
 	float[][][] densityMap;
 
 	public static float physicsStep = 0.05f;
 
-	int foodPellets = 100;
+	int foodPellets = 200;
 
 
 	void Awake(){
@@ -28,7 +30,7 @@ public class PhysNodeController : MonoBehaviour {
 		CameraControl.Inst.maxRadius = worldSize * 3f;
 
 		// Create random assemblies.
-		int numAssemblies = 1000;
+		int numAssemblies = 500;
 		int minNodes = 3;
 		int maxNodes = 15;
 

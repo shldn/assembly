@@ -40,13 +40,14 @@ public class PhysNode {
 
 	float pushMult = Random.Range(0.5f, 2f);
 
-
 	// These store position/rotation to be updated after neighbor math is done.
 	Vector3 delayPosition = Vector3.zero;
 	Quaternion delayRotation = Quaternion.identity;
 
 	float power = 0f;
 	float waveformRunner = 0f;
+
+	Vector3 velocity = Vector3.zero;
 
 	Vector3 position  = Vector3.zero;
 	public Vector3 Position {
@@ -70,8 +71,7 @@ public class PhysNode {
 	// If true, node will be destroyed.
 	public bool cull = false;
 
-	public float senseDetectRange = 30f;
-
+	public float senseDetectRange = 60f;
 
 
 	public PhysNode(PhysAssembly physAssembly, Triplet localHexPos){
@@ -89,10 +89,7 @@ public class PhysNode {
 	public void DoMath(){
 		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / wigglePhase));
 
-		if(Input.GetKey(KeyCode.T) || Input.GetKey(KeyCode.Y))
-			waveformRunner += PhysNodeController.physicsStep * power;
-		else
-			waveformRunner += PhysNodeController.physicsStep;
+		waveformRunner += PhysNodeController.physicsStep;
 
 		bool functioningMuscle = (neighbors.Count == 2) && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
 
@@ -127,9 +124,10 @@ public class PhysNode {
 			Vector3 vecToNeighborTargetPos = curNeighborNode.Position - (Position + ((Rotation * curNeighbor.dir * flailOffset) * Vector3.forward * sizeMult)); 
 
 
+			float updateLerpBias0 = 0.48f;
 			// All nodes try to align to their 'resting position' with their neighbors.
-			delayPosition += vecToNeighborTargetPos * 0.4f / neighbors.Count;
-			curNeighborNode.delayPosition -= vecToNeighborTargetPos * 0.4f / neighbors.Count;
+			delayPosition += vecToNeighborTargetPos * updateLerpBias0 / neighbors.Count;
+			curNeighborNode.delayPosition -= vecToNeighborTargetPos * updateLerpBias0 / neighbors.Count;
 			
 			float updateLerpBias = 2f;
 			if((neighbors.Count == 2) && (curNeighborNode.neighbors.Count != 2)){
@@ -174,13 +172,12 @@ public class PhysNode {
 				break;
 			case 2 : 
 				cubeTransform.renderer.material.color = PrefabManager.Inst.actuateColor;
+				if((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2)){
+					Transform newTrailTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.motorNodeTrail, Position, Rotation) as Transform;
+					newTrailTrans.parent = cubeTransform;
+					trail = newTrailTrans.GetComponent<TimedTrailRenderer>();
+				}
 				break;
-				//if((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2)){
-					//Transform newTrailTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.motorNodeTrail, Position, Rotation) as Transform;
-					//newTrailTrans.parent = cubeTransform;
-					//trail = newTrailTrans.GetComponent<TimedTrailRenderer>();
-				//}
-				//break;
 			case 3 : 
 				cubeTransform.renderer.material.color = PrefabManager.Inst.controlColor;
 				break;
@@ -199,7 +196,7 @@ public class PhysNode {
 				// Billboard the arc with the main camera.
 				viewCone.rotation = Rotation * actionRotation;
 				viewCone.position = Position + (viewCone.rotation * (Vector3.forward * viewConeSize * 0.5f));
-				viewCone.rotation *= Quaternion.AngleAxis(90, Vector3.up);
+				viewCone.rotation *= Quaternion.AngleAxis(-90, Vector3.up);
 
 				Vector3 camRelativePos = viewCone.InverseTransformPoint(Camera.main.transform.position);
 				float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
@@ -222,7 +219,11 @@ public class PhysNode {
 
 
 	public void UpdateTransform(){
-		Position = Vector3.Lerp(Position, delayPosition, 0.5f);
+		Vector3 thisFrameVelocity = delayPosition - Position;
+		velocity += thisFrameVelocity * 0.1f;
+		velocity *= 0.98f;
+
+		Position = Vector3.Lerp(Position, delayPosition, 0.5f) + velocity;
 		Rotation = Quaternion.Lerp(Rotation, delayRotation, 0.5f);
 
 		cubeTransform.position = Position;
@@ -267,7 +268,6 @@ public class PhysNode {
 	} // End of OnDestroy().
 
 
-
 	public void Transmit(HashSet<PhysNode> checkedNodes, float signalStrength){
 		checkedNodes.Add(this);
 		if(signalStrength < 0.02f)
@@ -291,9 +291,17 @@ public class PhysNode {
 
 
     private void HandleDetectedFood(PhysFood food){
-		GLDebug.DrawLine(position, food.worldPosition);
-	} // End of HandleDetectedFood().
+		Vector3 vectorToFood = food.worldPosition - position;
+		float distanceToFood = vectorToFood.magnitude;
 
+		float angleToFood = Vector3.Angle(rotation * actionRotation * Vector3.forward, vectorToFood);
+
+		if(angleToFood < 45f)
+			GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
+		else
+			GLDebug.DrawLine(position, food.worldPosition, new Color(1f, 1f, 1f, 0.25f * Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
+
+	} // End of HandleDetectedFood().
 
 
 	/*

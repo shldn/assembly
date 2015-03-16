@@ -15,7 +15,7 @@ public class PhysFood {
     public static Octree<PhysFood> AllFoodTree{ 
         get{
             if(allFoodTree == null){
-                allFoodTree = new Octree<PhysFood>(new Bounds(Vector3.zero, 2.0f * PhysNodeController.Inst.worldSize * Vector3.one), (PhysFood x) => x.worldPosition, 5);
+                allFoodTree = new Octree<PhysFood>(new Bounds(Vector3.zero, 2.0f * PhysNodeController.Inst.WorldSize * Vector3.one), (PhysFood x) => x.worldPosition, 5);
 			}
             return allFoodTree;
         }
