@@ -70,6 +70,9 @@ public class PhysNode {
 	// If true, node will be destroyed.
 	public bool cull = false;
 
+	public float senseDetectRange = 30f;
+
+
 
 	public PhysNode(PhysAssembly physAssembly, Triplet localHexPos){
 		all.Add(this);
@@ -172,12 +175,12 @@ public class PhysNode {
 			case 2 : 
 				cubeTransform.renderer.material.color = PrefabManager.Inst.actuateColor;
 				break;
-				if((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2)){
-					Transform newTrailTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.motorNodeTrail, Position, Rotation) as Transform;
-					newTrailTrans.parent = cubeTransform;
-					trail = newTrailTrans.GetComponent<TimedTrailRenderer>();
-				}
-				break;
+				//if((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2)){
+					//Transform newTrailTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.motorNodeTrail, Position, Rotation) as Transform;
+					//newTrailTrans.parent = cubeTransform;
+					//trail = newTrailTrans.GetComponent<TimedTrailRenderer>();
+				//}
+				//break;
 			case 3 : 
 				cubeTransform.renderer.material.color = PrefabManager.Inst.controlColor;
 				break;
@@ -201,6 +204,11 @@ public class PhysNode {
 				Vector3 camRelativePos = viewCone.InverseTransformPoint(Camera.main.transform.position);
 				float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
 				viewCone.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
+
+				//calling detect food on sense node
+				Bounds boundary = new Bounds(position, senseDetectRange * (new Vector3(1, 1, 1)));
+				PhysFood.AllFoodTree.RunActionInRange(new System.Action<PhysFood>(HandleDetectedFood), boundary);
+
 				break;
 			case 2 : 
 				break;
@@ -280,6 +288,12 @@ public class PhysNode {
 		power += signalStrength;
 
 	} // End of Transmit().
+
+
+    private void HandleDetectedFood(PhysFood food){
+		GLDebug.DrawLine(position, food.worldPosition);
+	} // End of HandleDetectedFood().
+
 
 
 	/*

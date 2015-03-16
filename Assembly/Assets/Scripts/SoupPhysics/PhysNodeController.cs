@@ -11,12 +11,12 @@ public class PhysNodeController : MonoBehaviour {
 	public Transform physFoodPrefab = null;
 	MarchingCubes myCubes;
 
-	int worldSize = 50;
+	public int worldSize = 500;
 	float[][][] densityMap;
 
 	public static float physicsStep = 0.05f;
 
-	int foodPellets = 10;
+	int foodPellets = 100;
 
 
 	void Awake(){
@@ -28,7 +28,7 @@ public class PhysNodeController : MonoBehaviour {
 		CameraControl.Inst.maxRadius = worldSize * 3f;
 
 		// Create random assemblies.
-		int numAssemblies = 10;
+		int numAssemblies = 1000;
 		int minNodes = 3;
 		int maxNodes = 15;
 
@@ -41,15 +41,16 @@ public class PhysNodeController : MonoBehaviour {
 
 			int numNodes = Random.Range(minNodes, maxNodes);
 			Triplet spawnHexPos = Triplet.zero;
-			/*while(numNodes > 0){
+			while(numNodes > 0){
 				// Make sure no phys node is here currently.
 				if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
 					newAssembly.AddNode(spawnHexPos);
 					numNodes--;
 				}
 				spawnHexPos += HexUtilities.RandomAdjacent();
-			}*/
+			}
 
+			/*
 			newAssembly.AddNode(new Triplet(0, 0, 0));
 			newAssembly.AddNode(new Triplet(1, 0, 0));
 			newAssembly.AddNode(new Triplet(2, 0, 0));
@@ -70,6 +71,7 @@ public class PhysNodeController : MonoBehaviour {
 			newAssembly.AddNode(new Triplet(1, 3, 0));
 
 			newAssembly.AddNode(new Triplet(2, 2, 0));
+			*/
 		}
 
 
@@ -109,6 +111,9 @@ public class PhysNodeController : MonoBehaviour {
 		if(Input.GetKeyUp(KeyCode.Escape))
 			Application.Quit();
 
+		PhysFood.AllFoodTree.Maintain();
+
+		/*
 		int cycleDir = Mathf.FloorToInt((Time.time * 0.2f) % 12);
 
 		// Show details on selected assembly.
@@ -155,6 +160,7 @@ public class PhysNodeController : MonoBehaviour {
 			GLDebug.DrawCube(HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(new Triplet(2, 0, 0), i)), HexUtilities.HexDirToRot(i), Vector3.one * 0.5f, Color.green);
 		}
 		print(Mathf.FloorToInt(Time.time % 12));
+		*/
 	} // End of Update().
 
 
