@@ -44,6 +44,9 @@ public class Triplet {
 		ret.z -= b.z;
 		return ret;
 	}
+	public static Triplet operator * (int b, Triplet a) {
+		return a * b;
+	}
 	public static Triplet operator * (Triplet a, int b) {
 		Triplet ret = new Triplet(a);
 		ret.x *= b;
@@ -142,16 +145,16 @@ public class Triplet {
 
 	public static Triplet[] hexDirection{
         get{ return new Triplet[]{   new Triplet(1, 0, 0),
-                                        new Triplet(0, 1, 0),
-                                        new Triplet(-1, 1, 0),
-                                        new Triplet(-1, 0, 0),
-                                        new Triplet(0, -1, 0),
-                                        new Triplet(1, -1, 0),
-                                        new Triplet(0, 0, 1),
-                                        new Triplet(-1, 0, 1),
-                                        new Triplet(0, -1, 1),
-                                        new Triplet(0, 0, -1),
-                                        new Triplet(1, 0, -1),
-                                        new Triplet(0, 1, -1) }; }
+                                     new Triplet(0, 1, 0),
+                                     new Triplet(-1, 1, 0),
+                                     new Triplet(-1, 0, 0),
+                                     new Triplet(0, -1, 0),
+                                     new Triplet(1, -1, 0),
+                                     new Triplet(0, 0, 1),
+                                     new Triplet(-1, 0, 1),
+                                     new Triplet(0, -1, 1),
+                                     new Triplet(0, 0, -1),
+                                     new Triplet(1, 0, -1),
+                                     new Triplet(0, 1, -1) }; }
     } // End of directions{}.
 }

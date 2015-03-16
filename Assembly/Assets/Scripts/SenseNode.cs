@@ -24,6 +24,10 @@ public class SenseNode : Node {
     float arcAlphaSmoothed = 0f;
     float arcAlphaVel = 0f;
 
+    // Signal variables
+    float totalSigStrength = 0f;
+    Quaternion totalSigQuat = Quaternion.identity;
+
     public GameObject senseFieldBillboard = null;
     float arcScale = 5f;
 
@@ -69,26 +73,40 @@ public class SenseNode : Node {
             Vector3 camRelativePos = senseFieldBillboard.transform.InverseTransformPoint(Camera.main.transform.position);
             float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
             senseFieldBillboard.transform.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
-        
-            float totalSigStrength = 0f;
-            Quaternion totalSigQuat = Quaternion.identity;
+
+            // init variables
+            totalSigStrength = 0f;
+            totalSigQuat = Quaternion.identity;
+
             //calling detect food on sense node
-            for(int j = 0; j < FoodPellet.GetAll().Count; ++j){
-                if(DetectFood(FoodPellet.GetAll()[j])){
+            if( PersistentGameManager.Inst.optimize )
+            {
+                Bounds boundary = new Bounds(worldPosition, detectRange * (new Vector3(1, 1, 1)));
+                FoodPellet.AllFoodTree.RunActionInRange(new System.Action<FoodPellet>(HandleDetectedFood), boundary);
+            }
+            else
+            {
+                for (int j = 0; j < FoodPellet.GetAll().Count; ++j)
+                {
+                    if (DetectFood(FoodPellet.GetAll()[j]))
+                    {
 
-                    // Get vector to food:
-                    Quaternion quatToFood = RotToFood(FoodPellet.GetAll()[j]);
-                    float sigStrength = FoodSignalStrength(FoodPellet.GetAll()[j]);
+                        // Get vector to food:
+                        Quaternion quatToFood = RotToFood(FoodPellet.GetAll()[j]);
+                        float sigStrength = FoodSignalStrength(FoodPellet.GetAll()[j]);
 
-                    totalSigQuat = Quaternion.Lerp(totalSigQuat, quatToFood, sigStrength);
-                    totalSigStrength += sigStrength;
+                        totalSigQuat = Quaternion.Lerp(totalSigQuat, quatToFood, sigStrength);
+                        totalSigStrength += sigStrength;
 
-                    if(Vector3.Distance(worldPosition, FoodPellet.GetAll()[j].worldPosition) <= SenseNode.consumeRange){
-                        //sense node consume food source
-                        Consume(FoodPellet.GetAll()[j]);
-                        FoodPellet.GetAll()[j].EnergyEffect(this);
+                        if (Vector3.Distance(worldPosition, FoodPellet.GetAll()[j].worldPosition) <= SenseNode.consumeRange)
+                        {
+                            //sense node consume food source
+                            Consume(FoodPellet.GetAll()[j]);
+                            FoodPellet.GetAll()[j].EnergyEffect(this);
+                        }
                     }
                 }
+
             }
 
             // Send total signal
@@ -113,6 +131,25 @@ public class SenseNode : Node {
         }
 	} // End of Update().
 
+    private void HandleDetectedFood(FoodPellet food)
+    {
+        if( DetectFood(food))
+        {
+            // Get vector to food:
+            Quaternion quatToFood = RotToFood(food);
+            float sigStrength = FoodSignalStrength(food);
+
+            totalSigQuat = Quaternion.Lerp(totalSigQuat, quatToFood, sigStrength);
+            totalSigStrength += sigStrength;
+
+            if ((food.worldPosition - this.worldPosition).sqrMagnitude <= SenseNode.consumeRange * SenseNode.consumeRange)
+            {
+                //sense node consume food source
+                Consume(food);
+                food.EnergyEffect(this);
+            }
+        }
+    }
 
     public override void Destroy(){
         if(senseFieldBillboard)
@@ -126,7 +163,7 @@ public class SenseNode : Node {
 
         Vector3 foodDir = food.worldPosition - this.worldPosition;
         if (PersistentGameManager.Inst.optimize)
-            return (foodDir.magnitude <= detectRange) && (Vector3.Angle(worldSenseRot * Vector3.forward, foodDir) <= nodeProperties.fieldOfView);
+            return (foodDir.sqrMagnitude <= detectRange * detectRange) && (Vector3.Angle(worldSenseRot * Vector3.forward, foodDir) <= nodeProperties.fieldOfView);
         else
         {
             float angle = Vector3.Angle(worldSenseRot * Vector3.forward, foodDir);

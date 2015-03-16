@@ -11,11 +11,23 @@ public class PhysAssembly {
 	Dictionary<Triplet, PhysNode> nodeDict = new Dictionary<Triplet, PhysNode>();
 	public Dictionary<Triplet, PhysNode> NodeDict {get{return nodeDict;}}
 
-	public Vector3 worldPosition = Vector3.zero;
+	public Vector3 spawnPosition = Vector3.zero;
+	public Quaternion spawnRotation = Quaternion.identity;
+	public Vector3 WorldPosition {
+		get{
+			Vector3 worldPos = Vector3.zero;
+			foreach(PhysNode someNode in nodeDict.Values)
+				worldPos += someNode.Position;
+			worldPos /= nodeDict.Keys.Count;
+			return worldPos;
+		}
+	}
+	public Quaternion worldRotation = Random.rotation;
 
 
-	public PhysAssembly(Vector3 worldPosition){
-		this.worldPosition = worldPosition;
+	public PhysAssembly(Vector3 spawnPosition, Quaternion spawnRotation){
+		this.spawnPosition = spawnPosition;
+		this.spawnRotation = spawnRotation;
 		all.Add(this);
 	} // End of PhysAssembly().
 

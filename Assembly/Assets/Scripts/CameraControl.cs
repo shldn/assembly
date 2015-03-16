@@ -42,6 +42,9 @@ public class CameraControl : MonoBehaviour {
     public Assembly selectedAssembly = null;
     public Node selectedNode = null;
 
+    public PhysAssembly selectedPhyAssembly = null;
+	public PhysAssembly hoveredPhysAssembly = null;
+
 
     void Awake(){
         Inst = this;
@@ -156,54 +159,71 @@ public class CameraControl : MonoBehaviour {
 
 
         // Object selection ------------------------------------------- //
-        if(Input.GetMouseButtonDown(0) && (!NodeEngineering.Inst || !NodeEngineering.Inst.uiLockout)){
+        if(!NodeEngineering.Inst || !NodeEngineering.Inst.uiLockout){
             Ray selectionRay = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit selectRay = new RaycastHit();
 
             // We have an assembly selected -- try to select a node within it.
-            bool selectedSomething = false;
-            if(selectedAssembly){
-                int objectsMask = 1 << LayerMask.NameToLayer("Nodes");
-                if(Physics.Raycast(selectionRay, out selectRay, 1000f, objectsMask)){
-                    Node rayHitNode = null;
-                    for(int i = 0; i < Node.GetAll().Count; i++){
-                        Node curNode = Node.GetAll()[i];
-                        if((selectRay.transform.gameObject == curNode.gameObject) && (curNode.assembly == selectedAssembly)){
-                            rayHitNode = curNode;
-                            break;
-                        }
-                    }
-                    if(rayHitNode){
-                        print("Hit node!");
-                        if(rayHitNode.assembly == selectedAssembly){
-                            selectedNode = rayHitNode;
-                            centerOffset = center - selectedNode.worldPosition;
-                            selectedSomething = true;
-                        }
-                    }
-                }
-            }
+			bool selectedSomething = false;
+			if(Input.GetMouseButtonDown(0)){
+				if(selectedAssembly){
+					int objectsMask = 1 << LayerMask.NameToLayer("Nodes");
+					if(Physics.Raycast(selectionRay, out selectRay, 1000f, objectsMask)){
+						Node rayHitNode = null;
+						for(int i = 0; i < Node.GetAll().Count; i++){
+							Node curNode = Node.GetAll()[i];
+							if((selectRay.transform.gameObject == curNode.gameObject) && (curNode.assembly == selectedAssembly)){
+								rayHitNode = curNode;
+								break;
+							}
+						}
+						if(rayHitNode){
+							print("Hit node!");
+							if(rayHitNode.assembly == selectedAssembly){
+								selectedNode = rayHitNode;
+								centerOffset = center - selectedNode.worldPosition;
+								selectedSomething = true;
+							}
+						}
+					}
+				}
             
-            // No selected assembly, so we're looking for those.
-            if(!selectedSomething){
-                int objectsMask = 1 << LayerMask.NameToLayer("Assemblies");
-                if(Physics.Raycast(selectionRay, out selectRay, 1000f, objectsMask)){
-                    Assembly rayHitAssembly = null;
-                    for(int i = 0; i < Assembly.GetAll().Count; i++){
-                        Assembly curAssem = Assembly.GetAll()[i];
-                        if((selectRay.transform.gameObject == curAssem.physicsObject) && (curAssem != selectedAssembly)){
-                            rayHitAssembly = curAssem;
-                        }
-                    }
-                    if(rayHitAssembly && (rayHitAssembly != selectedAssembly)){
-                        // Select new assembly.
-                        selectedAssembly = rayHitAssembly;
-                        centerOffset = center - selectedAssembly.WorldPosition;
-                        targetRadius = 20f;
-                        selectedSomething = true;
-                    }
-                }
-            }
+				// No selected assembly, so we're looking for those.
+				if(!selectedSomething){
+					int objectsMask = 1 << LayerMask.NameToLayer("Assemblies");
+					if(Physics.Raycast(selectionRay, out selectRay, 1000f, objectsMask)){
+						Assembly rayHitAssembly = null;
+						for(int i = 0; i < Assembly.GetAll().Count; i++){
+							Assembly curAssem = Assembly.GetAll()[i];
+							if((selectRay.transform.gameObject == curAssem.physicsObject) && (curAssem != selectedAssembly)){
+								rayHitAssembly = curAssem;
+							}
+						}
+						if(rayHitAssembly && (rayHitAssembly != selectedAssembly)){
+							// Select new assembly.
+							selectedAssembly = rayHitAssembly;
+							centerOffset = center - selectedAssembly.WorldPosition;
+							targetRadius = 20f;
+							selectedSomething = true;
+						}
+					}
+				}
+			}
+
+			hoveredPhysAssembly = null;
+			if(!selectedSomething){
+				if(Physics.Raycast(selectionRay, out selectRay, 1000f)){
+					GameObject hitObject = selectRay.transform.gameObject;
+					foreach(PhysNode somePhysNode in PhysNode.getAll){
+						if(hitObject.transform == somePhysNode.cubeTransform){
+							hoveredPhysAssembly = somePhysNode.PhysAssembly;
+							if(Input.GetMouseButton(0))
+								selectedPhyAssembly = hoveredPhysAssembly;
+							break;
+						}
+					}
+				}
+			}
         }
 
         if(Input.GetKeyDown(KeyCode.Return)){

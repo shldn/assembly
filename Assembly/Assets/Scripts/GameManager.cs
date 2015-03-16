@@ -87,7 +87,7 @@ public class GameManager : MonoBehaviour {
         //adjust food on slider
         if( FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD )
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
-                FoodPellet newPellet = FoodPellet.AddNewFoodPellet();
+                Vector3 newFoodPos = Vector3.zero;
 
                 /*
                 // Cool spiral
@@ -95,10 +95,12 @@ public class GameManager : MonoBehaviour {
                 float foodSpread = 300f;
                 float xPos = UnityEngine.Random.Range(0f, UnityEngine.Random.Range(-foodSpread, foodSpread));
                 float spiralSize = 50f * (1f + (Mathf.Abs(xPos) * 0.01f));
-                newPellet.worldPosition = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
+                newFoodPos = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
                 */
 
-                newPellet.worldPosition = UnityEngine.Random.insideUnitSphere * worldSize;
+                newFoodPos = UnityEngine.Random.insideUnitSphere * worldSize;
+                FoodPellet newPellet = FoodPellet.AddNewFoodPellet(newFoodPos);
+
                 GameObject lightEffect = Instantiate(PrefabManager.Inst.newPelletBurst, newPellet.worldPosition, Quaternion.identity) as GameObject;
                 lightEffect.transform.parent = GameManager.Inst.temporaryEffects;
 
@@ -194,6 +196,10 @@ public class GameManager : MonoBehaviour {
                 selectedNode = currentNode;
             }
         }
+
+        // Keep octree maintained so nodes that have moved are kept in their proper boundaries
+        if(PersistentGameManager.Inst.optimize)
+            FoodPellet.AllFoodTree.Maintain();
 
 
         LevelManager.InputHandler();
@@ -506,6 +512,7 @@ public class GameManager : MonoBehaviour {
         Assembly.GetAll().Clear();
         FoodPellet.GetAll().Clear();
         PersistentGameManager.CaptureObjects.Clear();
+        FoodPellet.AllFoodTree = null;
         Inst = null;
     }
 

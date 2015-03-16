@@ -12,6 +12,14 @@ public class HexUtilities {
         );
     } // End of HexToWorld().
 
+	public static Triplet WorldToHex(Vector3 worldCoords){
+		Triplet hexCoords = Triplet.zero;
+		hexCoords.z = Mathf.RoundToInt(worldCoords.z / 0.816495f);
+		hexCoords.y = Mathf.RoundToInt((worldCoords.y - (0.288675f * (float)hexCoords.z)) / Apothem);
+		hexCoords.x = Mathf.RoundToInt(worldCoords.x - ((float)hexCoords.y / 2f) - ((float)hexCoords.z / 2f));
+		return hexCoords;
+	} // End of WorldToHex().
+
     public static float Apothem{
         get{ return 0.8660254f; }
     } // End of Apothem.
@@ -28,80 +36,17 @@ public class HexUtilities {
     } // End of Adjacent().
 
     public static Quaternion HexDirToRot(int dir){
-        if((dir < 0) || (dir > 11))
-            return Quaternion.identity;
-
-        return Quaternion.LookRotation(HexToWorld(Triplet.hexDirection[dir]));
+        return Quaternion.LookRotation(HexToWorld(Triplet.hexDirection[dir % 12]));
     } // End of HexDirToRot().
 
+	public static Triplet HexRotateAxis(Triplet hexPoint, int direction){
+		Vector3 rotVectorEuc = HexToWorld(Adjacent(direction));
+		Vector3 inputVectorEuc = HexToWorld(hexPoint);
+
+		Quaternion rotQuat = Quaternion.FromToRotation(HexToWorld(Adjacent(0)), rotVectorEuc);
+
+		Vector3 rotatedWorldCoord = rotQuat * inputVectorEuc;
+		return WorldToHex(rotatedWorldCoord);
+	} // End of HexRotateAxis
+
 } // End of HexUtilities.
-
-
-/*
-public struct Triplet {
-
-    public int x;
-    public int y;
-    public int z;
-
-    public Triplet(int x, int y, int z){
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
-
-    public string ToString()
-    {
-        return "(" + x + "," + y + "," + z + ")";
-    }
- 
-    public static Triplet operator +(Triplet a, Triplet b){
-        return new Triplet(a.x + b.x, a.y + b.y, a.z + b.z);
-    } // End of +.
-
-    public static Triplet operator -(Triplet a, Triplet b){
-        return new Triplet(a.x - b.x, a.y - b.y, a.z - b.z);
-    } // End of -.
-
-    public static bool operator ==(Triplet a, Triplet b){
-        return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
-    } // End of ==.
-
-    public static bool operator !=(Triplet a, Triplet b){
-        return (a.x != b.x) || (a.y != b.y) || (a.z != b.z);
-    } // End of !=.
-
-    int sqrMagnitude{
-        get{ return x * x + y * y + z * z; }
-    } // End of sqrMagnitude.
-
-
-    public static float Distance(Triplet a, Triplet b){
-        return Vector3.Distance(HexUtilities.HexToWorld(a), HexUtilities.HexToWorld(b));
-    } // End of Distance().
-
-    public static Triplet zero{
-        get{ return new Triplet(0, 0, 0); }
-    } // End of zero{}.
-
-    public static Triplet one{
-        get{ return new Triplet(1, 1, 1); }
-    } // End of one{}.
-
-    public static Triplet[] hexDirection{
-        get{ return new Triplet[]{   new Triplet(1, 0, 0),
-                                        new Triplet(0, 1, 0),
-                                        new Triplet(-1, 1, 0),
-                                        new Triplet(-1, 0, 0),
-                                        new Triplet(0, -1, 0),
-                                        new Triplet(1, -1, 0),
-                                        new Triplet(0, 0, 1),
-                                        new Triplet(-1, 0, 1),
-                                        new Triplet(0, -1, 1),
-                                        new Triplet(0, 0, -1),
-                                        new Triplet(1, 0, -1),
-                                        new Triplet(0, 1, -1) }; }
-    } // End of directions{}.
-
-} // End of Triplet.
-*/
