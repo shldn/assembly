@@ -142,13 +142,19 @@ public class Octree<T>{
         }
     }
 
+    // Bounds.Intersects is four times slower than this function!
+    bool Intersects(Bounds b1, Bounds b2)
+    {
+        return Math.Abs(b1.center.x - b2.center.x) <= (b1.extents.x + b2.extents.x) && Math.Abs(b1.center.y - b2.center.y) <= (b1.extents.y + b2.extents.y) && Math.Abs(b1.center.z - b2.center.z) <= (b1.extents.z + b2.extents.z);
+    }
 
     // Runs a function on a subset of the elements in the tree, determined by what is inside subsetBounds
     // more efficient than returning a list of elements in range and then applying the function on them
     // use this when you can, no copying
     public void RunActionInRange(Action<T> action, Bounds subsetBounds) {
-        if (!boundary.Intersects(subsetBounds) && !IsRoot)
+        if ((IsLeaf && nodes.Count == 0) || (!IsRoot && !Intersects(boundary, subsetBounds))) // Root may have nodes outside the boundary
             return;
+
         for (int i = 0; i < nodes.Count; ++i)
             if (subsetBounds.Contains(GetPosition(nodes[i])))
                 action(nodes[i]);

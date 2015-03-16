@@ -23,7 +23,7 @@ public class FoodPellet{
     { 
         get {
             if( allFoodTree == null )
-                allFoodTree = new Octree<FoodPellet>(new Bounds(Vector3.zero, 2.0f * GameManager.Inst.worldSize * Vector3.one), (FoodPellet x) => x.worldPosition, 15);
+                allFoodTree = new Octree<FoodPellet>(new Bounds(Vector3.zero, 2.0f * GameManager.Inst.worldSize * Vector3.one), (FoodPellet x) => x.gameObject.transform.position, 15);
             return allFoodTree;
         }
         set{
