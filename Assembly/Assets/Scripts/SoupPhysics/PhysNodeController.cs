@@ -11,7 +11,7 @@ public class PhysNodeController : MonoBehaviour {
 	public Transform physFoodPrefab = null;
 	MarchingCubes myCubes;
 
-	int worldSize = 100;
+	int worldSize = 150;
 	public int WorldSize {get{return worldSize;}}
 
 	float[][][] densityMap;
@@ -30,9 +30,9 @@ public class PhysNodeController : MonoBehaviour {
 		CameraControl.Inst.maxRadius = worldSize * 3f;
 
 		// Create random assemblies.
-		int numAssemblies = 500;
+		int numAssemblies = 100;
 		int minNodes = 3;
-		int maxNodes = 15;
+		int maxNodes = 12;
 
 		for(int i = 0; i < numAssemblies; i++){
 			Vector3 assemblySpawnPos = Vector3.zero;
