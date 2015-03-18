@@ -72,6 +72,7 @@ public class PhysNode {
 	public bool cull = false;
 
 	public float senseDetectRange = 60f;
+	List<SenseActuateLink> senseActuateLinks = new List<SenseActuateLink>();
 
 
 	public PhysNode(PhysAssembly physAssembly, Triplet localHexPos){
@@ -89,13 +90,13 @@ public class PhysNode {
 	public void DoMath(){
 		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / wigglePhase));
 
-		waveformRunner += PhysNodeController.physicsStep;
+		waveformRunner += PhysNodeController.physicsStep * power;
 
 		bool functioningMuscle = (neighbors.Count == 2) && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
 
 		// -- Comment out to remove 'torqueing'
 		if(functioningMuscle)
-			delayRotation *= Quaternion.AngleAxis(wiggleMaxAngVel * wiggle * PhysNodeController.physicsStep, rotationVector);
+			delayRotation *= Quaternion.AngleAxis(wiggleMaxAngVel * wiggle * PhysNodeController.physicsStep * power, rotationVector);
 
 		Quaternion flailOffset = Quaternion.identity;
 		// -- Comment out to remove 'flailing'
@@ -136,16 +137,16 @@ public class PhysNode {
 				Debug.DrawLine(Position, Position + (Rotation * curNeighbor.dir * flailOffset * Vector3.forward), Color.blue);
 
 				if(i == 0){
-					delayRotation *= Quaternion.Inverse(Rotation) * Quaternion.Lerp(Rotation, curNeighborNode.Rotation * Quaternion.Inverse(flailOffset), updateLerpBias);
-					curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.Rotation) * Quaternion.Lerp(curNeighborNode.Rotation, Rotation * flailOffset, updateLerpBias);
+					delayRotation *= Quaternion.Inverse(Rotation) * Quaternion.Lerp(Rotation, curNeighborNode.Rotation * Quaternion.Inverse(flailOffset), updateLerpBias * power);
+					curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.Rotation) * Quaternion.Lerp(curNeighborNode.Rotation, Rotation * flailOffset, updateLerpBias * power);
 				}
 				if(i == 1){
-					delayRotation *= Quaternion.Inverse(Rotation) * Quaternion.Lerp(Rotation, curNeighborNode.Rotation * flailOffset, updateLerpBias);
-					curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.Rotation) * Quaternion.Lerp(curNeighborNode.Rotation, Rotation * Quaternion.Inverse(flailOffset), updateLerpBias);
+					delayRotation *= Quaternion.Inverse(Rotation) * Quaternion.Lerp(Rotation, curNeighborNode.Rotation * flailOffset, updateLerpBias * power);
+					curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.Rotation) * Quaternion.Lerp(curNeighborNode.Rotation, Rotation * Quaternion.Inverse(flailOffset), updateLerpBias * power);
 				}
 
 				// Muscle propulsion
-				Vector3 propulsion = (Rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * PhysNodeController.physicsStep * (1f - Mathf.Abs(wiggle)) * ((Input.GetKey(KeyCode.T) || Input.GetKey(KeyCode.Y))? power : 1f);
+				Vector3 propulsion = (Rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * PhysNodeController.physicsStep * (1f - Mathf.Abs(wiggle)) * power;
 				
 				delayPosition += propulsion;
 				Debug.DrawRay(Position, propulsion * 6f, Color.red);
@@ -156,8 +157,8 @@ public class PhysNode {
 				curNeighborNode.delayRotation = Quaternion.Lerp(curNeighborNode.Rotation, delayRotation, updateLerpBias);
 			}
 
-			//GLDebug.DrawLine(transform.position, curNeighborNode.transform.position, new Color(1f, 1f, 1f, 0.1f), 0, false);
-			//GLDebug.DrawLine(transform.position, curNeighborNode.transform.position, cubeTransform.renderer.material.color, 0, false);
+			GLDebug.DrawLine(position, curNeighborNode.position, new Color(1f, 1f, 1f, 0.1f), 0, false);
+			//GLDebug.DrawLine(position, curNeighborNode.position, cubeTransform.renderer.material.color, 0, false);
 		}
 		
 		// Update node type?
@@ -184,35 +185,6 @@ public class PhysNode {
 			}
 		}
 
-		// Type-specific behaviours
-		switch(neighbors.Count){
-			case 1 : 
-				float viewConeSize = 2.5f;
-				Debug.DrawRay(Position, (Rotation * actionRotation * Vector3.forward) * 2f, Color.green);
-
-				viewCone.position = Position + (actionRotation * (Rotation * Vector3.forward)) * viewConeSize;
-				viewCone.localScale = Vector3.one * viewConeSize;
-
-				// Billboard the arc with the main camera.
-				viewCone.rotation = Rotation * actionRotation;
-				viewCone.position = Position + (viewCone.rotation * (Vector3.forward * viewConeSize * 0.5f));
-				viewCone.rotation *= Quaternion.AngleAxis(-90, Vector3.up);
-
-				Vector3 camRelativePos = viewCone.InverseTransformPoint(Camera.main.transform.position);
-				float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
-				viewCone.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
-
-				//calling detect food on sense node
-				Bounds boundary = new Bounds(position, senseDetectRange * (new Vector3(1, 1, 1)));
-				PhysFood.AllFoodTree.RunActionInRange(new System.Action<PhysFood>(HandleDetectedFood), boundary);
-
-				break;
-			case 2 : 
-				break;
-			case 3 : 
-				break;
-			}
-
 		// Reset power
 		power = 0f;
 	} // End of DoMath().
@@ -233,13 +205,44 @@ public class PhysNode {
 			if(Random.Range(0f, 1f) < 0.2f)
 				someNeighbor.arrowDist = Random.Range(0.25f, 0.4f);
 
-		if((Input.GetKey(KeyCode.T) || Input.GetKey(KeyCode.Y)) && (neighbors.Count == 1))
-			Transmit(new HashSet<PhysNode>(new PhysNode[]{this}), 1f);
-
 
 		// Position error bandaid...
 		if(Position.x > 1000f || Position.y > 1000f || Position.z > 1000f)
 			physAssembly.Destroy();
+
+		// Type-specific behaviours
+		switch(neighbors.Count){
+			case 1 : 
+				float viewConeSize = 2.5f;
+				Debug.DrawRay(Position, (Rotation * actionRotation * Vector3.forward) * 2f, Color.green);
+
+				viewCone.position = Position + (actionRotation * (Rotation * Vector3.forward)) * viewConeSize;
+				viewCone.localScale = Vector3.one * viewConeSize;
+
+				// Billboard the arc with the main camera.
+				viewCone.rotation = Rotation * actionRotation;
+				viewCone.position = Position + (viewCone.rotation * (Vector3.forward * viewConeSize * 0.5f));
+				viewCone.rotation *= Quaternion.AngleAxis(-90, Vector3.up);
+
+				Vector3 camRelativePos = viewCone.InverseTransformPoint(Camera.main.transform.position);
+				float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
+				viewCone.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
+
+				//calling detect food on sense node, determines power of node
+				Bounds boundary = new Bounds(position, senseDetectRange * (new Vector3(1, 1, 1)));
+				PhysFood.AllFoodTree.RunActionInRange(new System.Action<PhysFood>(HandleDetectedFood), boundary);
+
+				// Transmit signal!
+				foreach(SenseActuateLink someLink in senseActuateLinks){
+					someLink.targetActuator.power += power * someLink.signalStrength;
+				}
+
+				break;
+			case 2 : 
+				break;
+			case 3 : 
+				break;
+		}
 	} // End of UpdateTransform().
 
 
@@ -268,24 +271,41 @@ public class PhysNode {
 	} // End of OnDestroy().
 
 
-	public void Transmit(HashSet<PhysNode> checkedNodes, float signalStrength){
+
+
+	// When a sense node calls this function, it will rebuild its energy transfer network.
+	public void ComputeEnergyNetwork(){
+
+		senseActuateLinks = Transmit(new HashSet<PhysNode>(new PhysNode[]{this}), 1f);
+		MonoBehaviour.print(senseActuateLinks.Count);
+
+	} // End of ComputeEnergyNetwork().
+
+
+	// Returns a collection of actuator nodes linked to this sense node.
+	public List<SenseActuateLink> Transmit(HashSet<PhysNode> checkedNodes, float signalStrength){
+		List<SenseActuateLink> linksToReturn = new List<SenseActuateLink>();
+
 		checkedNodes.Add(this);
 		if(signalStrength < 0.02f)
-			return;
+			return linksToReturn;
+
+		if(neighbors.Count == 2)
+			linksToReturn.Add(new SenseActuateLink(this, signalStrength));
 
 		for(int i = 0; i < neighbors.Count; i++){
 			PhysNode curNeighbor = neighbors[i].physNode;
 			if(!checkedNodes.Contains(curNeighbor) && (curNeighbor.neighbors.Count > 1)){
 				float sig = signalStrength / Mathf.Max(1f, (neighbors.Count - 1));
-				curNeighbor.Transmit(new HashSet<PhysNode>(checkedNodes), sig * 0.95f);
-				//curNeighbor.Transmit(checkedNodes);
+
+				linksToReturn.AddRange(curNeighbor.Transmit(new HashSet<PhysNode>(checkedNodes), sig * 0.95f));
 
 				// Trace effect
-				if(Input.GetKey(KeyCode.T))
-					GLDebug.DrawLineArrow(Position, Vector3.Lerp(Position, curNeighbor.Position, neighbors[i].arrowDist), 0.1f, 20f, new Color(1f, 1f, 0f, signalStrength), 0f, false);
+				//if(Input.GetKey(KeyCode.T))
+					//GLDebug.DrawLineArrow(Position, Vector3.Lerp(Position, curNeighbor.Position, neighbors[i].arrowDist), 0.1f, 20f, new Color(1f, 1f, 0f, signalStrength), 0f, false);
 			}
 		}
-		power += signalStrength;
+		return linksToReturn;
 
 	} // End of Transmit().
 
@@ -295,9 +315,12 @@ public class PhysNode {
 		float distanceToFood = vectorToFood.magnitude;
 
 		float angleToFood = Vector3.Angle(rotation * actionRotation * Vector3.forward, vectorToFood);
+		float strength = 1f - (distanceToFood / senseDetectRange);
 
-		if(angleToFood < 45f)
+		if(angleToFood < 45f){
+			power = 1f;
 			GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
+		}
 		else
 			GLDebug.DrawLine(position, food.worldPosition, new Color(1f, 1f, 1f, 0.25f * Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 
@@ -324,3 +347,17 @@ public class PhysNode {
 	*/
 
 } // End of PhysNode.
+
+
+// Each sense node keeps track of where to send its signal based on these.
+public class SenseActuateLink {
+
+	public PhysNode targetActuator = null;
+	public float signalStrength = 0f;
+
+	public SenseActuateLink(PhysNode linkedNode, float signalStrength){
+		targetActuator = linkedNode;
+		this.signalStrength = signalStrength;
+	} // End of constructor.
+
+} // End of SenseActuateLink.

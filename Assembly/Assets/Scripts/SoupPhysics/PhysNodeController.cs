@@ -30,9 +30,9 @@ public class PhysNodeController : MonoBehaviour {
 		CameraControl.Inst.maxRadius = worldSize * 3f;
 
 		// Create random assemblies.
-		int numAssemblies = 100;
+		int numAssemblies = 200;
 		int minNodes = 3;
-		int maxNodes = 12;
+		int maxNodes = 15;
 
 		for(int i = 0; i < numAssemblies; i++){
 			Vector3 assemblySpawnPos = Vector3.zero;
@@ -51,36 +51,11 @@ public class PhysNodeController : MonoBehaviour {
 				}
 				spawnHexPos += HexUtilities.RandomAdjacent();
 			}
-
-			/*
-			newAssembly.AddNode(new Triplet(0, 0, 0));
-			newAssembly.AddNode(new Triplet(1, 0, 0));
-			newAssembly.AddNode(new Triplet(2, 0, 0));
-			newAssembly.AddNode(new Triplet(3, 0, 0));
-
-			newAssembly.AddNode(new Triplet(0, 1, 0));
-			newAssembly.AddNode(new Triplet(0, 2, 0));
-			newAssembly.AddNode(new Triplet(0, 3, 0));
-
-			newAssembly.AddNode(new Triplet(1, 1, 0));
-			newAssembly.AddNode(new Triplet(2, 1, 0));
-			newAssembly.AddNode(new Triplet(1, 2, 0));
-
-			newAssembly.AddNode(new Triplet(3, 1, 0));
-			newAssembly.AddNode(new Triplet(3, 2, 0));
-			newAssembly.AddNode(new Triplet(3, 3, 0));
-			newAssembly.AddNode(new Triplet(2, 3, 0));
-			newAssembly.AddNode(new Triplet(1, 3, 0));
-
-			newAssembly.AddNode(new Triplet(2, 2, 0));
-			*/
 		}
-
 
 		for(int i = 0; i < foodPellets; i++){
 			PhysFood newFood = new PhysFood(Random.insideUnitSphere * worldSize);
 		}
-
 
 		// Marching cubes ------------------------------------------------- //
 		// Initialize density map
@@ -91,6 +66,11 @@ public class PhysNodeController : MonoBehaviour {
 			for(int j = 0; j < densityMapSize; j++){
 				densityMap[i][j] = new float[densityMapSize];
 			}
+		}
+
+		foreach(PhysNode somePhysNode in PhysNode.getAll){
+			if(somePhysNode.neighbors.Count == 1)
+				somePhysNode.ComputeEnergyNetwork();
 		}
 
 	} // End of Start().
@@ -152,7 +132,6 @@ public class PhysNodeController : MonoBehaviour {
 				}
 			}
 		}
-
 
 		GLDebug.DrawLine(Vector3.zero, Vector3.forward, Color.blue);
 		GLDebug.DrawLine(Vector3.zero, Vector3.right, Color.red);
@@ -251,6 +230,5 @@ public class PhysNodeController : MonoBehaviour {
 		}
 		return numAdjacencies;
 	} // End of GetNumAdjacencies().
-
 
 } // End of PhysNodeController.
