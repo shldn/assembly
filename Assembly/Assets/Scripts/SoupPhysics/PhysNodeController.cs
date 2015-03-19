@@ -18,7 +18,7 @@ public class PhysNodeController : MonoBehaviour {
 
 	public static float physicsStep = 0.05f;
 
-	int foodPellets = 200;
+	int foodPellets = 100;
 
 
 	void Awake(){
@@ -30,16 +30,16 @@ public class PhysNodeController : MonoBehaviour {
 		CameraControl.Inst.maxRadius = worldSize * 3f;
 
 		// Create random assemblies.
-		int numAssemblies = 200;
+		int numAssemblies = 500;
 		int minNodes = 3;
-		int maxNodes = 15;
+		int maxNodes = 10;
 
 		for(int i = 0; i < numAssemblies; i++){
 			Vector3 assemblySpawnPos = Vector3.zero;
 			if(numAssemblies > 1)
 				assemblySpawnPos = Random.insideUnitSphere * worldSize;
 
-			PhysAssembly newAssembly = new PhysAssembly(assemblySpawnPos, Random.rotation);
+			PhysAssembly newAssembly = new PhysAssembly(assemblySpawnPos, Quaternion.identity);
 
 			int numNodes = Random.Range(minNodes, maxNodes);
 			Triplet spawnHexPos = Triplet.zero;
@@ -75,6 +75,7 @@ public class PhysNodeController : MonoBehaviour {
 
 	} // End of Start().
 
+
 	void Update(){
 
 		foreach(PhysNode someNode in PhysNode.getAll)
@@ -83,11 +84,31 @@ public class PhysNodeController : MonoBehaviour {
 		foreach(PhysNode someNode in PhysNode.getAll)
 			someNode.UpdateTransform();
 
+		foreach(PhysAssembly someAssembly in PhysAssembly.getAll)
+			someAssembly.Update();
+
+		foreach(PhysFood someFood in PhysFood.all)
+			someFood.Update();
+
+		// Culling
 		PhysNode[] tempHoldNodes = new PhysNode[PhysNode.getAll.Count];
 		PhysNode.getAll.CopyTo(tempHoldNodes);
 		for(int i = 0; i < tempHoldNodes.Length; i++)
 			if(tempHoldNodes[i].cull)
 				PhysNode.getAll.Remove(tempHoldNodes[i]);
+
+		PhysAssembly[] tempHoldAssemblies = new PhysAssembly[PhysAssembly.getAll.Count];
+		PhysAssembly.getAll.CopyTo(tempHoldAssemblies);
+		for(int i = 0; i < tempHoldAssemblies.Length; i++)
+			if(tempHoldAssemblies[i].cull)
+				PhysAssembly.getAll.Remove(tempHoldAssemblies[i]);
+
+		PhysFood[] tempHoldFood = new PhysFood[PhysFood.all.Count];
+		PhysFood.all.CopyTo(tempHoldFood);
+		for(int i = 0; i < tempHoldFood.Length; i++)
+			if(tempHoldFood[i].cull)
+				tempHoldFood[i].Destroy();
+
 
 		// Quit on Escape
 		if(Input.GetKeyUp(KeyCode.Escape))
@@ -95,7 +116,6 @@ public class PhysNodeController : MonoBehaviour {
 
 		PhysFood.AllFoodTree.Maintain();
 
-		/*
 		int cycleDir = Mathf.FloorToInt((Time.time * 0.2f) % 12);
 
 		// Show details on selected assembly.
@@ -106,11 +126,11 @@ public class PhysNodeController : MonoBehaviour {
 				Triplet curPos = kvp.Key;
 				PhysNode curNode = kvp.Value;
 				// Render nodes
-				GLDebug.DrawCube(selectedAssem.WorldPosition + HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(curPos, Mathf.FloorToInt(cycleDir))), HexUtilities.HexDirToRot(Mathf.FloorToInt(cycleDir)), Vector3.one, hoveredAssem ? Color.magenta : (Color.white), 0f, false);
+				GLDebug.DrawCube(selectedAssem.spawnPosition + HexUtilities.HexToWorld(curPos), Quaternion.identity, Vector3.one * 0.5f, kvp.Value.cubeTransform.renderer.material.color + new Color(0.1f, 0.1f, 0.1f), 0f, false);
 				// Centerpoint
-				GLDebug.DrawCube(selectedAssem.WorldPosition, Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
+				//GLDebug.DrawCube(selectedAssem.WorldPosition, Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
 			}
-
+		}/*
 			// Determine closest fit with hovered assembly.
 			if(hoveredAssem){
 				Triplet[] testThisBuiltin = new Triplet[hoveredAssem.NodeDict.Keys.Count];

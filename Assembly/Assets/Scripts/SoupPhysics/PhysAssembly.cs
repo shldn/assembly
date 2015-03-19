@@ -24,6 +24,9 @@ public class PhysAssembly {
 	}
 	public Quaternion worldRotation = Random.rotation;
 
+	public float energy = 0f;
+	public bool cull = false;
+
 
 	public PhysAssembly(Vector3 spawnPosition, Quaternion spawnRotation){
 		this.spawnPosition = spawnPosition;
@@ -42,6 +45,8 @@ public class PhysAssembly {
 			if(nodeDict.ContainsKey(testPos))
 				newPhysNode.AttachNeighbor(nodeDict[testPos]);
 		}
+
+		energy += 1f;
 	} // End of AddNode().
 
 
@@ -51,11 +56,17 @@ public class PhysAssembly {
 	} // End of AddNode().
 
 
+	public void Update(){
+		if(energy < 0f)
+			Destroy();
+	} // End of Update().
+
+
 	public void Destroy(){
 		foreach(KeyValuePair<Triplet, PhysNode> somePair in nodeDict)
 			somePair.Value.Destroy();
 
-		all.Remove(this);
+		cull = true;
 	} // End of Destroy().
 
 } // End of PhysAssembly.
