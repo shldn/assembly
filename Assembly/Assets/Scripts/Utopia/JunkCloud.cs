@@ -26,30 +26,34 @@ public class JunkCloud : MonoBehaviour {
 
     void Rain()
     {
-        // Remove one first if max junk level has been reached
-        if (allJunkObjects.Count >= maxJunkObjects)
-            RemoveOldestJunkNotVisible();
-
-        GameObject go = GameObject.Instantiate(rainPrefabs[NextPrefabIdx], RandomPointInCloud(), Random.rotation) as GameObject;
-        if (createCreatures && creatureCount % skipCount == 0)
+        if( UtopiaGameManager.Inst.enableJunkClouds )
         {
-            if (false)
-            {
-                SpringCreature creature = go.AddComponent<SpringCreature>();
-                creature.numSprings = 5;
-            }
-            else
-            {
-                DelayedSpringCreature creature = go.AddComponent<DelayedSpringCreature>();
-                creature.numSprings = 5;
-            }
+            // Remove one first if max junk level has been reached
+            if (allJunkObjects.Count >= maxJunkObjects)
+                RemoveOldestJunkNotVisible();
 
+            GameObject go = GameObject.Instantiate(rainPrefabs[NextPrefabIdx], RandomPointInCloud(), Random.rotation) as GameObject;
+            if (createCreatures && creatureCount % skipCount == 0)
+            {
+                if (false)
+                {
+                    SpringCreature creature = go.AddComponent<SpringCreature>();
+                    creature.numSprings = 5;
+                }
+                else
+                {
+                    DelayedSpringCreature creature = go.AddComponent<DelayedSpringCreature>();
+                    creature.numSprings = 5;
+                }
+
+            }
+            creatureCount++;
+            allJunkObjects.AddLast(go);
         }
+
         if (delayBetweenDrops > 0)
             Invoke("Rain", delayBetweenDrops);
 
-        creatureCount++;
-        allJunkObjects.AddLast(go);
     }
 
     Vector3 RandomPointInCloud()
