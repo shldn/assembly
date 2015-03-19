@@ -3,6 +3,8 @@ using System.Collections;
 
 public class UtopiaGameManager : MonoBehaviour {
 
+    // Options
+    public bool enableJunkClouds = true;
     public float minSpringAngleOffset = 5.0f;
     public float maxAngleOffset = 60.0f;
 
@@ -49,13 +51,7 @@ public class UtopiaGameManager : MonoBehaviour {
                 cube.transform.position = UtopiaGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * UtopiaGameManager.Inst.LocalPlayer.gameObject.transform.forward;
         }
         if (Input.GetKeyUp(KeyCode.J))
-        {
-            GameObject junk = (GameObject)GameObject.Instantiate(Input.GetKey(KeyCode.RightShift) ? Resources.Load("Utopia/Block") : Resources.Load("Utopia/Palette"));
-            if (UtopiaGameManager.Inst.LocalPlayer)
-                junk.transform.position = UtopiaGameManager.Inst.LocalPlayer.HeadPosition + 4.0f * UtopiaGameManager.Inst.LocalPlayer.gameObject.transform.forward;
-            SpringCreature creature = junk.AddComponent<SpringCreature>();
-            creature.numSprings = (int)(randomHullSpringPercent * (float)(junk.GetComponent<MeshFilter>().mesh.triangles.Length / 3));
-        }
+            enableJunkClouds = !enableJunkClouds;
         if (Input.GetKeyUp(KeyCode.K))
         {
             GameObject junk = (GameObject)GameObject.Instantiate(Resources.Load("Utopia/Palette"));
@@ -106,5 +102,10 @@ public class UtopiaGameManager : MonoBehaviour {
         CroquetBall ball = p.gameObject.GetComponentInChildren<CroquetBall>();
         if (ball != null)
             ball.renderer.enabled = true;
+    }
+
+    void OnDestroy()
+    {
+        JunkCloud.Clear();
     }
 }

@@ -101,6 +101,8 @@ public class CameraControl : MonoBehaviour {
             center = selectedNode.gameObject.transform.position;
         else if(selectedAssembly)
             center = selectedAssembly.WorldPosition;
+		else if(selectedPhyAssembly)
+			center = selectedPhyAssembly.WorldPosition;
 		
         else
             center = Vector3.zero;
