@@ -11,12 +11,14 @@ public class PhysNodeController : MonoBehaviour {
 	public Transform physFoodPrefab = null;
 	MarchingCubes myCubes;
 
-	int worldSize = 50;
+	int worldSize = 150;
+	public int WorldSize {get{return worldSize;}}
+
 	float[][][] densityMap;
 
 	public static float physicsStep = 0.05f;
 
-	int foodPellets = 10;
+	int foodPellets = 100;
 
 
 	void Awake(){
@@ -28,55 +30,32 @@ public class PhysNodeController : MonoBehaviour {
 		CameraControl.Inst.maxRadius = worldSize * 3f;
 
 		// Create random assemblies.
-		int numAssemblies = 10;
+		int numAssemblies = 500;
 		int minNodes = 3;
-		int maxNodes = 15;
+		int maxNodes = 10;
 
 		for(int i = 0; i < numAssemblies; i++){
 			Vector3 assemblySpawnPos = Vector3.zero;
 			if(numAssemblies > 1)
 				assemblySpawnPos = Random.insideUnitSphere * worldSize;
 
-			PhysAssembly newAssembly = new PhysAssembly(assemblySpawnPos, Random.rotation);
+			PhysAssembly newAssembly = new PhysAssembly(assemblySpawnPos, Quaternion.identity);
 
 			int numNodes = Random.Range(minNodes, maxNodes);
 			Triplet spawnHexPos = Triplet.zero;
-			/*while(numNodes > 0){
+			while(numNodes > 0){
 				// Make sure no phys node is here currently.
 				if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
 					newAssembly.AddNode(spawnHexPos);
 					numNodes--;
 				}
 				spawnHexPos += HexUtilities.RandomAdjacent();
-			}*/
-
-			newAssembly.AddNode(new Triplet(0, 0, 0));
-			newAssembly.AddNode(new Triplet(1, 0, 0));
-			newAssembly.AddNode(new Triplet(2, 0, 0));
-			newAssembly.AddNode(new Triplet(3, 0, 0));
-
-			newAssembly.AddNode(new Triplet(0, 1, 0));
-			newAssembly.AddNode(new Triplet(0, 2, 0));
-			newAssembly.AddNode(new Triplet(0, 3, 0));
-
-			newAssembly.AddNode(new Triplet(1, 1, 0));
-			newAssembly.AddNode(new Triplet(2, 1, 0));
-			newAssembly.AddNode(new Triplet(1, 2, 0));
-
-			newAssembly.AddNode(new Triplet(3, 1, 0));
-			newAssembly.AddNode(new Triplet(3, 2, 0));
-			newAssembly.AddNode(new Triplet(3, 3, 0));
-			newAssembly.AddNode(new Triplet(2, 3, 0));
-			newAssembly.AddNode(new Triplet(1, 3, 0));
-
-			newAssembly.AddNode(new Triplet(2, 2, 0));
+			}
 		}
-
 
 		for(int i = 0; i < foodPellets; i++){
 			PhysFood newFood = new PhysFood(Random.insideUnitSphere * worldSize);
 		}
-
 
 		// Marching cubes ------------------------------------------------- //
 		// Initialize density map
@@ -89,7 +68,13 @@ public class PhysNodeController : MonoBehaviour {
 			}
 		}
 
+		foreach(PhysNode somePhysNode in PhysNode.getAll){
+			if(somePhysNode.neighbors.Count == 1)
+				somePhysNode.ComputeEnergyNetwork();
+		}
+
 	} // End of Start().
+
 
 	void Update(){
 
@@ -99,15 +84,37 @@ public class PhysNodeController : MonoBehaviour {
 		foreach(PhysNode someNode in PhysNode.getAll)
 			someNode.UpdateTransform();
 
+		foreach(PhysAssembly someAssembly in PhysAssembly.getAll)
+			someAssembly.Update();
+
+		foreach(PhysFood someFood in PhysFood.all)
+			someFood.Update();
+
+		// Culling
 		PhysNode[] tempHoldNodes = new PhysNode[PhysNode.getAll.Count];
 		PhysNode.getAll.CopyTo(tempHoldNodes);
 		for(int i = 0; i < tempHoldNodes.Length; i++)
 			if(tempHoldNodes[i].cull)
 				PhysNode.getAll.Remove(tempHoldNodes[i]);
 
+		PhysAssembly[] tempHoldAssemblies = new PhysAssembly[PhysAssembly.getAll.Count];
+		PhysAssembly.getAll.CopyTo(tempHoldAssemblies);
+		for(int i = 0; i < tempHoldAssemblies.Length; i++)
+			if(tempHoldAssemblies[i].cull)
+				PhysAssembly.getAll.Remove(tempHoldAssemblies[i]);
+
+		PhysFood[] tempHoldFood = new PhysFood[PhysFood.all.Count];
+		PhysFood.all.CopyTo(tempHoldFood);
+		for(int i = 0; i < tempHoldFood.Length; i++)
+			if(tempHoldFood[i].cull)
+				tempHoldFood[i].Destroy();
+
+
 		// Quit on Escape
 		if(Input.GetKeyUp(KeyCode.Escape))
 			Application.Quit();
+
+		PhysFood.AllFoodTree.Maintain();
 
 		int cycleDir = Mathf.FloorToInt((Time.time * 0.2f) % 12);
 
@@ -119,11 +126,11 @@ public class PhysNodeController : MonoBehaviour {
 				Triplet curPos = kvp.Key;
 				PhysNode curNode = kvp.Value;
 				// Render nodes
-				GLDebug.DrawCube(selectedAssem.WorldPosition + HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(curPos, Mathf.FloorToInt(cycleDir))), HexUtilities.HexDirToRot(Mathf.FloorToInt(cycleDir)), Vector3.one, hoveredAssem ? Color.magenta : (Color.white), 0f, false);
+				GLDebug.DrawCube(selectedAssem.spawnPosition + HexUtilities.HexToWorld(curPos), Quaternion.identity, Vector3.one * 0.5f, kvp.Value.cubeTransform.renderer.material.color + new Color(0.1f, 0.1f, 0.1f), 0f, false);
 				// Centerpoint
-				GLDebug.DrawCube(selectedAssem.WorldPosition, Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
+				//GLDebug.DrawCube(selectedAssem.WorldPosition, Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
 			}
-
+		}/*
 			// Determine closest fit with hovered assembly.
 			if(hoveredAssem){
 				Triplet[] testThisBuiltin = new Triplet[hoveredAssem.NodeDict.Keys.Count];
@@ -146,7 +153,6 @@ public class PhysNodeController : MonoBehaviour {
 			}
 		}
 
-
 		GLDebug.DrawLine(Vector3.zero, Vector3.forward, Color.blue);
 		GLDebug.DrawLine(Vector3.zero, Vector3.right, Color.red);
 		GLDebug.DrawLine(Vector3.zero, Vector3.up, Color.green);
@@ -155,6 +161,7 @@ public class PhysNodeController : MonoBehaviour {
 			GLDebug.DrawCube(HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(new Triplet(2, 0, 0), i)), HexUtilities.HexDirToRot(i), Vector3.one * 0.5f, Color.green);
 		}
 		print(Mathf.FloorToInt(Time.time % 12));
+		*/
 	} // End of Update().
 
 
@@ -243,6 +250,5 @@ public class PhysNodeController : MonoBehaviour {
 		}
 		return numAdjacencies;
 	} // End of GetNumAdjacencies().
-
 
 } // End of PhysNodeController.
