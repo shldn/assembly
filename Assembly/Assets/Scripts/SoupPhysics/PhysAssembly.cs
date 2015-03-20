@@ -59,6 +59,9 @@ public class PhysAssembly {
 	public void Update(){
 		if(energy < 0f)
 			Destroy();
+
+		energy = Mathf.Clamp(energy, 0f, nodeDict.Values.Count);
+
 	} // End of Update().
 
 

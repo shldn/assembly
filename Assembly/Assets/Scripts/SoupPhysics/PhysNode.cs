@@ -204,7 +204,7 @@ public class PhysNode {
 
 
 		// Metabolism --------------------------------- //
-		physAssembly.energy -= PhysNodeController.physicsStep * 0.1f;
+		physAssembly.energy -= PhysNodeController.physicsStep * 0.05f;
 
 
 		// Reset power
@@ -355,6 +355,7 @@ public class PhysNode {
 			GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 
 			float foodToPull = PhysNodeController.physicsStep * 1f;
+
 			food.energy -= foodToPull;
 			physAssembly.energy += foodToPull;
 		}
