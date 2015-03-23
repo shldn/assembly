@@ -42,8 +42,16 @@ public class JunkCloud : MonoBehaviour {
                 }
                 else
                 {
-                    DelayedSpringCreature creature = go.AddComponent<DelayedSpringCreature>();
-                    creature.numSprings = 5;
+                    if( Random.Range(0.0f, 1.0f) > 0.5f)
+                    {
+                        FanCreature creature = go.AddComponent<FanCreature>();
+                        creature.numFans = 5;
+                    }
+                    else
+                    {
+                        DelayedSpringCreature creature = go.AddComponent<DelayedSpringCreature>();
+                        creature.numSprings = 5;
+                    }
                 }
 
             }
