@@ -109,6 +109,7 @@ public class PlayerController : MonoBehaviour {
 
     private float startIdleTime = 0.0f;
     public float IdleTime { get { return Time.time - startIdleTime; } }
+    public float idleTimeUntilOrbit = 10.0f; // seconds
 
     public Vector3 groundNormal = Vector3.zero;
 
@@ -452,9 +453,8 @@ public class PlayerController : MonoBehaviour {
         }
 
         // Assembly camera movement script based on player activity
-        float idleTimeUntilOrbit = 5.0f; // seconds
         float orbitDuration = 10.0f; // seconds;
-        if (playerState == CharacterState.Idle && IdleTime > idleTimeUntilOrbit && !CameraFollowOrbitController.Inst.IsMoving && (IdleTime < orbitDuration || CameraFollowOrbitController.Inst.TimeSinceLastOrbit > (idleTimeUntilOrbit + orbitDuration)))
+        if (playerState == CharacterState.Idle && IdleTime > idleTimeUntilOrbit && idleTimeUntilOrbit > 0.0f && !CameraFollowOrbitController.Inst.IsMoving && (IdleTime < orbitDuration || CameraFollowOrbitController.Inst.TimeSinceLastOrbit > (idleTimeUntilOrbit + orbitDuration)))
             CameraFollowOrbitController.Inst.Orbit(MainCameraController.Inst.orbitOffsetAngle + 360.0f, orbitDuration);
         else if (playerState != CharacterState.Idle && CameraFollowOrbitController.Inst.IsMoving && !CameraFollowOrbitController.Inst.IsCancelling)
             CameraFollowOrbitController.Inst.CancelOrbit(0.5f);
