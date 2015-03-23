@@ -28,13 +28,19 @@ public class CursorBot : MonoBehaviour {
 
     public void DrawCircle(Vector2 center, float radius, float duration = 3.0f)
     {
+        int borderBuffer = 20; // don't allow off screen
+        float aspectRatioInv = (float)Screen.height / (float)Screen.width;
         int ptsPerSec = 30;
         int totalPts = (int)(ptsPerSec * duration);
         float angleInc = 2.0f * Mathf.PI / (float)totalPts;
         float angle = 0.0f;
         for (int i = 0; i < totalPts+1; ++i)
         {
-            cursorPositions.Enqueue(center + radius * Mathf.Cos(angle) * Vector2.right + radius * Mathf.Sin(angle) * Vector2.up);
+            Vector2 newPos = new Vector2();
+            newPos.x = Mathf.Clamp(center.x + radius * Mathf.Cos(angle), borderBuffer, Screen.width - borderBuffer);
+            newPos.y = Mathf.Clamp(center.y + aspectRatioInv * radius * Mathf.Sin(angle), borderBuffer, Screen.height - borderBuffer);
+
+            cursorPositions.Enqueue(newPos);
             angle += angleInc;
         }
         screenPos = new Vector3(center.x + radius, center.y, 0.0f);
@@ -57,7 +63,6 @@ public class CursorBot : MonoBehaviour {
         if( isDrawing )
         {
             Vector2 thisPos = cursorPositions.Dequeue();
-            Debug.LogError(thisPos);
             screenPos = new Vector3(thisPos.x, thisPos.y);
 
             screenPos.x = Mathf.Clamp(screenPos.x, 0f, Screen.width);
@@ -100,4 +105,9 @@ public class CursorBot : MonoBehaviour {
             cursorLine.enabled = false;
 
     } // End of LateUpdate().
+
+    void OnDestroy()
+    {
+        CursorBotManager.RemoveBot(this);
+    }
 }

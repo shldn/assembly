@@ -73,6 +73,12 @@ public class PersistentGameManager : MonoBehaviour {
                 displayIP.enabled = !displayIP.enabled;
         }
 
+        if (Debug.isDebugBuild && Input.GetKeyUp(KeyCode.C) )
+        {
+            GameObject go = new GameObject("CursorBotManager");
+            go.AddComponent<CursorBotManager>();
+        }
+
 		Screen.lockCursor = cursorLock;
 	}
 
