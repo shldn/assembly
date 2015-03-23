@@ -54,7 +54,9 @@ public class FanCreature : MonoBehaviour, CaptureObject {
         }
 
         // set repeat delay
-        FanController fcontroller = fan.AddComponent<FanController>();
+        FanController fcontroller = fan.GetComponent<FanController>();
+        if( fcontroller == null )
+            fcontroller = fan.AddComponent<FanController>();
         fcontroller.repeatDelay = Random.Range((float)repeatDelayMin, (float)repeatDelayMax);
         fcontroller.durationPercent = Random.Range(0.05f, 0.95f);
 

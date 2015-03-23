@@ -42,6 +42,14 @@ public class Creature : MonoBehaviour
         if( scaler != null )
             scaler.repeatDelay = Random.Range((float)repeatDelayMin, (float)repeatDelayMax);
 
+        FanController fanControl = child.GetComponent<FanController>();
+        if( fanControl != null )
+        {
+            fanControl.repeatDelay = Random.Range(1.0f, 6.0f);
+            fanControl.durationPercent = Random.Range(0.05f, 0.95f);
+            fanControl.gameObject.GetComponent<ConstantForce>().relativeForce = Random.Range(20.0f, 100.0f) * (-Vector3.right);
+        }
+
         if (incrementAttachCount)
             ++numAttachments;
         return true;
