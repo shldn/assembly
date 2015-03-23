@@ -23,6 +23,12 @@ public class CursorBot : MonoBehaviour {
 	void Start () {
         cursorObject = (GameObject.Instantiate(Resources.Load("PlayerCursor")) as GameObject).transform;
         cursorLine = cursorObject.gameObject.GetComponent<LineRenderer>();
+        if(CursorBotManager.Inst.useRandomColors)
+        {
+            Color newColor = new Color(Random.value, Random.value, Random.value);
+            cursorLine.renderer.material.SetColor("_TintColor", newColor);
+            cursorObject.GetComponentInChildren<MeshRenderer>().material.SetColor("_TintColor", newColor);
+        }
 	}
 
 

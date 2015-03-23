@@ -6,7 +6,8 @@ public class CursorBotManager : MonoBehaviour {
 
     public int maxNumCursors = 25;
     public float delayBetweenStarts = 0.25f; // seconds
-
+    public bool useRandomColors = false;
+    public static CursorBotManager Inst = null;
 
     private System.DateTime lastSpawnTime = System.DateTime.Now;
 
@@ -14,6 +15,11 @@ public class CursorBotManager : MonoBehaviour {
     public static void RemoveBot(CursorBot bot)
     {
         allBots.Remove(bot);
+    }
+
+    void Awake()
+    {
+        Inst = this;
     }
 
 	void Update () {
