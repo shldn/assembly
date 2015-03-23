@@ -80,6 +80,7 @@ public class MainCameraController : MonoBehaviour {
 
     // Options
     public bool playerInvisibleIfSnapCam = true;
+    public bool keepCameraBetweenHeadAndOtherObjects = false;
 
     // Player peruse tilt
     public bool gazeTiltEnabled = true; // If true, the camera will sway towards the direction of the cursor.
@@ -180,7 +181,8 @@ public class MainCameraController : MonoBehaviour {
             Ray followPlayerRay = new Ray(playerHead, cameraTargetPos - playerHead);
             RaycastHit followPlayerHit = new RaycastHit();
             float castRadius = 0.7f;
-            if (Physics.SphereCast(followPlayerRay, castRadius, out followPlayerHit, followPlayerDistance)){
+            if (keepCameraBetweenHeadAndOtherObjects && Physics.SphereCast(followPlayerRay, castRadius, out followPlayerHit, followPlayerDistance))
+            {
                 if(!followPlayerHit.collider.gameObject.GetComponent<PlayerController>())
                     cameraTargetPos = followPlayerRay.origin + followPlayerRay.direction.normalized * (followPlayerHit.distance - 1f);
             }
