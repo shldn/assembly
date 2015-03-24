@@ -84,7 +84,11 @@ public class PlayerSync : MonoBehaviour {
 			}
 
             if(networkView.isMine){
+#if UNITY_ANDROID || UNITY_IOS
                 if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && (Input.touchCount == 1))
+#else
+                if (!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0))
+#endif
                     screenPos += new Vector3(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y")) * 10f;
             }
 
