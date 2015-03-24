@@ -107,6 +107,9 @@ public class CameraControl : MonoBehaviour {
         else
             center = Vector3.zero;
 
+		if(PhysAssembly.getAll.Count > 0f)
+			targetOrbit.x -= 1f * Time.deltaTime;
+
 
         // General camera controls. ----------------------------------------------- //
         // Touch-screen pinch-zoom
