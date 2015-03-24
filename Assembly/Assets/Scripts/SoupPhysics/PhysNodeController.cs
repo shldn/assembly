@@ -24,6 +24,8 @@ public class PhysNodeController : MonoBehaviour {
 	int minNodes = 3;
 	int maxNodes = 15;
 
+	int worldNodeThreshold = 1500;
+
 
 	void Awake(){
 		Inst = this;
@@ -33,6 +35,7 @@ public class PhysNodeController : MonoBehaviour {
 	void Start(){
 		CameraControl.Inst.maxRadius = worldSize * 3f;
 
+		/*
 		// Create random assemblies.
 		int numAssemblies = 300;
 
@@ -55,10 +58,6 @@ public class PhysNodeController : MonoBehaviour {
 			}
 		}
 
-		for(int i = 0; i < foodPellets; i++){
-			PhysFood newFood = new PhysFood(Random.insideUnitSphere * worldSize);
-		}
-
 		// Marching cubes ------------------------------------------------- //
 		// Initialize density map
 		int densityMapSize = worldSize * 2;
@@ -74,6 +73,10 @@ public class PhysNodeController : MonoBehaviour {
 			if(somePhysNode.neighbors.Count == 1)
 				somePhysNode.ComputeEnergyNetwork();
 		}
+		*/
+
+		for(int i = 0; i < foodPellets; i++)
+			new PhysFood(Random.insideUnitSphere * worldSize);
 
 	} // End of Start().
 
@@ -169,7 +172,7 @@ public class PhysNodeController : MonoBehaviour {
 		*/
 
 		// Keep the world populated
-		if(PhysNode.getAll.Count < 1000f){
+		if(PhysNode.getAll.Count < worldNodeThreshold){
 			Vector3 assemblySpawnPos = Random.insideUnitSphere * worldSize;
 
 			PhysAssembly newAssembly = new PhysAssembly(assemblySpawnPos, Quaternion.identity);
@@ -188,6 +191,7 @@ public class PhysNodeController : MonoBehaviour {
 			foreach(PhysNode someNode in newAssembly.NodeDict.Values)
 				someNode.ComputeEnergyNetwork();
 		}
+
 	} // End of Update().
 
 

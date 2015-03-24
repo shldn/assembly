@@ -10,6 +10,7 @@ public class PhysAssembly {
 
 	Dictionary<Triplet, PhysNode> nodeDict = new Dictionary<Triplet, PhysNode>();
 	public Dictionary<Triplet, PhysNode> NodeDict {get{return nodeDict;}}
+	PhysNode[] myNodesIndexed = new PhysNode[0];
 
 	public Vector3 spawnPosition = Vector3.zero;
 	public Quaternion spawnRotation = Quaternion.identity;
@@ -18,7 +19,9 @@ public class PhysAssembly {
 			Vector3 worldPos = Vector3.zero;
 			foreach(PhysNode someNode in nodeDict.Values)
 				worldPos += someNode.Position;
-			worldPos /= nodeDict.Keys.Count;
+			if(nodeDict.Keys.Count > 0f)
+				worldPos /= nodeDict.Keys.Count;
+
 			return worldPos;
 		}
 	}
@@ -26,9 +29,12 @@ public class PhysAssembly {
 
 	public float energy = 0f;
 	public bool cull = false;
+	public bool needAddToList = true;
 
 	public bool wantToMate = false;
+	public PhysAssembly matingWith = null;
 	float mateAttractDist = 100f;
+	float mateCompletion = 0f;
 
 	private static Octree<PhysAssembly> allAssemblyTree;
     public static Octree<PhysAssembly> AllAssemblyTree{ 
@@ -43,10 +49,13 @@ public class PhysAssembly {
         }
     }
 
+	public bool gender = false;
+
 
 	public PhysAssembly(Vector3 spawnPosition, Quaternion spawnRotation){
 		this.spawnPosition = spawnPosition;
 		this.spawnRotation = spawnRotation;
+		gender = Random.Range(0f, 1f) > 0.5f;
 		all.Add(this);
 		AllAssemblyTree.Insert(this);
 	} // End of PhysAssembly().
@@ -74,6 +83,11 @@ public class PhysAssembly {
 
 
 	public void Update(){
+		if(myNodesIndexed.Length != nodeDict.Values.Count){
+			myNodesIndexed = new PhysNode[nodeDict.Values.Count];
+			nodeDict.Values.CopyTo(myNodesIndexed, 0);
+		}
+
 		if(energy < 0f)
 			Destroy();
 
@@ -82,34 +96,83 @@ public class PhysAssembly {
 
 		if(energy > (maxEnergy * 0.9f))
 			wantToMate = true;
-		else if(energy < maxEnergy * 0.5f)
-			wantToMate = false;
+		//else if(energy < maxEnergy * 0.5f)
+		//	wantToMate = false;
 
 		//calling detect food on sense node, determines power of node
-		if(wantToMate){
+		if(wantToMate && !matingWith){
 			Bounds mateAttractBoundary = new Bounds(WorldPosition, mateAttractDist * (new Vector3(1, 1, 1)));
-			allAssemblyTree.RunActionInRange(new System.Action<PhysAssembly>(HandleAttractMate), mateAttractBoundary);
+			allAssemblyTree.RunActionInRange(new System.Action<PhysAssembly>(HandleFindMate), mateAttractBoundary);
+		}
+
+		if(matingWith){
+			for(int i = 0; i < myNodesIndexed.Length; i++){
+				PhysNode myNode = myNodesIndexed[i];
+				PhysNode otherNode = null;
+				if(matingWith.myNodesIndexed.Length > i){
+					otherNode = matingWith.myNodesIndexed[i];
+
+					GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
+					Vector3 vectorToMate = myNode.Position - otherNode.Position;
+					float distance = vectorToMate.magnitude;
+			
+					myNode.delayPosition += -(vectorToMate.normalized * Mathf.Clamp01(distance * 0.01f));
+
+					if(distance < 2f)
+						mateCompletion += 0.2f * PhysNodeController.physicsStep;
+				}
+			}
+
+			if(mateCompletion >= 1f){
+				MonoBehaviour.print("Offspring");
+				// Spawn a new assembly between the two.
+				PhysAssembly newAssembly = new PhysAssembly((WorldPosition + matingWith.WorldPosition) / 2f, Random.rotation);
+				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length);
+				Triplet spawnHexPos = Triplet.zero;
+				while(numNodes > 0){
+					// Make sure no phys node is here currently.
+					if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
+						newAssembly.AddNode(spawnHexPos);
+						numNodes--;
+					}
+					spawnHexPos += HexUtilities.RandomAdjacent();
+				}
+
+				foreach(PhysNode someNode in newAssembly.NodeDict.Values)
+					someNode.ComputeEnergyNetwork();
+
+				matingWith.matingWith = null;
+				matingWith.wantToMate = false;
+				matingWith.mateCompletion = 0f;
+				matingWith.energy *= 0.5f;
+
+				matingWith = null;
+				wantToMate = false;
+				mateCompletion = 0f;
+				energy *= 0.5f;
+			}
 		}
 	} // End of Update().
 
 
-	public void HandleAttractMate(PhysAssembly someAssembly){
+	public void HandleFindMate(PhysAssembly someAssembly){
+		if((someAssembly == this) || (someAssembly.matingWith) || matingWith)
+			return;
+
 		Vector3 vectorToMate = someAssembly.WorldPosition - WorldPosition;
 		float distanceToMate = vectorToMate.magnitude;
 
 		if(distanceToMate > mateAttractDist)
 			return;
 
-		if(!someAssembly.wantToMate){
-			GLDebug.DrawLine(WorldPosition, someAssembly.WorldPosition, Color.blue);
+		if(!someAssembly.wantToMate)
 			return;
-		}
 
-		foreach(PhysNode someNode in nodeDict.Values)
-			someNode.delayPosition += vectorToMate.normalized;
+		matingWith = someAssembly;
+		gender = true;
 
-		GLDebug.DrawLine(WorldPosition, someAssembly.WorldPosition, Color.magenta);
-
+		someAssembly.matingWith = this;
+		someAssembly.gender = false;
 	} // End of HandleAttractMate().
 
 

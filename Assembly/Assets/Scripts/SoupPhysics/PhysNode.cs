@@ -99,6 +99,7 @@ public class PhysNode {
 
 	Color nodeColor = Color.white;
 	float mateColorLerp = 0f;
+	float genderColorLerp = 0f;
 
 
 	public PhysNode(PhysAssembly physAssembly, Triplet localHexPos){
@@ -191,9 +192,9 @@ public class PhysNode {
 				curNeighborNode.delayRotation = Quaternion.Lerp(curNeighborNode.Rotation, delayRotation, updateLerpBias);
 			}
 
-			GLDebug.DrawLine(position, curNeighborNode.position, new Color(1f, 1f, 1f, 0.1f), 0, false);
 			//GLDebug.DrawLine(position, curNeighborNode.position, cubeTransform.renderer.material.color, 0, false);
 			*/
+			GLDebug.DrawLine(position, curNeighborNode.position, new Color(1f, 1f, 1f, 0.1f), 0, false);
 		}
 		
 		// Update node type?
@@ -243,9 +244,12 @@ public class PhysNode {
 
 
 		mateColorLerp = Mathf.MoveTowards(mateColorLerp, physAssembly.wantToMate? 1f : 0f, Time.deltaTime);
+		genderColorLerp = Mathf.MoveTowards(genderColorLerp, physAssembly.gender? 1f : 0f, Time.deltaTime);
+
+		Color genderColor = Color.Lerp(Color.magenta, Color.cyan, genderColorLerp);
 
 		if(mateColorLerp > 0f)
-			cubeTransform.renderer.material.color = Color.Lerp(nodeColor, Color.magenta, mateColorLerp * 0.7f);
+			cubeTransform.renderer.material.color = Color.Lerp(nodeColor, genderColor, mateColorLerp * 0.7f);
 		else
 			cubeTransform.renderer.material.color = nodeColor;
 
