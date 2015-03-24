@@ -35,6 +35,7 @@ public class Unique {
         return "";
     }
 
+#if UNITY_ANDRIOD
     private static string GetAndroidID()
     {
         AndroidJavaClass up = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
@@ -43,5 +44,5 @@ public class Unique {
         AndroidJavaClass secure = new AndroidJavaClass("android.provider.Settings$Secure");
         return secure.CallStatic<string>("getString", contentResolver, "android_id");
     }
-
+#endif
 }
