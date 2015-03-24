@@ -14,7 +14,7 @@ public class PhysNode {
 	int lastNeighborCount = 0;
 
 	PhysAssembly physAssembly = null;
-	public PhysAssembly PhysAssembly {get{return physAssembly;}}
+	public PhysAssembly PhysAssembly {get{return physAssembly;} set{physAssembly = value;}}
 
 	// Node attributes
 	Quaternion actionRotation = Random.rotation; // The genetic 'zero rotation' inherent to the node.
@@ -45,8 +45,8 @@ public class PhysNode {
 	float pushMult = Random.Range(0.5f, 2f);
 
 	// These store position/rotation to be updated after neighbor math is done.
-	Vector3 delayPosition = Vector3.zero;
-	Quaternion delayRotation = Quaternion.identity;
+	public Vector3 delayPosition = Vector3.zero;
+	public Quaternion delayRotation = Quaternion.identity;
 
 	float power = 0f;
 	float smoothedPower = 0f;
@@ -79,8 +79,26 @@ public class PhysNode {
 	public float senseDetectRange = 120f;
 	List<SenseActuateLink> senseActuateLinks = new List<SenseActuateLink>();
 
+	public float senseAttractRange = 30f;
+
 	Quaternion transformLastRot = Quaternion.identity; // For in-editor rotation.
 	Vector3 transformLastPos = Vector3.zero; // For in-editor rotation.
+
+	private static Octree<PhysNode> allSenseNodeTree;
+    public static Octree<PhysNode> AllSenseNodeTree{ 
+        get{
+            if(allSenseNodeTree == null){
+                allSenseNodeTree = new Octree<PhysNode>(new Bounds(Vector3.zero, 2.0f * PhysNodeController.Inst.WorldSize * Vector3.one), (PhysNode x) => x.position, 5);
+			}
+            return allSenseNodeTree;
+        }
+        set{
+            allSenseNodeTree = value;
+        }
+    }
+
+	Color nodeColor = Color.white;
+	float mateColorLerp = 0f;
 
 
 	public PhysNode(PhysAssembly physAssembly, Triplet localHexPos){
@@ -182,29 +200,55 @@ public class PhysNode {
 		if(neighbors.Count != lastNeighborCount){
 			lastNeighborCount = neighbors.Count;
 
+			if(lastNeighborCount == 2)
+				AllSenseNodeTree.Remove(this);
+
+			if(viewCone)
+				GameObject.Destroy(viewCone.gameObject);
+
+			if(trail)
+				GameObject.Destroy(trail.gameObject);
+
 			switch(neighbors.Count){
+			// Sense node.
 			case 1 : 
-				cubeTransform.renderer.material.color = PrefabManager.Inst.senseColor;
+				nodeColor = PrefabManager.Inst.senseColor;
 				Transform newViewConeTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.senseNodeBillboard, Position, Rotation) as Transform;
 				viewCone = newViewConeTrans;
 				break;
+			// Muscle node.
 			case 2 : 
-				cubeTransform.renderer.material.color = PrefabManager.Inst.actuateColor;
+				nodeColor = PrefabManager.Inst.actuateColor;
 				if((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2)){
 					Transform newTrailTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.motorNodeTrail, Position, Rotation) as Transform;
 					newTrailTrans.parent = cubeTransform;
 					trail = newTrailTrans.GetComponent<TimedTrailRenderer>();
 				}
+				AllSenseNodeTree.Insert(this);
 				break;
+			// Control node.
 			case 3 : 
-				cubeTransform.renderer.material.color = PrefabManager.Inst.controlColor;
+				nodeColor = PrefabManager.Inst.controlColor;
+				break;
+			default :
+				nodeColor = PrefabManager.Inst.stemColor;
 				break;
 			}
 		}
 
 
 		// Metabolism --------------------------------- //
-		physAssembly.energy -= PhysNodeController.physicsStep * 0.05f;
+		if(PhysAssembly != CameraControl.Inst.selectedPhyAssembly)
+			physAssembly.energy -= PhysNodeController.physicsStep * 0.05f;
+
+
+		mateColorLerp = Mathf.MoveTowards(mateColorLerp, physAssembly.wantToMate? 1f : 0f, Time.deltaTime);
+
+		if(mateColorLerp > 0f)
+			cubeTransform.renderer.material.color = Color.Lerp(nodeColor, Color.magenta, mateColorLerp * 0.7f);
+		else
+			cubeTransform.renderer.material.color = nodeColor;
+
 
 
 		// Reset power
@@ -235,11 +279,6 @@ public class PhysNode {
 			if(Random.Range(0f, 1f) < 0.2f)
 				someNeighbor.arrowDist = Random.Range(0.25f, 0.4f);
 
-
-		// Position error bandaid...
-		if(Position.x > 1000f || Position.y > 1000f || Position.z > 1000f)
-			physAssembly.Destroy();
-
 		// Type-specific behaviours
 		switch(neighbors.Count){
 			case 1 : 
@@ -259,8 +298,12 @@ public class PhysNode {
 				viewCone.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
 
 				//calling detect food on sense node, determines power of node
-				Bounds boundary = new Bounds(position, senseDetectRange * (new Vector3(1, 1, 1)));
-				PhysFood.AllFoodTree.RunActionInRange(new System.Action<PhysFood>(HandleDetectedFood), boundary);
+				Bounds foodDetectBoundary = new Bounds(position, senseDetectRange * (new Vector3(1, 1, 1)));
+				PhysFood.AllFoodTree.RunActionInRange(new System.Action<PhysFood>(HandleDetectedFood), foodDetectBoundary);
+
+				// Amalgamation attraction
+				//Bounds attractBoundary = new Bounds(position, senseAttractRange * (new Vector3(1, 1, 1)));
+				//PhysNode.AllSenseNodeTree.RunActionInRange(new System.Action<PhysNode>(HandleDetectedSenseNode), attractBoundary);
 
 				// Transmit signal!
 				foreach(SenseActuateLink someLink in senseActuateLinks){
@@ -298,14 +341,11 @@ public class PhysNode {
 		if(viewCone)
 			MonoBehaviour.Destroy(viewCone.gameObject);
 
-		if(trail){
+		if(trail)
 			trail.transform.parent = null;
-		}
 
 		cull = true;
 	} // End of OnDestroy().
-
-
 
 
 	// When a sense node calls this function, it will rebuild its energy transfer network.
@@ -345,6 +385,8 @@ public class PhysNode {
     private void HandleDetectedFood(PhysFood food){
 		Vector3 vectorToFood = food.worldPosition - position;
 		float distanceToFood = vectorToFood.magnitude;
+		if(distanceToFood > senseDetectRange)
+			return;
 
 		float angleToFood = Vector3.Angle(rotation * actionRotation * Vector3.forward, vectorToFood);
 		float strength = 1f - (distanceToFood / senseDetectRange);
@@ -352,37 +394,42 @@ public class PhysNode {
 		if(angleToFood < 45f){
 			power = 1f;
 			signalRotation = Quaternion.Inverse(rotation) * Quaternion.LookRotation(vectorToFood, rotation * Vector3.up);
-			GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
+			//GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 
-			float foodToPull = PhysNodeController.physicsStep * 1f;
+			float foodToPull = PhysNodeController.physicsStep * 0.1f;
 
 			food.energy -= foodToPull;
 			physAssembly.energy += foodToPull;
 		}
 		//else
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(1f, 1f, 1f, 0.25f * Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
-
 	} // End of HandleDetectedFood().
 
+	private void HandleDetectedSenseNode(PhysNode otherSenseNode){
+		// We don't care about nodes under our own assembly (this includes us!)
+		if(otherSenseNode.physAssembly == physAssembly || ((physAssembly.NodeDict.Values.Count + otherSenseNode.physAssembly.NodeDict.Values.Count) > PhysNodeController.assemStage1Size))
+			return;
 
-	/*
-	void OnGUI(){
-		if(Input.GetKey(KeyCode.T)){
-			Vector3 nodeScreenPos = Camera.main.WorldToScreenPoint(transform.position);
-			if((nodeScreenPos.z < 0f) || power.Equals(0f))
-				return;
+		Vector3 vectorToNode = otherSenseNode.position - position;
+		float distanceToNode = vectorToNode.magnitude;
+		if(distanceToNode > senseAttractRange)
+			return;
 
-			GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-			//GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.width * 0.009f);
-			GUI.skin.label.fontSize = 10;
-			GUI.skin.label.fontStyle = FontStyle.Bold;
-			GUI.color = Color.black;
-			GUI.Label(MathUtilities.CenteredSquare(nodeScreenPos.x, nodeScreenPos.y, 200f), power.ToString("F2"));
-			GUI.color = Color.yellow;
-			GUI.Label(MathUtilities.CenteredSquare(nodeScreenPos.x - 1f, nodeScreenPos.y + 1f, 200f), power.ToString("F2"));
+		// Merge these assemblies if they are close enough.
+		if(distanceToNode < 1f){
+			physAssembly.AmaglamateTo(otherSenseNode.PhysAssembly, otherSenseNode.localHexPos);
+			return;
 		}
-	} // End of OnGUI().
-	*/
+
+		float angleToNode = Vector3.Angle(rotation * actionRotation * Vector3.forward, vectorToNode);
+		float strength = 1f - (distanceToNode / senseAttractRange);
+
+		if(true){
+			delayPosition += vectorToNode * strength * 0.01f;
+		}
+		//else
+			//GLDebug.DrawLine(position, food.worldPosition, new Color(1f, 1f, 1f, 0.25f * Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
+	} // End of HandleDetectedFood().
 
 } // End of PhysNode.
 

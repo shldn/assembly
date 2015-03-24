@@ -18,7 +18,11 @@ public class PhysNodeController : MonoBehaviour {
 
 	public static float physicsStep = 0.05f;
 
-	int foodPellets = 100;
+	int foodPellets = 200;
+	public static int assemStage1Size = 20;
+
+	int minNodes = 3;
+	int maxNodes = 15;
 
 
 	void Awake(){
@@ -30,9 +34,7 @@ public class PhysNodeController : MonoBehaviour {
 		CameraControl.Inst.maxRadius = worldSize * 3f;
 
 		// Create random assemblies.
-		int numAssemblies = 500;
-		int minNodes = 3;
-		int maxNodes = 10;
+		int numAssemblies = 300;
 
 		for(int i = 0; i < numAssemblies; i++){
 			Vector3 assemblySpawnPos = Vector3.zero;
@@ -114,7 +116,10 @@ public class PhysNodeController : MonoBehaviour {
 		if(Input.GetKeyUp(KeyCode.Escape))
 			Application.Quit();
 
+		// Maintain octrees
 		PhysFood.AllFoodTree.Maintain();
+		PhysNode.AllSenseNodeTree.Maintain();
+		PhysAssembly.AllAssemblyTree.Maintain();
 
 		int cycleDir = Mathf.FloorToInt((Time.time * 0.2f) % 12);
 
@@ -162,6 +167,27 @@ public class PhysNodeController : MonoBehaviour {
 		}
 		print(Mathf.FloorToInt(Time.time % 12));
 		*/
+
+		// Keep the world populated
+		if(PhysNode.getAll.Count < 1000f){
+			Vector3 assemblySpawnPos = Random.insideUnitSphere * worldSize;
+
+			PhysAssembly newAssembly = new PhysAssembly(assemblySpawnPos, Quaternion.identity);
+
+			int numNodes = Random.Range(minNodes, maxNodes);
+			Triplet spawnHexPos = Triplet.zero;
+			while(numNodes > 0){
+				// Make sure no phys node is here currently.
+				if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
+					newAssembly.AddNode(spawnHexPos);
+					numNodes--;
+				}
+				spawnHexPos += HexUtilities.RandomAdjacent();
+			}
+
+			foreach(PhysNode someNode in newAssembly.NodeDict.Values)
+				someNode.ComputeEnergyNetwork();
+		}
 	} // End of Update().
 
 
