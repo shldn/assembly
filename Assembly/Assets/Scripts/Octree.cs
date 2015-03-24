@@ -250,4 +250,20 @@ public class Octree<T>{
     // Accessors
     public bool IsRoot { get { return parent == null; } }
     public bool IsLeaf { get { return children == null; } }
+
+    // This is in-efficient, it can be optimized if necessary.
+    // Returns the number of nodes stored in the entire octree - from the root.
+    public int Count { 
+        get {
+            Octree<T> root = GetRoot();
+            int count = root.nodes.Count;
+            LinkedListNode<Octree<T>> current = leaves.First;
+            while (current != null)
+            {
+                count += current.Value.nodes.Count;
+                current = current.Next;
+            }
+            return count; 
+        } 
+    }
 }
