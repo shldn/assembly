@@ -32,6 +32,11 @@ public class TestOctree {
             Debug.LogError("TestRemoveMovedElementFromLastSubTree failed");
         if (!TestSubdivingPointsAtSamePositionDoesntCauseStackOverflow())
             Debug.LogError("TestSubdivingPointsAtSamePositionDoesntCauseStackOverflow failed");
+        if (!TestCountWorksOnOutsideNodes())
+            Debug.LogError("TestCountWorksOnOutsideNodes failed");
+        if (!TestCountWorksWithSubTrees())
+            Debug.LogError("TestCountWorksWithSubTrees failed");
+        
 
 #if UNITY_EDITOR
         // Stop editor
@@ -176,5 +181,31 @@ public class TestOctree {
         List<TestClass> elems = new List<TestClass>();
         tree.GetElementsInRange(new Bounds(new Vector3(1, 1, 1), new Vector3(0.5f, 0.5f, 0.5f)), ref elems);
         return elems.Count == 4;
+    }
+
+    static private bool TestCountWorksOnOutsideNodes()
+    {
+        Bounds bounds = new Bounds(Vector3.zero, new Vector3(100, 100, 100));
+        Octree<TestClass> tree = new Octree<TestClass>(bounds, (TestClass x) => x.pos, 2);
+
+        tree.Insert(new TestClass(new Vector3(101, 1, 1)));
+        tree.Insert(new TestClass(new Vector3(1, 101, 1)));
+        tree.Insert(new TestClass(new Vector3(1, 1, 101)));
+        tree.Insert(new TestClass(new Vector3(1, 101, 101)));
+
+        return tree.Count == 4;
+    }
+
+    static private bool TestCountWorksWithSubTrees()
+    {
+        Bounds bounds = new Bounds(Vector3.zero, new Vector3(100, 100, 100));
+        Octree<TestClass> tree = new Octree<TestClass>(bounds, (TestClass x) => x.pos, 2);
+
+        tree.Insert(new TestClass(new Vector3(1, 1, 1)));
+        tree.Insert(new TestClass(new Vector3(1, 2, 1)));
+        tree.Insert(new TestClass(new Vector3(1, 3, 1)));
+        tree.Insert(new TestClass(new Vector3(1, 4, 1)));
+
+        return tree.Count == 4;
     }
 }
