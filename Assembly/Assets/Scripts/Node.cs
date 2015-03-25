@@ -383,6 +383,7 @@ public class Node {
 } // End of Node.
 
 
+/*
 public struct NodeProperties {
 
     // Sense
@@ -449,6 +450,8 @@ public struct NodeProperties {
     }
 
 } // End of NodeProperties.
+*/
+
 
 //burn rate for different types: none, sense, actuate- static, actuate- woring, control
 public static class BurnRate{

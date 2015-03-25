@@ -149,4 +149,23 @@ public class IOHelper
     {
         return v.x + "," + v.y + "," + v.z;
     }
+
+
+
+	// Overloads for PhysAssembly assets ----------------------------------------------------------------- //
+
+    public static string AssemblyToString(PhysAssembly assembly){
+        StringWriter sw = new StringWriter();
+        WriteAssemblyToStream(assembly, sw);
+        return sw.ToString();
+    } // End of AssemblyToString().
+
+	private static void WriteAssemblyToStream(PhysAssembly assembly, TextWriter stream){
+        stream.WriteLine(assemblyFileFormatVersion);
+        stream.WriteLine(assembly.name);
+        stream.WriteLine(assembly.WorldPosition);
+        foreach(PhysNode someNode in assembly.NodeDict.Values)
+            stream.WriteLine(someNode.ToFileString(assemblyFileFormatVersion));
+    } // End of WriteAssemblyToStream().
+
 }

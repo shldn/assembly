@@ -18,13 +18,13 @@ public class PhysNodeController : MonoBehaviour {
 
 	public static float physicsStep = 0.05f;
 
-	int foodPellets = 200;
+	int foodPellets = 100;
 	public static int assemStage1Size = 20;
 
 	int minNodes = 3;
 	int maxNodes = 15;
 
-	int worldNodeThreshold = 1500;
+	public int worldNodeThreshold = 1000;
 
 
 	void Awake(){
@@ -88,6 +88,11 @@ public class PhysNodeController : MonoBehaviour {
 
 		foreach(PhysNode someNode in PhysNode.getAll)
 			someNode.UpdateTransform();
+
+		while(PhysAssembly.newAssemblies.Count > 0){
+			PhysAssembly.getAll.Add(PhysAssembly.newAssemblies[0]);
+			PhysAssembly.newAssemblies.RemoveAt(0);
+		}
 
 		foreach(PhysAssembly someAssembly in PhysAssembly.getAll)
 			someAssembly.Update();
@@ -172,7 +177,7 @@ public class PhysNodeController : MonoBehaviour {
 		*/
 
 		// Keep the world populated
-		if(PhysNode.getAll.Count < worldNodeThreshold){
+		if(PhysNode.getAll.Count < worldNodeThreshold * 0.7f){
 			Vector3 assemblySpawnPos = Random.insideUnitSphere * worldSize;
 
 			PhysAssembly newAssembly = new PhysAssembly(assemblySpawnPos, Quaternion.identity);
@@ -280,5 +285,19 @@ public class PhysNodeController : MonoBehaviour {
 		}
 		return numAdjacencies;
 	} // End of GetNumAdjacencies().
+
+
+	void OnGUI(){
+
+		string infoString = "";
+		infoString += "Nodes: " + PhysNode.getAll.Count + "\n";
+		infoString += "Assemblies: " + PhysAssembly.getAll.Count + "\n";
+		infoString += "Framerate: " + (1f / Time.deltaTime).ToString("F1") + "\n";
+
+		GUI.skin.label.alignment = TextAnchor.UpperLeft;
+		GUI.skin.label.fontSize = 12;
+		GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), infoString);
+
+	} // End of OnGUI().
 
 } // End of PhysNodeController.

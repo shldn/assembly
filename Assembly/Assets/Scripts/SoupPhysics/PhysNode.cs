@@ -16,8 +16,8 @@ public class PhysNode {
 	PhysAssembly physAssembly = null;
 	public PhysAssembly PhysAssembly {get{return physAssembly;} set{physAssembly = value;}}
 
-	// Node attributes
-	Quaternion actionRotation = Random.rotation; // The genetic 'zero rotation' inherent to the node.
+    public NodeProperties nodeProperties = NodeProperties.random;
+
 	// The offset from actionRotation determined by incoming signal.
 	// For sense nodes, this is the rotation from the sense node to the most powerful food node source.
 	// For actuators, this rotation modifies the muscle output.
@@ -35,14 +35,7 @@ public class PhysNode {
 		public float arrowDist = 1f;
 	} // End of PhysNeighbor.
 
-	Vector3 rotationVector = Random.onUnitSphere;
-	float wigglePhase = Random.Range(1f, 10f);
-	float wiggleMaxAngVel = Random.Range(10f, 200f);
-
-	float flailMaxDeflection = Random.Range(10f, 80f);
 	Quaternion lastFlailOffset = Quaternion.identity; // For determining connection rotations.
-
-	float pushMult = Random.Range(0.5f, 2f);
 
 	// These store position/rotation to be updated after neighbor math is done.
 	public Vector3 delayPosition = Vector3.zero;
@@ -123,20 +116,20 @@ public class PhysNode {
 
 		//power = 1f;
 
-		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / wigglePhase)) * smoothedPower;
+		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / nodeProperties.oscillateFrequency)) * smoothedPower;
 		waveformRunner += PhysNodeController.physicsStep * power;
 		bool functioningMuscle = (neighbors.Count == 2) && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
 
 		// Torque
 		if(functioningMuscle){
-			delayRotation *= Quaternion.AngleAxis(wiggleMaxAngVel * wiggle * PhysNodeController.physicsStep * power, rotationVector);
-			delayRotation = Quaternion.RotateTowards(delayRotation, delayRotation * signalRotation, wiggleMaxAngVel * PhysNodeController.physicsStep * power);
+			delayRotation *= Quaternion.AngleAxis(nodeProperties.torqueStrength * wiggle * PhysNodeController.physicsStep * power, nodeProperties.torqueAxis);
+			delayRotation = Quaternion.RotateTowards(delayRotation, delayRotation * signalRotation, nodeProperties.torqueStrength * PhysNodeController.physicsStep * power);
 		}
 
 		Quaternion flailOffset = Quaternion.identity;
 		// -- Comment out to remove 'flailing'
 		if(functioningMuscle)
-			flailOffset = Quaternion.Euler(rotationVector * wiggle * flailMaxDeflection);
+			flailOffset = Quaternion.Euler(nodeProperties.torqueAxis * wiggle * nodeProperties.flailMaxAngle);
 
 		//Quaternion ΔFlailOffset = Quaternion.Inverse(flailOffset) * lastFlailOffset;
 		//lastFlailOffset = flailOffset;
@@ -160,41 +153,11 @@ public class PhysNode {
 			
 			// Muscle propulsion
 			if(functioningMuscle){
-				Vector3 propulsion = (Rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * PhysNodeController.physicsStep * (1f - Mathf.Abs(wiggle)) * power;
+				Vector3 propulsion = (Rotation * curNeighbor.dir) * -Vector3.forward * (nodeProperties.flailMaxAngle / (1f + Mathf.Pow(nodeProperties.oscillateFrequency, 2f))) * PhysNodeController.physicsStep * (1f - Mathf.Abs(wiggle)) * power;
 				delayPosition += propulsion;
 			}
 
-			/*
-			float updateLerpBias = 2f;
-			if((neighbors.Count == 2) && (curNeighborNode.neighbors.Count != 2)){
-				// Trace motor nodes' neighbors and relative rotations.
-				Debug.DrawLine(Position, Position + (Rotation * curNeighbor.dir * Vector3.forward), Color.cyan);
-				Debug.DrawLine(Position, Position + (Rotation * curNeighbor.dir * flailOffset * Vector3.forward), Color.blue);
-
-				if(i == 0){
-					delayRotation *= Quaternion.Inverse(Rotation) * Quaternion.Lerp(Rotation, curNeighborNode.Rotation * Quaternion.Inverse(flailOffset), updateLerpBias * power);
-					curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.Rotation) * Quaternion.Lerp(curNeighborNode.Rotation, Rotation * flailOffset, updateLerpBias * power);
-				}
-				if(i == 1){
-					delayRotation *= Quaternion.Inverse(Rotation) * Quaternion.Lerp(Rotation, curNeighborNode.Rotation * flailOffset, updateLerpBias * power);
-					curNeighborNode.delayRotation *= Quaternion.Inverse(curNeighborNode.Rotation) * Quaternion.Lerp(curNeighborNode.Rotation, Rotation * Quaternion.Inverse(flailOffset), updateLerpBias * power);
-				}
-
-				// Muscle propulsion
-				Vector3 propulsion = (Rotation * curNeighbor.dir) * -Vector3.forward * (flailMaxDeflection / (1f + Mathf.Pow(wigglePhase, 2f))) * PhysNodeController.physicsStep * (1f - Mathf.Abs(wiggle)) * power;
-				
-				delayPosition += propulsion;
-				Debug.DrawRay(Position, propulsion * 6f, Color.red);
-			}
-			// Inert nodes simply try to torque to match their neighbors.
-			else if((curNeighborNode.neighbors.Count != 2) || ((neighbors.Count == 2) && (curNeighborNode.neighbors.Count == 2))){
-				delayRotation = Quaternion.Lerp(delayRotation, curNeighborNode.Rotation, updateLerpBias);
-				curNeighborNode.delayRotation = Quaternion.Lerp(curNeighborNode.Rotation, delayRotation, updateLerpBias);
-			}
-
-			//GLDebug.DrawLine(position, curNeighborNode.position, cubeTransform.renderer.material.color, 0, false);
-			*/
-			GLDebug.DrawLine(position, curNeighborNode.position, new Color(1f, 1f, 1f, 0.1f), 0, false);
+			GLDebug.DrawLine(position, curNeighborNode.position, Color.Lerp(cubeTransform.renderer.material.color, curNeighborNode.cubeTransform.renderer.material.color, 0.5f), 0, false);
 		}
 		
 		// Update node type?
@@ -287,13 +250,13 @@ public class PhysNode {
 		switch(neighbors.Count){
 			case 1 : 
 				float viewConeSize = 2.5f;
-				Debug.DrawRay(Position, (Rotation * actionRotation * Vector3.forward) * 2f, Color.green);
+				Debug.DrawRay(Position, (Rotation * nodeProperties.senseVector * Vector3.forward) * 2f, Color.green);
 
-				viewCone.position = Position + (actionRotation * (Rotation * Vector3.forward)) * viewConeSize;
+				viewCone.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
 				viewCone.localScale = Vector3.one * viewConeSize;
 
 				// Billboard the arc with the main camera.
-				viewCone.rotation = Rotation * actionRotation;
+				viewCone.rotation = Rotation * nodeProperties.senseVector;
 				viewCone.position = Position + (viewCone.rotation * (Vector3.forward * viewConeSize * 0.5f));
 				viewCone.rotation *= Quaternion.AngleAxis(-90, Vector3.up);
 
@@ -392,7 +355,7 @@ public class PhysNode {
 		if(distanceToFood > senseDetectRange)
 			return;
 
-		float angleToFood = Vector3.Angle(rotation * actionRotation * Vector3.forward, vectorToFood);
+		float angleToFood = Vector3.Angle(rotation * nodeProperties.senseVector * Vector3.forward, vectorToFood);
 		float strength = 1f - (distanceToFood / senseDetectRange);
 
 		if(angleToFood < 45f){
@@ -425,7 +388,7 @@ public class PhysNode {
 			return;
 		}
 
-		float angleToNode = Vector3.Angle(rotation * actionRotation * Vector3.forward, vectorToNode);
+		float angleToNode = Vector3.Angle(rotation * nodeProperties.senseVector * Vector3.forward, vectorToNode);
 		float strength = 1f - (distanceToNode / senseAttractRange);
 
 		if(true){
@@ -434,6 +397,20 @@ public class PhysNode {
 		//else
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(1f, 1f, 1f, 0.25f * Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 	} // End of HandleDetectedFood().
+
+
+	// Save/load -------------------------------------------------------------------------||
+    // The string representation of this class for file saving (could use ToString, but want to be explicit)
+    public string ToFileString(int format){
+        return localHexPos.ToString() + nodeProperties.ToString();
+    } // End of ToFileString().
+
+    public static Node FromString(string str, int format=1){
+        int splitIdx = str.IndexOf(')');
+        Triplet pos = IOHelper.TripletFromString(str.Substring(0,splitIdx+1));
+        NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
+        return new Node(pos, props);
+    } // End of FromString().
 
 } // End of PhysNode.
 
@@ -450,3 +427,109 @@ public class SenseActuateLink {
 	} // End of constructor.
 
 } // End of SenseActuateLink.
+
+
+public struct NodeProperties {
+
+    // Sense
+    public Quaternion senseVector;
+    public float fieldOfView;
+    public float muscleStrength;
+
+	public Vector3 torqueAxis;
+	public float oscillateFrequency;
+	public float torqueStrength;
+	public float flailMaxAngle;
+
+    // Actuate
+    public Quaternion actuateVector;
+
+    // A fully randomly-seeded NodeProperties.
+    public static NodeProperties random{
+        get{
+            return new NodeProperties(Random.rotation, 45f, Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
+        }
+    } // End of NodeProperties.random.
+
+
+    // Constructor
+    public NodeProperties(Quaternion senseVector, float fieldOfView, Quaternion actuateVector, float muscleStrength, Vector3 torqueAxis, float wigglePhase, float torqueStrength, float flailMaxAngle){
+        this.senseVector = senseVector;
+        this.fieldOfView = fieldOfView;
+        this.actuateVector = actuateVector;
+        this.muscleStrength = muscleStrength;
+
+		this.torqueAxis = torqueAxis;
+		this.oscillateFrequency= wigglePhase;
+		this.torqueStrength = torqueStrength;
+		this.flailMaxAngle = flailMaxAngle;
+    } // End of NodeProperties constructor.
+
+
+    public NodeProperties(string str){
+
+        senseVector = Quaternion.identity;
+        fieldOfView = 45.0f;
+        muscleStrength = 1.0f;
+        actuateVector = Quaternion.identity;
+
+		torqueAxis = Vector3.forward;
+		oscillateFrequency = 5f;
+		torqueStrength = 100f;
+		flailMaxAngle = 45f;
+
+        string[] tok = str.Split(';');
+        for(int i=0; i < tok.Length; ++i){
+            string[] pair = tok[i].Split(':');
+            switch(pair[0]){
+                case "sv":
+                    senseVector = IOHelper.QuaternionFromString(pair[1]);
+                    break;
+                case "av":
+                    actuateVector = IOHelper.QuaternionFromString(pair[1]);
+                    break;
+                case "fov":
+                    if(!float.TryParse(pair[1], out fieldOfView))
+                        Debug.LogError("fov failed to parse");
+                    break;
+                case "m":
+                    if (!float.TryParse(pair[1], out muscleStrength))
+                        Debug.LogError("muscleStrength failed to parse");
+                    break;
+
+				case "ta":
+                    torqueAxis = IOHelper.Vector3FromString(pair[1]);
+                    break;
+				case "of":
+                    if (!float.TryParse(pair[1], out oscillateFrequency))
+                        Debug.LogError("oscillateFrequency failed to parse");
+                    break;
+				case "ts":
+                    if (!float.TryParse(pair[1], out torqueStrength))
+                        Debug.LogError("torqueStrength failed to parse");
+                    break;
+				case "fma":
+                    if (!float.TryParse(pair[1], out flailMaxAngle))
+                        Debug.LogError("flailMaxAngle failed to parse");
+                    break;
+                default:
+                    Debug.LogError("Unknown property: " + pair[0]);
+                    break;
+            }
+        }
+    } // End of NodeProperties constructor.
+
+
+    public override string ToString(){
+        return  "sv" + ":" + senseVector.ToString() + ";" +
+                "av" + ":" + actuateVector.ToString() + ";" +
+                "fov" + ":" + fieldOfView.ToString() + ";" +
+                "m" + ":" + muscleStrength.ToString() + ";" +
+
+				"ta" + ":" + torqueAxis.ToString() + ";" +
+				"of" + ":" + oscillateFrequency.ToString() + ";" +
+				"ts" + ":" + torqueStrength.ToString() + ";" +
+				"fma" + ":" + flailMaxAngle.ToString();
+    } // End of ToString().
+
+} // End of NodeProperties.

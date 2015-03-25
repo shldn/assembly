@@ -8,6 +8,11 @@ public class PhysAssembly {
 	public static HashSet<PhysAssembly> getAll {get{return all;}}
 	public static implicit operator bool(PhysAssembly exists){return exists != null;}
 
+	// New assemblies go in here so we can add them to 'all' while not iterating over it.
+	public static List<PhysAssembly> newAssemblies = new List<PhysAssembly>();
+
+	public string name = "Some Unimportant Assembly";
+
 	Dictionary<Triplet, PhysNode> nodeDict = new Dictionary<Triplet, PhysNode>();
 	public Dictionary<Triplet, PhysNode> NodeDict {get{return nodeDict;}}
 	PhysNode[] myNodesIndexed = new PhysNode[0];
@@ -56,13 +61,14 @@ public class PhysAssembly {
 		this.spawnPosition = spawnPosition;
 		this.spawnRotation = spawnRotation;
 		gender = Random.Range(0f, 1f) > 0.5f;
-		all.Add(this);
+		newAssemblies.Add(this);
 		AllAssemblyTree.Insert(this);
 	} // End of PhysAssembly().
 
 
-	public void AddNode(Triplet nodePos){
+	public void AddNode(Triplet nodePos, NodeProperties? nodeProps = null){
 		PhysNode newPhysNode = new PhysNode(this, nodePos);
+		newPhysNode.nodeProperties = nodeProps ?? NodeProperties.random;
 		nodeDict.Add(nodePos, newPhysNode);
 
 		// Assign neighbors.
@@ -94,12 +100,26 @@ public class PhysAssembly {
 		float maxEnergy = nodeDict.Values.Count * 2f;
 		energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
-		if(energy > (maxEnergy * 0.9f))
+		if((PhysNode.getAll.Count < PhysNodeController.Inst.worldNodeThreshold * 0.9f) && (energy > (maxEnergy * 0.9f)))
 			wantToMate = true;
-		//else if(energy < maxEnergy * 0.5f)
-		//	wantToMate = false;
+		else if((PhysNode.getAll.Count > (PhysNodeController.Inst.worldNodeThreshold * 0.8f)) || (energy < maxEnergy * 0.5f)){
+			wantToMate = false;
+			mateCompletion = 0f;
 
-		//calling detect food on sense node, determines power of node
+			if(matingWith){
+				matingWith.matingWith = null;
+				matingWith.wantToMate = false;
+				matingWith.mateCompletion = 0f;
+				matingWith.energy *= 0.5f;
+
+				matingWith = null;
+				wantToMate = false;
+				mateCompletion = 0f;
+				energy *= 0.5f;
+			}
+		}
+
+		// We won't want to mate if our population cap has been reached.
 		if(wantToMate && !matingWith){
 			Bounds mateAttractBoundary = new Bounds(WorldPosition, mateAttractDist * (new Vector3(1, 1, 1)));
 			allAssemblyTree.RunActionInRange(new System.Action<PhysAssembly>(HandleFindMate), mateAttractBoundary);
