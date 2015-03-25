@@ -25,6 +25,7 @@ public class PhysFood {
     }
 
 	public float energy = 100f;
+	float maxEnergy = 100f;
 	public bool cull = false;
 
 
@@ -35,10 +36,14 @@ public class PhysFood {
 
 		all.Add(this);
 		AllFoodTree.Insert(this);
+
+		maxEnergy = energy;
 	} // constructor
 
 
 	public void Update(){
+		transform.localScale = Vector3.one * (energy / maxEnergy);
+
 		if(energy < 0f)
 			cull = true;
 	} // End of Update().
@@ -51,6 +56,8 @@ public class PhysFood {
                 Debug.LogError("Failed to remove Food Node: " + worldPosition.ToString());
         }
         Object.Destroy(transform.gameObject);
+
+		new PhysFood(Random.insideUnitSphere * PhysNodeController.Inst.WorldSize);
     }
 
 } // PhysFood
