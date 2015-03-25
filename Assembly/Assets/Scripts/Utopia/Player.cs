@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class Player {
 
-    private static string[] playerModelNames = { "Avatars/box_man", "Avatars/ribbon_man" };
+    private static string[] playerModelNames = { "Avatars/box_man", "Avatars/ribbon_man", "Avatars/chain_man" };
 
     // Boolean 'exists' comparison; replaces "!= null".
     public static implicit operator bool(Player exists){
