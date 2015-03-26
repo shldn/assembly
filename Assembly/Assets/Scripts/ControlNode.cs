@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿/*
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -51,7 +52,6 @@ public class ControlNode : Node {
     } // End of Process().
 
     // Returns true is this node could possibly send data to a muscle node.
-    /*
     public bool LogicCheck(){
 
         // Do whatever
@@ -66,5 +66,5 @@ public class ControlNode : Node {
         signalLock = false;
         return activeLogic;
     } // End of logicCheck().
-    */
 } // End of ControlNode.
+*/

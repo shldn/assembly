@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿/*
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -89,14 +90,12 @@ public class GameManager : MonoBehaviour {
             while(FoodPellet.GetAll().Count < FoodPellet.MAX_FOOD){
                 Vector3 newFoodPos = Vector3.zero;
 
-                /*
                 // Cool spiral
                 float spiralDensity = 0.05f;
                 float foodSpread = 300f;
                 float xPos = UnityEngine.Random.Range(0f, UnityEngine.Random.Range(-foodSpread, foodSpread));
                 float spiralSize = 50f * (1f + (Mathf.Abs(xPos) * 0.01f));
                 newFoodPos = new Vector3(Mathf.Cos(xPos * spiralDensity) * spiralSize, xPos, Mathf.Sin(xPos * spiralDensity) * spiralSize);
-                */
 
                 newFoodPos = UnityEngine.Random.insideUnitSphere * worldSize;
                 FoodPellet newPellet = FoodPellet.AddNewFoodPellet(newFoodPos);
@@ -145,7 +144,6 @@ public class GameManager : MonoBehaviour {
             Assembly.GetAll()[i].Update();
 
             // User input -------------------------------------
-            /*
             // Mutate nodes.
             if(Input.GetKeyDown(KeyCode.B)){
                 for(int j = 0; j < Assembly.GetAll()[i].nodes.Count; j++){
@@ -174,7 +172,6 @@ public class GameManager : MonoBehaviour {
             if(Input.GetKey(KeyCode.Return))
                 Assembly.GetAll()[i].Mutate(0.01f);
             // ------------------------------------------------
-            */
         }
         
         // Update nodes.
@@ -417,7 +414,6 @@ public class GameManager : MonoBehaviour {
             controlGuiRect.y += guiHeight;
             SenseNode.consumeRate = GUI.HorizontalSlider(controlGuiRect, SenseNode.consumeRate, 5F, 20F);
             controlGuiRect.y += guiHeight;
-            */
         }
 
 
@@ -480,7 +476,6 @@ public class GameManager : MonoBehaviour {
             }
             
         }
-        */
 
 
         // Information readout
@@ -517,3 +512,4 @@ public class GameManager : MonoBehaviour {
     }
 
 }
+*/

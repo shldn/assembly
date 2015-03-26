@@ -29,7 +29,7 @@ public class CaptureEditorManager {
                 if (capturedObjImpl as Jellyfish){
                     captureTypeImpl = CaptureType.JELLYFISH;
                 }
-                else if (capturedObjImpl as Assembly){
+                else if (capturedObjImpl as PhysAssembly){
                     captureTypeImpl = CaptureType.ASSEMBLY;
                 }
                 if (captureTypeImpl != CaptureType.NONE){
@@ -46,7 +46,7 @@ public class CaptureEditorManager {
             capturedObj.Destroy();
 
             CameraControl.Inst.selectedJellyfish = null;
-            CameraControl.Inst.selectedAssembly = null;
+            CameraControl.Inst.selectedPhysAssembly = null;
             CameraControl.Inst.selectedNode = null;
             CameraControl.Inst.targetRadius = 100f;
 

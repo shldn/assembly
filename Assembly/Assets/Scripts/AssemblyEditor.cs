@@ -9,8 +9,8 @@ public class AssemblyEditor : MonoBehaviour {
     public GuiKnob densityKnob = null;
     public GuiKnob speedKnob = null;
 
-    private Assembly capturedAssembly = null;
-    public Node selectedNode = null;
+    private PhysAssembly capturedAssembly = null;
+    public PhysNode selectedNode = null;
 
     public bool uiLockout {get{return burnRateKnob.clicked || densityKnob.clicked || speedKnob.clicked;}}
 
@@ -30,11 +30,11 @@ public class AssemblyEditor : MonoBehaviour {
         if (capturedAssembly)
         {
             // Update assembly.
-            capturedAssembly.Update();
+            //capturedAssembly.Update();
 
             // Update nodes.
-            for (int i = 0; i < Node.GetAll().Count; ++i)
-                Node.GetAll()[i].Update();
+            //for (int i = 0; i < Node.GetAll().Count; ++i)
+                //Node.GetAll()[i].Update();
 
         }
     }
@@ -42,12 +42,12 @@ public class AssemblyEditor : MonoBehaviour {
     {
         if (capturedAssembly)
         {
-            capturedAssembly.physicsObject.transform.position = Vector3.zero;
+            //capturedAssembly.WorldPosition = Vector3.zero;
 
             burnRateKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) - 240f);
             burnRateKnob.scale = 2f;
             burnRateKnob.Draw();
-            capturedAssembly.energyBurnRate = burnRateKnob.Value;
+            //capturedAssembly.energyBurnRate = burnRateKnob.Value;
 
             densityKnob.pxlPos = new Vector2(Screen.width - 120f, Screen.height * 0.5f);
             densityKnob.scale = 2f;
@@ -65,7 +65,7 @@ public class AssemblyEditor : MonoBehaviour {
             GUILayout.BeginArea(controlBarRect);
             if (GUILayout.Button("Done", GUILayout.Height(Screen.height / 8f)))
             {
-                Assembly a = CaptureEditorManager.capturedObj as Assembly;
+                PhysAssembly a = CaptureEditorManager.capturedObj as PhysAssembly;
                 Network.SetSendingEnabled(0, true);
                 CaptureNet_Manager.myNetworkView.RPC("PushAssembly", RPCMode.Server, a.ToFileString());
                 Network.SetSendingEnabled(0, false);
@@ -78,11 +78,11 @@ public class AssemblyEditor : MonoBehaviour {
 
     public void HandleObjectCaptured(object sender, System.EventArgs args)
     {
-        capturedAssembly = CaptureEditorManager.capturedObj as Assembly;
+        capturedAssembly = CaptureEditorManager.capturedObj as PhysAssembly;
         if (!capturedAssembly)
             return;
 
-        burnRateKnob.Value = capturedAssembly.energyBurnRate;
+        //burnRateKnob.Value = capturedAssembly.energyBurnRate;
     }
 
     public void Cleanup()

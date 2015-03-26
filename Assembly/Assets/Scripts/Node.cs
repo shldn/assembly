@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿/*
+ * using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -127,20 +128,16 @@ public class Node {
 
     public virtual void Update(){
 
-        /*
         if(!junkObject){
             int rand = Random.Range(0, RandomJunk.Inst.junkObjects.Length);
             GameObject junkPrefab = RandomJunk.Inst.junkObjects[rand];
             junkObject = GameObject.Instantiate(junkPrefab, worldPosition, worldRotation) as GameObject;
             junkObject.transform.parent = gameObject.transform;
         }
-        */
 
 
-        /*
         if(!activeLogic)
             gameObject.renderer.material.color = Color.Lerp(baseColor, new Color(0.2f, 0.2f, 0.2f), 0.9f);
-        */
 
         // Destroy Node if it's dead and has reached the end of it's DisappearRate timer.
         if(doomed){
@@ -383,7 +380,6 @@ public class Node {
 } // End of Node.
 
 
-/*
 public struct NodeProperties {
 
     // Sense
@@ -450,7 +446,6 @@ public struct NodeProperties {
     }
 
 } // End of NodeProperties.
-*/
 
 
 //burn rate for different types: none, sense, actuate- static, actuate- woring, control
@@ -463,3 +458,4 @@ public static class BurnRate{
     public static float senseValid = 0.03f;
     public static float controlValid = 0.1f;
 } // End of BurnRate
+*/

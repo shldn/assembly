@@ -39,10 +39,9 @@ public class CameraControl : MonoBehaviour {
 
     // Object selections
     public Jellyfish selectedJellyfish = null;
-    public Assembly selectedAssembly = null;
-    public Node selectedNode = null;
+    public PhysNode selectedNode = null;
 
-    public PhysAssembly selectedPhyAssembly = null;
+    public PhysAssembly selectedPhysAssembly = null;
 	public PhysAssembly hoveredPhysAssembly = null;
 
 
@@ -85,24 +84,14 @@ public class CameraControl : MonoBehaviour {
             selectedJellyfish = Jellyfish.all[0];
             center = Jellyfish.all[0].transform.position;
         }
-        // Assembly client
-        else if(PersistentGameManager.IsClient && (Assembly.GetAll().Count > 0) && Assembly.GetAll()[0]){
-            selectedAssembly = Assembly.GetAll()[0];
-            if(selectedNode)
-                center = selectedNode.gameObject.transform.position;
-            else
-                center = selectedAssembly.WorldPosition;
-        }
         // Grotto
-        else if(selectedJellyfish)
+        if(selectedJellyfish)
             center = selectedJellyfish.transform.position;
         // Assembly soup
         else if(selectedNode)
-            center = selectedNode.gameObject.transform.position;
-        else if(selectedAssembly)
-            center = selectedAssembly.WorldPosition;
-		else if(selectedPhyAssembly)
-			center = selectedPhyAssembly.WorldPosition;
+            center = selectedNode.Position;
+        else if(selectedPhysAssembly)
+			center = selectedPhysAssembly.Position;
 		
         else
             center = Vector3.zero;
@@ -169,68 +158,22 @@ public class CameraControl : MonoBehaviour {
             RaycastHit selectRay = new RaycastHit();
 
             // We have an assembly selected -- try to select a node within it.
-			bool selectedSomething = false;
-			if(Input.GetMouseButtonDown(0)){
-				if(selectedAssembly){
-					int objectsMask = 1 << LayerMask.NameToLayer("Nodes");
-					if(Physics.Raycast(selectionRay, out selectRay, 1000f, objectsMask)){
-						Node rayHitNode = null;
-						for(int i = 0; i < Node.GetAll().Count; i++){
-							Node curNode = Node.GetAll()[i];
-							if((selectRay.transform.gameObject == curNode.gameObject) && (curNode.assembly == selectedAssembly)){
-								rayHitNode = curNode;
-								break;
-							}
-						}
-						if(rayHitNode){
-							print("Hit node!");
-							if(rayHitNode.assembly == selectedAssembly){
-								selectedNode = rayHitNode;
-								centerOffset = center - selectedNode.worldPosition;
-								selectedSomething = true;
-							}
-						}
-					}
-				}
-            
-				// No selected assembly, so we're looking for those.
-				if(!selectedSomething){
-					int objectsMask = 1 << LayerMask.NameToLayer("Assemblies");
-					if(Physics.Raycast(selectionRay, out selectRay, 1000f, objectsMask)){
-						Assembly rayHitAssembly = null;
-						for(int i = 0; i < Assembly.GetAll().Count; i++){
-							Assembly curAssem = Assembly.GetAll()[i];
-							if((selectRay.transform.gameObject == curAssem.physicsObject) && (curAssem != selectedAssembly)){
-								rayHitAssembly = curAssem;
-							}
-						}
-						if(rayHitAssembly && (rayHitAssembly != selectedAssembly)){
-							// Select new assembly.
-							selectedAssembly = rayHitAssembly;
-							centerOffset = center - selectedAssembly.WorldPosition;
-							targetRadius = 20f;
-							selectedSomething = true;
-						}
-					}
-				}
-			}
 
 			hoveredPhysAssembly = null;
-			if(!selectedSomething){
-				if(Physics.Raycast(selectionRay, out selectRay, 1000f)){
-					GameObject hitObject = selectRay.transform.gameObject;
-					foreach(PhysNode somePhysNode in PhysNode.getAll){
-						if(hitObject.transform == somePhysNode.cubeTransform){
-							hoveredPhysAssembly = somePhysNode.PhysAssembly;
-							if(Input.GetMouseButton(0))
-								selectedPhyAssembly = hoveredPhysAssembly;
-							break;
-						}
+			if(Physics.Raycast(selectionRay, out selectRay, 1000f)){
+				GameObject hitObject = selectRay.transform.gameObject;
+				foreach(PhysNode somePhysNode in PhysNode.getAll){
+					if(hitObject.transform == somePhysNode.cubeTransform){
+						hoveredPhysAssembly = somePhysNode.PhysAssembly;
+						if(Input.GetMouseButton(0))
+							selectedPhysAssembly = hoveredPhysAssembly;
+						break;
 					}
 				}
 			}
         }
 
+		/*
         if(Input.GetKeyDown(KeyCode.Return)){
             if(selectedNode){
                 selectedNode = null;
@@ -242,6 +185,7 @@ public class CameraControl : MonoBehaviour {
                 targetRadius = maxRadius;
             }
         }
+		*/
 
 	} // End of Update().
 

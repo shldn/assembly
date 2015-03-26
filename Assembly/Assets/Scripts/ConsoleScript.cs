@@ -69,7 +69,7 @@ public class ConsoleScript : MonoBehaviour {
 
         commands["clear"].func = delegate(string[] args)
         {
-            GameManager.ClearAll();
+            //GameManager.ClearAll();
         };
 
         commands["disband"].func = delegate(string[] args)

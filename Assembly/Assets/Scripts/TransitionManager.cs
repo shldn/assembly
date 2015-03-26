@@ -62,10 +62,12 @@ public class TransitionManager : MonoBehaviour {
                 CameraControl.Inst.radius = 0f;
                 CameraControl.Inst.targetRadius = CameraControl.Inst.maxRadius;
             }
+
+			/*
             if(GameManager.Inst){
                 CameraControl.Inst.radius = 1000f;
 				CameraControl.Inst.targetRadius = 200f;
-            }
+            }*/
 
 
             transitionType = TransitionType.fadeIn;
@@ -116,10 +118,11 @@ public class TransitionManager : MonoBehaviour {
                 CameraControl.Inst.targetRadius = 0f;
                 CameraControl.Inst.smoothTime = 0.3f;
             }
+			/*
             else if(GameManager.Inst){
                 CameraControl.Inst.targetRadius = CameraControl.Inst.radius + 500f;
                 CameraControl.Inst.maxRadius = CameraControl.Inst.targetRadius;
-            }
+            }*/
 
             fadeAlpha = Mathf.SmoothDamp(fadeAlpha, 1f, ref fadeVel, fadeOutTime);
             fadeAlpha = Mathf.MoveTowards(fadeAlpha, 1f, 0.1f * Time.deltaTime);

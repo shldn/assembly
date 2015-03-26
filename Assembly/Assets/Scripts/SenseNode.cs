@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿/*
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -207,3 +208,4 @@ public class SenseNode : Node {
 
     } // End of Consume().
 } // End of SenseNode.
+*/

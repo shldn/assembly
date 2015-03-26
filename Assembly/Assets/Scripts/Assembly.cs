@@ -1,17 +1,19 @@
-﻿using UnityEngine;
+﻿/*
+
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
 public class Assembly : CaptureObject {
 
-    /* all nodes in assembly --------------------------------------*/
+    // all nodes in assembly -------------------------------------- //
     public static List<Assembly> allAssemblies = new List<Assembly>();
     public static List<Assembly> GetAll() { return allAssemblies; }
 
     public bool hasFunctioningNodes = false;
     int numFramesAlive = 0;
 
-    /* destroying assemblies and nodes -----------------------------*/
+    // destroying assemblies and nodes ----------------------------- //
     //stores assemblies to be deleted for the frame update
     //public static List<Assembly> destroyAssemblies = new List<Assembly>();
     //public static List<Assembly> assembliesToDestroy = new List<Assembly>();
@@ -72,7 +74,7 @@ public class Assembly : CaptureObject {
     Assembly structureFriend = null;
 
 
-    /* energy --------------------------------------------------- */
+    // energy --------------------------------------------------- //
     public float currentEnergy = 0; //should be sum of nodes
     public float energyBurnRate = 0; //rate asm burn energy
     public bool  needBurnRateUpdate = true;
@@ -121,7 +123,7 @@ public class Assembly : CaptureObject {
 
 
     public Assembly(string str, bool isFilePath = false){
-         List<Node> newNodes = new List<Node>();
+         List<PhysNode> newNodes = new List<PhysNode>();
          Vector3 worldPos = new Vector3();
          if (isFilePath)
              IOHelper.LoadAssemblyFromFile(str, ref name, ref worldPos, ref newNodes);
@@ -131,7 +133,7 @@ public class Assembly : CaptureObject {
          // ordering a little tricky at the moment, multiple interdependencies
          InitPhysicsObject();
          WorldPosition = worldPos;
-         AddNodes(newNodes);
+         //AddNodes(newNodes);
          RecomputeRigidbody();
          PersistentGameManager.CaptureObjects.Add(this);
          allAssemblies.Add(this);
@@ -223,20 +225,16 @@ public class Assembly : CaptureObject {
             physicsObject.rigidbody.mass = 1f;
             physicsObject.rigidbody.inertiaTensor = Vector3.one;
         }
-        /*
         Vector3 centerOfMass = Vector3.zero;
         for(int i = 0; i < nodes.Count; i++){
             centerOfMass += nodes[i].worldPosition;
         }
         centerOfMass /= (float)nodes.Count;
-        */
 
-        /*
         if(nodes.Count > 0){
             physicsObject.rigidbody.centerOfMass = physicsObject.transform.InverseTransformPoint(centerOfMass);
             physicsObject.rigidbody.inertiaTensor = Vector3.one * nodes.Count * 30f;
         }
-        */
 
         if (showMesh)
             ApplyConvexMeshToPhysicsObject();
@@ -281,14 +279,14 @@ public class Assembly : CaptureObject {
     }
 
     public void Save(){
-        string path = "./data/" + name + ".txt";
-        Save(path);
+        //string path = "./data/" + name + ".txt";
+        //Save(path);
     } // End of Save().
 
 
     public void Save(string path){
-        ConsoleScript.Inst.WriteToLog("Saving " + path);
-        IOHelper.SaveAssembly(path, this);
+        //ConsoleScript.Inst.WriteToLog("Saving " + path);
+        //IOHelper.SaveAssembly(path, this);
     } // End of Save().
 
 
@@ -342,14 +340,12 @@ public class Assembly : CaptureObject {
         }
 
 
-        /*
         // Useless assemblies should be immediately deleted.
         if((numFramesAlive > 1) && REFACTOR_IF_INERT && !hasFunctioningNodes){
             Destroy();
             GameManager.Inst.SeedNewRandomAssembly();
             return;
         }
-        */
 
         if(needRigidbodyUpdate && (numFramesAlive > 1)){
             RecomputeRigidbody();
@@ -379,7 +375,6 @@ public class Assembly : CaptureObject {
             Health = Mathf.Clamp(Health, 0f, 2f) * 0.5f;
         }
 
-        /*
         if(!targetMate && !gentlemanCaller && (Random.Range(0f, 1f) <= 0.001)){
             //Find closest assembly
             float distToClosest = 9999f;
@@ -405,9 +400,7 @@ public class Assembly : CaptureObject {
                 targetMate.gentlemanCaller = this;
             }
         }
-        */
          
-        /*
         if(targetMate){
         
             if(physicsObject)
@@ -433,9 +426,7 @@ public class Assembly : CaptureObject {
                 RandomMelody.Inst.PlayNote();
             }
         }
-        */
 
-        /*
         float friendDist = 50f;
         float friendMargin = 1f;
         float friendForce = 10f;
@@ -457,7 +448,6 @@ public class Assembly : CaptureObject {
                     physicsObject.rigidbody.AddForce(-vecToOther.normalized * friendForce);
             }
         }
-        */
 
     } // End of UpdateTransform().
 
@@ -677,9 +667,7 @@ public class Assembly : CaptureObject {
 
         return propulsion;
     } // End of GetMaximumPropulsion().
-    */
 
-    /*
     // Returns the assembly's propulsion if all of it's sense nodes fired at once.
     public void UpdateNodeValidities(){
         hasValidNodes = false;
@@ -725,7 +713,6 @@ public class Assembly : CaptureObject {
         for(int i = 0; i < nodes.Count; i++)
             nodes[i].UpdateColor();
     } // End of UpdateNodeValidities().
-    */
     
     // returns the fitness of this assembly in the current environment
     public float Fitness(){
@@ -774,7 +761,9 @@ public class Assembly : CaptureObject {
 
     public string ToFileString()
     {
-        return IOHelper.AssemblyToString(this);
+        //return IOHelper.AssemblyToString(this);
+		return "";
     }
 
 } // End of Assembly.
+*/

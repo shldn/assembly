@@ -29,16 +29,16 @@ public class NodeEngineering : MonoBehaviour {
 	
 	void OnGUI(){
 	
-        Node selectedNode = null;
-        Assembly selectedAssembly = null;
+        PhysNode selectedNode = null;
+        PhysAssembly selectedAssembly = null;
 
         if(CameraControl.Inst){
             selectedNode = CameraControl.Inst.selectedNode;
-            selectedAssembly = CameraControl.Inst.selectedAssembly;
+            selectedAssembly = CameraControl.Inst.selectedPhysAssembly;
         }
         else if(AssemblyEditor.Inst && AssemblyEditor.Inst.selectedNode){
             selectedNode = AssemblyEditor.Inst.selectedNode;
-            selectedAssembly = selectedNode.assembly;
+            selectedAssembly = selectedNode.PhysAssembly;
         }
 
         if(selectedNode){
@@ -46,7 +46,7 @@ public class NodeEngineering : MonoBehaviour {
 
             float handleSize = 500f;
 
-            Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(selectedNode.worldPosition);
+            Vector3 selectedNodeScreenPos = Camera.main.WorldToScreenPoint(selectedNode.Position);
 
 
             // Vector indications
@@ -54,19 +54,19 @@ public class NodeEngineering : MonoBehaviour {
             float dotSize = 150f;
 
             // Sense handle dots
-            if(selectedNode is SenseNode){
-                senseVec = (selectedNode.assembly.physicsObject.transform.rotation * selectedNode.nodeProperties.senseVector) * Vector3.forward * 2f;
-                Vector3 senseVecEnd = selectedNode.worldPosition + senseVec;
+            if(selectedNode.neighbors.Count == 1){
+                senseVec = (selectedNode.Rotation * selectedNode.nodeProperties.senseVector) * Vector3.forward * 2f;
+                Vector3 senseVecEnd = selectedNode.Position + senseVec;
                 Vector3 senseVecEndScreenPos = Camera.main.WorldToScreenPoint(senseVecEnd);
 
                 senseHandle.rect = MathUtilities.CenteredSquare(senseVecEndScreenPos.x, senseVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, senseVecEnd));
 
                 if(senseHandle.held)
-                    selectedNode.nodeProperties.senseVector = Quaternion.Lerp(selectedNode.nodeProperties.senseVector, Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale));
+                    selectedNode.nodeProperties.senseVector = Quaternion.Lerp(selectedNode.nodeProperties.senseVector, Quaternion.Inverse(selectedNode.Rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale));
 
                 GUI.color = new Color(1f, 1f, 1f, senseHandle.color.a);
                 for(int i = 0; i < numDots; i++){
-                    Vector3 dotPos = selectedNode.worldPosition + (((NodeEngineering.Inst.senseVec) / (numDots + 1)) * (i + 1));
+                    Vector3 dotPos = selectedNode.Position + (((NodeEngineering.Inst.senseVec) / (numDots + 1)) * (i + 1));
                     Vector3 dotScreenPos = Camera.main.WorldToScreenPoint(dotPos);
 
                     float thisDotSize = ((dotSize / Vector3.Distance(Camera.main.transform.position, dotPos)) / numDots) * (i + 1);
@@ -80,19 +80,19 @@ public class NodeEngineering : MonoBehaviour {
             }
 
             // Actuator handle dots
-            if(selectedNode is ActuateNode){
-                actuateVec = (selectedNode.assembly.physicsObject.transform.rotation * selectedNode.nodeProperties.actuateVector) * Vector3.forward * 2f;
-                Vector3 actuateVecEnd = selectedNode.worldPosition + actuateVec;
+            if(selectedNode.neighbors.Count == 2){
+                actuateVec = (selectedNode.Rotation * selectedNode.nodeProperties.actuateVector) * Vector3.forward * 2f;
+                Vector3 actuateVecEnd = selectedNode.Position + actuateVec;
                 Vector3 actuateVecEndScreenPos = Camera.main.WorldToScreenPoint(actuateVecEnd);
 
                 actuateHandle.rect = MathUtilities.CenteredSquare(actuateVecEndScreenPos.x, actuateVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, actuateVecEnd));
 
                 if(actuateHandle.held)
-                    selectedNode.nodeProperties.actuateVector = Quaternion.Lerp(selectedNode.nodeProperties.actuateVector, Quaternion.Inverse(selectedNode.assembly.physicsObject.transform.rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale));
+                    selectedNode.nodeProperties.actuateVector = Quaternion.Lerp(selectedNode.nodeProperties.actuateVector, Quaternion.Inverse(selectedNode.Rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale));
 
                 GUI.color = new Color(1f, 1f, 1f, actuateHandle.color.a);
                 for(int i = 0; i < numDots; i++){
-                    Vector3 dotPos = selectedNode.worldPosition + (((NodeEngineering.Inst.actuateVec) / (numDots + 1)) * (i + 1));
+                    Vector3 dotPos = selectedNode.Position + (((NodeEngineering.Inst.actuateVec) / (numDots + 1)) * (i + 1));
                     Vector3 dotScreenPos = Camera.main.WorldToScreenPoint(dotPos);
 
                     float thisDotSize = ((dotSize / Vector3.Distance(Camera.main.transform.position, dotPos)) / numDots) * (i + 1);
@@ -107,11 +107,13 @@ public class NodeEngineering : MonoBehaviour {
 
             uiLockout = senseHandle.hovered || senseHandle.held || actuateHandle.hovered || actuateHandle.held;
         }
+		/*
         else if(selectedAssembly && selectedAssembly.physicsObject){
             // Rotate assembly manually.
             selectedAssembly.physicsObject.transform.rotation *= Quaternion.Inverse(Quaternion.AngleAxis(WesInput.editHorizontalThrottle * 90f * (Time.deltaTime / Time.timeScale), Quaternion.Inverse(selectedAssembly.physicsObject.transform.rotation) * Camera.main.transform.up));
             selectedAssembly.physicsObject.transform.rotation *= Quaternion.Inverse(Quaternion.AngleAxis(WesInput.editVerticalThrottle * 90f * (Time.deltaTime / Time.timeScale), Quaternion.Inverse(selectedAssembly.physicsObject.transform.rotation) * -Camera.main.transform.right));
         }
+		*/
 	} // End of OnGUI().
 } // End of NodeEngineering.
 

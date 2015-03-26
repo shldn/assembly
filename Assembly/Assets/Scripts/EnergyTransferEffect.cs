@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿/*
+using UnityEngine;
 using System.Collections;
 
 public class EnergyTransferEffect : MonoBehaviour {
@@ -65,13 +66,11 @@ public class EnergyTransferEffect : MonoBehaviour {
             absorbLineRenderer.SetPosition(i, truePoint + (spiralQuat * Vector3.forward * spiralRadius));
         }
 
-        /*
         absorbLineRenderer.SetPosition(0, sendPos);
         absorbLineRenderer.SetPosition(1, receivePos);
 
         absorbLineRenderer.material.mainTextureOffset = new Vector2(-Time.time * 5f + (5f * phaseOffset), 0f);
         absorbLineRenderer.material.mainTextureScale = new Vector2(vectorToNode.magnitude * 0.2f, 1f);
-        */
 
         if(disableCheck){
             if(alpha <= 0.01f){
@@ -86,3 +85,4 @@ public class EnergyTransferEffect : MonoBehaviour {
     } // End of Update().
 
 } // End of EnergyTransferEffect.
+*/

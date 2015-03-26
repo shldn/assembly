@@ -132,9 +132,10 @@ public class PhysNodeController : MonoBehaviour {
 		int cycleDir = Mathf.FloorToInt((Time.time * 0.2f) % 12);
 
 		// Show details on selected assembly.
-		PhysAssembly selectedAssem = CameraControl.Inst.selectedPhyAssembly;
+		PhysAssembly selectedAssem = CameraControl.Inst.selectedPhysAssembly;
 		PhysAssembly hoveredAssem = CameraControl.Inst.hoveredPhysAssembly;
 		if(selectedAssem){
+			/*
 			foreach(KeyValuePair<Triplet, PhysNode> kvp in selectedAssem.NodeDict){
 				Triplet curPos = kvp.Key;
 				PhysNode curNode = kvp.Value;
@@ -142,6 +143,11 @@ public class PhysNodeController : MonoBehaviour {
 				GLDebug.DrawCube(selectedAssem.spawnPosition + HexUtilities.HexToWorld(curPos), Quaternion.identity, Vector3.one * 0.5f, kvp.Value.cubeTransform.renderer.material.color + new Color(0.1f, 0.1f, 0.1f), 0f, false);
 				// Centerpoint
 				//GLDebug.DrawCube(selectedAssem.WorldPosition, Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
+			}*/
+
+			// Duplicate assembly using string IO methods
+			if(Input.GetKey(KeyCode.D)){
+				new PhysAssembly(IOHelper.AssemblyToString(selectedAssem), false);
 			}
 		}/*
 			// Determine closest fit with hovered assembly.

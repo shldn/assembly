@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class PhysAssembly {
+public class PhysAssembly : CaptureObject{
 
 	static HashSet<PhysAssembly> all = new HashSet<PhysAssembly>();
 	public static HashSet<PhysAssembly> getAll {get{return all;}}
@@ -19,7 +19,7 @@ public class PhysAssembly {
 
 	public Vector3 spawnPosition = Vector3.zero;
 	public Quaternion spawnRotation = Quaternion.identity;
-	public Vector3 WorldPosition {
+	public Vector3 Position {
 		get{
 			Vector3 worldPos = Vector3.zero;
 			foreach(PhysNode someNode in nodeDict.Values)
@@ -45,7 +45,7 @@ public class PhysAssembly {
     public static Octree<PhysAssembly> AllAssemblyTree{ 
         get{
             if(allAssemblyTree == null){
-                allAssemblyTree = new Octree<PhysAssembly>(new Bounds(Vector3.zero, 2.0f * PhysNodeController.Inst.WorldSize * Vector3.one), (PhysAssembly x) => x.WorldPosition, 5);
+                allAssemblyTree = new Octree<PhysAssembly>(new Bounds(Vector3.zero, 2.0f * PhysNodeController.Inst.WorldSize * Vector3.one), (PhysAssembly x) => x.Position, 5);
 			}
             return allAssemblyTree;
         }
@@ -63,7 +63,27 @@ public class PhysAssembly {
 		gender = Random.Range(0f, 1f) > 0.5f;
 		newAssemblies.Add(this);
 		AllAssemblyTree.Insert(this);
-	} // End of PhysAssembly().
+	} // End of constructor.
+
+	// Load from string--file path, etc.
+	public PhysAssembly(string str, bool isFilePath = false){
+        List<PhysNode> newNodes = new List<PhysNode>();
+        Vector3 worldPos = new Vector3();
+        if (isFilePath)
+            IOHelper.LoadAssemblyFromFile(str, ref name, ref worldPos, ref newNodes);
+        else
+            IOHelper.LoadAssemblyFromString(str, ref name, ref worldPos, ref newNodes);
+
+		this.spawnPosition = worldPos;
+		this.spawnRotation = Random.rotation;
+		gender = Random.Range(0f, 1f) > 0.5f;
+		newAssemblies.Add(this);
+		AllAssemblyTree.Insert(this);
+
+        AddNodes(newNodes);
+		foreach(PhysNode someNode in NodeDict.Values)
+			someNode.ComputeEnergyNetwork();
+     } // End of constructor (from serialized).
 
 
 	public void AddNode(Triplet nodePos, NodeProperties? nodeProps = null){
@@ -80,6 +100,12 @@ public class PhysAssembly {
 
 		energy += 1f;
 	} // End of AddNode().
+
+
+	public void AddNodes(List<PhysNode> nodesList){
+		foreach(PhysNode someNode in nodesList)
+			AddNode(someNode.localHexPos, someNode.nodeProperties);
+	} // End of AddNodes().
 
 
 	public void RemoveNode(PhysNode nodeToRemove){
@@ -121,7 +147,7 @@ public class PhysAssembly {
 
 		// We won't want to mate if our population cap has been reached.
 		if(wantToMate && !matingWith){
-			Bounds mateAttractBoundary = new Bounds(WorldPosition, mateAttractDist * (new Vector3(1, 1, 1)));
+			Bounds mateAttractBoundary = new Bounds(Position, mateAttractDist * (new Vector3(1, 1, 1)));
 			allAssemblyTree.RunActionInRange(new System.Action<PhysAssembly>(HandleFindMate), mateAttractBoundary);
 		}
 
@@ -144,9 +170,8 @@ public class PhysAssembly {
 			}
 
 			if(mateCompletion >= 1f){
-				MonoBehaviour.print("Offspring");
 				// Spawn a new assembly between the two.
-				PhysAssembly newAssembly = new PhysAssembly((WorldPosition + matingWith.WorldPosition) / 2f, Random.rotation);
+				PhysAssembly newAssembly = new PhysAssembly((Position + matingWith.Position) / 2f, Random.rotation);
 				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length);
 				Triplet spawnHexPos = Triplet.zero;
 				while(numNodes > 0){
@@ -179,7 +204,7 @@ public class PhysAssembly {
 		if((someAssembly == this) || (someAssembly.matingWith) || matingWith)
 			return;
 
-		Vector3 vectorToMate = someAssembly.WorldPosition - WorldPosition;
+		Vector3 vectorToMate = someAssembly.Position - Position;
 		float distanceToMate = vectorToMate.magnitude;
 
 		if(distanceToMate > mateAttractDist)
@@ -226,5 +251,22 @@ public class PhysAssembly {
 		allAssemblyTree.Remove(this);
 		cull = true;
 	} // End of Destroy().
+
+
+	public void Save(){
+        string path = "./data/" + name + ".txt";
+        Save(path);
+    } // End of Save().
+
+
+    public void Save(string path){
+        ConsoleScript.Inst.WriteToLog("Saving " + path);
+        IOHelper.SaveAssembly(path, this);
+    } // End of Save().
+
+
+	public string ToFileString(){
+        return IOHelper.AssemblyToString(this);
+    } // End of ToFileString().
 
 } // End of PhysAssembly.

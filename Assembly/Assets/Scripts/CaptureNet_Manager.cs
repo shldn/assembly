@@ -301,8 +301,8 @@ public class CaptureNet_Manager : MonoBehaviour {
     [RPC] // Server receives this from client when they send an assembly back.
     void PushAssembly(string assemblyStr)
     {
-        if (!GameManager.Inst)
-            return;
+        //if (!GameManager.Inst)
+            //return;
 
 
         Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 100f);
@@ -310,8 +310,8 @@ public class CaptureNet_Manager : MonoBehaviour {
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
 
-        Assembly a = new Assembly(assemblyStr);
-        a.WorldPosition = assemblyNewPos;
+        PhysAssembly a = new PhysAssembly(assemblyStr);
+        //a.WorldPosition = assemblyNewPos;
 
     } // End of PushAssembly().
 

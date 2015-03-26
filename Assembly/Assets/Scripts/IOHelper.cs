@@ -24,7 +24,7 @@ public class IOHelper
     {
         string ext = ".txt";
         Directory.CreateDirectory(folderPath);
-        foreach (Assembly a in Assembly.GetAll())
+        foreach (PhysAssembly a in PhysAssembly.getAll)
             a.Save(GetValidFileName(folderPath, a.name, ext));
     }
 
@@ -38,7 +38,7 @@ public class IOHelper
             Debug.Log("Loading directory " + dir);
             string[] filePaths = Directory.GetFiles(dir);
             foreach (string file in filePaths)
-                new Assembly(file, true);
+                new PhysAssembly(file, true);
         }
         catch (Exception e)
         {
@@ -46,7 +46,7 @@ public class IOHelper
         }
     } // End of LoadDirectory
 
-    public static void LoadAssemblyFromFile(string filePath, ref string name, ref Vector3 position, ref List<Node> nodes)
+    public static void LoadAssemblyFromFile(string filePath, ref string name, ref Vector3 position, ref List<PhysNode> nodes)
     {
         using (StreamReader sr = new StreamReader(filePath))
         {
@@ -54,38 +54,36 @@ public class IOHelper
         }
     }
 
-    public static void LoadAssemblyFromString(string assemblyStr, ref string name, ref Vector3 position, ref List<Node> nodes)
+    public static void LoadAssemblyFromString(string assemblyStr, ref string name, ref Vector3 position, ref List<PhysNode> nodes)
     {
         StringReader sr = new StringReader(assemblyStr);
         ReadAssemblyFromStream(sr, ref name, ref position, ref nodes);
     }
 
-    public static string AssemblyToString(Assembly assembly)
-    {
+    public static string AssemblyToString(PhysAssembly assembly){
         StringWriter sw = new StringWriter();
         WriteAssemblyToStream(assembly, sw);
         return sw.ToString();
-    }
+    } // End of AssemblyToString().
 
-    private static void ReadAssemblyFromStream(TextReader stream, ref string name, ref Vector3 position, ref List<Node> nodes)
+    private static void ReadAssemblyFromStream(TextReader stream, ref string name, ref Vector3 position, ref List<PhysNode> nodes)
     {
         int fileFormat = int.Parse(stream.ReadLine());
         name = stream.ReadLine();
         position = Vector3FromString(stream.ReadLine());
         while (stream.Peek() >= 0)
-            nodes.Add(Node.FromString(stream.ReadLine()));
+            nodes.Add(PhysNode.FromString(stream.ReadLine()));
     }
 
-    private static void WriteAssemblyToStream(Assembly assembly, TextWriter stream)
-    {
+    private static void WriteAssemblyToStream(PhysAssembly assembly, TextWriter stream){
         stream.WriteLine(assemblyFileFormatVersion);
         stream.WriteLine(assembly.name);
-        stream.WriteLine(assembly.WorldPosition);
-        for (int i = 0; i < assembly.nodes.Count; ++i)
-            stream.WriteLine(assembly.nodes[i].ToFileString(assemblyFileFormatVersion));
-    }
+        stream.WriteLine(assembly.Position);
+        foreach(PhysNode someNode in assembly.NodeDict.Values)
+            stream.WriteLine(someNode.ToFileString(assemblyFileFormatVersion));
+    } // End of WriteAssemblyToStream().
 
-    public static void SaveAssembly(string filePath, Assembly assembly)
+    public static void SaveAssembly(string filePath, PhysAssembly assembly)
     {
 #if UNITY_STANDALONE
         if (!File.Exists(filePath))
@@ -154,18 +152,8 @@ public class IOHelper
 
 	// Overloads for PhysAssembly assets ----------------------------------------------------------------- //
 
-    public static string AssemblyToString(PhysAssembly assembly){
-        StringWriter sw = new StringWriter();
-        WriteAssemblyToStream(assembly, sw);
-        return sw.ToString();
-    } // End of AssemblyToString().
+    
 
-	private static void WriteAssemblyToStream(PhysAssembly assembly, TextWriter stream){
-        stream.WriteLine(assemblyFileFormatVersion);
-        stream.WriteLine(assembly.name);
-        stream.WriteLine(assembly.WorldPosition);
-        foreach(PhysNode someNode in assembly.NodeDict.Values)
-            stream.WriteLine(someNode.ToFileString(assemblyFileFormatVersion));
-    } // End of WriteAssemblyToStream().
+	
 
 }

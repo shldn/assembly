@@ -110,8 +110,19 @@ public class PhysNode {
 	} // End of Awake().
 
 
+	public PhysNode(Triplet localHexPos, NodeProperties props){
+		all.Add(this);
+		this.localHexPos = localHexPos;
+
+		cubeTransform = MonoBehaviour.Instantiate(PhysNodeController.Inst.physNodePrefab, Position, Quaternion.identity) as Transform;
+
+		transformLastRot = cubeTransform.rotation;
+		transformLastPos = cubeTransform.position;
+	} // End of Awake().
+
+
 	public void DoMath(){
-		if(cull)
+		if(cull || !physAssembly)
 			return;
 
 		//power = 1f;
@@ -202,7 +213,7 @@ public class PhysNode {
 
 
 		// Metabolism --------------------------------- //
-		if(PhysAssembly != CameraControl.Inst.selectedPhyAssembly)
+		if(PhysAssembly != CameraControl.Inst.selectedPhysAssembly)
 			physAssembly.energy -= PhysNodeController.physicsStep * 0.05f;
 
 
@@ -225,7 +236,7 @@ public class PhysNode {
 
 
 	public void UpdateTransform(){
-		if(cull)
+		if(cull || !physAssembly)
 			return;
 
 		Vector3 thisFrameVelocity = delayPosition - Position;
@@ -405,11 +416,11 @@ public class PhysNode {
         return localHexPos.ToString() + nodeProperties.ToString();
     } // End of ToFileString().
 
-    public static Node FromString(string str, int format=1){
+    public static PhysNode FromString(string str, int format=1){
         int splitIdx = str.IndexOf(')');
         Triplet pos = IOHelper.TripletFromString(str.Substring(0,splitIdx+1));
         NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
-        return new Node(pos, props);
+        return new PhysNode(pos, props);
     } // End of FromString().
 
 } // End of PhysNode.

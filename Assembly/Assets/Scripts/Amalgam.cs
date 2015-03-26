@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿/*
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -38,3 +39,4 @@ public class Amalgam : MonoBehaviour {
 
 	} // End of Start().
 } // End of Amalgam.
+*/

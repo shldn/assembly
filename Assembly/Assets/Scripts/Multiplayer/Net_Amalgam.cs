@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿/*
+using UnityEngine;
 using System.Collections;
 
 public class Net_Amalgam : MonoBehaviour {
@@ -155,3 +156,4 @@ public class Net_Amalgam : MonoBehaviour {
     } // End of ExtractFloat().
 
 } // End of Net_Amalgam.
+*/

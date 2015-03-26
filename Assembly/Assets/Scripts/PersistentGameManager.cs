@@ -85,15 +85,12 @@ public class PersistentGameManager : MonoBehaviour {
 
     public void EnviroImpulse(Vector3 pos, float force){
         // Apply physics
-        for(int i = 0; i < Assembly.GetAll().Count; i++){
-            Assembly curAssem = Assembly.GetAll()[i];
-            
-            Vector3 vecToAssem = pos - curAssem.WorldPosition;
+        foreach(PhysNode someNode in PhysNode.getAll){
+            Vector3 vecToAssem = pos - someNode.Position;
             if(vecToAssem.Equals(Vector3.zero))
                 continue;
 
-            if(curAssem.physicsObject.rigidbody)
-                curAssem.physicsObject.rigidbody.AddForce(vecToAssem.normalized * (-force / (1f + (vecToAssem.magnitude * 0.01f))), ForceMode.Impulse);
+            someNode.delayPosition += vecToAssem.normalized * (-force / (1f + (vecToAssem.magnitude * 0.01f)));
         }
     } // End of EnviroImpulse().
 

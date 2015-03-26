@@ -1,3 +1,4 @@
+/*
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -150,3 +151,4 @@ public class FoodPellet{
     }
 
 } // End of FoodPellet.
+*/

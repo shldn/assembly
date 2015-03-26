@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿/*
+using UnityEngine;
 using System.Collections;
 
 public class ReproducePullEffect : MonoBehaviour {
@@ -38,3 +39,4 @@ public class ReproducePullEffect : MonoBehaviour {
     } // End of Update().
 
 } // End of EnergyTransferEffect.
+*/
