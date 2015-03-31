@@ -63,6 +63,7 @@ public class PhysAssembly : CaptureObject{
 		gender = Random.Range(0f, 1f) > 0.5f;
 		newAssemblies.Add(this);
 		AllAssemblyTree.Insert(this);
+		PersistentGameManager.CaptureObjects.Add(this);
 	} // End of constructor.
 
 	// Load from string--file path, etc.
@@ -83,6 +84,8 @@ public class PhysAssembly : CaptureObject{
         AddNodes(newNodes);
 		foreach(PhysNode someNode in NodeDict.Values)
 			someNode.ComputeEnergyNetwork();
+
+		PersistentGameManager.CaptureObjects.Add(this);
      } // End of constructor (from serialized).
 
 
@@ -249,6 +252,7 @@ public class PhysAssembly : CaptureObject{
 			somePair.Value.Destroy();
 
 		allAssemblyTree.Remove(this);
+		PersistentGameManager.CaptureObjects.Remove(this);
 		cull = true;
 	} // End of Destroy().
 
