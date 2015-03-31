@@ -118,6 +118,7 @@ public class PlayerSync : MonoBehaviour {
                 if((lastPoints.Count < 2) || (Vector3.Distance(screenPosSmoothed, lastPoints[lastPoints.Count - 1]) > 10f))
                     lastPoints.Add(screenPosSmoothed);
 
+
             // Determine circled objects
             if(!selecting && (lastPoints.Count > 0)){
                 if(Network.peerType == NetworkPeerType.Server){
