@@ -3,11 +3,14 @@ using System.Collections;
 
 public class AlphaCutoffControl : MonoBehaviour 
 {
-
+	
+	public enum WeatherType{clearSky, smallClouds, largeClouds, overcast};	
+	public WeatherType weatherType = WeatherType.clearSky;
 	Shader alphaControls;
 	public Renderer rend;
+	private float cloudiness = 0.3f;
+	private float cloudinessSmoothVel = 0f;	
 	
-	// Grab the renderer
 	void Start () 
 	{
 		//Set the renderer to a variable for ease of typing		
@@ -18,14 +21,30 @@ public class AlphaCutoffControl : MonoBehaviour
     }
 	
 	//	On each update animate the alpha cutoff value to determin the cloudiness of the sky
-    void Update() {
+    void Update() {		
 		
-		//Assign animating math to cloudiness variable as well as a variable to control how it pingpongs.
-        var smoothTime = 0.3;
-		float cloudiness = Mathf.PingPong(0.2f, 1.0f);
 		
-		//Set cloudiness variable to Shader's cutoff value
-        rend.material.SetFloat("_Cutoff", cloudiness);
+		float targetCloudiness = 0f;
+		
+		if (weatherType == WeatherType.clearSky)
+			targetCloudiness = 0.99f;
+		
+		if (weatherType == WeatherType.smallClouds)
+			targetCloudiness = 0.6f;
+		
+		if (weatherType == WeatherType.largeClouds)
+			targetCloudiness = 0.2f;
+		
+		if (weatherType == WeatherType.overcast)
+			targetCloudiness = 0f;
+		
+		//cloudiness = Mathf.MoveTowards(cloudiness, targetCloudiness, Time.deltaTime * 0.2f);
+		cloudiness = Mathf.SmoothDamp (cloudiness, targetCloudiness, ref cloudinessSmoothVel, 2f);
+		cloudiness = Mathf.MoveTowards(cloudiness, targetCloudiness, Time.deltaTime * 0.05f);
+		rend.material.SetFloat ("_Cutoff", cloudiness);
+        
+		
+		
     }
 }
 
