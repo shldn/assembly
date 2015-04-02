@@ -220,7 +220,7 @@ public class PhysNode {
 		mateColorLerp = Mathf.MoveTowards(mateColorLerp, physAssembly.wantToMate? 1f : 0f, Time.deltaTime);
 		genderColorLerp = Mathf.MoveTowards(genderColorLerp, physAssembly.gender? 1f : 0f, Time.deltaTime);
 
-		Color genderColor = Color.Lerp(Color.magenta, Color.cyan, genderColorLerp);
+		Color genderColor = Color.Lerp(new Color(1f, 0f, 1f), new Color(1f, 0.5f, 0f), genderColorLerp);
 
 		if(mateColorLerp > 0f)
 			cubeTransform.renderer.material.color = Color.Lerp(nodeColor, genderColor, mateColorLerp * 0.7f);
@@ -231,7 +231,7 @@ public class PhysNode {
 
 		// Reset power
 		smoothedPower = Mathf.MoveTowards(smoothedPower, power, PhysNodeController.physicsStep);
-		power = 0.02f;
+		power = 1f;
 	} // End of DoMath().
 
 

@@ -44,6 +44,7 @@ public class AssemblyEditor : MonoBehaviour {
         {
             //capturedAssembly.WorldPosition = Vector3.zero;
 
+			/*
             burnRateKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) - 240f);
             burnRateKnob.scale = 2f;
             burnRateKnob.Draw();
@@ -56,14 +57,30 @@ public class AssemblyEditor : MonoBehaviour {
             speedKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) + 240f);
             speedKnob.scale = 2f;
             speedKnob.Draw();
-
+			*/
 
             Rect controlBarRect = new Rect(Screen.width - (Screen.height / 6f), 0f, Screen.height / 6f, Screen.height);
 
             GUI.skin.button.fontSize = 20;
 
             GUILayout.BeginArea(controlBarRect);
-            if (GUILayout.Button("Done", GUILayout.Height(Screen.height / 8f)))
+			if(GUILayout.Button("Maximum Speed", GUILayout.ExpandHeight(true))){
+				// Max speed
+			}
+			if(GUILayout.Button("Rotational Speed", GUILayout.ExpandHeight(true))){
+				// Sense coverage
+			}
+			if(GUILayout.Button("Sense Range", GUILayout.ExpandHeight(true))){
+				// Sensor range
+			}
+			if(GUILayout.Button("Sense Coverage", GUILayout.ExpandHeight(true))){
+				// Sense coverage
+			}
+
+
+			GUILayout.Space(20f);
+
+            if (GUILayout.Button("Done", GUILayout.ExpandHeight(true)))
             {
                 PhysAssembly a = CaptureEditorManager.capturedObj as PhysAssembly;
                 Network.SetSendingEnabled(0, true);
