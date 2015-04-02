@@ -220,6 +220,7 @@ public class PlayerSync : MonoBehaviour {
         float distFromCamToSpawn = 5.0f;
         AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
         PhysAssembly a = new PhysAssembly(assemblyStr);
+		CameraControl.Inst.selectedPhysAssembly = a;
         a.spawnPosition = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
         CaptureEditorManager.capturedObj = a;
     } // End of CaptureAssembly().

@@ -89,9 +89,16 @@ public class PhysAssembly : CaptureObject{
      } // End of constructor (from serialized).
 
 
+	public void AddNodes(List<PhysNode> nodesList){
+		foreach(PhysNode someNode in nodesList)
+			AddNode(someNode.localHexPos, someNode.nodeProperties);
+	} // End of AddNodes().
+
+
 	public void AddNode(Triplet nodePos, NodeProperties? nodeProps = null){
 		PhysNode newPhysNode = new PhysNode(this, nodePos);
 		newPhysNode.nodeProperties = nodeProps ?? NodeProperties.random;
+		newPhysNode.PhysAssembly = this;
 		nodeDict.Add(nodePos, newPhysNode);
 
 		// Assign neighbors.
@@ -103,12 +110,6 @@ public class PhysAssembly : CaptureObject{
 
 		energy += 1f;
 	} // End of AddNode().
-
-
-	public void AddNodes(List<PhysNode> nodesList){
-		foreach(PhysNode someNode in nodesList)
-			AddNode(someNode.localHexPos, someNode.nodeProperties);
-	} // End of AddNodes().
 
 
 	public void RemoveNode(PhysNode nodeToRemove){
@@ -123,8 +124,10 @@ public class PhysAssembly : CaptureObject{
 			nodeDict.Values.CopyTo(myNodesIndexed, 0);
 		}
 
-		if(energy < 0f)
-			Destroy();
+		if(PersistentGameManager.IsServer){
+			if(energy < 0f)
+				Destroy();
+		}
 
 		float maxEnergy = nodeDict.Values.Count * 2f;
 		energy = Mathf.Clamp(energy, 0f, maxEnergy);

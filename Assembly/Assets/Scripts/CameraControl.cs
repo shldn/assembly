@@ -66,7 +66,7 @@ public class CameraControl : MonoBehaviour {
 	} // End of Start().
 	
 
-	void FixedUpdate(){
+	void LateUpdate(){
         // Smooth time is slowed down if cursor is locked ("cinematic mode")
         float effectiveSmoothTime = smoothTime;
         if(!PersistentGameManager.IsClient){

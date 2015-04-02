@@ -80,6 +80,9 @@ public class PersistentGameManager : MonoBehaviour {
         }
 
 		Screen.lockCursor = cursorLock;
+
+		if(IsClient)
+			Application.targetFrameRate = 30;
 	}
 
 
@@ -90,7 +93,7 @@ public class PersistentGameManager : MonoBehaviour {
             if(vecToAssem.Equals(Vector3.zero))
                 continue;
 
-            someNode.delayPosition += vecToAssem.normalized * (-force / (1f + (vecToAssem.magnitude * 0.01f)));
+            someNode.delayPosition += vecToAssem.normalized * (-force / (1f + (vecToAssem.magnitude * 0.01f))) * 0.1f;
         }
     } // End of EnviroImpulse().
 
