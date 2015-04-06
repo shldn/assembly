@@ -11,6 +11,7 @@ public class Unique {
 #elif UNITY_ANDRIOD
             return GetAndroidID();
 #endif
+		return "";
         }
     }
 

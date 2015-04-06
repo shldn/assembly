@@ -232,7 +232,7 @@ public class PhysNode {
 
 		// Reset power
 		smoothedPower = Mathf.MoveTowards(smoothedPower, power, PhysNodeController.physicsStep);
-		power = 1f;
+		power = PersistentGameManager.IsClient? 1f : 0.2f;
 	} // End of DoMath().
 
 
