@@ -84,8 +84,18 @@ public class CameraControl : MonoBehaviour {
             selectedJellyfish = Jellyfish.all[0];
             center = Jellyfish.all[0].transform.position;
         }
+		else if(PersistentGameManager.IsClient && PhysNodeController.Inst){
+			Vector3 targetCenter = Vector3.zero;
+			foreach(PhysAssembly someAssem in PhysAssembly.getAll)
+				targetCenter += someAssem.Position;
+
+			if(PhysAssembly.getAll.Count > 0f)
+				targetCenter /= PhysAssembly.getAll.Count;
+
+			center = Vector3.Lerp(center, targetCenter, Time.deltaTime * 10f);
+        }
         // Grotto
-        if(selectedJellyfish)
+        else if(selectedJellyfish)
             center = selectedJellyfish.transform.position;
         // Assembly soup
         else if(selectedNode)

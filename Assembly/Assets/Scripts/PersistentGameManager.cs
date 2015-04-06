@@ -81,8 +81,11 @@ public class PersistentGameManager : MonoBehaviour {
 
 		Screen.lockCursor = cursorLock;
 
-		if(IsClient)
+		if(IsClient && (AssemblyEditor.Inst && !AssemblyEditor.Inst.testRunning))
 			Application.targetFrameRate = 30;
+		else
+			Application.targetFrameRate = 99999;
+
 	}
 
 

@@ -113,6 +113,7 @@ public class PhysNode {
 	public PhysNode(Triplet localHexPos, NodeProperties props){
 		all.Add(this);
 		this.localHexPos = localHexPos;
+		this.nodeProperties = props;
 
 		cubeTransform = MonoBehaviour.Instantiate(PhysNodeController.Inst.physNodePrefab, Position, Quaternion.identity) as Transform;
 
@@ -360,6 +361,12 @@ public class PhysNode {
 	} // End of Transmit().
 
 
+	// Zeroes out all velocities.
+	public void ZeroVelocity(){
+		velocity = Vector3.zero;
+	} // End of ZeroMovement().
+
+
     private void HandleDetectedFood(PhysFood food){
 		Vector3 vectorToFood = food.worldPosition - position;
 		float distanceToFood = vectorToFood.magnitude;
@@ -422,6 +429,10 @@ public class PhysNode {
         NodeProperties props = new NodeProperties(str.Substring(splitIdx + 1));
         return new PhysNode(pos, props);
     } // End of FromString().
+
+	public void Mutate(float amount){
+		nodeProperties.Mutate(amount);
+	} // End of Mutate().
 
 } // End of PhysNode.
 
@@ -529,6 +540,31 @@ public struct NodeProperties {
             }
         }
     } // End of NodeProperties constructor.
+
+
+	public void Mutate(float amount){
+		senseVector *= Quaternion.AngleAxis(Random.Range(0f, 180f * amount), Random.onUnitSphere);
+
+		fieldOfView += Random.Range(-180f, 180f) * amount;
+		fieldOfView = Mathf.Clamp(fieldOfView, 1f, 180f);
+
+		muscleStrength += Random.Range(-1f, 1f) * amount;
+		muscleStrength = Mathf.Clamp01(muscleStrength);
+
+		actuateVector *= Quaternion.AngleAxis(Random.Range(0f, 180f * amount), Random.onUnitSphere);
+
+		torqueAxis = Quaternion.AngleAxis(Random.Range(0f, 180f * amount), Random.onUnitSphere) * torqueAxis;
+
+		oscillateFrequency += Random.Range(-5f, 5f) * amount;
+		oscillateFrequency = Mathf.Clamp(oscillateFrequency, 1f, 10f);
+
+		torqueStrength += Random.Range(-100f, 100f) * amount;
+		torqueStrength = Mathf.Clamp(torqueStrength, 1f, 200f);
+
+		flailMaxAngle += Random.Range(-45f, 45f) * amount;
+		flailMaxAngle = Mathf.Clamp(flailMaxAngle, 0f, 90f);
+
+	} // End of Mutate().
 
 
     public override string ToString(){

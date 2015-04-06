@@ -41,6 +41,9 @@ public class PhysAssembly : CaptureObject{
 	float mateAttractDist = 100f;
 	float mateCompletion = 0f;
 
+	public float distanceCovered = 0f;
+	Vector3 lastPosition = Vector3.zero;
+
 	private static Octree<PhysAssembly> allAssemblyTree;
     public static Octree<PhysAssembly> AllAssemblyTree{ 
         get{
@@ -203,6 +206,9 @@ public class PhysAssembly : CaptureObject{
 				energy *= 0.5f;
 			}
 		}
+
+		distanceCovered += Vector3.Distance(lastPosition, Position);
+		lastPosition = Position;
 	} // End of Update().
 
 
@@ -248,6 +254,12 @@ public class PhysAssembly : CaptureObject{
 		nodeDict.Clear();
 		Destroy();
 	} // End of MergeWith().
+
+
+	public void Mutate(float amount){
+		foreach(PhysNode someNode in NodeDict.Values)
+			someNode.Mutate(amount);
+	} // End of Mutate().
 
 
 	public void Destroy(){

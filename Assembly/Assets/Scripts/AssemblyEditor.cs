@@ -9,8 +9,10 @@ public class AssemblyEditor : MonoBehaviour {
     public GuiKnob densityKnob = null;
     public GuiKnob speedKnob = null;
 
-    private PhysAssembly capturedAssembly = null;
+    public PhysAssembly capturedAssembly = null;
     public PhysNode selectedNode = null;
+
+	public bool testRunning = false;
 
     public bool uiLockout {get{return burnRateKnob.clicked || densityKnob.clicked || speedKnob.clicked;}}
 
@@ -42,54 +44,65 @@ public class AssemblyEditor : MonoBehaviour {
     {
         if (capturedAssembly)
         {
-            //capturedAssembly.WorldPosition = Vector3.zero;
-
-			/*
-            burnRateKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) - 240f);
-            burnRateKnob.scale = 2f;
-            burnRateKnob.Draw();
-            //capturedAssembly.energyBurnRate = burnRateKnob.Value;
-
-            densityKnob.pxlPos = new Vector2(Screen.width - 120f, Screen.height * 0.5f);
-            densityKnob.scale = 2f;
-            densityKnob.Draw();
-
-            speedKnob.pxlPos = new Vector2(Screen.width - 120f, (Screen.height * 0.5f) + 240f);
-            speedKnob.scale = 2f;
-            speedKnob.Draw();
-			*/
-
             Rect controlBarRect = new Rect(Screen.width - (Screen.height / 6f), 0f, Screen.height / 6f, Screen.height);
 
             GUI.skin.button.fontSize = 20;
 
-            GUILayout.BeginArea(controlBarRect);
-			if(GUILayout.Button("Maximum Speed", GUILayout.ExpandHeight(true))){
-				// Max speed
-			}
-			if(GUILayout.Button("Rotational Speed", GUILayout.ExpandHeight(true))){
-				// Sense coverage
-			}
-			if(GUILayout.Button("Sense Range", GUILayout.ExpandHeight(true))){
-				// Sensor range
-			}
-			if(GUILayout.Button("Sense Coverage", GUILayout.ExpandHeight(true))){
-				// Sense coverage
-			}
+			if(!testRunning){
+				GUILayout.BeginArea(controlBarRect);
+				if(GUILayout.Button("Maximum Travel", GUILayout.ExpandHeight(true))){
+					for(int i = 0; i < 10; i++){
+						PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), false);
+						newPhysAssem.Mutate(0.25f);
+					}
+
+					GameObject testObject = new GameObject("maxTravelTester", typeof(Test_MaxTravel));
+					testObject.transform.position = capturedAssembly.Position;
+					testRunning = true;
+
+					capturedAssembly.Destroy();
+				}
+
+				if(GUILayout.Button("Maximum Speed", GUILayout.ExpandHeight(true))){
+					for(int i = 0; i < 10; i++){
+						PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), false);
+						newPhysAssem.Mutate(0.25f);
+					}
+
+					GameObject testObject = new GameObject("maxSpeedTester", typeof(Test_MaxSpeed));
+					testObject.transform.position = capturedAssembly.Position;
+					testRunning = true;
+
+					capturedAssembly.Destroy();
+				}
 
 
-			GUILayout.Space(20f);
 
-            if (GUILayout.Button("Done", GUILayout.ExpandHeight(true)))
-            {
-                PhysAssembly a = CaptureEditorManager.capturedObj as PhysAssembly;
-                Network.SetSendingEnabled(0, true);
-                CaptureNet_Manager.myNetworkView.RPC("PushAssembly", RPCMode.Server, a.ToFileString());
-                Network.SetSendingEnabled(0, false);
-                Instantiate(PersistentGameManager.Inst.pingBurstObj, CaptureEditorManager.capturedObj.Position, Quaternion.identity);
-                Cleanup();
-            }
-            GUILayout.EndArea();
+				/*
+				if(GUILayout.Button("Rotational Speed", GUILayout.ExpandHeight(true))){
+					// Sense coverage
+				}
+				if(GUILayout.Button("Sense Range", GUILayout.ExpandHeight(true))){
+					// Sensor range
+				}
+				if(GUILayout.Button("Sense Coverage", GUILayout.ExpandHeight(true))){
+					// Sense coverage
+				}
+				*/
+
+				GUILayout.Space(20f);
+
+				if (GUILayout.Button("Done", GUILayout.ExpandHeight(true)))
+				{
+					PhysAssembly a = CaptureEditorManager.capturedObj as PhysAssembly;
+					Network.SetSendingEnabled(0, true);
+					CaptureNet_Manager.myNetworkView.RPC("PushAssembly", RPCMode.Server, a.ToFileString());
+					Network.SetSendingEnabled(0, false);
+					Instantiate(PersistentGameManager.Inst.pingBurstObj, CaptureEditorManager.capturedObj.Position, Quaternion.identity);
+					Cleanup();
+				}
+				GUILayout.EndArea();
+			}
         }
     }
 
