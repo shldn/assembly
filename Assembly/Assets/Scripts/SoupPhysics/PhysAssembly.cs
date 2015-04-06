@@ -201,6 +201,8 @@ public class PhysAssembly : CaptureObject{
 				wantToMate = false;
 				mateCompletion = 0f;
 				energy *= 0.5f;
+
+				RandomMelody.Inst.PlayNote();
 			}
 		}
 	} // End of Update().

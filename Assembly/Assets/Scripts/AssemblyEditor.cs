@@ -66,6 +66,9 @@ public class AssemblyEditor : MonoBehaviour {
             GUILayout.BeginArea(controlBarRect);
 			if(GUILayout.Button("Maximum Speed", GUILayout.ExpandHeight(true))){
 				// Max speed
+				//for(int i = 0; i < 10; i++){
+//					new PhysAssembly(capturedAssembly.ToString());
+				//}
 			}
 			if(GUILayout.Button("Rotational Speed", GUILayout.ExpandHeight(true))){
 				// Sense coverage
