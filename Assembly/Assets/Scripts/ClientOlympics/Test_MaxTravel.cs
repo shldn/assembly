@@ -17,7 +17,6 @@ public class Test_MaxTravel : ClientTest {
 
 		if(runTime > 500f){
 			float furthestDistance = 0f;
-			PhysAssembly winner = null;
 			foreach(PhysAssembly someAssem in PhysAssembly.getAll){
 				float distance = Vector3.Distance(transform.position, someAssem.Position);
 				if(distance > furthestDistance){
@@ -26,14 +25,7 @@ public class Test_MaxTravel : ClientTest {
 				}
 			}
 
-			foreach(PhysAssembly someAssem in PhysAssembly.getAll)
-				if(someAssem != winner)
-					someAssem.Destroy();
-				else
-					AssemblyEditor.Inst.capturedAssembly = someAssem;
-
-			AssemblyEditor.Inst.testRunning = false;
-			Destroy(gameObject);
+            EndTest();
 		}
 	} // End of Update().
 

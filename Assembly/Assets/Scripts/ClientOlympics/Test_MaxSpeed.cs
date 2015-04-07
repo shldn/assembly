@@ -19,7 +19,6 @@ public class Test_MaxSpeed : ClientTest {
 
 		if(runTime > 500f){
 			float furthestDistance = 0f;
-			PhysAssembly winner = null;
 			foreach(PhysAssembly someAssem in PhysAssembly.getAll){
 				if(someAssem.distanceCovered > furthestDistance){
 					furthestDistance = someAssem.distanceCovered;
@@ -27,14 +26,7 @@ public class Test_MaxSpeed : ClientTest {
 				}
 			}
 
-			foreach(PhysAssembly someAssem in PhysAssembly.getAll)
-				if(someAssem != winner)
-					someAssem.Destroy();
-				else
-					AssemblyEditor.Inst.capturedAssembly = someAssem;
-
-			AssemblyEditor.Inst.testRunning = false;
-			Destroy(gameObject);
+            EndTest();
 		}
 	} // End of Update().
 

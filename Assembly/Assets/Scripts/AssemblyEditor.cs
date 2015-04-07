@@ -16,6 +16,10 @@ public class AssemblyEditor : MonoBehaviour {
 
     public bool uiLockout {get{return burnRateKnob.clicked || densityKnob.clicked || speedKnob.clicked;}}
 
+    // Test parameters
+    int numTestAssemblies = 10;
+    float mutationRate = 0.25f;
+
     void Start()
     {
         CaptureEditorManager.ObjectCaptured += HandleObjectCaptured;
@@ -51,10 +55,7 @@ public class AssemblyEditor : MonoBehaviour {
 			if(!testRunning){
 				GUILayout.BeginArea(controlBarRect);
 				if(GUILayout.Button("Maximum Travel", GUILayout.ExpandHeight(true))){
-					for(int i = 0; i < 10; i++){
-						PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), false);
-						newPhysAssem.Mutate(0.25f);
-					}
+                    SpawnTestAssemblies(numTestAssemblies, mutationRate);
 
 					GameObject testObject = new GameObject("maxTravelTester", typeof(Test_MaxTravel));
 					testObject.transform.position = capturedAssembly.Position;
@@ -64,10 +65,7 @@ public class AssemblyEditor : MonoBehaviour {
 				}
 
 				if(GUILayout.Button("Maximum Speed", GUILayout.ExpandHeight(true))){
-					for(int i = 0; i < 10; i++){
-						PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), false);
-						newPhysAssem.Mutate(0.25f);
-					}
+                    SpawnTestAssemblies(numTestAssemblies, mutationRate);
 
 					GameObject testObject = new GameObject("maxSpeedTester", typeof(Test_MaxSpeed));
 					testObject.transform.position = capturedAssembly.Position;
@@ -89,6 +87,10 @@ public class AssemblyEditor : MonoBehaviour {
 					// Sense coverage
 				}
 				*/
+                if (GUILayout.Button("IQ", GUILayout.ExpandHeight(true)))
+                {
+                    // Brain Training
+                }
 
 				GUILayout.Space(20f);
 
@@ -103,6 +105,15 @@ public class AssemblyEditor : MonoBehaviour {
 				}
 				GUILayout.EndArea();
 			}
+        }
+    }
+
+    void SpawnTestAssemblies(int num, float mutationRate)
+    {
+        for (int i = 0; i < num; i++)
+        {
+            PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), false);
+            newPhysAssem.Mutate(mutationRate);
         }
     }
 
