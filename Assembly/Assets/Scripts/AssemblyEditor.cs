@@ -75,7 +75,7 @@ public class AssemblyEditor : MonoBehaviour {
 				GUILayout.BeginArea(controlBarRect);
 
 				if(menu == MenuType.main){
-					GUI.enabled = false;
+					GUI.enabled = true;
 					if(GUILayout.Button("Vision Range", GUILayout.ExpandHeight(true)))
 						menu = MenuType.visionRange;
 					if(GUILayout.Button("Vision Scope", GUILayout.ExpandHeight(true)))
@@ -202,6 +202,20 @@ public class AssemblyEditor : MonoBehaviour {
 				testRunning = true;
 				capturedAssembly.Destroy();
 				break;
+            case (MenuType.visionRange):
+                SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
+                testObject = new GameObject("maxVisionRange", typeof(Test_SenseRange));
+                testObject.transform.position = capturedAssembly.Position;
+                testRunning = true;
+                capturedAssembly.Destroy();
+                break;
+            case (MenuType.visionScope):
+                SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
+                testObject = new GameObject("maxVisionScope", typeof(Test_SenseFov));
+                testObject.transform.position = capturedAssembly.Position;
+                testRunning = true;
+                capturedAssembly.Destroy();
+                break;
 			case(MenuType.iq):
 				SpawnTestAssemblies(numTestAssemblies, mutationRate, capturedAssembly.spawnRotation);
 				testObject = new GameObject("maxIQTester", typeof(Test_IQ));
