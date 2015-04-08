@@ -435,6 +435,13 @@ public class PhysNode {
 		nodeProperties.Mutate(amount);
 	} // End of Mutate().
 
+
+    public static void DestroyAll()
+    {
+        all.Clear();
+        allSenseNodeTree = null;
+    }
+
 } // End of PhysNode.
 
 

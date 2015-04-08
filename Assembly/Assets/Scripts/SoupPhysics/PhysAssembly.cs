@@ -56,6 +56,13 @@ public class PhysAssembly : CaptureObject{
         }
     }
 
+    public static void DestroyAll()
+    {
+        newAssemblies.Clear();
+        all.Clear();
+        allAssemblyTree = null;
+    }
+
 	public bool gender = false;
 
 
