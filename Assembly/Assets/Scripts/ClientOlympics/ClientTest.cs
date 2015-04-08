@@ -7,7 +7,12 @@ public class ClientTest : MonoBehaviour {
 
 	public static ClientTest Inst = null;
 	protected int runTime = 0;
+    protected int testDuration = 500; // frames
+    protected float nodePower = 1.0f;
     protected PhysAssembly winner = null;
+
+    public float NodePower { get { return nodePower; } protected set { nodePower = value; } }
+    public bool IsDone {  get{ return runTime > testDuration; } }
 
 
 	protected virtual void Awake(){

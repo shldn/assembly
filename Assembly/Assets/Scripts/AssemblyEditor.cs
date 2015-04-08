@@ -55,7 +55,7 @@ public class AssemblyEditor : MonoBehaviour {
 			if(!testRunning){
 				GUILayout.BeginArea(controlBarRect);
 				if(GUILayout.Button("Maximum Travel", GUILayout.ExpandHeight(true))){
-                    SpawnTestAssemblies(numTestAssemblies, mutationRate);
+                    SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
 
 					GameObject testObject = new GameObject("maxTravelTester", typeof(Test_MaxTravel));
 					testObject.transform.position = capturedAssembly.Position;
@@ -65,7 +65,7 @@ public class AssemblyEditor : MonoBehaviour {
 				}
 
 				if(GUILayout.Button("Maximum Speed", GUILayout.ExpandHeight(true))){
-                    SpawnTestAssemblies(numTestAssemblies, mutationRate);
+                    SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
 
 					GameObject testObject = new GameObject("maxSpeedTester", typeof(Test_MaxSpeed));
 					testObject.transform.position = capturedAssembly.Position;
@@ -90,6 +90,13 @@ public class AssemblyEditor : MonoBehaviour {
                 if (GUILayout.Button("IQ", GUILayout.ExpandHeight(true)))
                 {
                     // Brain Training
+                    SpawnTestAssemblies(numTestAssemblies, mutationRate, capturedAssembly.spawnRotation);
+
+                    GameObject testObject = new GameObject("maxIQTester", typeof(Test_IQ));
+                    testObject.transform.position = capturedAssembly.Position;
+                    testRunning = true;
+
+                    capturedAssembly.Destroy();
                 }
 
 				GUILayout.Space(20f);
@@ -108,11 +115,11 @@ public class AssemblyEditor : MonoBehaviour {
         }
     }
 
-    void SpawnTestAssemblies(int num, float mutationRate)
+    void SpawnTestAssemblies(int num, float mutationRate, Quaternion? rot)
     {
         for (int i = 0; i < num; i++)
         {
-            PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), false);
+            PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), rot, false);
             newPhysAssem.Mutate(mutationRate);
         }
     }

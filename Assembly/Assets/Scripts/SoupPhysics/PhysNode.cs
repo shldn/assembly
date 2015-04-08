@@ -100,7 +100,7 @@ public class PhysNode {
 		this.physAssembly = physAssembly ;
 		this.localHexPos = localHexPos;
 		Position = physAssembly.spawnPosition + (physAssembly.spawnRotation * HexUtilities.HexToWorld(localHexPos));
-		Rotation = physAssembly.worldRotation;
+        Rotation = physAssembly.spawnRotation;
 		delayPosition = Position;
 
 		cubeTransform = MonoBehaviour.Instantiate(PhysNodeController.Inst.physNodePrefab, Position, Quaternion.identity) as Transform;
@@ -232,7 +232,7 @@ public class PhysNode {
 
 		// Reset power
 		smoothedPower = Mathf.MoveTowards(smoothedPower, power, PhysNodeController.physicsStep);
-		power = PersistentGameManager.IsClient? 1f : 0.2f;
+		power = PersistentGameManager.IsClient? (ClientTest.Inst ? ClientTest.Inst.NodePower : 1f) : 0.2f;
 	} // End of DoMath().
 
 

@@ -8,6 +8,7 @@ public class Test_MaxTravel : ClientTest {
 	// Use this for initialization
 	protected override void Awake(){
 		base.Awake();
+        testDuration = 500; // frames
 	} // End of Awake().
 	
 
@@ -15,7 +16,7 @@ public class Test_MaxTravel : ClientTest {
 	protected override void Update(){
 		base.Update();
 
-		if(runTime > 500f){
+		if(IsDone){
 			float furthestDistance = 0f;
 			foreach(PhysAssembly someAssem in PhysAssembly.getAll){
 				float distance = Vector3.Distance(transform.position, someAssem.Position);

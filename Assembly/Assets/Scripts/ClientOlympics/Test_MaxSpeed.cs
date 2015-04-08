@@ -8,6 +8,7 @@ public class Test_MaxSpeed : ClientTest {
 	// Use this for initialization
 	protected override void Awake(){
 		base.Awake();
+        testDuration = 500; // frames
 		foreach(PhysAssembly someAssem in PhysAssembly.getAll)
 			someAssem.distanceCovered = 0f;
 	} // End of Awake().
@@ -17,7 +18,7 @@ public class Test_MaxSpeed : ClientTest {
 	protected override void Update(){
 		base.Update();
 
-		if(runTime > 500f){
+		if(IsDone){
 			float furthestDistance = 0f;
 			foreach(PhysAssembly someAssem in PhysAssembly.getAll){
 				if(someAssem.distanceCovered > furthestDistance){

@@ -30,7 +30,6 @@ public class PhysAssembly : CaptureObject{
 			return worldPos;
 		}
 	}
-	public Quaternion worldRotation = Random.rotation;
 
 	public float energy = 0f;
 	public bool cull = false;
@@ -70,7 +69,7 @@ public class PhysAssembly : CaptureObject{
 	} // End of constructor.
 
 	// Load from string--file path, etc.
-	public PhysAssembly(string str, bool isFilePath = false){
+	public PhysAssembly(string str, Quaternion? spawnRotation, bool isFilePath = false){
         List<PhysNode> newNodes = new List<PhysNode>();
         Vector3 worldPos = new Vector3();
         if (isFilePath)
@@ -79,7 +78,7 @@ public class PhysAssembly : CaptureObject{
             IOHelper.LoadAssemblyFromString(str, ref name, ref worldPos, ref newNodes);
 
 		this.spawnPosition = worldPos;
-		this.spawnRotation = Random.rotation;
+		this.spawnRotation = spawnRotation ?? Random.rotation;
 		gender = Random.Range(0f, 1f) > 0.5f;
 		newAssemblies.Add(this);
 		AllAssemblyTree.Insert(this);

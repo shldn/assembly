@@ -56,8 +56,22 @@ public class PhysFood {
                 Debug.LogError("Failed to remove Food Node: " + worldPosition.ToString());
         }
         Object.Destroy(transform.gameObject);
+    }
 
-		new PhysFood(Random.insideUnitSphere * PhysNodeController.Inst.WorldSize);
+    public static void DestroyAll()
+    {
+        foreach(PhysFood food in all)
+        {
+            Object.Destroy(food.transform.gameObject);
+
+            // Need a Clear function for Octree.
+            if(!AllFoodTree.Remove(food)){
+                if(!AllFoodTree.Remove(food, false))
+                    Debug.LogError("Failed to remove Food Node: " + food.worldPosition.ToString());
+            }
+        }
+
+        all.Clear();
     }
 
 } // PhysFood
