@@ -50,6 +50,14 @@ public class AssemblyEditor : MonoBehaviour {
 
 			if(!testRunning){
 				GUILayout.BeginArea(controlBarRect);
+
+				if(GUILayout.Button("Vision Range", GUILayout.ExpandHeight(true))){
+					// Vision range
+				}
+				if(GUILayout.Button("Vision Scope", GUILayout.ExpandHeight(true))){
+					// Vision scope
+				}
+
 				if(GUILayout.Button("Maximum Travel", GUILayout.ExpandHeight(true))){
 					for(int i = 0; i < 10; i++){
 						PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), false);
@@ -78,17 +86,13 @@ public class AssemblyEditor : MonoBehaviour {
 
 
 
-				/*
 				if(GUILayout.Button("Rotational Speed", GUILayout.ExpandHeight(true))){
 					// Sense coverage
 				}
 				if(GUILayout.Button("Sense Range", GUILayout.ExpandHeight(true))){
 					// Sensor range
 				}
-				if(GUILayout.Button("Sense Coverage", GUILayout.ExpandHeight(true))){
-					// Sense coverage
-				}
-				*/
+				
 
 				GUILayout.Space(20f);
 
