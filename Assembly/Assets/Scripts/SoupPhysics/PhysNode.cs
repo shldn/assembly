@@ -28,6 +28,7 @@ public class PhysNode {
 	public Transform cubeTransform = null;
 	TimedTrailRenderer trail = null;
 	Transform viewCone = null;
+    public float viewConeSize = 2.5f;
     public Transform ViewCone { get { return viewCone;  } }
 
 	[System.Serializable]
@@ -262,7 +263,6 @@ public class PhysNode {
 		// Type-specific behaviours
 		switch(neighbors.Count){
 			case 1 : 
-				float viewConeSize = 2.5f;
 				Debug.DrawRay(Position, (Rotation * nodeProperties.senseVector * Vector3.forward) * 2f, Color.green);
 
 				viewCone.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
