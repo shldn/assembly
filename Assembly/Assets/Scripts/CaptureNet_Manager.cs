@@ -310,7 +310,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
 
-        PhysAssembly a = new PhysAssembly(assemblyStr);
+        PhysAssembly a = new PhysAssembly(assemblyStr, null);
         //a.WorldPosition = assemblyNewPos;
 
     } // End of PushAssembly().

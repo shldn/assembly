@@ -16,6 +16,10 @@ public class AssemblyEditor : MonoBehaviour {
 
     public bool uiLockout {get{return burnRateKnob.clicked || densityKnob.clicked || speedKnob.clicked;}}
 
+    // Test parameters
+    int numTestAssemblies = 10;
+    float mutationRate = 0.25f;
+
     void Start()
     {
         CaptureEditorManager.ObjectCaptured += HandleObjectCaptured;
@@ -59,10 +63,7 @@ public class AssemblyEditor : MonoBehaviour {
 				}
 
 				if(GUILayout.Button("Maximum Travel", GUILayout.ExpandHeight(true))){
-					for(int i = 0; i < 10; i++){
-						PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), false);
-						newPhysAssem.Mutate(0.25f);
-					}
+                    SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
 
 					GameObject testObject = new GameObject("maxTravelTester", typeof(Test_MaxTravel));
 					testObject.transform.position = capturedAssembly.Position;
@@ -72,10 +73,7 @@ public class AssemblyEditor : MonoBehaviour {
 				}
 
 				if(GUILayout.Button("Maximum Speed", GUILayout.ExpandHeight(true))){
-					for(int i = 0; i < 10; i++){
-						PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), false);
-						newPhysAssem.Mutate(0.25f);
-					}
+                    SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
 
 					GameObject testObject = new GameObject("maxSpeedTester", typeof(Test_MaxSpeed));
 					testObject.transform.position = capturedAssembly.Position;
@@ -93,6 +91,17 @@ public class AssemblyEditor : MonoBehaviour {
 					// Sensor range
 				}
 				
+                if (GUILayout.Button("IQ", GUILayout.ExpandHeight(true)))
+                {
+                    // Brain Training
+                    SpawnTestAssemblies(numTestAssemblies, mutationRate, capturedAssembly.spawnRotation);
+
+                    GameObject testObject = new GameObject("maxIQTester", typeof(Test_IQ));
+                    testObject.transform.position = capturedAssembly.Position;
+                    testRunning = true;
+
+                    capturedAssembly.Destroy();
+                }
 
 				GUILayout.Space(20f);
 
@@ -107,6 +116,15 @@ public class AssemblyEditor : MonoBehaviour {
 				}
 				GUILayout.EndArea();
 			}
+        }
+    }
+
+    void SpawnTestAssemblies(int num, float mutationRate, Quaternion? rot)
+    {
+        for (int i = 0; i < num; i++)
+        {
+            PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), rot, false);
+            newPhysAssem.Mutate(mutationRate);
         }
     }
 

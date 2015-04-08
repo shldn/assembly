@@ -7,6 +7,12 @@ public class ClientTest : MonoBehaviour {
 
 	public static ClientTest Inst = null;
 	protected int runTime = 0;
+    protected int testDuration = 500; // frames
+    protected float nodePower = 1.0f;
+    protected PhysAssembly winner = null;
+
+    public float NodePower { get { return nodePower; } protected set { nodePower = value; } }
+    public bool IsDone {  get{ return runTime > testDuration; } }
 
 
 	protected virtual void Awake(){
@@ -18,6 +24,22 @@ public class ClientTest : MonoBehaviour {
 	protected virtual void Update(){
 		runTime ++;
 	} // End of Update().
+
+    protected virtual void EndTest()
+    {
+        DestroyAllButWinner();
+        AssemblyEditor.Inst.testRunning = false;
+        Destroy(gameObject);
+    }
+
+    protected virtual void DestroyAllButWinner()
+    {
+        foreach (PhysAssembly someAssem in PhysAssembly.getAll)
+            if (someAssem != winner)
+                someAssem.Destroy();
+            else
+                AssemblyEditor.Inst.capturedAssembly = someAssem;
+    }
 
 
 	void OnGUI(){
