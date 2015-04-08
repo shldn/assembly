@@ -148,7 +148,7 @@ public class PhysNodeController : MonoBehaviour {
 
 			// Duplicate assembly using string IO methods
 			if(Input.GetKey(KeyCode.D)){
-				new PhysAssembly(IOHelper.AssemblyToString(selectedAssem), null, false);
+				new PhysAssembly(IOHelper.AssemblyToString(selectedAssem), null, null, false);
 			}
 		}/*
 			// Determine closest fit with hovered assembly.
