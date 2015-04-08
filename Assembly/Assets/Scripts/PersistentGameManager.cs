@@ -57,7 +57,8 @@ public class PersistentGameManager : MonoBehaviour {
 
         if (IsClient)
             cursorLock = false;
-        
+        else
+			cursorLock = true;
 	}
 
 
@@ -78,6 +79,9 @@ public class PersistentGameManager : MonoBehaviour {
             GameObject go = new GameObject("CursorBotManager");
             go.AddComponent<CursorBotManager>();
         }
+
+		if(Input.GetKeyDown(KeyCode.F1))
+			cursorLock = !cursorLock;
 
 		Screen.lockCursor = cursorLock;
 

@@ -38,7 +38,7 @@ public class IOHelper
             Debug.Log("Loading directory " + dir);
             string[] filePaths = Directory.GetFiles(dir);
             foreach (string file in filePaths)
-                new PhysAssembly(file, null, true);
+                new PhysAssembly(file, null, null, true);
         }
         catch (Exception e)
         {

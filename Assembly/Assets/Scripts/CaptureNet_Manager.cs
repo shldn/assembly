@@ -304,14 +304,11 @@ public class CaptureNet_Manager : MonoBehaviour {
         //if (!GameManager.Inst)
             //return;
 
-
         Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 100f);
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
-
-        PhysAssembly a = new PhysAssembly(assemblyStr, null);
-        //a.WorldPosition = assemblyNewPos;
+        PhysAssembly a = new PhysAssembly(assemblyStr, null, assemblyNewPos);
 
     } // End of PushAssembly().
 

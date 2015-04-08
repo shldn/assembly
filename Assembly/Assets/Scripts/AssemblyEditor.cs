@@ -33,6 +33,7 @@ public class AssemblyEditor : MonoBehaviour {
 
 	enum MenuType {
 		main,
+		test,
 		visionRange,
 		visionScope,
 		maximumTravel,
@@ -59,43 +60,43 @@ public class AssemblyEditor : MonoBehaviour {
     }
     void OnGUI()
     {
+		GUI.skin.label.font = PrefabManager.Inst.assemblyFont;
+		GUI.skin.button.font = PrefabManager.Inst.assemblyFont;
         if (capturedAssembly)
         {
 			float controlBarWidthRatio = 0.3f;
-            Rect controlBarRect = new Rect(Screen.width * (1f - controlBarWidthRatio), 0f, Screen.width * controlBarWidthRatio, Screen.height);
+			float gutter = Screen.height * 0.01f;
+			float defaultButtonSize = Screen.height * 0.1f;
+            Rect controlBarRect = new Rect(Screen.width * (1f - controlBarWidthRatio), gutter, (Screen.width * controlBarWidthRatio) - gutter, Screen.height - (gutter * 2));
 
-            GUI.skin.button.fontSize = 20;
+            GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.height * 0.05f);
 
 			if(!testRunning){
 				GUILayout.BeginArea(controlBarRect);
 
 				if(menu == MenuType.main){
+					GUI.enabled = false;
 					if(GUILayout.Button("Vision Range", GUILayout.ExpandHeight(true)))
 						menu = MenuType.visionRange;
-
 					if(GUILayout.Button("Vision Scope", GUILayout.ExpandHeight(true)))
 						menu = MenuType.visionScope;
-
+					GUI.enabled = true;
 					if(GUILayout.Button("Maximum Travel", GUILayout.ExpandHeight(true)))
 						menu = MenuType.maximumTravel;
-
 					if(GUILayout.Button("Maximum Speed", GUILayout.ExpandHeight(true)))
 						menu = MenuType.maximumSpeed;
-
+					GUI.enabled = false;
+					if(GUILayout.Button("Rotation", GUILayout.ExpandHeight(true)))
+						menu = MenuType.rotation;
+					if(GUILayout.Button("Undulation", GUILayout.ExpandHeight(true)))
+						menu = MenuType.undulation;
+					GUI.enabled = true;
 					if (GUILayout.Button("IQ", GUILayout.ExpandHeight(true)))
 						menu = MenuType.iq;
 
-					if(GUILayout.Button("Rotation", GUILayout.ExpandHeight(true))){
-						// Rotation
-					}
-
-					if(GUILayout.Button("Undulation", GUILayout.ExpandHeight(true))){
-						// Undulation
-					}
-
 					GUILayout.Space(Screen.height * 0.1f);
 
-					if (GUILayout.Button("Release", GUILayout.ExpandHeight(true)))
+					if(GUILayout.Button("Release", GUILayout.ExpandHeight(true)))
 					{
 						PhysAssembly a = CaptureEditorManager.capturedObj as PhysAssembly;
 						Network.SetSendingEnabled(0, true);
@@ -105,20 +106,74 @@ public class AssemblyEditor : MonoBehaviour {
 						Cleanup();
 					}
 				}else{
+					// Test details
+					string title = "";
+					string info = "";
+					switch(menu){
+						case(MenuType.visionRange):
+							title = "Vision Range";
+							info = " Sense nodes detect food and transmit signal based on what they detect.\n\n";
+							info += " This test will attempt to improve the range of sense nodes.";
+							break;
+						case(MenuType.visionScope):
+							title = "Vision Scope";
+							info = " Sense nodes detect food and transmit signal based on what they detect.\n\n";
+							info += " This test will attempt to improve the total scope of sense nodes.";
+							break;
+						case(MenuType.maximumTravel):
+							title = "Travel Distance";
+							info = " Assembly motion is determined by the signals passed from sense nodes to muscle nodes.\n\n";
+							info += " This test will attempt to improve the net distance-travel of this assembly.";
+							break;
+						case(MenuType.maximumSpeed):
+							title = "Maximum Speed";
+							info = " Assembly motion is determined by the signals passed from sense nodes to muscle nodes.\n\n";
+							info += " This test will attempt to improve the overall speed of the assembly.";
+							break;
+						case(MenuType.iq):
+							title = "Intelligence";
+							info = " The behaviour of assemblies is determined by the signal pipeline of the control nodes.\n\n";
+							info += " This test will attempt to improve the food-approaching behaviour of the assembly.";
+							break;
+						case(MenuType.rotation):
+							title = "Rotation";
+							info = " Assembly motion is determined by the signals passed from sense nodes to muscle nodes.\n\n";
+							info += " This test will attempt to induce greater rotation in the trajectory of the assembly.";
+							break;
+						case(MenuType.undulation):
+							title = "Undulation";
+							info = " Assembly motion is determined by the signals passed from sense nodes to muscle nodes.\n\n";
+							info += " This test will attempt to induce greater rotational speed overall for the assembly.";
+							break;
+					}
 
-					//...
+					GUI.skin.label.alignment = TextAnchor.MiddleLeft;
+					GUI.skin.label.clipping = TextClipping.Overflow;
+					GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.02f);
+					GUILayout.Label("IMPROVE");
+					GUILayout.Space(Screen.height * 0.005f);
+					GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.06f);
+					GUI.skin.label.fontStyle = FontStyle.Italic;
+					GUILayout.Label(title);
+					GUILayout.Space(Screen.height * 0.03f);
+					GUI.skin.label.fontStyle = FontStyle.Normal;
+					GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.03f);
+					GUILayout.Label(info);
 
+					GUILayout.FlexibleSpace();
+
+					// Controls
 					GUILayout.BeginHorizontal();
-					if(GUILayout.Button("Low Mutation", GUILayout.ExpandWidth(true))){
+					if(GUILayout.Button("Low Mutation", GUILayout.Height(defaultButtonSize))){
 						mutationRate = 0.1f;
 						DoTest();
 					}
-					if(GUILayout.Button("High Mutation", GUILayout.ExpandWidth(true))){
+					if(GUILayout.Button("High Mutation", GUILayout.Height(defaultButtonSize))){
 						mutationRate = 0.25f;
 						DoTest();
 					}
 					GUILayout.EndHorizontal();
-					if(GUILayout.Button("Cancel")){
+					if(GUILayout.Button("Cancel", GUILayout.Height(defaultButtonSize))){
 						menu = MenuType.main;
 					}
 				}
@@ -169,7 +224,7 @@ public class AssemblyEditor : MonoBehaviour {
     {
         for (int i = 0; i < num; i++)
         {
-            PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), rot, false);
+            PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), rot, null, false);
             newPhysAssem.Mutate(mutationRate);
         }
     }
@@ -186,6 +241,7 @@ public class AssemblyEditor : MonoBehaviour {
     public void Cleanup()
     {
         CaptureEditorManager.ReleaseCaptured();
+		capturedAssembly.Destroy();
         capturedAssembly = null;
         selectedNode = null;
     }
