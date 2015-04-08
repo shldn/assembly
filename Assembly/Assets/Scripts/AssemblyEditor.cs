@@ -69,7 +69,7 @@ public class AssemblyEditor : MonoBehaviour {
 			float defaultButtonSize = Screen.height * 0.1f;
             Rect controlBarRect = new Rect(Screen.width * (1f - controlBarWidthRatio), gutter, (Screen.width * controlBarWidthRatio) - gutter, Screen.height - (gutter * 2));
 
-            GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.height * 0.05f);
+            GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.width * 0.03f);
 
 			if(!testRunning){
 				GUILayout.BeginArea(controlBarRect);
@@ -163,12 +163,13 @@ public class AssemblyEditor : MonoBehaviour {
 					GUILayout.FlexibleSpace();
 
 					// Controls
+					GUILayout.Label("Run Mutation:");
 					GUILayout.BeginHorizontal();
-					if(GUILayout.Button("Low Mutation", GUILayout.Height(defaultButtonSize))){
+					if(GUILayout.Button("Low", GUILayout.Height(defaultButtonSize))){
 						mutationRate = 0.1f;
 						DoTest();
 					}
-					if(GUILayout.Button("High Mutation", GUILayout.Height(defaultButtonSize))){
+					if(GUILayout.Button("High", GUILayout.Height(defaultButtonSize))){
 						mutationRate = 0.25f;
 						DoTest();
 					}

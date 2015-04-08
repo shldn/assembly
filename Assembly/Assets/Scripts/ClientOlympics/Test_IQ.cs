@@ -14,6 +14,8 @@ public class Test_IQ : ClientTest
 	void Start () {
         float foodDistAway = 20.0f;
         new PhysFood(transform.position + foodDistAway * transform.forward);
+		foreach(PhysAssembly someAssembly in PhysAssembly.getAll)
+			someAssembly.energy = 1f;
 	}
 
     protected override void Update()
