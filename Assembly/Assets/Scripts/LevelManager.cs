@@ -29,7 +29,7 @@ public class LevelManager {
             LoadLevel(0);
         if (Input.GetKeyUp(KeyCode.Alpha2))
             LoadLevel(1);
-        if (Input.GetKeyUp(KeyCode.Alpha2))
+        if (Input.GetKeyUp(KeyCode.Alpha3))
             LoadLevel(2);
 
     }

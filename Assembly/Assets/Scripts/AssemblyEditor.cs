@@ -69,7 +69,7 @@ public class AssemblyEditor : MonoBehaviour {
 			float defaultButtonSize = Screen.height * 0.1f;
             Rect controlBarRect = new Rect(Screen.width * (1f - controlBarWidthRatio), gutter, (Screen.width * controlBarWidthRatio) - gutter, Screen.height - (gutter * 2));
 
-            GUI.skin.button.fontSize = 20;
+            GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.height * 0.05f);
 
 			if(!testRunning){
 				GUILayout.BeginArea(controlBarRect);

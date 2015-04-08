@@ -296,6 +296,7 @@ public class PhysNodeController : MonoBehaviour {
 
 
 	void OnGUI(){
+		return;
 
 		string infoString = "";
 		infoString += "Nodes: " + PhysNode.getAll.Count + "\n";
