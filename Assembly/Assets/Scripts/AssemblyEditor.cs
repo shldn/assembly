@@ -146,6 +146,13 @@ public class AssemblyEditor : MonoBehaviour {
 				testRunning = true;
 				capturedAssembly.Destroy();
 				break;
+            case (MenuType.visionRange):
+                SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
+                testObject = new GameObject("maxVisionRange", typeof(Test_SenseRange));
+                testObject.transform.position = capturedAssembly.Position;
+                testRunning = true;
+                capturedAssembly.Destroy();
+                break;
 			case(MenuType.iq):
 				SpawnTestAssemblies(numTestAssemblies, mutationRate, capturedAssembly.spawnRotation);
 				testObject = new GameObject("maxIQTester", typeof(Test_IQ));

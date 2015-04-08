@@ -15,6 +15,7 @@ public class PhysNode {
 
 	PhysAssembly physAssembly = null;
 	public PhysAssembly PhysAssembly {get{return physAssembly;} set{physAssembly = value;}}
+    public bool IsSense{ get{ return neighbors.Count == 1; } }
 
     public NodeProperties nodeProperties = NodeProperties.random;
 
@@ -27,6 +28,7 @@ public class PhysNode {
 	public Transform cubeTransform = null;
 	TimedTrailRenderer trail = null;
 	Transform viewCone = null;
+    public Transform ViewCone { get { return viewCone;  } }
 
 	[System.Serializable]
 	public class PhysNeighbor {
@@ -69,7 +71,6 @@ public class PhysNode {
 	// If true, node will be destroyed.
 	public bool cull = false;
 
-	public float senseDetectRange = 120f;
 	List<SenseActuateLink> senseActuateLinks = new List<SenseActuateLink>();
 
 	public float senseAttractRange = 30f;
@@ -191,6 +192,7 @@ public class PhysNode {
 				nodeColor = PrefabManager.Inst.senseColor;
 				Transform newViewConeTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.senseNodeBillboard, Position, Rotation) as Transform;
 				viewCone = newViewConeTrans;
+                AllSenseNodeTree.Insert(this);
 				break;
 			// Muscle node.
 			case 2 : 
@@ -200,7 +202,6 @@ public class PhysNode {
 					newTrailTrans.parent = cubeTransform;
 					trail = newTrailTrans.GetComponent<TimedTrailRenderer>();
 				}
-				AllSenseNodeTree.Insert(this);
 				break;
 			// Control node.
 			case 3 : 
@@ -277,7 +278,7 @@ public class PhysNode {
 				viewCone.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
 
 				//calling detect food on sense node, determines power of node
-				Bounds foodDetectBoundary = new Bounds(position, senseDetectRange * (new Vector3(1, 1, 1)));
+                Bounds foodDetectBoundary = new Bounds(position, nodeProperties.senseRange * (new Vector3(1, 1, 1)));
 				PhysFood.AllFoodTree.RunActionInRange(new System.Action<PhysFood>(HandleDetectedFood), foodDetectBoundary);
 
 				// Amalgamation attraction
@@ -370,11 +371,11 @@ public class PhysNode {
     private void HandleDetectedFood(PhysFood food){
 		Vector3 vectorToFood = food.worldPosition - position;
 		float distanceToFood = vectorToFood.magnitude;
-		if(distanceToFood > senseDetectRange)
+		if(distanceToFood > nodeProperties.senseRange)
 			return;
 
 		float angleToFood = Vector3.Angle(rotation * nodeProperties.senseVector * Vector3.forward, vectorToFood);
-		float strength = 1f - (distanceToFood / senseDetectRange);
+        float strength = 1f - (distanceToFood / nodeProperties.senseRange);
 
 		if(angleToFood < 45f){
 			power = 1f;
@@ -456,6 +457,7 @@ public struct NodeProperties {
     // Sense
     public Quaternion senseVector;
     public float fieldOfView;
+    public float senseRange;
     public float muscleStrength;
 
 	public Vector3 torqueAxis;
@@ -469,14 +471,15 @@ public struct NodeProperties {
     // A fully randomly-seeded NodeProperties.
     public static NodeProperties random{
         get{
-            return new NodeProperties(Random.rotation, 45f, Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
+            return new NodeProperties(Random.rotation, 45f, Random.Range(60.0f, 180.0f), Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
         }
     } // End of NodeProperties.random.
 
 
     // Constructor
-    public NodeProperties(Quaternion senseVector, float fieldOfView, Quaternion actuateVector, float muscleStrength, Vector3 torqueAxis, float wigglePhase, float torqueStrength, float flailMaxAngle){
+    public NodeProperties(Quaternion senseVector, float fieldOfView, float senseRange, Quaternion actuateVector, float muscleStrength, Vector3 torqueAxis, float wigglePhase, float torqueStrength, float flailMaxAngle){
         this.senseVector = senseVector;
+        this.senseRange = senseRange;
         this.fieldOfView = fieldOfView;
         this.actuateVector = actuateVector;
         this.muscleStrength = muscleStrength;
@@ -492,6 +495,7 @@ public struct NodeProperties {
 
         senseVector = Quaternion.identity;
         fieldOfView = 45.0f;
+        senseRange = 120.0f;
         muscleStrength = 1.0f;
         actuateVector = Quaternion.identity;
 
@@ -506,6 +510,10 @@ public struct NodeProperties {
             switch(pair[0]){
                 case "sv":
                     senseVector = IOHelper.QuaternionFromString(pair[1]);
+                    break;
+                case "sr":
+                    if (!float.TryParse(pair[1], out senseRange))
+                        Debug.LogError("sr failed to parse");
                     break;
                 case "av":
                     actuateVector = IOHelper.QuaternionFromString(pair[1]);
@@ -545,6 +553,9 @@ public struct NodeProperties {
 	public void Mutate(float amount){
 		senseVector *= Quaternion.AngleAxis(Random.Range(0f, 180f * amount), Random.onUnitSphere);
 
+        senseRange = (1.0f + Random.Range(-amount, amount)) * senseRange;
+        senseRange = Mathf.Clamp(senseRange, 1f, 1000f);
+
 		fieldOfView += Random.Range(-180f, 180f) * amount;
 		fieldOfView = Mathf.Clamp(fieldOfView, 1f, 180f);
 
@@ -570,6 +581,7 @@ public struct NodeProperties {
     public override string ToString(){
         return  "sv" + ":" + senseVector.ToString() + ";" +
                 "av" + ":" + actuateVector.ToString() + ";" +
+                "sr" + ":" + senseRange.ToString() + ";" +
                 "fov" + ":" + fieldOfView.ToString() + ";" +
                 "m" + ":" + muscleStrength.ToString() + ";" +
 
