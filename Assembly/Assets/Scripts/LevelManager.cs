@@ -31,6 +31,5 @@ public class LevelManager {
             LoadLevel(1);
         if (Input.GetKeyUp(KeyCode.Alpha3))
             LoadLevel(2);
-
     }
 }

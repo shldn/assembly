@@ -32,6 +32,7 @@ public class PhysAssembly : CaptureObject{
 	}
 
 	public float energy = 0f;
+	float lastEnergy = 0f; // debug
 	public bool cull = false;
 	public bool needAddToList = true;
 
@@ -128,6 +129,9 @@ public class PhysAssembly : CaptureObject{
 
 
 	public void Update(){
+		//MonoBehaviour.print(energy - lastEnergy);
+		lastEnergy = energy;
+
 		if(myNodesIndexed.Length != nodeDict.Values.Count){
 			myNodesIndexed = new PhysNode[nodeDict.Values.Count];
 			nodeDict.Values.CopyTo(myNodesIndexed, 0);
@@ -139,7 +143,8 @@ public class PhysAssembly : CaptureObject{
 		}
 
 		float maxEnergy = nodeDict.Values.Count * 2f;
-		energy = Mathf.Clamp(energy, 0f, maxEnergy);
+		if(!PersistentGameManager.IsClient)
+			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
 		if((PhysNode.getAll.Count < PhysNodeController.Inst.worldNodeThreshold * 0.9f) && (energy > (maxEnergy * 0.9f)))
 			wantToMate = true;
