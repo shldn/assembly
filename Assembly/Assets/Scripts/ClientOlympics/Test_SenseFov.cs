@@ -10,6 +10,8 @@ public class Test_SenseFov : ClientTest
     int maxSenseFovIdx = 0;
     int testIdx = 0;
     int testNodeIdx = 0;
+    float testDelay = 0.1f;
+    float delayDuration = 0.0f;
 
     Color highlightColor = new Color(1.0f, 42.0f/255.0f, 91.0f/255.0f, 70.0f/255.0f);
     Color origColor = Color.white;
@@ -29,12 +31,15 @@ public class Test_SenseFov : ClientTest
         PhysAssembly.getAll.CopyTo(testAssemblies);
 		winner = testAssemblies[0];
         StartAssemblyTest(testIdx);
-        InvokeRepeating("UpdateTest", 0.5f, 0.1f);
     }
 
     protected override void Update()
     {
         base.Update();
+        delayDuration += Time.deltaTime;
+
+        if (delayDuration >= testDelay)
+            UpdateTest();
 
         if ((testIdx >= testAssemblies.Length) || IsDone)
             EndTest();
@@ -88,6 +93,7 @@ public class Test_SenseFov : ClientTest
             StartAssemblyTest(++testIdx);
         else
             ++testNodeIdx;
+        delayDuration = 0.0f;
     }
 
 }
