@@ -94,7 +94,7 @@ public class PlayerSync : MonoBehaviour {
 
             if(networkView.isMine){
 #if UNITY_ANDROID || UNITY_IOS
-                if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && (Input.touchCount == 1))
+                if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && ((Input.touchCount == 1) || (Application.platform == RuntimePlatform.WindowsEditor)))
 #else
                 if (!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0))
 #endif
