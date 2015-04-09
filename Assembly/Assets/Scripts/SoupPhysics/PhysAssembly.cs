@@ -129,7 +129,7 @@ public class PhysAssembly : CaptureObject{
 
 
 	public void Update(){
-		MonoBehaviour.print(energy - lastEnergy);
+		//MonoBehaviour.print(energy - lastEnergy);
 		lastEnergy = energy;
 
 		if(myNodesIndexed.Length != nodeDict.Values.Count){
