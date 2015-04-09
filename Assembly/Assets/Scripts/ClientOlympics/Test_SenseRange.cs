@@ -76,7 +76,11 @@ public class Test_SenseRange : ClientTest
     void UpdateTest()
     {
         if (testNodes.Count == 0)
+        {
+            StartAssemblyTest(++testIdx);
+            delayDuration = 0.0f;
             return;
+        }
 
         if (testNodeIdx < testNodes.Count)
         {
