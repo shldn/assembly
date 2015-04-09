@@ -249,7 +249,8 @@ public class AssemblyEditor : MonoBehaviour {
     public void Cleanup()
     {
         CaptureEditorManager.ReleaseCaptured();
-		capturedAssembly.Destroy();
+        if( capturedAssembly )
+    		capturedAssembly.Destroy();
         capturedAssembly = null;
         selectedNode = null;
     }
