@@ -24,7 +24,7 @@ public class Test_IQ : ClientTest
 
         if (IsDone)
         {
-            float maxEnergy = -1.0f;
+            float maxEnergy = -999999999f;
 
             foreach (PhysAssembly someAssem in PhysAssembly.getAll)
             {

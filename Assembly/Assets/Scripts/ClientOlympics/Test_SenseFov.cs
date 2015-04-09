@@ -27,6 +27,7 @@ public class Test_SenseFov : ClientTest
     {
         testAssemblies = new PhysAssembly[PhysAssembly.getAll.Count];
         PhysAssembly.getAll.CopyTo(testAssemblies);
+		winner = testAssemblies[0];
         StartAssemblyTest(testIdx);
         InvokeRepeating("UpdateTest", 0.5f, 0.1f);
     }
@@ -35,7 +36,7 @@ public class Test_SenseFov : ClientTest
     {
         base.Update();
 
-        if (testIdx >= testAssemblies.Length)
+        if ((testIdx >= testAssemblies.Length) || IsDone)
             EndTest();
 
     } // End of Update().
