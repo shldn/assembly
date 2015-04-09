@@ -60,17 +60,17 @@ public class PhysFood {
 
     public static void DestroyAll()
     {
-        foreach(PhysFood food in all)
+        try
         {
-            Object.Destroy(food.transform.gameObject);
-
-            // Need a Clear function for Octree.
-            if(!AllFoodTree.Remove(food)){
-                if(!AllFoodTree.Remove(food, false))
-                    Debug.LogError("Failed to remove Food Node: " + food.worldPosition.ToString());
-            }
+            foreach (PhysFood food in all)
+                Object.Destroy(food.transform.gameObject);
+        }
+        catch(System.Exception e)
+        {
+            Debug.LogError("Exception destroying food node: " + e.ToString());
         }
 
+        allFoodTree = null;
         all.Clear();
     }
 

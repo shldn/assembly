@@ -309,4 +309,12 @@ public class PhysNodeController : MonoBehaviour {
 
 	} // End of OnGUI().
 
+    void OnDestroy()
+    {
+        Inst = null;
+        PhysAssembly.DestroyAll();
+        PhysNode.DestroyAll();
+        PhysFood.DestroyAll();
+    }
+
 } // End of PhysNodeController.

@@ -44,12 +44,13 @@ public class ClientTest : MonoBehaviour {
     }
 
 
-	void OnGUI(){
+    void OnGUI(){
 		string progressBar = "[Testing] ";
-		for(int i = 0; i < runTime * 0.2f; i++)
+        float step = 100f / (float)(testDuration);
+		for(int i = 0; i < runTime * step; i++)
 			progressBar += "|";
 		GUI.skin.label.alignment = TextAnchor.LowerLeft;
-		GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), progressBar + " " + (runTime / 5f).ToString("F0") + "%");
+        GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), progressBar + " " + (runTime * step).ToString("F0") + "%");
 	} // End of OnGUI().
 
 } // End of ClientTest.

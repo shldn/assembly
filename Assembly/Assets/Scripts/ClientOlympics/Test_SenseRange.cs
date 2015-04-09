@@ -72,9 +72,16 @@ public class Test_SenseRange : ClientTest
             return;
 
         if (testNodeIdx < testNodes.Count)
+        {
             testNodes[testNodeIdx].ViewCone.gameObject.renderer.material.SetColor("_TintColor", highlightColor);
+            testNodes[testNodeIdx].viewConeSize *= 2f;
+        }
+
         if (testNodeIdx > 0)
-            testNodes[testNodeIdx-1].ViewCone.gameObject.renderer.material.SetColor("_TintColor", origColor);
+        {
+            testNodes[testNodeIdx - 1].ViewCone.gameObject.renderer.material.SetColor("_TintColor", origColor);
+            testNodes[testNodeIdx - 1].viewConeSize *= 0.5f;
+        }
 
         if (testNodeIdx >= testNodes.Count)
             StartAssemblyTest(++testIdx);

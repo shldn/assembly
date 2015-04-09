@@ -27,6 +27,10 @@ public class PlayerInputManager : MonoBehaviour {
     float h = 0f;
     bool jump = false;
 
+    // Let other systems simulate key presses
+    public float addV = 0f;
+    public float addH = 0f;
+
 
     // Use this for initialization
 	void Start(){
@@ -70,15 +74,18 @@ public class PlayerInputManager : MonoBehaviour {
 
         // Overhaul
         if (MainCameraController.Inst.cameraType != CameraType.FIRSTPERSON){
-            playerController.forwardThrottle = v;
-            playerController.turnThrottle = h;
+            playerController.forwardThrottle = v + Mathf.Clamp(addV,-1f, 1f);
+            playerController.turnThrottle = h + Mathf.Clamp(addH, -1f, 1f);
             playerController.speed = run ? PlayerController.MovementSpeed.run : PlayerController.MovementSpeed.walk;
         }
 
-        if ((v != 0f) || (h != 0f)){
+        if ((v != 0f) || (h != 0f) || (addV != 0f) || (addH != 0f)){
             playerController.pathfindingActive = false;
             playerController.StopFollowingPlayer();
         }
+
+        addV = Mathf.MoveTowards(Mathf.Clamp(addV, -2f,2f), 0.0f, 2f * Time.deltaTime);
+        addH = Mathf.MoveTowards(Mathf.Clamp(addH, -2f, 2f), 0.0f, 2f * Time.deltaTime);
 
         // bug fix for players stuck rotating
         upKey.UpdateCheck();
