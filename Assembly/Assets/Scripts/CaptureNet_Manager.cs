@@ -70,7 +70,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     void Update(){
 	    connectCooldown -= Time.deltaTime;
         // Cycle through available IPs to connect to.
-        if (autoIPConnect && (connectToIP.Count > 0) && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f) && !ClientAdminMenu.Inst.showMenu){
+        if (autoIPConnect && (connectToIP.Count > 0) && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f) && (!ClientAdminMenu.Inst.showMenu || !PersistentGameManager.IsAdminClient)){
 			Network.Connect(connectToIP[ipListConnect], connectionPort);
             ipListConnect = (ipListConnect + 1) % connectToIP.Count;
 
@@ -133,7 +133,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 
         // Client GUI
-		if (ClientAdminMenu.Inst && !ClientAdminMenu.Inst.showMenu && autoIPConnect){
+		if (((ClientAdminMenu.Inst && !ClientAdminMenu.Inst.showMenu) || !PersistentGameManager.IsAdminClient)  && autoIPConnect){
 			if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
 				GUI.skin.label.fontSize = 40;
 				GUI.skin.label.alignment = TextAnchor.MiddleCenter;

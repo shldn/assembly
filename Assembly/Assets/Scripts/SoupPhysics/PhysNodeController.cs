@@ -315,6 +315,7 @@ public class PhysNodeController : MonoBehaviour {
         PhysAssembly.DestroyAll();
         PhysNode.DestroyAll();
         PhysFood.DestroyAll();
+        PersistentGameManager.CaptureObjects.Clear();
     }
 
 } // End of PhysNodeController.

@@ -44,6 +44,7 @@ public class TimedTrailRenderer : MonoBehaviour
    void Start()
    {
       lastPosition = transform.position;
+      Destroy(o);
       o = new GameObject("Trail");
       o.layer = LayerMask.NameToLayer("TransparentFX");
       o.transform.parent = null;
@@ -58,6 +59,7 @@ public class TimedTrailRenderer : MonoBehaviour
    void OnEnable ()
    {
       lastPosition = transform.position;
+      Destroy(o);
       o = new GameObject("Trail");
       o.layer = LayerMask.NameToLayer("TransparentFX");
       o.transform.parent = null;
