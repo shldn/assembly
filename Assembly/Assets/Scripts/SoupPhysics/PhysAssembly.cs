@@ -101,7 +101,13 @@ public class PhysAssembly : CaptureObject{
 
 	public void AddNodes(List<PhysNode> nodesList){
         foreach (PhysNode someNode in nodesList)
-            IntegrateNode(someNode.localHexPos, someNode);
+            AddNode(someNode.localHexPos, someNode.nodeProperties);
+
+        // Destroy the duplicates
+        for (int i = nodesList.Count - 1; i >= 0; --i)
+            nodesList[i].Destroy();
+
+            //IntegrateNode(someNode.localHexPos, someNode);
 	} // End of AddNodes().
 
 
