@@ -75,7 +75,7 @@ public class AssemblyEditor : MonoBehaviour {
 				GUILayout.BeginArea(controlBarRect);
 
 				if(menu == MenuType.main){
-					GUI.enabled = true;
+					GUI.enabled = false;
 					if(GUILayout.Button("Vision Range", GUILayout.ExpandHeight(true)))
 						menu = MenuType.visionRange;
 					if(GUILayout.Button("Vision Scope", GUILayout.ExpandHeight(true)))
@@ -121,12 +121,12 @@ public class AssemblyEditor : MonoBehaviour {
 							info += " This test will attempt to improve the total scope of sense nodes.";
 							break;
 						case(MenuType.maximumTravel):
-							title = "Travel Distance";
+							title = "Travel";
 							info = " Assembly motion is determined by the signals passed from sense nodes to muscle nodes.\n\n";
 							info += " This test will attempt to improve the net distance-travel of this assembly.";
 							break;
 						case(MenuType.maximumSpeed):
-							title = "Maximum Speed";
+							title = "Speed";
 							info = " Assembly motion is determined by the signals passed from sense nodes to muscle nodes.\n\n";
 							info += " This test will attempt to improve the overall speed of the assembly.";
 							break;
