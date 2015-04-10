@@ -8,7 +8,7 @@ public class Test_IQ : ClientTest
     {
         base.Awake();
         nodePower = 0.2f;
-        testDuration = 1500; // frames
+        testDuration = 1000; // frames
     }
 
 	void Start () {
@@ -24,7 +24,7 @@ public class Test_IQ : ClientTest
 
         if (IsDone)
         {
-            float maxEnergy = -1.0f;
+            float maxEnergy = -999999999f;
 
             foreach (PhysAssembly someAssem in PhysAssembly.getAll)
             {

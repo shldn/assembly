@@ -185,7 +185,11 @@ public class PhysNode {
 				GameObject.Destroy(viewCone.gameObject);
 
 			if(trail)
-				GameObject.Destroy(trail.gameObject);
+            {
+                GameObject.Destroy(trail.gameObject);
+                GameObject.Destroy(trail);
+            }
+
 
 			switch(neighbors.Count){
 			// Sense node.
@@ -322,7 +326,12 @@ public class PhysNode {
 			MonoBehaviour.Destroy(viewCone.gameObject);
 
 		if(trail)
-			trail.transform.parent = null;
+        {
+            trail.transform.parent = null;
+            MonoBehaviour.Destroy(trail.gameObject);
+            MonoBehaviour.Destroy(trail);
+            trail = null;
+        }
 
 		cull = true;
 	} // End of OnDestroy().

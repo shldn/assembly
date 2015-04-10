@@ -10,6 +10,8 @@ public class Test_SenseRange : ClientTest
     int maxSenseRangeIdx = 0;
     int testIdx = 0;
     int testNodeIdx = 0;
+    float testDelay = 0.1f;
+    float delayDuration = 0.0f;
 
     Color highlightColor = new Color(1.0f, 42.0f/255.0f, 91.0f/255.0f, 70.0f/255.0f);
     Color origColor = Color.white;
@@ -27,15 +29,20 @@ public class Test_SenseRange : ClientTest
     {
         testAssemblies = new PhysAssembly[PhysAssembly.getAll.Count];
         PhysAssembly.getAll.CopyTo(testAssemblies);
+		winner = testAssemblies[0];
         StartAssemblyTest(testIdx);
-        InvokeRepeating("UpdateTest", 0.5f, 0.1f);
     }
 
     protected override void Update()
     {
         base.Update();
 
-        if (testIdx >= testAssemblies.Length)
+        delayDuration += Time.deltaTime;
+
+        if (delayDuration >= testDelay)
+            UpdateTest();
+
+        if ((testIdx >= testAssemblies.Length) || IsDone)
             EndTest();
 
     } // End of Update().
@@ -69,7 +76,11 @@ public class Test_SenseRange : ClientTest
     void UpdateTest()
     {
         if (testNodes.Count == 0)
+        {
+            StartAssemblyTest(++testIdx);
+            delayDuration = 0.0f;
             return;
+        }
 
         if (testNodeIdx < testNodes.Count)
         {
@@ -87,6 +98,7 @@ public class Test_SenseRange : ClientTest
             StartAssemblyTest(++testIdx);
         else
             ++testNodeIdx;
+        delayDuration = 0.0f;
     }
 
 }

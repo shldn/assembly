@@ -100,26 +100,40 @@ public class PhysAssembly : CaptureObject{
 
 
 	public void AddNodes(List<PhysNode> nodesList){
-		foreach(PhysNode someNode in nodesList)
-			AddNode(someNode.localHexPos, someNode.nodeProperties);
+        foreach (PhysNode someNode in nodesList)
+            AddNode(someNode.localHexPos, someNode.nodeProperties);
+
+        // Destroy the duplicates
+        for (int i = nodesList.Count - 1; i >= 0; --i)
+            nodesList[i].Destroy();
+
+            //IntegrateNode(someNode.localHexPos, someNode);
 	} // End of AddNodes().
 
 
 	public void AddNode(Triplet nodePos, NodeProperties? nodeProps = null){
 		PhysNode newPhysNode = new PhysNode(this, nodePos);
 		newPhysNode.nodeProperties = nodeProps ?? NodeProperties.random;
-		newPhysNode.PhysAssembly = this;
-		nodeDict.Add(nodePos, newPhysNode);
-
-		// Assign neighbors.
-		for(int dir = 0; dir < 12; dir++){
-			Triplet testPos = nodePos + HexUtilities.Adjacent(dir);
-			if(nodeDict.ContainsKey(testPos))
-				newPhysNode.AttachNeighbor(nodeDict[testPos]);
-		}
-
-		energy += 1f;
+        IntegrateNode(nodePos, newPhysNode);
 	} // End of AddNode().
+
+    private void IntegrateNode(Triplet nodePos, PhysNode physNode)
+    {
+        physNode.PhysAssembly = this;
+        nodeDict.Add(nodePos, physNode);
+        AssignNodeNeighbors(nodePos, physNode);
+        energy += 1f;
+    }
+
+    private void AssignNodeNeighbors(Triplet nodePos, PhysNode physNode)
+    {
+        for (int dir = 0; dir < 12; dir++)
+        {
+            Triplet testPos = nodePos + HexUtilities.Adjacent(dir);
+            if (nodeDict.ContainsKey(testPos))
+                physNode.AttachNeighbor(nodeDict[testPos]);
+        }
+    }
 
 
 	public void RemoveNode(PhysNode nodeToRemove){
