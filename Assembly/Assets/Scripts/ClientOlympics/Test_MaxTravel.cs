@@ -8,7 +8,7 @@ public class Test_MaxTravel : ClientTest {
 	// Use this for initialization
 	protected override void Awake(){
 		base.Awake();
-        testDuration = 500; // frames
+        testDuration = 250; // frames
 	} // End of Awake().
 	
 

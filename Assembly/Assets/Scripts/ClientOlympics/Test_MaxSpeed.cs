@@ -8,7 +8,7 @@ public class Test_MaxSpeed : ClientTest {
 	// Use this for initialization
 	protected override void Awake(){
 		base.Awake();
-        testDuration = 500; // frames
+        testDuration = 250; // frames
 		foreach(PhysAssembly someAssem in PhysAssembly.getAll)
 			someAssem.distanceCovered = 0f;
 	} // End of Awake().

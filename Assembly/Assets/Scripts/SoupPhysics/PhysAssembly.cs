@@ -4,12 +4,9 @@ using System.Collections.Generic;
 
 public class PhysAssembly : CaptureObject{
 
-	static HashSet<PhysAssembly> all = new HashSet<PhysAssembly>();
-	public static HashSet<PhysAssembly> getAll {get{return all;}}
+	static List<PhysAssembly> all = new List<PhysAssembly>();
+	public static List<PhysAssembly> getAll {get{return all;}}
 	public static implicit operator bool(PhysAssembly exists){return exists != null;}
-
-	// New assemblies go in here so we can add them to 'all' while not iterating over it.
-	public static List<PhysAssembly> newAssemblies = new List<PhysAssembly>();
 
 	public string name = "Some Unimportant Assembly";
 
@@ -59,7 +56,6 @@ public class PhysAssembly : CaptureObject{
 
     public static void DestroyAll()
     {
-        newAssemblies.Clear();
         all.Clear();
         allAssemblyTree = null;
     }
@@ -71,7 +67,7 @@ public class PhysAssembly : CaptureObject{
 		this.spawnPosition = spawnPosition;
 		this.spawnRotation = spawnRotation;
 		gender = Random.Range(0f, 1f) > 0.5f;
-		newAssemblies.Add(this);
+		all.Add(this);
 		AllAssemblyTree.Insert(this);
 		PersistentGameManager.CaptureObjects.Add(this);
 	} // End of constructor.
@@ -88,7 +84,7 @@ public class PhysAssembly : CaptureObject{
 		this.spawnPosition = spawnPosition ?? worldPos;
 		this.spawnRotation = spawnRotation ?? Random.rotation;
 		gender = Random.Range(0f, 1f) > 0.5f;
-		newAssemblies.Add(this);
+		all.Add(this);
 		AllAssemblyTree.Insert(this);
 
         AddNodes(newNodes);

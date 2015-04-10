@@ -75,7 +75,7 @@ public class AssemblyEditor : MonoBehaviour {
 				GUILayout.BeginArea(controlBarRect);
 
 				if(menu == MenuType.main){
-					GUI.enabled = false;
+					GUI.enabled = true;
 					if(GUILayout.Button("Vision Range", GUILayout.ExpandHeight(true)))
 						menu = MenuType.visionRange;
 					if(GUILayout.Button("Vision Scope", GUILayout.ExpandHeight(true)))
