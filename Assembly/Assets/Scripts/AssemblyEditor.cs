@@ -20,10 +20,18 @@ public class AssemblyEditor : MonoBehaviour {
     int numTestAssemblies = 10;
     float mutationRate = 0.25f;
 
-    void Start()
-    {
+	public Texture2D visionRangeIcon;
+	public Texture2D visionFOVIcon;
+	public Texture2D travelIcon;
+	public Texture2D speedIcon;
+	public Texture2D rotationIcon;
+	public Texture2D undulationIcon;
+	public Texture2D iqIcon;
+
+
+    void Start(){
         CaptureEditorManager.ObjectCaptured += HandleObjectCaptured;
-    }
+    } // End of Start().
 
 
     void Awake(){
@@ -57,13 +65,13 @@ public class AssemblyEditor : MonoBehaviour {
                 //Node.GetAll()[i].Update();
 
         }
-    }
-    void OnGUI()
-    {
+    } // End of Update().
+
+
+    void OnGUI(){
 		GUI.skin.label.font = PrefabManager.Inst.assemblyFont;
 		GUI.skin.button.font = PrefabManager.Inst.assemblyFont;
-        if (capturedAssembly)
-        {
+        if (capturedAssembly){
 			float controlBarWidthRatio = 0.3f;
 			float gutter = Screen.height * 0.01f;
 			float defaultButtonSize = Screen.height * 0.1f;
@@ -75,28 +83,44 @@ public class AssemblyEditor : MonoBehaviour {
 				GUILayout.BeginArea(controlBarRect);
 
 				if(menu == MenuType.main){
-					GUI.enabled = true;
-					if(GUILayout.Button("Vision Range", GUILayout.ExpandHeight(true)))
+
+					int numOptions = 7;
+					float buttonSize = (controlBarRect.height / (numOptions + 2f)) - gutter;
+					Rect buttonRect = new Rect(controlBarRect.x, controlBarRect.y, controlBarRect.width, buttonSize);
+					buttonRect = new Rect(controlBarRect.width * 0.5f, 0f, controlBarRect.width * 0.5f, buttonSize);
+
+					if(GUI.Button(buttonRect, visionRangeIcon))
 						menu = MenuType.visionRange;
-					if(GUILayout.Button("Vision Scope", GUILayout.ExpandHeight(true)))
+					buttonRect.y += buttonRect.height + gutter;
+
+					if(GUI.Button(buttonRect, visionFOVIcon))
 						menu = MenuType.visionScope;
-					GUI.enabled = true;
-					if(GUILayout.Button("Maximum Travel", GUILayout.ExpandHeight(true)))
+					buttonRect.y += buttonRect.height + gutter;
+
+					if(GUI.Button(buttonRect, travelIcon))
 						menu = MenuType.maximumTravel;
-					if(GUILayout.Button("Maximum Speed", GUILayout.ExpandHeight(true)))
+					buttonRect.y += buttonRect.height + gutter;
+
+					if(GUI.Button(buttonRect, speedIcon))
 						menu = MenuType.maximumSpeed;
 					GUI.enabled = false;
-					if(GUILayout.Button("Rotation", GUILayout.ExpandHeight(true)))
+					buttonRect.y += buttonRect.height + gutter;
+
+					if(GUI.Button(buttonRect, rotationIcon))
 						menu = MenuType.rotation;
-					if(GUILayout.Button("Undulation", GUILayout.ExpandHeight(true)))
+					buttonRect.y += buttonRect.height + gutter;
+
+					if(GUI.Button(buttonRect, undulationIcon))
 						menu = MenuType.undulation;
+					buttonRect.y += buttonRect.height + gutter;
+
 					GUI.enabled = true;
-					if (GUILayout.Button("IQ", GUILayout.ExpandHeight(true)))
+					if(GUI.Button(buttonRect, iqIcon))
 						menu = MenuType.iq;
+					buttonRect.y += buttonRect.height + gutter;
 
-					GUILayout.Space(Screen.height * 0.1f);
-
-					if(GUILayout.Button("Release", GUILayout.ExpandHeight(true)))
+					buttonRect.y += buttonRect.height + gutter;
+					if(GUI.Button(buttonRect, "Release"))
 					{
 						PhysAssembly a = CaptureEditorManager.capturedObj as PhysAssembly;
 						Network.SetSendingEnabled(0, true);

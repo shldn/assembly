@@ -206,6 +206,9 @@ public class PhysNode {
 					Transform newTrailTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.motorNodeTrail, Position, Rotation) as Transform;
 					newTrailTrans.parent = cubeTransform;
 					trail = newTrailTrans.GetComponent<TimedTrailRenderer>();
+
+					if(PersistentGameManager.IsClient)
+						trail.lifeTime *= 0.3f;
 				}
 				break;
 			// Control node.
