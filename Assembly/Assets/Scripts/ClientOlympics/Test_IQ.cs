@@ -8,7 +8,7 @@ public class Test_IQ : ClientTest
     {
         base.Awake();
         nodePower = 0.2f;
-        testDuration = 1000; // frames
+        testDuration = 500; // frames
     }
 
 	void Start () {

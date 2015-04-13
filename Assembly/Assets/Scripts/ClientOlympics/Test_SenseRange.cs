@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class Test_SenseRange : ClientTest
 {
 
-    PhysAssembly[] testAssemblies = null;
+    List<PhysAssembly> testAssemblies = new List<PhysAssembly>();
     float maxSenseRange = -1.0f;
     int maxSenseRangeIdx = 0;
     int testIdx = 0;
@@ -27,8 +27,8 @@ public class Test_SenseRange : ClientTest
 
     void Start()
     {
-        testAssemblies = new PhysAssembly[PhysAssembly.getAll.Count];
-        PhysAssembly.getAll.CopyTo(testAssemblies);
+        testAssemblies = PhysAssembly.getAll;
+
 		winner = testAssemblies[0];
         StartAssemblyTest(testIdx);
     }
@@ -36,20 +36,18 @@ public class Test_SenseRange : ClientTest
     protected override void Update()
     {
         base.Update();
-
         delayDuration += Time.deltaTime;
 
         if (delayDuration >= testDelay)
             UpdateTest();
 
-        if ((testIdx >= testAssemblies.Length) || IsDone)
+        if ((testIdx >= testAssemblies.Count) || IsDone)
             EndTest();
-
     } // End of Update().
 
     void StartAssemblyTest(int idx)
     {
-        if (testAssemblies.Length <= idx)
+        if (testAssemblies.Count <= idx)
             return;
 
         testNodes.Clear();
@@ -66,8 +64,8 @@ public class Test_SenseRange : ClientTest
                     winner = testAssemblies[idx];
                 }
 
-                if( origColor == Color.white )
-                    origColor = kvp.Value.ViewCone.gameObject.renderer.material.GetColor("_TintColor");
+                //if( origColor == Color.white )
+                    //origColor = kvp.Value.ViewCone.gameObject.renderer.material.GetColor("_TintColor");
             }
         }
         testNodeIdx = 0;
@@ -84,13 +82,13 @@ public class Test_SenseRange : ClientTest
 
         if (testNodeIdx < testNodes.Count)
         {
-            testNodes[testNodeIdx].ViewCone.gameObject.renderer.material.SetColor("_TintColor", highlightColor);
+            //testNodes[testNodeIdx].ViewCone.gameObject.renderer.material.SetColor("_TintColor", highlightColor);
             testNodes[testNodeIdx].viewConeSize *= 2f;
         }
 
         if (testNodeIdx > 0)
         {
-            testNodes[testNodeIdx - 1].ViewCone.gameObject.renderer.material.SetColor("_TintColor", origColor);
+            //testNodes[testNodeIdx - 1].ViewCone.gameObject.renderer.material.SetColor("_TintColor", origColor);
             testNodes[testNodeIdx - 1].viewConeSize *= 0.5f;
         }
 

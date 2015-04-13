@@ -90,13 +90,15 @@ public class PhysNodeController : MonoBehaviour {
 		foreach(PhysNode someNode in PhysNode.getAll)
 			someNode.UpdateTransform();
 
-		while(PhysAssembly.newAssemblies.Count > 0){
-			PhysAssembly.getAll.Add(PhysAssembly.newAssemblies[0]);
-			PhysAssembly.newAssemblies.RemoveAt(0);
+		
+		for(int i = 0; i < PhysAssembly.getAll.Count; i++){
+			PhysAssembly curAssem = PhysAssembly.getAll[i];
+			if(curAssem.cull){
+				PhysAssembly.getAll.RemoveAt(i);
+				i--;
+			}else
+				curAssem.Update();
 		}
-
-		foreach(PhysAssembly someAssembly in PhysAssembly.getAll)
-			someAssembly.Update();
 
 		foreach(PhysFood someFood in PhysFood.all)
 			someFood.Update();
@@ -108,11 +110,6 @@ public class PhysNodeController : MonoBehaviour {
 			if(tempHoldNodes[i].cull)
 				PhysNode.getAll.Remove(tempHoldNodes[i]);
 
-		PhysAssembly[] tempHoldAssemblies = new PhysAssembly[PhysAssembly.getAll.Count];
-		PhysAssembly.getAll.CopyTo(tempHoldAssemblies);
-		for(int i = 0; i < tempHoldAssemblies.Length; i++)
-			if(tempHoldAssemblies[i].cull)
-				PhysAssembly.getAll.Remove(tempHoldAssemblies[i]);
 
 		PhysFood[] tempHoldFood = new PhysFood[PhysFood.all.Count];
 		PhysFood.all.CopyTo(tempHoldFood);
