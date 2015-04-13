@@ -39,10 +39,10 @@ public class CameraControl : MonoBehaviour {
 
     // Object selections
     public Jellyfish selectedJellyfish = null;
-    public PhysNode selectedNode = null;
+    public Node selectedNode = null;
 
-    public PhysAssembly selectedPhysAssembly = null;
-	public PhysAssembly hoveredPhysAssembly = null;
+    public Assembly selectedPhysAssembly = null;
+	public Assembly hoveredPhysAssembly = null;
 
 
     void Awake(){
@@ -84,13 +84,13 @@ public class CameraControl : MonoBehaviour {
             selectedJellyfish = Jellyfish.all[0];
             center = Jellyfish.all[0].transform.position;
         }
-		else if(PersistentGameManager.IsClient && PhysNodeController.Inst){
+		else if(PersistentGameManager.IsClient && NodeController.Inst){
 			Vector3 targetCenter = Vector3.zero;
-			foreach(PhysAssembly someAssem in PhysAssembly.getAll)
+			foreach(Assembly someAssem in Assembly.getAll)
 				targetCenter += someAssem.Position;
 
-			if(PhysAssembly.getAll.Count > 0f)
-				targetCenter /= PhysAssembly.getAll.Count;
+			if(Assembly.getAll.Count > 0f)
+				targetCenter /= Assembly.getAll.Count;
 
 			center = Vector3.Lerp(center, targetCenter, Time.deltaTime * 10f);
         }
@@ -106,7 +106,7 @@ public class CameraControl : MonoBehaviour {
         else
             center = Vector3.zero;
 
-		if(PhysAssembly.getAll.Count > 0f)
+		if(Assembly.getAll.Count > 0f)
 			targetOrbit.x -= 1f * Time.deltaTime;
 
 
@@ -172,7 +172,7 @@ public class CameraControl : MonoBehaviour {
 			hoveredPhysAssembly = null;
 			if(Physics.Raycast(selectionRay, out selectRay, 1000f)){
 				GameObject hitObject = selectRay.transform.gameObject;
-				foreach(PhysNode somePhysNode in PhysNode.getAll){
+				foreach(Node somePhysNode in Node.getAll){
 					if(hitObject.transform == somePhysNode.cubeTransform){
 						hoveredPhysAssembly = somePhysNode.PhysAssembly;
 						if(Input.GetMouseButton(0))

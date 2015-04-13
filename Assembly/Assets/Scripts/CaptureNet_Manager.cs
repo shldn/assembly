@@ -308,7 +308,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
-        PhysAssembly a = new PhysAssembly(assemblyStr, null, assemblyNewPos);
+        Assembly a = new Assembly(assemblyStr, null, assemblyNewPos);
 
     } // End of PushAssembly().
 

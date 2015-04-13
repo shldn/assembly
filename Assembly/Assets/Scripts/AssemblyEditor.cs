@@ -9,8 +9,8 @@ public class AssemblyEditor : MonoBehaviour {
     public GuiKnob densityKnob = null;
     public GuiKnob speedKnob = null;
 
-    public PhysAssembly capturedAssembly = null;
-    public PhysNode selectedNode = null;
+    public Assembly capturedAssembly = null;
+    public Node selectedNode = null;
 
 	public bool testRunning = false;
 
@@ -122,7 +122,7 @@ public class AssemblyEditor : MonoBehaviour {
 					buttonRect.y += buttonRect.height + gutter;
 					if(GUI.Button(buttonRect, "Release"))
 					{
-						PhysAssembly a = CaptureEditorManager.capturedObj as PhysAssembly;
+						Assembly a = CaptureEditorManager.capturedObj as Assembly;
 						Network.SetSendingEnabled(0, true);
 						CaptureNet_Manager.myNetworkView.RPC("PushAssembly", RPCMode.Server, a.ToFileString());
 						Network.SetSendingEnabled(0, false);
@@ -256,14 +256,14 @@ public class AssemblyEditor : MonoBehaviour {
     {
         for (int i = 0; i < num; i++)
         {
-            PhysAssembly newPhysAssem = new PhysAssembly(IOHelper.AssemblyToString(capturedAssembly), rot, null, false);
+            Assembly newPhysAssem = new Assembly(IOHelper.AssemblyToString(capturedAssembly), rot, null, false);
             newPhysAssem.Mutate(mutationRate);
         }
     }
 
     public void HandleObjectCaptured(object sender, System.EventArgs args)
     {
-        capturedAssembly = CaptureEditorManager.capturedObj as PhysAssembly;
+        capturedAssembly = CaptureEditorManager.capturedObj as Assembly;
         if (!capturedAssembly)
             return;
 

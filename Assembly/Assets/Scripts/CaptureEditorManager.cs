@@ -29,7 +29,7 @@ public class CaptureEditorManager {
                 if (capturedObjImpl as Jellyfish){
                     captureTypeImpl = CaptureType.JELLYFISH;
                 }
-                else if (capturedObjImpl as PhysAssembly){
+                else if (capturedObjImpl as Assembly){
                     captureTypeImpl = CaptureType.ASSEMBLY;
                 }
                 if (captureTypeImpl != CaptureType.NONE){

@@ -24,7 +24,7 @@ public class IOHelper
     {
         string ext = ".txt";
         Directory.CreateDirectory(folderPath);
-        foreach (PhysAssembly a in PhysAssembly.getAll)
+        foreach (Assembly a in Assembly.getAll)
             a.Save(GetValidFileName(folderPath, a.name, ext));
     }
 
@@ -38,7 +38,7 @@ public class IOHelper
             Debug.Log("Loading directory " + dir);
             string[] filePaths = Directory.GetFiles(dir);
             foreach (string file in filePaths)
-                new PhysAssembly(file, null, null, true);
+                new Assembly(file, null, null, true);
         }
         catch (Exception e)
         {
@@ -46,7 +46,7 @@ public class IOHelper
         }
     } // End of LoadDirectory
 
-    public static void LoadAssemblyFromFile(string filePath, ref string name, ref Vector3 position, ref List<PhysNode> nodes)
+    public static void LoadAssemblyFromFile(string filePath, ref string name, ref Vector3 position, ref List<Node> nodes)
     {
         using (StreamReader sr = new StreamReader(filePath))
         {
@@ -54,36 +54,36 @@ public class IOHelper
         }
     }
 
-    public static void LoadAssemblyFromString(string assemblyStr, ref string name, ref Vector3 position, ref List<PhysNode> nodes)
+    public static void LoadAssemblyFromString(string assemblyStr, ref string name, ref Vector3 position, ref List<Node> nodes)
     {
         StringReader sr = new StringReader(assemblyStr);
         ReadAssemblyFromStream(sr, ref name, ref position, ref nodes);
     }
 
-    public static string AssemblyToString(PhysAssembly assembly){
+    public static string AssemblyToString(Assembly assembly){
         StringWriter sw = new StringWriter();
         WriteAssemblyToStream(assembly, sw);
         return sw.ToString();
     } // End of AssemblyToString().
 
-    private static void ReadAssemblyFromStream(TextReader stream, ref string name, ref Vector3 position, ref List<PhysNode> nodes)
+    private static void ReadAssemblyFromStream(TextReader stream, ref string name, ref Vector3 position, ref List<Node> nodes)
     {
         int fileFormat = int.Parse(stream.ReadLine());
         name = stream.ReadLine();
         position = Vector3FromString(stream.ReadLine());
         while (stream.Peek() >= 0)
-            nodes.Add(PhysNode.FromString(stream.ReadLine()));
+            nodes.Add(Node.FromString(stream.ReadLine()));
     }
 
-    private static void WriteAssemblyToStream(PhysAssembly assembly, TextWriter stream){
+    private static void WriteAssemblyToStream(Assembly assembly, TextWriter stream){
         stream.WriteLine(assemblyFileFormatVersion);
         stream.WriteLine(assembly.name);
         stream.WriteLine(assembly.Position);
-        foreach(PhysNode someNode in assembly.NodeDict.Values)
+        foreach(Node someNode in assembly.NodeDict.Values)
             stream.WriteLine(someNode.ToFileString(assemblyFileFormatVersion));
     } // End of WriteAssemblyToStream().
 
-    public static void SaveAssembly(string filePath, PhysAssembly assembly)
+    public static void SaveAssembly(string filePath, Assembly assembly)
     {
 #if UNITY_STANDALONE
         if (!File.Exists(filePath))

@@ -18,7 +18,7 @@ public class Test_MaxTravel : ClientTest {
 
 		if(IsDone){
 			float furthestDistance = 0f;
-			foreach(PhysAssembly someAssem in PhysAssembly.getAll){
+			foreach(Assembly someAssem in Assembly.getAll){
 				float distance = Vector3.Distance(transform.position, someAssem.Position);
 				if(distance > furthestDistance){
 					furthestDistance = distance;

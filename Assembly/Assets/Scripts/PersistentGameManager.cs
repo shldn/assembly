@@ -95,7 +95,7 @@ public class PersistentGameManager : MonoBehaviour {
 
     public void EnviroImpulse(Vector3 pos, float force){
         // Apply physics
-        foreach(PhysNode someNode in PhysNode.getAll){
+        foreach(Node someNode in Node.getAll){
             Vector3 vecToAssem = pos - someNode.Position;
             if(vecToAssem.Equals(Vector3.zero))
                 continue;

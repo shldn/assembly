@@ -13,8 +13,8 @@ public class Test_IQ : ClientTest
 
 	void Start () {
         float foodDistAway = 20.0f;
-        new PhysFood(transform.position + foodDistAway * transform.forward);
-		foreach(PhysAssembly someAssembly in PhysAssembly.getAll)
+        new FoodPellet(transform.position + foodDistAway * transform.forward);
+		foreach(Assembly someAssembly in Assembly.getAll)
 			someAssembly.energy = 1f;
 	}
 
@@ -26,7 +26,7 @@ public class Test_IQ : ClientTest
         {
             float maxEnergy = -999999999f;
 
-            foreach (PhysAssembly someAssem in PhysAssembly.getAll)
+            foreach (Assembly someAssem in Assembly.getAll)
             {
                 if( someAssem.energy > maxEnergy )
                 {
@@ -41,7 +41,7 @@ public class Test_IQ : ClientTest
 
     protected override void EndTest()
     {
-        PhysFood.DestroyAll();
+        FoodPellet.DestroyAll();
         base.EndTest();
     }
 }

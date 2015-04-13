@@ -2,20 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class PhysFood {
+public class FoodPellet {
 
-	public static HashSet<PhysFood> all = new HashSet<PhysFood>();
+	public static HashSet<FoodPellet> all = new HashSet<FoodPellet>();
 
 	public Vector3 worldPosition = Vector3.zero;
 	public Quaternion worldRotation = Quaternion.identity;
 
 	Transform transform = null;
 
-	private static Octree<PhysFood> allFoodTree;
-    public static Octree<PhysFood> AllFoodTree{ 
+	private static Octree<FoodPellet> allFoodTree;
+    public static Octree<FoodPellet> AllFoodTree{ 
         get{
             if(allFoodTree == null){
-                allFoodTree = new Octree<PhysFood>(new Bounds(Vector3.zero, 2.0f * PhysNodeController.Inst.WorldSize * Vector3.one), (PhysFood x) => x.worldPosition, 5);
+                allFoodTree = new Octree<FoodPellet>(new Bounds(Vector3.zero, 2.0f * NodeController.Inst.WorldSize * Vector3.one), (FoodPellet x) => x.worldPosition, 5);
 			}
             return allFoodTree;
         }
@@ -29,10 +29,10 @@ public class PhysFood {
 	public bool cull = false;
 
 
-	public PhysFood(Vector3 position){
+	public FoodPellet(Vector3 position){
 		worldPosition = position;
 		worldRotation = Random.rotation;
-		transform = MonoBehaviour.Instantiate(PhysNodeController.Inst.physFoodPrefab, worldPosition, worldRotation) as Transform;
+		transform = MonoBehaviour.Instantiate(NodeController.Inst.physFoodPrefab, worldPosition, worldRotation) as Transform;
 
 		all.Add(this);
 		AllFoodTree.Insert(this);
@@ -62,7 +62,7 @@ public class PhysFood {
     {
         try
         {
-            foreach (PhysFood food in all)
+            foreach (FoodPellet food in all)
                 Object.Destroy(food.transform.gameObject);
         }
         catch(System.Exception e)

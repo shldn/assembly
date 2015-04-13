@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-public class PhysNodeController : MonoBehaviour {
+public class NodeController : MonoBehaviour {
 
-	public static PhysNodeController Inst;
+	public static NodeController Inst;
 
 	public Transform physNodePrefab = null;
 	public Transform physFoodPrefab = null;
@@ -35,84 +35,44 @@ public class PhysNodeController : MonoBehaviour {
 	void Start(){
 		CameraControl.Inst.maxRadius = worldSize * 3f;
 
-		/*
-		// Create random assemblies.
-		int numAssemblies = 300;
-
-		for(int i = 0; i < numAssemblies; i++){
-			Vector3 assemblySpawnPos = Vector3.zero;
-			if(numAssemblies > 1)
-				assemblySpawnPos = Random.insideUnitSphere * worldSize;
-
-			PhysAssembly newAssembly = new PhysAssembly(assemblySpawnPos, Quaternion.identity);
-
-			int numNodes = Random.Range(minNodes, maxNodes);
-			Triplet spawnHexPos = Triplet.zero;
-			while(numNodes > 0){
-				// Make sure no phys node is here currently.
-				if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
-					newAssembly.AddNode(spawnHexPos);
-					numNodes--;
-				}
-				spawnHexPos += HexUtilities.RandomAdjacent();
-			}
-		}
-
-		// Marching cubes ------------------------------------------------- //
-		// Initialize density map
-		int densityMapSize = worldSize * 2;
-		densityMap = new float[densityMapSize][][];
-		for(int i = 0; i < densityMapSize; i++){
-			densityMap[i] = new float[densityMapSize][];
-			for(int j = 0; j < densityMapSize; j++){
-				densityMap[i][j] = new float[densityMapSize];
-			}
-		}
-
-		foreach(PhysNode somePhysNode in PhysNode.getAll){
-			if(somePhysNode.neighbors.Count == 1)
-				somePhysNode.ComputeEnergyNetwork();
-		}
-		*/
-
 		if(PersistentGameManager.IsServer){
 			for(int i = 0; i < foodPellets; i++)
-				new PhysFood(Random.insideUnitSphere * worldSize);
+				new FoodPellet(Random.insideUnitSphere * worldSize);
 		}
 	} // End of Start().
 
 
 	void Update(){
 
-		foreach(PhysNode someNode in PhysNode.getAll)
+		foreach(Node someNode in Node.getAll)
 			someNode.DoMath();
 
-		foreach(PhysNode someNode in PhysNode.getAll)
+		foreach(Node someNode in Node.getAll)
 			someNode.UpdateTransform();
 
 		
-		for(int i = 0; i < PhysAssembly.getAll.Count; i++){
-			PhysAssembly curAssem = PhysAssembly.getAll[i];
+		for(int i = 0; i < Assembly.getAll.Count; i++){
+			Assembly curAssem = Assembly.getAll[i];
 			if(curAssem.cull){
-				PhysAssembly.getAll.RemoveAt(i);
+				Assembly.getAll.RemoveAt(i);
 				i--;
 			}else
 				curAssem.Update();
 		}
 
-		foreach(PhysFood someFood in PhysFood.all)
+		foreach(FoodPellet someFood in FoodPellet.all)
 			someFood.Update();
 
 		// Culling
-		PhysNode[] tempHoldNodes = new PhysNode[PhysNode.getAll.Count];
-		PhysNode.getAll.CopyTo(tempHoldNodes);
+		Node[] tempHoldNodes = new Node[Node.getAll.Count];
+		Node.getAll.CopyTo(tempHoldNodes);
 		for(int i = 0; i < tempHoldNodes.Length; i++)
 			if(tempHoldNodes[i].cull)
-				PhysNode.getAll.Remove(tempHoldNodes[i]);
+				Node.getAll.Remove(tempHoldNodes[i]);
 
 
-		PhysFood[] tempHoldFood = new PhysFood[PhysFood.all.Count];
-		PhysFood.all.CopyTo(tempHoldFood);
+		FoodPellet[] tempHoldFood = new FoodPellet[FoodPellet.all.Count];
+		FoodPellet.all.CopyTo(tempHoldFood);
 		for(int i = 0; i < tempHoldFood.Length; i++)
 			if(tempHoldFood[i].cull)
 				tempHoldFood[i].Destroy();
@@ -123,15 +83,15 @@ public class PhysNodeController : MonoBehaviour {
 			Application.Quit();
 
 		// Maintain octrees
-		PhysFood.AllFoodTree.Maintain();
-		PhysNode.AllSenseNodeTree.Maintain();
-		PhysAssembly.AllAssemblyTree.Maintain();
+		FoodPellet.AllFoodTree.Maintain();
+		Node.AllSenseNodeTree.Maintain();
+		Assembly.AllAssemblyTree.Maintain();
 
 		int cycleDir = Mathf.FloorToInt((Time.time * 0.2f) % 12);
 
 		// Show details on selected assembly.
-		PhysAssembly selectedAssem = CameraControl.Inst.selectedPhysAssembly;
-		PhysAssembly hoveredAssem = CameraControl.Inst.hoveredPhysAssembly;
+		Assembly selectedAssem = CameraControl.Inst.selectedPhysAssembly;
+		Assembly hoveredAssem = CameraControl.Inst.hoveredPhysAssembly;
 		if(selectedAssem){
 			/*
 			foreach(KeyValuePair<Triplet, PhysNode> kvp in selectedAssem.NodeDict){
@@ -145,7 +105,7 @@ public class PhysNodeController : MonoBehaviour {
 
 			// Duplicate assembly using string IO methods
 			if(Input.GetKey(KeyCode.D)){
-				new PhysAssembly(IOHelper.AssemblyToString(selectedAssem), null, null, false);
+				new Assembly(IOHelper.AssemblyToString(selectedAssem), null, null, false);
 			}
 		}/*
 			// Determine closest fit with hovered assembly.
@@ -182,10 +142,10 @@ public class PhysNodeController : MonoBehaviour {
 
 		// Keep the world populated
 		if(PersistentGameManager.IsServer){
-			if(PhysNode.getAll.Count < worldNodeThreshold * 0.7f){
+			if(Node.getAll.Count < worldNodeThreshold * 0.7f){
 				Vector3 assemblySpawnPos = Random.insideUnitSphere * worldSize;
 
-				PhysAssembly newAssembly = new PhysAssembly(assemblySpawnPos, Quaternion.identity);
+				Assembly newAssembly = new Assembly(assemblySpawnPos, Quaternion.identity);
 
 				int numNodes = Random.Range(minNodes, maxNodes);
 				Triplet spawnHexPos = Triplet.zero;
@@ -198,7 +158,7 @@ public class PhysNodeController : MonoBehaviour {
 					spawnHexPos += HexUtilities.RandomAdjacent();
 				}
 
-				foreach(PhysNode someNode in newAssembly.NodeDict.Values)
+				foreach(Node someNode in newAssembly.NodeDict.Values)
 					someNode.ComputeEnergyNetwork();
 			}
 		}
@@ -296,8 +256,8 @@ public class PhysNodeController : MonoBehaviour {
 		return;
 
 		string infoString = "";
-		infoString += "Nodes: " + PhysNode.getAll.Count + "\n";
-		infoString += "Assemblies: " + PhysAssembly.getAll.Count + "\n";
+		infoString += "Nodes: " + Node.getAll.Count + "\n";
+		infoString += "Assemblies: " + Assembly.getAll.Count + "\n";
 		infoString += "Framerate: " + (1f / Time.deltaTime).ToString("F1") + "\n";
 
 		GUI.skin.label.alignment = TextAnchor.UpperLeft;
@@ -309,9 +269,9 @@ public class PhysNodeController : MonoBehaviour {
     void OnDestroy()
     {
         Inst = null;
-        PhysAssembly.DestroyAll();
-        PhysNode.DestroyAll();
-        PhysFood.DestroyAll();
+        Assembly.DestroyAll();
+        Node.DestroyAll();
+        FoodPellet.DestroyAll();
         PersistentGameManager.CaptureObjects.Clear();
     }
 

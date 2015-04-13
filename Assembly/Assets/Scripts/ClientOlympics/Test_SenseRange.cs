@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class Test_SenseRange : ClientTest
 {
 
-    List<PhysAssembly> testAssemblies = new List<PhysAssembly>();
+    List<Assembly> testAssemblies = new List<Assembly>();
     float maxSenseRange = -1.0f;
     int maxSenseRangeIdx = 0;
     int testIdx = 0;
@@ -16,7 +16,7 @@ public class Test_SenseRange : ClientTest
     Color highlightColor = new Color(1.0f, 42.0f/255.0f, 91.0f/255.0f, 70.0f/255.0f);
     Color origColor = Color.white;
 
-    List<PhysNode> testNodes = new List<PhysNode>();
+    List<Node> testNodes = new List<Node>();
 
     protected override void Awake()
     {
@@ -27,7 +27,7 @@ public class Test_SenseRange : ClientTest
 
     void Start()
     {
-        testAssemblies = PhysAssembly.getAll;
+        testAssemblies = Assembly.getAll;
 
 		winner = testAssemblies[0];
         StartAssemblyTest(testIdx);
@@ -52,7 +52,7 @@ public class Test_SenseRange : ClientTest
 
         testNodes.Clear();
 
-        foreach(KeyValuePair<Triplet, PhysNode> kvp in testAssemblies[idx].NodeDict)
+        foreach(KeyValuePair<Triplet, Node> kvp in testAssemblies[idx].NodeDict)
         {
             if( kvp.Value.IsSense )
             {

@@ -29,8 +29,8 @@ public class NodeEngineering : MonoBehaviour {
 	
 	void OnGUI(){
 	
-        PhysNode selectedNode = null;
-        PhysAssembly selectedAssembly = null;
+        Node selectedNode = null;
+        Assembly selectedAssembly = null;
 
         if(CameraControl.Inst){
             selectedNode = CameraControl.Inst.selectedNode;

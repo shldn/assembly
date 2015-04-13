@@ -184,7 +184,7 @@ public class PlayerSync : MonoBehaviour {
         }
         else{
             print("Sending assembly to player " + networkView.owner);
-            PhysAssembly a = capturedObj as PhysAssembly;
+            Assembly a = capturedObj as Assembly;
             if( a != null )
                 networkView.RPC("CaptureAssembly", networkView.owner, (a).ToFileString());
             else
@@ -228,7 +228,7 @@ public class PlayerSync : MonoBehaviour {
     {
         float distFromCamToSpawn = 5.0f;
         AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
-        PhysAssembly a = new PhysAssembly(assemblyStr, null, null);
+        Assembly a = new Assembly(assemblyStr, null, null);
 		CameraControl.Inst.selectedPhysAssembly = a;
         a.spawnPosition = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
         CaptureEditorManager.capturedObj = a;

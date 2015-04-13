@@ -2,24 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class PhysAssembly : CaptureObject{
+public class Assembly : CaptureObject{
 
-	static List<PhysAssembly> all = new List<PhysAssembly>();
-	public static List<PhysAssembly> getAll {get{return all;}}
-	public static implicit operator bool(PhysAssembly exists){return exists != null;}
+	static List<Assembly> all = new List<Assembly>();
+	public static List<Assembly> getAll {get{return all;}}
+	public static implicit operator bool(Assembly exists){return exists != null;}
 
 	public string name = "Some Unimportant Assembly";
 
-	Dictionary<Triplet, PhysNode> nodeDict = new Dictionary<Triplet, PhysNode>();
-	public Dictionary<Triplet, PhysNode> NodeDict {get{return nodeDict;}}
-	PhysNode[] myNodesIndexed = new PhysNode[0];
+	Dictionary<Triplet, Node> nodeDict = new Dictionary<Triplet, Node>();
+	public Dictionary<Triplet, Node> NodeDict {get{return nodeDict;}}
+	Node[] myNodesIndexed = new Node[0];
 
 	public Vector3 spawnPosition = Vector3.zero;
 	public Quaternion spawnRotation = Quaternion.identity;
 	public Vector3 Position {
 		get{
 			Vector3 worldPos = Vector3.zero;
-			foreach(PhysNode someNode in nodeDict.Values)
+			foreach(Node someNode in nodeDict.Values)
 				worldPos += someNode.Position;
 			if(nodeDict.Keys.Count > 0f)
 				worldPos /= nodeDict.Keys.Count;
@@ -34,18 +34,18 @@ public class PhysAssembly : CaptureObject{
 	public bool needAddToList = true;
 
 	public bool wantToMate = false;
-	public PhysAssembly matingWith = null;
+	public Assembly matingWith = null;
 	float mateAttractDist = 100f;
 	float mateCompletion = 0f;
 
 	public float distanceCovered = 0f;
 	Vector3 lastPosition = Vector3.zero;
 
-	private static Octree<PhysAssembly> allAssemblyTree;
-    public static Octree<PhysAssembly> AllAssemblyTree{ 
+	private static Octree<Assembly> allAssemblyTree;
+    public static Octree<Assembly> AllAssemblyTree{ 
         get{
             if(allAssemblyTree == null){
-                allAssemblyTree = new Octree<PhysAssembly>(new Bounds(Vector3.zero, 2.0f * PhysNodeController.Inst.WorldSize * Vector3.one), (PhysAssembly x) => x.Position, 5);
+                allAssemblyTree = new Octree<Assembly>(new Bounds(Vector3.zero, 2.0f * NodeController.Inst.WorldSize * Vector3.one), (Assembly x) => x.Position, 5);
 			}
             return allAssemblyTree;
         }
@@ -63,7 +63,7 @@ public class PhysAssembly : CaptureObject{
 	public bool gender = false;
 
 
-	public PhysAssembly(Vector3 spawnPosition, Quaternion spawnRotation){
+	public Assembly(Vector3 spawnPosition, Quaternion spawnRotation){
 		this.spawnPosition = spawnPosition;
 		this.spawnRotation = spawnRotation;
 		gender = Random.Range(0f, 1f) > 0.5f;
@@ -73,8 +73,8 @@ public class PhysAssembly : CaptureObject{
 	} // End of constructor.
 
 	// Load from string--file path, etc.
-	public PhysAssembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false){
-        List<PhysNode> newNodes = new List<PhysNode>();
+	public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false){
+        List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         if(isFilePath)
             IOHelper.LoadAssemblyFromFile(str, ref name, ref worldPos, ref newNodes);
@@ -88,15 +88,15 @@ public class PhysAssembly : CaptureObject{
 		AllAssemblyTree.Insert(this);
 
         AddNodes(newNodes);
-		foreach(PhysNode someNode in NodeDict.Values)
+		foreach(Node someNode in NodeDict.Values)
 			someNode.ComputeEnergyNetwork();
 
 		PersistentGameManager.CaptureObjects.Add(this);
      } // End of constructor (from serialized).
 
 
-	public void AddNodes(List<PhysNode> nodesList){
-        foreach (PhysNode someNode in nodesList)
+	public void AddNodes(List<Node> nodesList){
+        foreach (Node someNode in nodesList)
             AddNode(someNode.localHexPos, someNode.nodeProperties);
 
         // Destroy the duplicates
@@ -108,12 +108,12 @@ public class PhysAssembly : CaptureObject{
 
 
 	public void AddNode(Triplet nodePos, NodeProperties? nodeProps = null){
-		PhysNode newPhysNode = new PhysNode(this, nodePos);
+		Node newPhysNode = new Node(this, nodePos);
 		newPhysNode.nodeProperties = nodeProps ?? NodeProperties.random;
         IntegrateNode(nodePos, newPhysNode);
 	} // End of AddNode().
 
-    private void IntegrateNode(Triplet nodePos, PhysNode physNode)
+    private void IntegrateNode(Triplet nodePos, Node physNode)
     {
         physNode.PhysAssembly = this;
         nodeDict.Add(nodePos, physNode);
@@ -121,7 +121,7 @@ public class PhysAssembly : CaptureObject{
         energy += 1f;
     }
 
-    private void AssignNodeNeighbors(Triplet nodePos, PhysNode physNode)
+    private void AssignNodeNeighbors(Triplet nodePos, Node physNode)
     {
         for (int dir = 0; dir < 12; dir++)
         {
@@ -132,7 +132,7 @@ public class PhysAssembly : CaptureObject{
     }
 
 
-	public void RemoveNode(PhysNode nodeToRemove){
+	public void RemoveNode(Node nodeToRemove){
 		if(nodeDict.ContainsKey(nodeToRemove.localHexPos))
 			nodeDict.Remove(nodeToRemove.localHexPos);
 	} // End of AddNode().
@@ -143,7 +143,7 @@ public class PhysAssembly : CaptureObject{
 		lastEnergy = energy;
 
 		if(myNodesIndexed.Length != nodeDict.Values.Count){
-			myNodesIndexed = new PhysNode[nodeDict.Values.Count];
+			myNodesIndexed = new Node[nodeDict.Values.Count];
 			nodeDict.Values.CopyTo(myNodesIndexed, 0);
 		}
 
@@ -156,9 +156,9 @@ public class PhysAssembly : CaptureObject{
 		if(!PersistentGameManager.IsClient)
 			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
-		if((PhysNode.getAll.Count < PhysNodeController.Inst.worldNodeThreshold * 0.9f) && (energy > (maxEnergy * 0.9f)))
+		if((Node.getAll.Count < NodeController.Inst.worldNodeThreshold * 0.9f) && (energy > (maxEnergy * 0.9f)))
 			wantToMate = true;
-		else if((PhysNode.getAll.Count > (PhysNodeController.Inst.worldNodeThreshold * 0.8f)) || (energy < maxEnergy * 0.5f)){
+		else if((Node.getAll.Count > (NodeController.Inst.worldNodeThreshold * 0.8f)) || (energy < maxEnergy * 0.5f)){
 			wantToMate = false;
 			mateCompletion = 0f;
 
@@ -178,13 +178,13 @@ public class PhysAssembly : CaptureObject{
 		// We won't want to mate if our population cap has been reached.
 		if(wantToMate && !matingWith){
 			Bounds mateAttractBoundary = new Bounds(Position, mateAttractDist * (new Vector3(1, 1, 1)));
-			allAssemblyTree.RunActionInRange(new System.Action<PhysAssembly>(HandleFindMate), mateAttractBoundary);
+			allAssemblyTree.RunActionInRange(new System.Action<Assembly>(HandleFindMate), mateAttractBoundary);
 		}
 
 		if(matingWith){
 			for(int i = 0; i < myNodesIndexed.Length; i++){
-				PhysNode myNode = myNodesIndexed[i];
-				PhysNode otherNode = null;
+				Node myNode = myNodesIndexed[i];
+				Node otherNode = null;
 				if(matingWith.myNodesIndexed.Length > i){
 					otherNode = matingWith.myNodesIndexed[i];
 
@@ -195,13 +195,13 @@ public class PhysAssembly : CaptureObject{
 					myNode.delayPosition += -(vectorToMate.normalized * Mathf.Clamp01(distance * 0.01f));
 
 					if(distance < 2f)
-						mateCompletion += 0.2f * PhysNodeController.physicsStep;
+						mateCompletion += 0.2f * NodeController.physicsStep;
 				}
 			}
 
 			if(mateCompletion >= 1f){
 				// Spawn a new assembly between the two.
-				PhysAssembly newAssembly = new PhysAssembly((Position + matingWith.Position) / 2f, Random.rotation);
+				Assembly newAssembly = new Assembly((Position + matingWith.Position) / 2f, Random.rotation);
 				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length);
 				Triplet spawnHexPos = Triplet.zero;
 				while(numNodes > 0){
@@ -213,7 +213,7 @@ public class PhysAssembly : CaptureObject{
 					spawnHexPos += HexUtilities.RandomAdjacent();
 				}
 
-				foreach(PhysNode someNode in newAssembly.NodeDict.Values)
+				foreach(Node someNode in newAssembly.NodeDict.Values)
 					someNode.ComputeEnergyNetwork();
 
 				matingWith.matingWith = null;
@@ -235,7 +235,7 @@ public class PhysAssembly : CaptureObject{
 	} // End of Update().
 
 
-	public void HandleFindMate(PhysAssembly someAssembly){
+	public void HandleFindMate(Assembly someAssembly){
 		if((someAssembly == this) || (someAssembly.matingWith) || matingWith)
 			return;
 
@@ -257,8 +257,8 @@ public class PhysAssembly : CaptureObject{
 
 
 	// Merges two assemblies together.
-	public void AmaglamateTo(PhysAssembly otherAssembly, Triplet offset){
-		foreach(PhysNode someNode in nodeDict.Values){
+	public void AmaglamateTo(Assembly otherAssembly, Triplet offset){
+		foreach(Node someNode in nodeDict.Values){
 			otherAssembly.energy += 1f;
 			someNode.PhysAssembly = otherAssembly;
 			someNode.localHexPos += offset;
@@ -280,13 +280,13 @@ public class PhysAssembly : CaptureObject{
 
 
 	public void Mutate(float amount){
-		foreach(PhysNode someNode in NodeDict.Values)
+		foreach(Node someNode in NodeDict.Values)
 			someNode.Mutate(amount);
 	} // End of Mutate().
 
 
 	public void Destroy(){
-		foreach(KeyValuePair<Triplet, PhysNode> somePair in nodeDict)
+		foreach(KeyValuePair<Triplet, Node> somePair in nodeDict)
 			somePair.Value.Destroy();
 
 		allAssemblyTree.Remove(this);

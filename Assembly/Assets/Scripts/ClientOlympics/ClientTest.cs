@@ -10,7 +10,7 @@ public class ClientTest : MonoBehaviour {
 	protected int runTime = 0;
     protected int testDuration = 500; // frames
     protected float nodePower = 1.0f;
-    protected PhysAssembly winner = null;
+    protected Assembly winner = null;
 
     public float NodePower { get { return nodePower; } protected set { nodePower = value; } }
     public bool UnlockFrameRate { get { return unlockFrameRate; } protected set { unlockFrameRate = value; } }
@@ -36,7 +36,7 @@ public class ClientTest : MonoBehaviour {
 
     protected virtual void DestroyAllButWinner()
     {
-        foreach (PhysAssembly someAssem in PhysAssembly.getAll)
+        foreach (Assembly someAssem in Assembly.getAll)
             if (someAssem != winner)
                 someAssem.Destroy();
             else
