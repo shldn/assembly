@@ -230,7 +230,7 @@ public class Node {
 		mateColorLerp = Mathf.MoveTowards(mateColorLerp, physAssembly.wantToMate? 1f : 0f, Time.deltaTime);
 		genderColorLerp = Mathf.MoveTowards(genderColorLerp, physAssembly.gender? 1f : 0f, Time.deltaTime);
 
-		Color genderColor = Color.Lerp(new Color(1f, 0f, 1f), new Color(1f, 0.5f, 0f), genderColorLerp);
+		Color genderColor = Color.Lerp(Color.magenta, Color.cyan, genderColorLerp);
 
 		if(mateColorLerp > 0f)
 			cubeTransform.renderer.material.color = Color.Lerp(nodeColor, genderColor, mateColorLerp * 0.7f);

@@ -273,7 +273,7 @@ public class NodeController : MonoBehaviour {
 		GUI.skin.label.fontSize = 12;
 		GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), infoString);
 
-		if(!PersistentGameManager.IsClient){
+		if(!PersistentGameManager.IsClient && false){
 			foreach(Assembly someAssem in Assembly.getAll){
 				Vector3 screenPos = Camera.main.WorldToScreenPoint(someAssem.Position);
 				//screenPos.y = Screen.height - screenPos.y;
