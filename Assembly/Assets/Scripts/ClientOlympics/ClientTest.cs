@@ -22,17 +22,19 @@ public class ClientTest : MonoBehaviour {
 	} // End of Awake().
 	
 
-	// Update is called once per frame
 	protected virtual void Update(){
 		runTime ++;
 	} // End of Update().
 
+    protected virtual void OnDestroy(){
+        Inst = null;
+    } // End of OnDestroy().
+
     protected virtual void EndTest()
     {
         DestroyAllButWinner();
-        AssemblyEditor.Inst.testRunning = false;
         Destroy(gameObject);
-    }
+    } // End of EndTest().
 
     protected virtual void DestroyAllButWinner()
     {
@@ -41,7 +43,7 @@ public class ClientTest : MonoBehaviour {
                 someAssem.Destroy();
             else
                 AssemblyEditor.Inst.capturedAssembly = someAssem;
-    }
+    } // End of DestroyAllButWinner().
 
 
     void OnGUI(){

@@ -12,8 +12,6 @@ public class AssemblyEditor : MonoBehaviour {
     public Assembly capturedAssembly = null;
     public Node selectedNode = null;
 
-	public bool testRunning = false;
-
     public bool uiLockout {get{return burnRateKnob.clicked || densityKnob.clicked || speedKnob.clicked;}}
 
     // Test parameters
@@ -79,7 +77,7 @@ public class AssemblyEditor : MonoBehaviour {
 
             GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.width * 0.03f);
 
-			if(!testRunning){
+			if(!ClientTest.Inst){
 				GUILayout.BeginArea(controlBarRect);
 
 				if(menu == MenuType.main){
@@ -216,35 +214,30 @@ public class AssemblyEditor : MonoBehaviour {
 				SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
 				testObject = new GameObject("maxTravelTester", typeof(Test_MaxTravel));
 				testObject.transform.position = capturedAssembly.Position;
-				testRunning = true;
 				capturedAssembly.Destroy();
 				break;
 			case(MenuType.maximumSpeed):
 				SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
 				testObject = new GameObject("maxSpeedTester", typeof(Test_MaxSpeed));
 				testObject.transform.position = capturedAssembly.Position;
-				testRunning = true;
 				capturedAssembly.Destroy();
 				break;
             case (MenuType.visionRange):
                 SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
                 testObject = new GameObject("maxVisionRange", typeof(Test_SenseRange));
                 testObject.transform.position = capturedAssembly.Position;
-                testRunning = true;
                 capturedAssembly.Destroy();
                 break;
             case (MenuType.visionScope):
                 SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
                 testObject = new GameObject("maxVisionScope", typeof(Test_SenseFov));
                 testObject.transform.position = capturedAssembly.Position;
-                testRunning = true;
                 capturedAssembly.Destroy();
                 break;
 			case(MenuType.iq):
 				SpawnTestAssemblies(numTestAssemblies, mutationRate, capturedAssembly.spawnRotation);
 				testObject = new GameObject("maxIQTester", typeof(Test_IQ));
 				testObject.transform.position = capturedAssembly.Position;
-				testRunning = true;
 				capturedAssembly.Destroy();
 				break;
 		}
