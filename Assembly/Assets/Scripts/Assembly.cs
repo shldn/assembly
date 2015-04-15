@@ -28,6 +28,9 @@ public class Assembly : CaptureObject{
 			return worldPos;
 		}
 	}
+    public Vector3 Velocity {
+        get { return velocity; }
+    }
 
 	public float energy = 0f;
 	float lastEnergy = 0f; // debug
@@ -41,6 +44,7 @@ public class Assembly : CaptureObject{
 
 	public float distanceCovered = 0f;
 	Vector3 lastPosition = Vector3.zero;
+    Vector3 velocity = Vector3.zero;
 
 	private static Octree<Assembly> allAssemblyTree;
     public static Octree<Assembly> AllAssemblyTree{ 
@@ -229,12 +233,16 @@ public class Assembly : CaptureObject{
 				mateCompletion = 0f;
 				energy *= 0.5f;
 
-				RandomMelody.Inst.PlayNote();
+                if (RandomMelody.Inst)
+    				RandomMelody.Inst.PlayNote();
 			}
 		}
 
-		distanceCovered += Vector3.Distance(lastPosition, Position);
-		lastPosition = Position;
+        Vector3 newPosition = Position;
+        distanceCovered += Vector3.Distance(lastPosition, newPosition);
+        velocity = (newPosition - lastPosition) / Time.deltaTime;
+        lastPosition = newPosition;
+        
 	} // End of Update().
 
 
