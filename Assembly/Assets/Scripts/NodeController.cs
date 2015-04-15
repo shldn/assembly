@@ -273,21 +273,23 @@ public class NodeController : MonoBehaviour {
 		GUI.skin.label.fontSize = 12;
 		GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), infoString);
 
-		foreach(Assembly someAssem in Assembly.getAll){
-			Vector3 screenPos = Camera.main.WorldToScreenPoint(someAssem.Position);
-			//screenPos.y = Screen.height - screenPos.y;
-			if(screenPos.z < 0f)
-				continue;
+		if(!PersistentGameManager.IsClient){
+			foreach(Assembly someAssem in Assembly.getAll){
+				Vector3 screenPos = Camera.main.WorldToScreenPoint(someAssem.Position);
+				//screenPos.y = Screen.height - screenPos.y;
+				if(screenPos.z < 0f)
+					continue;
 
-			GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-			GUI.skin.label.fontSize = Mathf.CeilToInt(20f / (screenPos.z * 0.01f));
-			string familyTreeString = "";
-			for(int i = 0; i < someAssem.familyTree.Count; i++){
-				familyTreeString += someAssem.familyTree[i];
-				if(i < (someAssem.familyTree.Count - 1))
-					familyTreeString += ", ";
+				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+				GUI.skin.label.fontSize = Mathf.CeilToInt(20f / (screenPos.z * 0.01f));
+				string familyTreeString = "";
+				for(int i = 0; i < someAssem.familyTree.Count; i++){
+					familyTreeString += someAssem.familyTree[i];
+					if(i < (someAssem.familyTree.Count - 1))
+						familyTreeString += ", ";
+				}
+				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y, 200f), familyTreeString);
 			}
-			GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y, 200f), familyTreeString);
 		}
 
 	} // End of OnGUI().
