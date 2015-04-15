@@ -1,44 +1,52 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
-// Will keep track of each Assembly trail and analyze the amount of rotation at the end of the test.
 public class Test_MaxRotation : ClientTest {
 
     Dictionary<Assembly, Trail> assemblyTrails = new Dictionary<Assembly, Trail>();
+    bool initialized = false;
 
     protected override void Awake()
     {
         base.Awake();
-        nodePower = 1.0f;
+        nodePower = 0f;
         testDuration = 500; // frames
+        unlockFrameRate = false;
+    }
 
-        // Initialize trail tracker
-        foreach (Assembly someAssem in Assembly.getAll)
-            assemblyTrails.Add(someAssem, new Trail(someAssem.Position));
+    protected void Start()
+    {
+        InvokeRepeating("AddFoodToAllPeriphery", 0.1f, 0.67f);
     }
 
     protected override void Update()
     {
+
         base.Update();
 
         AddToTrails();
 
         if (IsDone)
         {
-            float maxRotation = -1f;
-            foreach (KeyValuePair<Assembly, Trail> kvp in assemblyTrails)
+            float maxEnergy = -999999999f;
+
+            foreach (Assembly someAssem in Assembly.getAll)
             {
-                float rotation = Mathf.Abs(kvp.Value.GetRotation());
-                if( rotation > maxRotation)
+                if (someAssem.energy > maxEnergy)
                 {
-                    maxRotation = rotation;
-                    winner = kvp.Key;
+                    winner = someAssem;
+                    maxEnergy = someAssem.energy;
                 }
             }
             EndTest();
         }
     } // End of Update().
+
+    protected override void EndTest()
+    {
+        FoodPellet.DestroyAll();
+        base.EndTest();
+    } // End of EndTest().
 
     void AddToTrails()
     {
@@ -46,5 +54,45 @@ public class Test_MaxRotation : ClientTest {
             kvp.Value.Add(kvp.Key.Position);
 
     } // End of AddToTrails().
+
+    void AddFoodToAllPeriphery()
+    {
+        FoodPellet.DestroyAll();
+        foreach (Assembly someAssembly in Assembly.getAll)
+        {
+            if (!someAssembly.cull)
+                AddFoodAtPeriphery(someAssembly);
+        }
+    }
+
+    void AddFoodAtPeriphery(Assembly a)
+    {
+        float percentOfRange = 0.1f;
+        float percentOfFov = 1f;
+        bool addToCenter = false;
+
+        foreach (KeyValuePair<Triplet, Node> kvp in a.NodeDict)
+        {
+            if( kvp.Value.IsSense )
+            {
+                if( addToCenter )
+                    new FoodPellet(kvp.Value.Position + percentOfRange * kvp.Value.nodeProperties.senseRange * (kvp.Value.SenseForward));
+                else
+                {
+                    // map offsets to the x-z plane
+                    Vector3 axisOfRotation = (kvp.Value.SenseForward != Vector3.up) ? Vector3.Cross(kvp.Value.SenseForward, Vector3.up) : Vector3.Cross(kvp.Value.SenseForward, Vector3.right);
+                    Quaternion rotOffset = Quaternion.AngleAxis(0.5f * percentOfFov * kvp.Value.nodeProperties.fieldOfView, axisOfRotation);
+                    for(int i=0; i < 1; ++i)
+                    {
+                        Vector3 foodPos = kvp.Value.Position + percentOfRange * (float)(i + 1) * kvp.Value.nodeProperties.senseRange * (rotOffset * kvp.Value.SenseForward);
+                        new FoodPellet(foodPos);
+
+                        //Vector3 invFoodPos = kvp.Value.Position + percentOfRange * (float)(i + 1) * kvp.Value.nodeProperties.senseRange * (Quaternion.Inverse(rotOffset) * kvp.Value.SenseForward);
+                        //new FoodPellet(invFoodPos);
+                    }
+                }
+            }
+        }
+    }
 
 }

@@ -75,6 +75,8 @@ public class Node {
 	List<SenseActuateLink> senseActuateLinks = new List<SenseActuateLink>();
 
 	public float senseAttractRange = 30f;
+    public Vector3 SenseForward { get { return Rotation * (nodeProperties.senseVector * Vector3.forward); } }
+    
 
 	Quaternion transformLastRot = Quaternion.identity; // For in-editor rotation.
 	Vector3 transformLastPos = Vector3.zero; // For in-editor rotation.
