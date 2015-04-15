@@ -101,11 +101,11 @@ public class AssemblyEditor : MonoBehaviour {
 
 					if(GUI.Button(buttonRect, speedIcon))
 						menu = MenuType.maximumSpeed;
-					GUI.enabled = false;
 					buttonRect.y += buttonRect.height + gutter;
 
 					if(GUI.Button(buttonRect, rotationIcon))
 						menu = MenuType.rotation;
+                    GUI.enabled = false;
 					buttonRect.y += buttonRect.height + gutter;
 
 					if(GUI.Button(buttonRect, undulationIcon))
@@ -240,6 +240,12 @@ public class AssemblyEditor : MonoBehaviour {
 				testObject.transform.position = capturedAssembly.Position;
 				capturedAssembly.Destroy();
 				break;
+            case(MenuType.rotation):
+				SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
+				testObject = new GameObject("rotationTester", typeof(Test_MaxRotation));
+				testObject.transform.position = capturedAssembly.Position;
+				capturedAssembly.Destroy();
+                break;
 		}
 		menu = MenuType.main;
 	} // End of DoTest().
