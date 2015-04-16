@@ -389,7 +389,7 @@ public class Node {
 
 
     private void HandleDetectedFood(FoodPellet food){
-		Vector3 vectorToFood = food.worldPosition - position;
+		Vector3 vectorToFood = food.WorldPosition - position;
 		float distanceToFood = vectorToFood.magnitude;
 		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) )
 			return;

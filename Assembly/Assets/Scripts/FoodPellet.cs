@@ -6,10 +6,12 @@ public class FoodPellet {
 
 	public static HashSet<FoodPellet> all = new HashSet<FoodPellet>();
 
-	public Vector3 worldPosition = Vector3.zero;
+	private Vector3 worldPosition = Vector3.zero;
+    public Vector3 WorldPosition { get { return worldPosition; } set { worldPosition = value; transform.position = value; } }
 	public Quaternion worldRotation = Quaternion.identity;
 
 	Transform transform = null;
+    public GameObject gameObject { get { return (transform != null) ? transform.gameObject : null; } }
 
 	private static Octree<FoodPellet> allFoodTree;
     public static Octree<FoodPellet> AllFoodTree{ 

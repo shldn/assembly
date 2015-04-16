@@ -15,7 +15,9 @@ public class Test_MaxRotation : ClientTest {
 
     protected void Start()
     {
-        InvokeRepeating("AddFoodToAllPeriphery", 0.1f, 0.67f);
+        InvokeRepeating("AddFoodToAllPeriphery", 0.05f, 0.67f);
+        if (!CheckForSenseNodes())
+            runTime = testDuration;
     }
 
     protected override void Update()
@@ -49,23 +51,26 @@ public class Test_MaxRotation : ClientTest {
     {
         float percentOfRange = 0.1f;
         float percentOfFov = 1f;
-        bool addToCenter = false;
 
         foreach (KeyValuePair<Triplet, Node> kvp in a.NodeDict)
         {
             if( kvp.Value.IsSense )
             {
-                if( addToCenter )
-                    new FoodPellet(kvp.Value.Position + percentOfRange * kvp.Value.nodeProperties.senseRange * (kvp.Value.SenseForward));
-                else
-                {
-                    Vector3 axisOfRotation = (kvp.Value.SenseForward != Vector3.up) ? Vector3.Cross(kvp.Value.SenseForward, Vector3.up) : Vector3.Cross(kvp.Value.SenseForward, Vector3.right);
-                    Quaternion rotOffset = Quaternion.AngleAxis(0.5f * percentOfFov * kvp.Value.nodeProperties.fieldOfView, axisOfRotation);
-                    Vector3 foodPos = kvp.Value.Position + percentOfRange * kvp.Value.nodeProperties.senseRange * (rotOffset * kvp.Value.SenseForward);
-                    new FoodPellet(foodPos, kvp.Value.PhysAssembly);
-                }
+                Vector3 axisOfRotation = (kvp.Value.SenseForward != Vector3.up) ? Vector3.Cross(kvp.Value.SenseForward, Vector3.up) : Vector3.Cross(kvp.Value.SenseForward, Vector3.right);
+                Quaternion rotOffset = Quaternion.AngleAxis(0.5f * percentOfFov * kvp.Value.nodeProperties.fieldOfView, axisOfRotation);
+                Vector3 foodPos = kvp.Value.Position + percentOfRange * kvp.Value.nodeProperties.senseRange * (rotOffset * kvp.Value.SenseForward);
+                new FoodPellet(foodPos, kvp.Value.PhysAssembly);
             }
         }
     } // End of AddFoodAtPeriphery().
 
+    bool CheckForSenseNodes()
+    {
+        foreach (Assembly someAssembly in Assembly.getAll)
+            if (!someAssembly.cull)
+                foreach (KeyValuePair<Triplet, Node> kvp in someAssembly.NodeDict)
+                    if (kvp.Value.IsSense)
+                        return true;
+        return false;
+    } // End of CheckForSenseNodes().
 }
