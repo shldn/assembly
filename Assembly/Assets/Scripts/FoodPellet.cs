@@ -28,8 +28,11 @@ public class FoodPellet {
 	float maxEnergy = 100f;
 	public bool cull = false;
 
+    // For Olympics
+    public Assembly owner = null; // to restrict energy consumption to just this entity
 
-	public FoodPellet(Vector3 position){
+
+	public FoodPellet(Vector3 position, Assembly owner_ = null){
 		worldPosition = position;
 		worldRotation = Random.rotation;
 		transform = MonoBehaviour.Instantiate(NodeController.Inst.physFoodPrefab, worldPosition, worldRotation) as Transform;
@@ -38,6 +41,7 @@ public class FoodPellet {
 		AllFoodTree.Insert(this);
 
 		maxEnergy = energy;
+        owner = owner_;
 	} // constructor
 
 

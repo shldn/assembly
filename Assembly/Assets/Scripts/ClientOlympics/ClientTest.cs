@@ -39,10 +39,15 @@ public class ClientTest : MonoBehaviour {
     protected virtual void DestroyAllButWinner()
     {
         foreach (Assembly someAssem in Assembly.getAll)
+        {
+            if (winner == null)
+                winner = someAssem;
             if (someAssem != winner)
                 someAssem.Destroy();
             else
                 AssemblyEditor.Inst.capturedAssembly = someAssem;
+
+        }
     } // End of DestroyAllButWinner().
 
 

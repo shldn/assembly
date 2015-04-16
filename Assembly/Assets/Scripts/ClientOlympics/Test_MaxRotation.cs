@@ -82,14 +82,8 @@ public class Test_MaxRotation : ClientTest {
                     // map offsets to the x-z plane
                     Vector3 axisOfRotation = (kvp.Value.SenseForward != Vector3.up) ? Vector3.Cross(kvp.Value.SenseForward, Vector3.up) : Vector3.Cross(kvp.Value.SenseForward, Vector3.right);
                     Quaternion rotOffset = Quaternion.AngleAxis(0.5f * percentOfFov * kvp.Value.nodeProperties.fieldOfView, axisOfRotation);
-                    for(int i=0; i < 1; ++i)
-                    {
-                        Vector3 foodPos = kvp.Value.Position + percentOfRange * (float)(i + 1) * kvp.Value.nodeProperties.senseRange * (rotOffset * kvp.Value.SenseForward);
-                        new FoodPellet(foodPos);
-
-                        //Vector3 invFoodPos = kvp.Value.Position + percentOfRange * (float)(i + 1) * kvp.Value.nodeProperties.senseRange * (Quaternion.Inverse(rotOffset) * kvp.Value.SenseForward);
-                        //new FoodPellet(invFoodPos);
-                    }
+                    Vector3 foodPos = kvp.Value.Position + percentOfRange * kvp.Value.nodeProperties.senseRange * (rotOffset * kvp.Value.SenseForward);
+                    new FoodPellet(foodPos, kvp.Value.PhysAssembly);
                 }
             }
         }
