@@ -50,6 +50,20 @@ public class ClientTest : MonoBehaviour {
         }
     } // End of DestroyAllButWinner().
 
+    protected void AssignWinnerByHighestEnergy()
+    {
+        float maxEnergy = -999999999f;
+
+        foreach (Assembly someAssem in Assembly.getAll)
+        {
+            if (someAssem.energy > maxEnergy)
+            {
+                winner = someAssem;
+                maxEnergy = someAssem.energy;
+            }
+        }
+    } // End of AssignWinnerByHighestEnergy().
+
 
     void OnGUI(){
 		string progressBar = "[Testing] ";

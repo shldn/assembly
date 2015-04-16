@@ -24,17 +24,7 @@ public class Test_IQ : ClientTest
 
         if (IsDone)
         {
-            float maxEnergy = -999999999f;
-
-            foreach (Assembly someAssem in Assembly.getAll)
-            {
-                if( someAssem.energy > maxEnergy )
-                {
-                    winner = someAssem;
-                    maxEnergy = someAssem.energy;
-                }
-            }
-
+            AssignWinnerByHighestEnergy();
             EndTest();
         }
     } // End of Update().
