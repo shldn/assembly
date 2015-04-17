@@ -16,7 +16,7 @@ public class PrefabManager : MonoBehaviour {
     public GameObject extendedTrail = null;
 
 	public Transform motorNodeTrail = null;
-	public Transform senseNodeBillboard = null;
+	public Transform viewCone = null;
 
     public GameObject energyTransferEffect = null;
     public GameObject reproducePullEffect = null;

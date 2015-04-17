@@ -26,6 +26,8 @@ public class AssemblyEditor : MonoBehaviour {
 	public Texture2D undulationIcon;
 	public Texture2D iqIcon;
 
+	public GUISkin guiSkin;
+
 
     void Start(){
         CaptureEditorManager.ObjectCaptured += HandleObjectCaptured;
@@ -67,6 +69,8 @@ public class AssemblyEditor : MonoBehaviour {
 
 
     void OnGUI(){
+		GUI.skin = guiSkin;
+
 		GUI.skin.label.font = PrefabManager.Inst.assemblyFont;
 		GUI.skin.button.font = PrefabManager.Inst.assemblyFont;
         if (capturedAssembly){
@@ -82,7 +86,7 @@ public class AssemblyEditor : MonoBehaviour {
 
 				if(menu == MenuType.main){
 
-					int numOptions = 7;
+					int numOptions = 6;
 					float buttonSize = (controlBarRect.height / (numOptions + 2f)) - gutter;
 					Rect buttonRect = new Rect(controlBarRect.x, controlBarRect.y, controlBarRect.width, buttonSize);
 					buttonRect = new Rect(controlBarRect.width * 0.5f, 0f, controlBarRect.width * 0.5f, buttonSize);

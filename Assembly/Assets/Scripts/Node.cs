@@ -27,9 +27,10 @@ public class Node {
 	// Type-specific elements, effects
 	public Transform cubeTransform = null;
 	TimedTrailRenderer trail = null;
-	Transform viewCone = null;
-    public float viewConeSize = 2.5f;
-    public Transform ViewCone { get { return viewCone;  } }
+	Transform viewConeTrans = null;
+	ViewCone viewCone = null;
+    public float viewConeSize = 3.5f;
+    public Transform ViewConeLeft { get { return viewConeTrans;  } }
 
 	[System.Serializable]
 	public class PhysNeighbor {
@@ -183,8 +184,10 @@ public class Node {
 			if(lastNeighborCount == 2)
 				AllSenseNodeTree.Remove(this);
 
-			if(viewCone)
-				GameObject.Destroy(viewCone.gameObject);
+			if(viewConeTrans)
+				GameObject.Destroy(viewConeTrans.gameObject);
+			if(viewConeTrans)
+				GameObject.Destroy(viewConeTrans.gameObject);
 
 			if(trail)
             {
@@ -197,8 +200,9 @@ public class Node {
 			// Sense node.
 			case 1 : 
 				nodeColor = PrefabManager.Inst.senseColor;
-				Transform newViewConeTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.senseNodeBillboard, Position, Rotation) as Transform;
-				viewCone = newViewConeTrans;
+				Transform newViewConeTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.viewCone, Position, Rotation) as Transform;
+				viewConeTrans = newViewConeTrans;
+				viewCone = viewConeTrans.GetComponent<ViewCone>();
                 AllSenseNodeTree.Insert(this);
 				break;
 			// Muscle node.
@@ -280,17 +284,18 @@ public class Node {
 			case 1 : 
 				Debug.DrawRay(Position, (Rotation * nodeProperties.senseVector * Vector3.forward) * 2f, Color.green);
 
-				viewCone.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
-				viewCone.localScale = Vector3.one * viewConeSize;
+				viewConeTrans.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
+				viewConeTrans.localScale = Vector3.one * viewConeSize;
 
 				// Billboard the arc with the main camera.
-				viewCone.rotation = Rotation * nodeProperties.senseVector;
-				viewCone.position = Position + (viewCone.rotation * (Vector3.forward * viewConeSize * 0.5f));
-				viewCone.rotation *= Quaternion.AngleAxis(-90, Vector3.up);
+				viewConeTrans.rotation = Rotation * nodeProperties.senseVector;
+				viewConeTrans.position = Position;
+				viewConeTrans.rotation *= Quaternion.AngleAxis(-90, Vector3.up);
 
-				Vector3 camRelativePos = viewCone.InverseTransformPoint(Camera.main.transform.position);
+				Vector3 camRelativePos = viewConeTrans.InverseTransformPoint(Camera.main.transform.position);
 				float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
-				viewCone.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
+				viewConeTrans.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
+				viewCone.fovAngle = nodeProperties.fieldOfView;
 
 				//calling detect food on sense node, determines power of node
                 Bounds foodDetectBoundary = new Bounds(position, nodeProperties.senseRange * (new Vector3(1, 1, 1)));
@@ -333,8 +338,8 @@ public class Node {
 		if(cubeTransform)
 			MonoBehaviour.Destroy(cubeTransform.gameObject);
 
-		if(viewCone)
-			MonoBehaviour.Destroy(viewCone.gameObject);
+		if(viewConeTrans)
+			MonoBehaviour.Destroy(viewConeTrans.gameObject);
 
 		if(trail)
         {
