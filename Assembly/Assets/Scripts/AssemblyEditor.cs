@@ -101,18 +101,12 @@ public class AssemblyEditor : MonoBehaviour {
 
 					if(GUI.Button(buttonRect, speedIcon))
 						menu = MenuType.maximumSpeed;
-					GUI.enabled = false;
 					buttonRect.y += buttonRect.height + gutter;
 
 					if(GUI.Button(buttonRect, rotationIcon))
 						menu = MenuType.rotation;
 					buttonRect.y += buttonRect.height + gutter;
 
-					if(GUI.Button(buttonRect, undulationIcon))
-						menu = MenuType.undulation;
-					buttonRect.y += buttonRect.height + gutter;
-
-					GUI.enabled = true;
 					if(GUI.Button(buttonRect, iqIcon))
 						menu = MenuType.iq;
 					buttonRect.y += buttonRect.height + gutter;
@@ -240,16 +234,24 @@ public class AssemblyEditor : MonoBehaviour {
 				testObject.transform.position = capturedAssembly.Position;
 				capturedAssembly.Destroy();
 				break;
+            case(MenuType.rotation):
+                SpawnTestAssemblies(10, mutationRate, null, 2.0f);
+				testObject = new GameObject("rotationTester", typeof(Test_MaxRotation));
+				testObject.transform.position = capturedAssembly.Position;
+				capturedAssembly.Destroy();
+                break;
 		}
 		menu = MenuType.main;
 	} // End of DoTest().
 
 
-    void SpawnTestAssemblies(int num, float mutationRate, Quaternion? rot)
+    void SpawnTestAssemblies(int num, float mutationRate, Quaternion? rot, float posOffset = 0.0f)
     {
+        Vector3 initPos = capturedAssembly.Position;
+        Vector3 offset = posOffset * Camera.main.transform.right;
         for (int i = 0; i < num; i++)
         {
-            Assembly newPhysAssem = new Assembly(IOHelper.AssemblyToString(capturedAssembly), rot, null, false);
+            Assembly newPhysAssem = new Assembly(IOHelper.AssemblyToString(capturedAssembly), rot, initPos + i * offset, false);
             newPhysAssem.Mutate(mutationRate);
         }
     }

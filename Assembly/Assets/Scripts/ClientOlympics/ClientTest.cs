@@ -39,11 +39,30 @@ public class ClientTest : MonoBehaviour {
     protected virtual void DestroyAllButWinner()
     {
         foreach (Assembly someAssem in Assembly.getAll)
+        {
+            if (winner == null)
+                winner = someAssem;
             if (someAssem != winner)
                 someAssem.Destroy();
             else
                 AssemblyEditor.Inst.capturedAssembly = someAssem;
+
+        }
     } // End of DestroyAllButWinner().
+
+    protected void AssignWinnerByHighestEnergy()
+    {
+        float maxEnergy = -999999999f;
+
+        foreach (Assembly someAssem in Assembly.getAll)
+        {
+            if (someAssem.energy > maxEnergy)
+            {
+                winner = someAssem;
+                maxEnergy = someAssem.energy;
+            }
+        }
+    } // End of AssignWinnerByHighestEnergy().
 
 
     void OnGUI(){

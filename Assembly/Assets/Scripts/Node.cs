@@ -75,6 +75,8 @@ public class Node {
 	List<SenseActuateLink> senseActuateLinks = new List<SenseActuateLink>();
 
 	public float senseAttractRange = 30f;
+    public Vector3 SenseForward { get { return Rotation * (nodeProperties.senseVector * Vector3.forward); } }
+    
 
 	Quaternion transformLastRot = Quaternion.identity; // For in-editor rotation.
 	Vector3 transformLastPos = Vector3.zero; // For in-editor rotation.
@@ -387,15 +389,15 @@ public class Node {
 
 
     private void HandleDetectedFood(FoodPellet food){
-		Vector3 vectorToFood = food.worldPosition - position;
+		Vector3 vectorToFood = food.WorldPosition - position;
 		float distanceToFood = vectorToFood.magnitude;
-		if(distanceToFood > nodeProperties.senseRange)
+		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) )
 			return;
 
 		float angleToFood = Vector3.Angle(rotation * nodeProperties.senseVector * Vector3.forward, vectorToFood);
         float strength = 1f - (distanceToFood / nodeProperties.senseRange);
 
-		if(angleToFood < 45f){
+		if(angleToFood < 0.5f * nodeProperties.fieldOfView){
 			power = 1f;
 			signalRotation = Quaternion.Inverse(rotation) * Quaternion.LookRotation(vectorToFood, rotation * Vector3.up);
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
