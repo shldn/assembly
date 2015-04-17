@@ -6,10 +6,12 @@ public class FoodPellet {
 
 	public static HashSet<FoodPellet> all = new HashSet<FoodPellet>();
 
-	public Vector3 worldPosition = Vector3.zero;
+	private Vector3 worldPosition = Vector3.zero;
+    public Vector3 WorldPosition { get { return worldPosition; } set { worldPosition = value; transform.position = value; } }
 	public Quaternion worldRotation = Quaternion.identity;
 
 	Transform transform = null;
+    public GameObject gameObject { get { return (transform != null) ? transform.gameObject : null; } }
 
 	private static Octree<FoodPellet> allFoodTree;
     public static Octree<FoodPellet> AllFoodTree{ 
@@ -28,8 +30,11 @@ public class FoodPellet {
 	float maxEnergy = 100f;
 	public bool cull = false;
 
+    // For Olympics
+    public Assembly owner = null; // to restrict energy consumption to just this entity
 
-	public FoodPellet(Vector3 position){
+
+	public FoodPellet(Vector3 position, Assembly owner_ = null){
 		worldPosition = position;
 		worldRotation = Random.rotation;
 		transform = MonoBehaviour.Instantiate(NodeController.Inst.physFoodPrefab, worldPosition, worldRotation) as Transform;
@@ -38,6 +43,7 @@ public class FoodPellet {
 		AllFoodTree.Insert(this);
 
 		maxEnergy = energy;
+        owner = owner_;
 	} // constructor
 
 
