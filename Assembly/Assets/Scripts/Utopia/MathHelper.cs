@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 // ---------------------------------------------------------------------------------- //
 // MathHelper.cs
@@ -54,6 +54,57 @@ public class MathHelper {
         byte b = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
         byte a = (hex.Length > 6) ? byte.Parse(hex.Substring(6, 2), System.Globalization.NumberStyles.HexNumber) : (byte)255;
         return new Color32(r, g, b, a);
+    }
+
+    // Get Bounding sphere for set of points. -- BoundingBall
+    // Using Ritter's bounding sphere - coarse result, but efficient: http://en.wikipedia.org/wiki/Bounding_sphere
+    public static void GetBoundingSphere(List<Vector3> pts, out Vector3 center, out float radius)
+    {
+        if (pts == null || pts.Count < 1)
+        {
+            center = Vector3.zero;
+            radius = 0.0f;
+            return;
+        }
+
+        int xIdx = 0;
+        int yIdx = GetPtWithMaxDist(pts, pts[xIdx]);
+        int zIdx = GetPtWithMaxDist(pts, pts[yIdx]);
+        center = 0.5f * (pts[yIdx] + pts[zIdx]);
+        radius = 0.5f * (pts[yIdx] - pts[zIdx]).magnitude;
+
+        // Check if points are all in sphere.
+        for(int i=0; i < pts.Count; ++i)
+        {
+            if( !IsInsideSphere(pts[i], center, radius) )
+            {
+                Vector3 vToNewEdge = pts[i] - center;
+                float prevRadius = radius;
+                radius = 0.5f * (radius + vToNewEdge.magnitude);
+                center = center + (radius - prevRadius ) * vToNewEdge.normalized;
+            }
+        }
+    }
+
+    public static bool IsInsideSphere(Vector3 pt, Vector3 center, float radius)
+    {
+        return (pt - center).sqrMagnitude <= radius * radius;
+    }
+
+    private static int GetPtWithMaxDist(List<Vector3> pts, Vector3 testPt)
+    {
+        int idx = 0;
+        float maxSqDist = -1f;
+        for (int i = 0; i < pts.Count; ++i)
+        {
+            float sqDist = (pts[i] - testPt).sqrMagnitude;
+            if( sqDist > maxSqDist )
+            {
+                maxSqDist = sqDist;
+                idx = i;
+            }
+        }
+        return idx;
     }
 
 } // End of MathHelper class.
