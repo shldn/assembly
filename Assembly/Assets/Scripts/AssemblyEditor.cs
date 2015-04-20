@@ -72,13 +72,15 @@ public class AssemblyEditor : MonoBehaviour {
 
 		GUI.skin.label.font = PrefabManager.Inst.assemblyFont;
 		GUI.skin.button.font = PrefabManager.Inst.assemblyFont;
-        if (capturedAssembly){
+
+        GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.width * 0.03f);
+        GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.width * 0.03f);
+
+        if(capturedAssembly){
 			float controlBarWidthRatio = 0.3f;
 			float gutter = Screen.height * 0.01f;
 			float defaultButtonSize = Screen.height * 0.1f;
             Rect controlBarRect = new Rect(Screen.width * (1f - controlBarWidthRatio), gutter, (Screen.width * controlBarWidthRatio) - gutter, Screen.height - (gutter * 2));
-
-            GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.width * 0.03f);
 
 			if(!ClientTest.Inst){
 
