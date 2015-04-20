@@ -192,7 +192,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 		ClientAdminMenu.Inst.CloseAll();
 	
-	    networkView.RPC("Credentials", RPCMode.Others, Network.player, playerName);
+	    //networkView.RPC("Credentials", RPCMode.Others, Network.player, playerName);
 	    //ConsoleScript.Inst.GlobalWriteToLog("![" + playerName + "] has connected.", RPCMode.Others);
         //ConsoleScript.Inst.WriteToLog("Connected to server as [" + playerName + "].");
 

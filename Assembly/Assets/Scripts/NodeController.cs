@@ -35,8 +35,10 @@ public class NodeController : MonoBehaviour {
 	void Awake(){
 		Inst = this;
 
-		TextAsset rawNameText = Resources.Load<TextAsset>("Text/randomwords.txt");
-		nameList = rawNameText.text.Split('\n');
+		bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
+        string lineEnding = isWindows ? "\r\n" : "\n";
+        TextAsset maleNamesText = Resources.Load("Text/randomwords.txt") as TextAsset;
+        nameList = maleNamesText.text.Split(new string[] { lineEnding }, System.StringSplitOptions.RemoveEmptyEntries);
 	} // End of Awake().
 
 
