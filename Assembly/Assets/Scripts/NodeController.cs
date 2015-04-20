@@ -37,6 +37,8 @@ public class NodeController : MonoBehaviour {
 
 		TextAsset rawNameText = Resources.Load<TextAsset>("Text/randomwords.txt");
 		nameList = rawNameText.text.Split('\n');
+		for(int i = 0; i < nameList.Length; i++)
+			nameList[i] = nameList[i].Trim();
 	} // End of Awake().
 
 
