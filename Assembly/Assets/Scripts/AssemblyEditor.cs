@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Globalization;
 
 public class AssemblyEditor : MonoBehaviour {
 
@@ -11,8 +12,6 @@ public class AssemblyEditor : MonoBehaviour {
 
     public Assembly capturedAssembly = null;
     public Node selectedNode = null;
-
-    public bool uiLockout {get{return burnRateKnob.clicked || densityKnob.clicked || speedKnob.clicked;}}
 
     // Test parameters
     int numTestAssemblies = 10;
@@ -82,6 +81,10 @@ public class AssemblyEditor : MonoBehaviour {
             GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.width * 0.03f);
 
 			if(!ClientTest.Inst){
+
+				GUI.skin.label.alignment = TextAnchor.UpperLeft;
+				GUI.Label(new Rect(10f, 10f, Screen.width, Screen.height), CultureInfo.CurrentCulture.TextInfo.ToTitleCase(capturedAssembly.name));
+
 				GUILayout.BeginArea(controlBarRect);
 
 				if(menu == MenuType.main){
@@ -277,4 +280,5 @@ public class AssemblyEditor : MonoBehaviour {
         capturedAssembly = null;
         selectedNode = null;
     }
-}
+
+} // End of AssemblyEditor.

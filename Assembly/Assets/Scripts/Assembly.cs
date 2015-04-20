@@ -75,6 +75,7 @@ public class Assembly : CaptureObject{
 		all.Add(this);
 		AllAssemblyTree.Insert(this);
 		PersistentGameManager.CaptureObjects.Add(this);
+		name = NodeController.Inst.GetRandomName();
 	} // End of constructor.
 
 	// Load from string--file path, etc.
