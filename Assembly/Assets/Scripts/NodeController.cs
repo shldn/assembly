@@ -29,16 +29,25 @@ public class NodeController : MonoBehaviour {
 	int nextAssemblyID = 0;
 	Dictionary<int, string> assemblyDictionary = new Dictionary<int, string>();
 
+	string[] nameList;
+
 
 	void Awake(){
 		Inst = this;
+
+		TextAsset rawNameText = Resources.Load<TextAsset>("Text/randomwords.txt");
+		nameList = rawNameText.text.Split('\n');
 	} // End of Awake().
 
 
 	void Start(){
 		CameraControl.Inst.maxRadius = worldSize * 3f;
-
 	} // End of Start().
+
+
+	public string GetRandomName(){
+		return nameList[Random.Range(0, nameList.Length)];
+	} // End of GetRandomName().
 
 
 	void Update(){
@@ -264,6 +273,7 @@ public class NodeController : MonoBehaviour {
 
 	void OnGUI(){
 
+		/*
 		string infoString = "";
 		infoString += "Nodes: " + Node.getAll.Count + "\n";
 		infoString += "Assemblies: " + Assembly.getAll.Count + "\n";
@@ -272,6 +282,7 @@ public class NodeController : MonoBehaviour {
 		GUI.skin.label.alignment = TextAnchor.UpperLeft;
 		GUI.skin.label.fontSize = 12;
 		GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), infoString);
+		*/
 
 		if(!PersistentGameManager.IsClient && false){
 			foreach(Assembly someAssem in Assembly.getAll){
@@ -281,18 +292,14 @@ public class NodeController : MonoBehaviour {
 					continue;
 
 				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-				GUI.skin.label.fontSize = Mathf.CeilToInt(20f / (screenPos.z * 0.01f));
-				string familyTreeString = "";
-				for(int i = 0; i < someAssem.familyTree.Count; i++){
-					familyTreeString += someAssem.familyTree[i];
-					if(i < (someAssem.familyTree.Count - 1))
-						familyTreeString += ", ";
-				}
-				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y, 200f), familyTreeString);
+				GUI.skin.label.fontSize = Mathf.Clamp(Mathf.CeilToInt(20f / (screenPos.z * 0.01f)), 0, 50);
+				
+				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y, 1000f), someAssem.name);
 			}
 		}
 
 	} // End of OnGUI().
+
 
     void OnDestroy()
     {
