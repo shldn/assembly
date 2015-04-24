@@ -167,16 +167,30 @@ public class NodeController : MonoBehaviour {
 				assemblyDictionary.Add(newAssemID, newAssembly.ToString());
 				assemblyScores.Add(newAssemID, 1);
 
-				int numNodes = Random.Range(minNodes, maxNodes);
-				Triplet spawnHexPos = Triplet.zero;
-				while(numNodes > 0){
-					// Make sure no phys node is here currently.
-					if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
-						newAssembly.AddNode(spawnHexPos);
-						numNodes--;
+				// Try a node structure... if there are no sense nodes, re-roll.
+				bool containsSenseNode = false;
+				do{
+					foreach(Node someNode in newAssembly.NodeDict.Values)
+						someNode.Destroy();
+					newAssembly.NodeDict.Clear();
+
+					int numNodes = Random.Range(minNodes, maxNodes);
+					Triplet spawnHexPos = Triplet.zero;
+					while(numNodes > 0){
+						// Make sure no phys node is here currently.
+						if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
+							newAssembly.AddNode(spawnHexPos);
+							numNodes--;
+						}
+						spawnHexPos += HexUtilities.RandomAdjacent();
 					}
-					spawnHexPos += HexUtilities.RandomAdjacent();
-				}
+
+					foreach(Node someNode in newAssembly.NodeDict.Values)
+						if(someNode.neighbors.Count == 1){
+							containsSenseNode = true;
+							break;
+						}
+				}while(!containsSenseNode);
 
 				foreach(Node someNode in newAssembly.NodeDict.Values)
 					someNode.ComputeEnergyNetwork();
@@ -321,6 +335,7 @@ public class NodeController : MonoBehaviour {
 		GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), infoString);
 		*/
 
+		/*
 		if(!PersistentGameManager.IsClient){
 			foreach(Assembly someAssem in Assembly.getAll){
 
@@ -344,6 +359,7 @@ public class NodeController : MonoBehaviour {
 				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y, 1000f), familyString);
 			}
 		}
+		*/
 
 		/*
 		currentLeaderIndex = Mathf.FloorToInt(Time.time % 10f);
