@@ -67,9 +67,9 @@ public class MathHelper {
             return;
         }
 
-        Bounds bounds = new Bounds();
+        Bounds bounds = new Bounds(pts[0],Vector3.zero);
         for (int i = 0; i < pts.Count; ++i)
-            bounds.Expand(pts[i]);
+            bounds.Encapsulate(pts[i]);
 
 
         int xIdx = 0;
