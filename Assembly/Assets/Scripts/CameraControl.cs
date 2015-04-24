@@ -41,7 +41,7 @@ public class CameraControl : MonoBehaviour {
     public Jellyfish selectedJellyfish = null;
     public Node selectedNode = null;
 
-    public Assembly selectedPhysAssembly = null;
+    public Assembly selectedAssembly = null;
 	public Assembly hoveredPhysAssembly = null;
 
 
@@ -100,8 +100,8 @@ public class CameraControl : MonoBehaviour {
         // Assembly soup
         else if(selectedNode)
             center = selectedNode.Position;
-        else if(selectedPhysAssembly)
-			center = selectedPhysAssembly.Position;
+        else if(selectedAssembly)
+			center = selectedAssembly.Position;
 		
         else
             center = Vector3.zero;
@@ -176,26 +176,24 @@ public class CameraControl : MonoBehaviour {
 					if(hitObject.transform == somePhysNode.cubeTransform){
 						hoveredPhysAssembly = somePhysNode.PhysAssembly;
 						if(Input.GetMouseButton(0))
-							selectedPhysAssembly = hoveredPhysAssembly;
+							selectedAssembly = hoveredPhysAssembly;
 						break;
 					}
 				}
 			}
         }
 
-		/*
+		
         if(Input.GetKeyDown(KeyCode.Return)){
             if(selectedNode){
                 selectedNode = null;
-                centerOffset = center - selectedAssembly.WorldPosition;
             // Deselect all--return to main orbit.
             }else if(selectedAssembly){
                 selectedAssembly = null;
-                centerOffset = center - Vector3.zero;
                 targetRadius = maxRadius;
             }
         }
-		*/
+		
 
 	} // End of Update().
 
@@ -220,6 +218,7 @@ public class CameraControl : MonoBehaviour {
 
             GUILayout.EndVertical();
         }
+
     } // End of OnGUI().
 
 
@@ -229,5 +228,10 @@ public class CameraControl : MonoBehaviour {
         Gizmos.color = new Color(0f, 1f, 1f, 0.05f);
         Gizmos.DrawSphere(Vector3.zero, maxRadius);
     } // End of OnDrawGizmos().
+
+
+	void OnDrawGizmos(){
+
+	} // End of OnDrawGizmos().
 
 } // End of CameraOrbit.

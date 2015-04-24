@@ -8,7 +8,7 @@ public class Assembly : CaptureObject{
 	public static List<Assembly> getAll {get{return all;}}
 	public static implicit operator bool(Assembly exists){return exists != null;}
 
-	public List<int> familyTree = new List<int>();
+	public HashSet<int> familyTree = new HashSet<int>();
 	public string name = "Some Unimportant Assembly";
 
 	Dictionary<Triplet, Node> nodeDict = new Dictionary<Triplet, Node>();
@@ -208,8 +208,15 @@ public class Assembly : CaptureObject{
 			if(mateCompletion >= 1f){
 				// Spawn a new assembly between the two.
 				Assembly newAssembly = new Assembly((Position + matingWith.Position) / 2f, Random.rotation);
-				newAssembly.familyTree.AddRange(familyTree);
-				newAssembly.familyTree.AddRange(matingWith.familyTree);
+				foreach(int someInt in familyTree){
+					newAssembly.familyTree.Add(someInt);
+					NodeController.assemblyScores[someInt]++;
+				}
+				foreach(int someInt in matingWith.familyTree){
+					newAssembly.familyTree.Add(someInt);
+					NodeController.assemblyScores[someInt]++;
+				}
+
 				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length);
 				Triplet spawnHexPos = Triplet.zero;
 				while(numNodes > 0){

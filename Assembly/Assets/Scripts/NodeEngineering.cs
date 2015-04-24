@@ -34,7 +34,7 @@ public class NodeEngineering : MonoBehaviour {
 
         if(CameraControl.Inst){
             selectedNode = CameraControl.Inst.selectedNode;
-            selectedAssembly = CameraControl.Inst.selectedPhysAssembly;
+            selectedAssembly = CameraControl.Inst.selectedAssembly;
         }
         else if(AssemblyEditor.Inst && AssemblyEditor.Inst.selectedNode){
             selectedNode = AssemblyEditor.Inst.selectedNode;
