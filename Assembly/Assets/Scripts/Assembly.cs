@@ -210,11 +210,11 @@ public class Assembly : CaptureObject{
 				Assembly newAssembly = new Assembly((Position + matingWith.Position) / 2f, Random.rotation);
 				foreach(int someInt in familyTree){
 					newAssembly.familyTree.Add(someInt);
-					NodeController.assemblyScores[someInt]++;
+                    NodeController.UpdateBirthCount(someInt);
 				}
 				foreach(int someInt in matingWith.familyTree){
 					newAssembly.familyTree.Add(someInt);
-					NodeController.assemblyScores[someInt]++;
+                    NodeController.UpdateBirthCount(someInt);
 				}
 
 				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length);
