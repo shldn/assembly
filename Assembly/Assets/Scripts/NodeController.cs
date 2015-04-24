@@ -98,11 +98,6 @@ public class NodeController : MonoBehaviour {
 			if(tempHoldFood[i].cull)
 				tempHoldFood[i].Destroy();
 
-
-		// Quit on Escape
-		if(Input.GetKeyUp(KeyCode.Escape))
-			Application.Quit();
-
 		// Maintain octrees
 		FoodPellet.AllFoodTree.Maintain();
 		Node.AllSenseNodeTree.Maintain();
