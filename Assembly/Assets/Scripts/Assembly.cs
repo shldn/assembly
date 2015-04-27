@@ -309,6 +309,8 @@ public class Assembly : CaptureObject{
 			somePair.Value.Destroy();
 
 		allAssemblyTree.Remove(this);
+        foreach (int someInt in familyTree)
+            NodeController.UpdateDeathCount(someInt);
 		PersistentGameManager.CaptureObjects.Remove(this);
 		cull = true;
 	} // End of Destroy().

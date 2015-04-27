@@ -40,18 +40,31 @@ public class NodeController : MonoBehaviour {
 
 	// Highest-'ranked' assemblies, based on the number of times the index shows up in hierarchies.
     static List<int> leaderboard = new List<int>(); // list of assembly ids -- will keep sorted by assemblyScores
-    static int leaderboardMaxSize = 10;
+    static int leaderboardMaxDisplaySize = 10;
+    static int leaderboardMaxSize = leaderboardMaxDisplaySize + 5;  // The number of entries that will be stored in memory, store more to avoid searching if/when some fall off the leaderboard.
 	static Dictionary<int, int> assemblyScores = new Dictionary<int, int>();  // maps assembly id to count
+
+    static int LeaderboardIndex(int assemblyID)
+    {
+        int idx = -1;
+        for (int i = 0; i < leaderboard.Count && idx == -1; ++i)
+            if (leaderboard[i] == assemblyID)
+                idx = i;
+        return idx;
+    }
+
+    // Clean up memory used for the leaderboard
+    public static void ClearLeaderboard()
+    {
+        assemblyScores.Clear();
+        leaderboard.Clear();
+    }
 
     public static void UpdateBirthCount(int assemblyID)
     {
-        int idx = -1;
-        for(int i=0; i < leaderboard.Count && idx == -1; ++i)
-            if (leaderboard[i] == assemblyID)
-                idx = i;
-
         assemblyScores[assemblyID]++;
 
+        int idx = LeaderboardIndex(assemblyID);
         if (idx != -1)
         {
             // find new insert point
@@ -85,24 +98,31 @@ public class NodeController : MonoBehaviour {
 
     public static void UpdateDeathCount(int assemblyID)
     {
-        /*
         assemblyScores[assemblyID]--;
-        int idx = leaderboard.IndexOfKey(assemblyID);
+        int idx = LeaderboardIndex(assemblyID);
         if (idx != -1)
         {
             if (assemblyScores[assemblyID] == 0)
                 leaderboard.RemoveAt(idx);
             else
             {
-                // Force re-sort of this element -- could be optimized
-                leaderboard.RemoveAt(idx);
-                leaderboard.Add(assemblyID, true);
+
+                // find new insert point
+                int newIdx = -1;
+                for (int i = idx+1; i < leaderboard.Count && assemblyScores[leaderboard[i]] > assemblyScores[assemblyID]; ++i)
+                    newIdx = i;
+
+                if (newIdx != -1)
+                {
+                    leaderboard.RemoveAt(idx);
+                    leaderboard.Insert(newIdx, assemblyID);
+                }
             }
         }
 
         if (assemblyScores[assemblyID] == 0)
             assemblyScores.Remove(assemblyID);
-         */
+
     }
 
 	void Awake(){
@@ -436,6 +456,8 @@ public class NodeController : MonoBehaviour {
             GUILayout.Label(leaderEntry.ToString() + " - " + assemblyScores[leaderEntry].ToString());
 
             ++leaderCount;
+            if (leaderCount >= leaderboardMaxDisplaySize)
+                break;
 
         }
 		GUILayout.EndArea();
@@ -446,6 +468,7 @@ public class NodeController : MonoBehaviour {
     void OnDestroy()
     {
         Inst = null;
+        ClearLeaderboard();
         Assembly.DestroyAll();
         Node.DestroyAll();
         FoodPellet.DestroyAll();
