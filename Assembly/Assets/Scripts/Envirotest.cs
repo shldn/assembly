@@ -16,7 +16,7 @@ public class Envirotest : MonoBehaviour {
 
 		Vector3[] points = MathUtilities.FibonacciSphere(samples);
 		for(int i = 0; i < points.Length; i++){
-			Transform newTrans = Instantiate(transform, points[i] * radius, Quaternion.LookRotation(points[i])) as Transform;
+			Transform newTrans = Instantiate(transform, transform.position + (points[i] * radius), Quaternion.LookRotation(points[i])) as Transform;
 			newTrans.localScale *= transformScale;
 			newTrans.Rotate(Vector3.forward, Random.Range(0f, 360f));
 			newTrans.Rotate(Vector3.right, rotationOffset);
