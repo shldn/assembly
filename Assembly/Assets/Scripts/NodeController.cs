@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 
 public class NodeController : MonoBehaviour {
@@ -18,7 +19,7 @@ public class NodeController : MonoBehaviour {
 
 	public static float physicsStep = 0.05f;
 
-	int foodPellets = 100;
+	int foodPellets = 150;
 	public static int assemStage1Size = 20;
 
 	int minNodes = 3;
@@ -30,6 +31,16 @@ public class NodeController : MonoBehaviour {
 	Dictionary<int, string> assemblyDictionary = new Dictionary<int, string>();
 
 	string[] nameList;
+
+	List<Assembly> relativesToHighlight = new List<Assembly>();
+	Assembly showHierarchyAssembly = null;
+	Assembly lastHierarchyAssembly = null;
+	int currentLeaderIndex = 0;
+	int lastLeaderIndex = 0;
+
+	// Highest-'ranked' assemblies, based on the number of times the index shows up in hierarchies.
+	List<int> leaderboard = new List<int>();
+	public static Dictionary<int, int> assemblyScores = new Dictionary<int, int>();
 
 
 	void Awake(){
@@ -86,11 +97,6 @@ public class NodeController : MonoBehaviour {
 			if(tempHoldFood[i].cull)
 				tempHoldFood[i].Destroy();
 
-
-		// Quit on Escape
-		if(Input.GetKeyUp(KeyCode.Escape))
-			Application.Quit();
-
 		// Maintain octrees
 		FoodPellet.AllFoodTree.Maintain();
 		Node.AllSenseNodeTree.Maintain();
@@ -99,7 +105,7 @@ public class NodeController : MonoBehaviour {
 		int cycleDir = Mathf.FloorToInt((Time.time * 0.2f) % 12);
 
 		// Show details on selected assembly.
-		Assembly selectedAssem = CameraControl.Inst.selectedPhysAssembly;
+		Assembly selectedAssem = CameraControl.Inst.selectedAssembly;
 		Assembly hoveredAssem = CameraControl.Inst.hoveredPhysAssembly;
 		if(selectedAssem){
 			/*
@@ -158,17 +164,32 @@ public class NodeController : MonoBehaviour {
 				int newAssemID = GetNewAssemblyID();
 				newAssembly.familyTree.Add(newAssemID);
 				assemblyDictionary.Add(newAssemID, newAssembly.ToString());
+				assemblyScores.Add(newAssemID, 1);
 
-				int numNodes = Random.Range(minNodes, maxNodes);
-				Triplet spawnHexPos = Triplet.zero;
-				while(numNodes > 0){
-					// Make sure no phys node is here currently.
-					if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
-						newAssembly.AddNode(spawnHexPos);
-						numNodes--;
+				// Try a node structure... if there are no sense nodes, re-roll.
+				bool containsSenseNode = false;
+				do{
+					foreach(Node someNode in newAssembly.NodeDict.Values)
+						someNode.Destroy();
+					newAssembly.NodeDict.Clear();
+
+					int numNodes = Random.Range(minNodes, maxNodes);
+					Triplet spawnHexPos = Triplet.zero;
+					while(numNodes > 0){
+						// Make sure no phys node is here currently.
+						if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
+							newAssembly.AddNode(spawnHexPos);
+							numNodes--;
+						}
+						spawnHexPos += HexUtilities.RandomAdjacent();
 					}
-					spawnHexPos += HexUtilities.RandomAdjacent();
-				}
+
+					foreach(Node someNode in newAssembly.NodeDict.Values)
+						if(someNode.neighbors.Count == 1){
+							containsSenseNode = true;
+							break;
+						}
+				}while(!containsSenseNode);
 
 				foreach(Node someNode in newAssembly.NodeDict.Values)
 					someNode.ComputeEnergyNetwork();
@@ -177,7 +198,35 @@ public class NodeController : MonoBehaviour {
 			if(FoodPellet.all.Count < foodPellets)
 				new FoodPellet(Random.insideUnitSphere * worldSize);
 		}
+
+
+		if(showHierarchyAssembly != lastHierarchyAssembly){
+			lastHierarchyAssembly = showHierarchyAssembly;
+			relativesToHighlight = FindRelatives(showHierarchyAssembly);
+		}
+
+		foreach(Assembly someAssembly in relativesToHighlight){
+			GLDebug.DrawLine(someAssembly.Position, showHierarchyAssembly.Position, Color.green);
+		}
+
+		IEnumerable<KeyValuePair<int, int>> leaderboard = from entry in assemblyScores orderby entry.Value ascending select entry;
+
 	} // End of Update().
+
+
+	List<Assembly> FindRelatives(Assembly assembly){
+		List<Assembly> relatives = new List<Assembly>();
+		foreach(int someInt in assembly.familyTree){
+			foreach(Assembly someAssembly in Assembly.getAll){
+				if(someAssembly.familyTree.Contains(someInt)){
+					relatives.Add(someAssembly);
+					continue;
+				}
+			}
+		}
+
+		return relatives;
+	} // End of FindRelatives().
 
 
 	public int GetNewAssemblyID(){
@@ -285,8 +334,10 @@ public class NodeController : MonoBehaviour {
 		GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), infoString);
 		*/
 
-		if(!PersistentGameManager.IsClient && false){
+		/*
+		if(!PersistentGameManager.IsClient){
 			foreach(Assembly someAssem in Assembly.getAll){
+
 				Vector3 screenPos = Camera.main.WorldToScreenPoint(someAssem.Position);
 				//screenPos.y = Screen.height - screenPos.y;
 				if(screenPos.z < 0f)
@@ -295,10 +346,50 @@ public class NodeController : MonoBehaviour {
 				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 				GUI.skin.label.fontSize = Mathf.Clamp(Mathf.CeilToInt(20f / (screenPos.z * 0.01f)), 0, 50);
 				
-				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y, 1000f), someAssem.name);
+
+				if(relativesToHighlight.Contains(someAssem))
+					GUI.color = Color.green;
+				else
+					GUI.color = Color.white;
+
+				string familyString = "";
+				foreach(int someInt in someAssem.familyTree)
+					familyString += someInt + " ";
+				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y, 1000f), familyString);
+			}
+		}
+		*/
+
+		/*
+		currentLeaderIndex = Mathf.FloorToInt(Time.time % 10f);
+		if(lastLeaderIndex != currentLeaderIndex){
+			lastLeaderIndex = currentLeaderIndex;
+			int randomAssemNum = Random.Range(0, Assembly.getAll.Count);
+			foreach(Assembly randomAssembly in Assembly.getAll){
+				randomAssemNum--;
+				if(randomAssemNum == 0)
+					showHierarchyAssembly = randomAssembly;
+				break;
 			}
 		}
 
+		// Leaderboard
+		GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
+		GUI.skin.label.alignment = TextAnchor.UpperLeft;
+		GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.01f);
+		GUILayout.Label("Leaderboard");
+		for(int i = 0; i < Mathf.Min(leaderboard.Count, 10); i++){
+			if(currentLeaderIndex == i)
+				GUI.color = Color.green;
+			else
+				GUI.color = Color.white;
+
+			GUILayout.Label(leaderboard[i].ToString());
+
+
+		}
+		GUILayout.EndArea();
+		*/
 	} // End of OnGUI().
 
 

@@ -67,11 +67,16 @@ public class MathHelper {
             return;
         }
 
+        Bounds bounds = new Bounds(pts[0],Vector3.zero);
+        for (int i = 0; i < pts.Count; ++i)
+            bounds.Encapsulate(pts[i]);
+
+
         int xIdx = 0;
         int yIdx = GetPtWithMaxDist(pts, pts[xIdx]);
         int zIdx = GetPtWithMaxDist(pts, pts[yIdx]);
-        center = 0.5f * (pts[yIdx] + pts[zIdx]);
-        radius = 0.5f * (pts[yIdx] - pts[zIdx]).magnitude;
+        center = bounds.center;
+        radius = Mathf.Max(Mathf.Max(bounds.extents.x, bounds.extents.y), bounds.extents.z);
 
         // Check if points are all in sphere.
         for(int i=0; i < pts.Count; ++i)

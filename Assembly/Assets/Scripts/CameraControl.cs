@@ -41,7 +41,7 @@ public class CameraControl : MonoBehaviour {
     public Jellyfish selectedJellyfish = null;
     public Node selectedNode = null;
 
-    public Assembly selectedPhysAssembly = null;
+    public Assembly selectedAssembly = null;
 	public Assembly hoveredPhysAssembly = null;
 
 
@@ -85,14 +85,12 @@ public class CameraControl : MonoBehaviour {
             center = Jellyfish.all[0].transform.position;
         }
 		else if(PersistentGameManager.IsClient && NodeController.Inst){
-			Vector3 targetCenter = Vector3.zero;
-			foreach(Assembly someAssem in Assembly.getAll)
-				targetCenter += someAssem.Position;
-
-			if(Assembly.getAll.Count > 0f)
-				targetCenter /= Assembly.getAll.Count;
-
-			center = Vector3.Lerp(center, targetCenter, Time.deltaTime * 10f);
+			List<Vector3> pts = new List<Vector3>();
+			foreach(Assembly someAssembly in Assembly.getAll)
+				pts.Add(someAssembly.Position);
+			float sphereRadius = 0f;
+            MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);
+			targetRadius = (sphereRadius + 10f) / Mathf.Tan(Camera.main.fieldOfView * 0.4f * Mathf.Deg2Rad);
         }
         // Grotto
         else if(selectedJellyfish)
@@ -100,11 +98,13 @@ public class CameraControl : MonoBehaviour {
         // Assembly soup
         else if(selectedNode)
             center = selectedNode.Position;
-        else if(selectedPhysAssembly)
-			center = selectedPhysAssembly.Position;
+        else if(selectedAssembly)
+			center = selectedAssembly.Position;
 		
-        else
-            center = Vector3.zero;
+		// Show all assemblies constrained to the screen.
+        else{
+			center = Vector3.zero;
+		}
 
 		if(Assembly.getAll.Count > 0f)
 			targetOrbit.x -= 1f * Time.deltaTime;
@@ -176,26 +176,24 @@ public class CameraControl : MonoBehaviour {
 					if(hitObject.transform == somePhysNode.cubeTransform){
 						hoveredPhysAssembly = somePhysNode.PhysAssembly;
 						if(Input.GetMouseButton(0))
-							selectedPhysAssembly = hoveredPhysAssembly;
+							selectedAssembly = hoveredPhysAssembly;
 						break;
 					}
 				}
 			}
         }
 
-		/*
+		
         if(Input.GetKeyDown(KeyCode.Return)){
             if(selectedNode){
                 selectedNode = null;
-                centerOffset = center - selectedAssembly.WorldPosition;
             // Deselect all--return to main orbit.
             }else if(selectedAssembly){
                 selectedAssembly = null;
-                centerOffset = center - Vector3.zero;
                 targetRadius = maxRadius;
             }
         }
-		*/
+		
 
 	} // End of Update().
 
@@ -220,6 +218,7 @@ public class CameraControl : MonoBehaviour {
 
             GUILayout.EndVertical();
         }
+
     } // End of OnGUI().
 
 
@@ -229,5 +228,10 @@ public class CameraControl : MonoBehaviour {
         Gizmos.color = new Color(0f, 1f, 1f, 0.05f);
         Gizmos.DrawSphere(Vector3.zero, maxRadius);
     } // End of OnDrawGizmos().
+
+
+	void OnDrawGizmos(){
+
+	} // End of OnDrawGizmos().
 
 } // End of CameraOrbit.

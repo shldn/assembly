@@ -229,8 +229,8 @@ public class Node {
 
 
 		// Metabolism --------------------------------- //
-		if(PhysAssembly != CameraControl.Inst.selectedPhysAssembly)
-			physAssembly.energy -= NodeController.physicsStep * 0.05f;
+		if(PhysAssembly != CameraControl.Inst.selectedAssembly)
+			physAssembly.energy -= NodeController.physicsStep * 0.01f;
 
 
 		mateColorLerp = Mathf.MoveTowards(mateColorLerp, physAssembly.wantToMate? 1f : 0f, Time.deltaTime);
@@ -407,7 +407,7 @@ public class Node {
 			signalRotation = Quaternion.Inverse(rotation) * Quaternion.LookRotation(vectorToFood, rotation * Vector3.up);
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 
-			float foodToPull = NodeController.physicsStep * 0.1f;
+			float foodToPull = NodeController.physicsStep * 0.3f;
 
 			food.energy -= foodToPull;
 			physAssembly.energy += foodToPull;
@@ -503,7 +503,7 @@ public struct NodeProperties {
     // A fully randomly-seeded NodeProperties.
     public static NodeProperties random{
         get{
-            return new NodeProperties(Random.rotation, 45f, Random.Range(60.0f, 180.0f), Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
+            return new NodeProperties(Random.rotation, 45f, Random.Range(100.0f, 180.0f), Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
         }
     } // End of NodeProperties.random.
 
