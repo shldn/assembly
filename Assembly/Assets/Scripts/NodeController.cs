@@ -44,87 +44,6 @@ public class NodeController : MonoBehaviour {
     static int leaderboardMaxSize = leaderboardMaxDisplaySize + 5;  // The number of entries that will be stored in memory, store more to avoid searching if/when some fall off the leaderboard.
 	static Dictionary<int, int> assemblyScores = new Dictionary<int, int>();  // maps assembly id to count
 
-    static int LeaderboardIndex(int assemblyID)
-    {
-        int idx = -1;
-        for (int i = 0; i < leaderboard.Count && idx == -1; ++i)
-            if (leaderboard[i] == assemblyID)
-                idx = i;
-        return idx;
-    }
-
-    // Clean up memory used for the leaderboard
-    public static void ClearLeaderboard()
-    {
-        assemblyScores.Clear();
-        leaderboard.Clear();
-    }
-
-    public static void UpdateBirthCount(int assemblyID)
-    {
-        assemblyScores[assemblyID]++;
-
-        int idx = LeaderboardIndex(assemblyID);
-        if (idx != -1)
-        {
-            // find new insert point
-            int newIdx = -1;
-            for (int i = 1; i <= idx && assemblyScores[leaderboard[idx - i]] < assemblyScores[assemblyID]; ++i)
-                newIdx = idx - i;
-
-            if( newIdx != -1 )
-            {
-                leaderboard.RemoveAt(idx);
-                leaderboard.Insert(newIdx, assemblyID);
-            }
-        }
-        else
-        {
-            if (leaderboard.Count < leaderboardMaxSize || assemblyScores[leaderboard.Last<int>()] < assemblyScores[assemblyID])
-            {
-                // find insert point
-                int insertIdx = -1;
-                for (int i = 1; i <= leaderboard.Count && assemblyScores[leaderboard[leaderboard.Count - i]] < assemblyScores[assemblyID]; ++i)
-                    insertIdx = leaderboard.Count - i;
-                if (insertIdx != -1)
-                    leaderboard.Insert(insertIdx, assemblyID);
-                else
-                    leaderboard.Add(assemblyID);
-            }
-            if (leaderboard.Count > leaderboardMaxSize)
-                leaderboard.RemoveAt(leaderboard.Count - 1);
-        }
-    }
-
-    public static void UpdateDeathCount(int assemblyID)
-    {
-        assemblyScores[assemblyID]--;
-        int idx = LeaderboardIndex(assemblyID);
-        if (idx != -1)
-        {
-            if (assemblyScores[assemblyID] == 0)
-                leaderboard.RemoveAt(idx);
-            else
-            {
-
-                // find new insert point
-                int newIdx = -1;
-                for (int i = idx+1; i < leaderboard.Count && assemblyScores[leaderboard[i]] > assemblyScores[assemblyID]; ++i)
-                    newIdx = i;
-
-                if (newIdx != -1)
-                {
-                    leaderboard.RemoveAt(idx);
-                    leaderboard.Insert(newIdx, assemblyID);
-                }
-            }
-        }
-
-        if (assemblyScores[assemblyID] == 0)
-            assemblyScores.Remove(assemblyID);
-
-    }
-
 	void Awake(){
 		Inst = this;
 		bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
@@ -488,6 +407,91 @@ public class NodeController : MonoBehaviour {
         Node.DestroyAll();
         FoodPellet.DestroyAll();
         PersistentGameManager.CaptureObjects.Clear();
+    }
+
+
+
+    // Leader Board
+
+    static int LeaderboardIndex(int assemblyID)
+    {
+        int idx = -1;
+        for (int i = 0; i < leaderboard.Count && idx == -1; ++i)
+            if (leaderboard[i] == assemblyID)
+                idx = i;
+        return idx;
+    }
+
+    // Clean up memory used for the leaderboard
+    public static void ClearLeaderboard()
+    {
+        assemblyScores.Clear();
+        leaderboard.Clear();
+    }
+
+    public static void UpdateBirthCount(int assemblyID)
+    {
+        assemblyScores[assemblyID]++;
+
+        int idx = LeaderboardIndex(assemblyID);
+        if (idx != -1)
+        {
+            // find new insert point
+            int newIdx = -1;
+            for (int i = 1; i <= idx && assemblyScores[leaderboard[idx - i]] < assemblyScores[assemblyID]; ++i)
+                newIdx = idx - i;
+
+            if (newIdx != -1)
+            {
+                leaderboard.RemoveAt(idx);
+                leaderboard.Insert(newIdx, assemblyID);
+            }
+        }
+        else
+        {
+            if (leaderboard.Count < leaderboardMaxSize || assemblyScores[leaderboard.Last<int>()] < assemblyScores[assemblyID])
+            {
+                // find insert point
+                int insertIdx = -1;
+                for (int i = 1; i <= leaderboard.Count && assemblyScores[leaderboard[leaderboard.Count - i]] < assemblyScores[assemblyID]; ++i)
+                    insertIdx = leaderboard.Count - i;
+                if (insertIdx != -1)
+                    leaderboard.Insert(insertIdx, assemblyID);
+                else
+                    leaderboard.Add(assemblyID);
+            }
+            if (leaderboard.Count > leaderboardMaxSize)
+                leaderboard.RemoveAt(leaderboard.Count - 1);
+        }
+    }
+
+    public static void UpdateDeathCount(int assemblyID)
+    {
+        assemblyScores[assemblyID]--;
+        int idx = LeaderboardIndex(assemblyID);
+        if (idx != -1)
+        {
+            if (assemblyScores[assemblyID] == 0)
+                leaderboard.RemoveAt(idx);
+            else
+            {
+
+                // find new insert point
+                int newIdx = -1;
+                for (int i = idx + 1; i < leaderboard.Count && assemblyScores[leaderboard[i]] > assemblyScores[assemblyID]; ++i)
+                    newIdx = i;
+
+                if (newIdx != -1)
+                {
+                    leaderboard.RemoveAt(idx);
+                    leaderboard.Insert(newIdx, assemblyID);
+                }
+            }
+        }
+
+        if (assemblyScores[assemblyID] == 0)
+            assemblyScores.Remove(assemblyID);
+
     }
 
 } // End of PhysNodeController.
