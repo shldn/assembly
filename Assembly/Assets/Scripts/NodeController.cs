@@ -43,7 +43,6 @@ public class NodeController : MonoBehaviour {
 
 
 	void Start(){
-		CameraControl.Inst.maxRadius = worldSize * 3f;
 	} // End of Start().
 
 

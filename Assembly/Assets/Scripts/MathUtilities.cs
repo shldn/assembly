@@ -33,4 +33,52 @@ public class MathUtilities {
     }// End of CenteredSquare().
 	*/
 
+
+	public static Vector3[] FibonacciSphere(int samples, bool randomize = true){
+		Vector3[] points = new Vector3[samples];
+
+		float rnd = 1f;
+		if(randomize)
+			rnd = Random.Range(0f, samples);
+
+		float offset = 2f / samples;
+		float increment = Mathf.PI * (3f - Mathf.Sqrt(5f));
+
+		for(int i = 0; i < samples; i++){
+			float y = ((i * offset) - 1f) + (offset / 2f);
+			float r = Mathf.Sqrt(1f - Mathf.Pow(y, 2f));
+			float phi = ((i + rnd) % samples) * increment;
+			float x = Mathf.Cos(phi) * r;
+			float z = Mathf.Sin(phi) * r;
+			points[i] = new Vector3(x, y, z);
+		}
+
+		return points;
+	} // End of FibonacciSphere().
+
+
+	/*
+	def fibonacci_sphere(samples=1,randomize=True):
+    rnd = 1.
+    if randomize:
+        rnd = random.random() * samples
+
+    points = []
+    offset = 2./samples
+    increment = math.pi * (3. - math.sqrt(5.));
+
+    for i in range(samples):
+        y = ((i * offset) - 1) + (offset / 2);
+        r = math.sqrt(1 - pow(y,2))
+
+        phi = ((i + rnd) % samples) * increment
+
+        x = math.cos(phi) * r
+        z = math.sin(phi) * r
+
+        points.append([x,y,z])
+
+    return points
+	*/
+
 } // End of MathUtilities.
