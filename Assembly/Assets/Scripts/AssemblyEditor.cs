@@ -77,13 +77,17 @@ public class AssemblyEditor : MonoBehaviour {
 
 
 		// Help menu button
-		float helpButtonSize = Screen.height * 0.08f;
-		if(GUI.Button(new Rect(10f, Screen.height - (helpButtonSize + 10f), helpButtonSize, helpButtonSize), helpIcon)){
-			if(menu == MenuType.help)
-				menu = MenuType.main;
-			else
-				menu = MenuType.help;
-		}
+        if (!ClientTest.Inst)
+        {
+            float helpButtonSize = Screen.height * 0.08f;
+            if (GUI.Button(new Rect(10f, Screen.height - (helpButtonSize + 10f), helpButtonSize, helpButtonSize), helpIcon))
+            {
+                if (menu == MenuType.help)
+                    menu = MenuType.main;
+                else
+                    menu = MenuType.help;
+            }
+        }
 
 		if(menu == MenuType.help){
 			GUI.skin.label.alignment = TextAnchor.MiddleCenter;
