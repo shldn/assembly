@@ -212,31 +212,36 @@ public class NodeController : MonoBehaviour {
 
 
 		// Leaderboard
-		float timePerIndex = 3f; // How long each leaderboard entry is highlighted.
-		currentLeaderIndex = Mathf.FloorToInt((Time.time / timePerIndex) % 10f);
-		float fadeInLerp = (Time.time / timePerIndex) % 1f;
-		float fadeAmount = 1f - (0.5f + (Mathf.Cos(fadeInLerp * (Mathf.PI * 2f)) * 0.5f));
-		fadeAmount = Mathf.Pow(fadeAmount, 1f); // Make fade stronger.
+        if (PersistentGameManager.IsServer)
+        {
+            float timePerIndex = 3f; // How long each leaderboard entry is highlighted.
+            currentLeaderIndex = Mathf.FloorToInt((Time.time / timePerIndex) % 10f);
+            float fadeInLerp = (Time.time / timePerIndex) % 1f;
+            float fadeAmount = 1f - (0.5f + (Mathf.Cos(fadeInLerp * (Mathf.PI * 2f)) * 0.5f));
+            fadeAmount = Mathf.Pow(fadeAmount, 1f); // Make fade stronger.
 
-		//print(lastLeaderIndex + "   " + currentLeaderIndex);
-        if(lastLeaderIndex != currentLeaderIndex){
-            lastLeaderIndex = currentLeaderIndex;
-			relativesToHighlight = FindRelatives(leaderboard[currentLeaderIndex]);
+            //print(lastLeaderIndex + "   " + currentLeaderIndex);
+            if (lastLeaderIndex != currentLeaderIndex)
+            {
+                lastLeaderIndex = currentLeaderIndex;
+                relativesToHighlight = FindRelatives(leaderboard[currentLeaderIndex]);
+            }
+
+
+            for (int i = 0; i < relativesToHighlight.Count - 1; i++)
+            {
+                GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount));
+            }
+
+            /*
+            foreach(Assembly someAssembly in relativesToHighlight){
+                GLDebug.DrawLine(someAssembly.Position, Vector3.zero, new Color(0f, 1f, 1f, fadeAmount));
+            }
+            */
+
+            if (Input.GetKeyUp(KeyCode.L))
+                showLeaderboard = !showLeaderboard;
         }
-
-
-		for(int i = 0; i < relativesToHighlight.Count - 1; i++){
-			GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount));
-		}
-
-		/*
-		foreach(Assembly someAssembly in relativesToHighlight){
-			GLDebug.DrawLine(someAssembly.Position, Vector3.zero, new Color(0f, 1f, 1f, fadeAmount));
-		}
-		*/
-
-        if( Input.GetKeyUp(KeyCode.L))
-            showLeaderboard = !showLeaderboard;
 
 	} // End of Update().
 
