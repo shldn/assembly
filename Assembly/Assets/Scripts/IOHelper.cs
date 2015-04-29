@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class IOHelper
 {
-    private static int assemblyFileFormatVersion = 1;
+    private static int assemblyFileFormatVersion = 2;
 
     // if the file already exists, make a new one with an incremented file name
     public static string GetValidFileName(string folderPath, string desiredFilename, string ext)
@@ -46,18 +46,18 @@ public class IOHelper
         }
     } // End of LoadDirectory
 
-    public static void LoadAssemblyFromFile(string filePath, ref string name, ref Vector3 position, ref List<Node> nodes)
+    public static void LoadAssemblyFromFile(string filePath, ref string name, ref int id, ref Vector3 position, ref List<Node> nodes)
     {
         using (StreamReader sr = new StreamReader(filePath))
         {
-            ReadAssemblyFromStream(sr, ref name, ref position, ref nodes);
+            ReadAssemblyFromStream(sr, ref name, ref id, ref position, ref nodes);
         }
     }
 
-    public static void LoadAssemblyFromString(string assemblyStr, ref string name, ref Vector3 position, ref List<Node> nodes)
+    public static void LoadAssemblyFromString(string assemblyStr, ref string name, ref int id, ref Vector3 position, ref List<Node> nodes)
     {
         StringReader sr = new StringReader(assemblyStr);
-        ReadAssemblyFromStream(sr, ref name, ref position, ref nodes);
+        ReadAssemblyFromStream(sr, ref name, ref id, ref position, ref nodes);
     }
 
     public static string AssemblyToString(Assembly assembly){
@@ -66,10 +66,11 @@ public class IOHelper
         return sw.ToString();
     } // End of AssemblyToString().
 
-    private static void ReadAssemblyFromStream(TextReader stream, ref string name, ref Vector3 position, ref List<Node> nodes)
+    private static void ReadAssemblyFromStream(TextReader stream, ref string name, ref int id, ref Vector3 position, ref List<Node> nodes)
     {
         int fileFormat = int.Parse(stream.ReadLine());
         name = stream.ReadLine();
+        id = ( fileFormat > 1) ? int.Parse(stream.ReadLine()) : -1;
         position = Vector3FromString(stream.ReadLine());
         while (stream.Peek() >= 0)
             nodes.Add(Node.FromString(stream.ReadLine()));
@@ -84,6 +85,7 @@ public class IOHelper
     private static void WriteAssemblyToStream(Assembly assembly, TextWriter stream){
         stream.WriteLine(assemblyFileFormatVersion);
         stream.WriteLine(assembly.name);
+        stream.WriteLine(assembly.id);
         stream.WriteLine(assembly.Position);
         foreach(Node someNode in assembly.NodeDict.Values)
             stream.WriteLine(someNode.ToFileString(assemblyFileFormatVersion));

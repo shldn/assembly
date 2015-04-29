@@ -29,10 +29,11 @@ public class NodeController : MonoBehaviour {
 
 	public int worldNodeThreshold = 1000;
     public bool showLeaderboard = false;
+    public bool showPeopleLeaderBoard = false; // shows the leaderboard only of entities that have been captured
 
 	int nextAssemblyID = 0;
-	Dictionary<int, string> assemblyDictionary = new Dictionary<int, string>();
-	Dictionary<int, string> assemblyNameDictionary = new Dictionary<int, string>();
+    HashSet<int> assemblyCaptured = new HashSet<int>(); // contains assembly ids if the assembly has been captured by a user.
+	public Dictionary<int, string> assemblyNameDictionary = new Dictionary<int, string>();
 
 	string[] nameList;
 
@@ -42,9 +43,10 @@ public class NodeController : MonoBehaviour {
 
 	// Highest-'ranked' assemblies, based on the number of times the index shows up in hierarchies.
     static List<int> leaderboard = new List<int>(); // list of assembly ids -- will keep sorted by assemblyScores
+    static List<int> leaderboardCaptured = new List<int>(); // list of assembly ids that have been captured by a user -- will keep sorted by assemblyScores
     static int leaderboardMaxDisplaySize = 10;
     static int leaderboardMaxSize = leaderboardMaxDisplaySize + 5;  // The number of entries that will be stored in memory, store more to avoid searching if/when some fall off the leaderboard.
-	static Dictionary<int, float> assemblyScores = new Dictionary<int, float>();  // maps assembly id to score
+	public static Dictionary<int, float> assemblyScores = new Dictionary<int, float>();  // maps assembly id to score
 
 	// Food will be populated in the environment randomly until the max food pellets count is hit, at which point it will convert to the helical pattern.
 	bool foodInitialized = false;
@@ -181,11 +183,7 @@ public class NodeController : MonoBehaviour {
 
 				Assembly newAssembly = new Assembly(assemblySpawnPos, Quaternion.identity);
 				int newAssemID = GetNewAssemblyID();
-				newAssembly.familyTree.Add(newAssemID);
-                newAssembly.familyGenerationRemoved.Add(newAssemID, 0);
-				assemblyDictionary.Add(newAssemID, newAssembly.ToString());
-				assemblyNameDictionary.Add(newAssemID, newAssembly.name);
-				assemblyScores.Add(newAssemID, 0);
+                newAssembly.Id = newAssemID;
                 UpdateBirthCount(newAssemID,0);
 
 				// Try a node structure... if there are no sense nodes, re-roll.
@@ -238,33 +236,40 @@ public class NodeController : MonoBehaviour {
 		// Leaderboard
         if (PersistentGameManager.IsServer)
         {
-            float timePerIndex = 3f; // How long each leaderboard entry is highlighted.
-            currentLeaderIndex = Mathf.FloorToInt((Time.time / timePerIndex) % 10f);
-            float fadeInLerp = (Time.time / timePerIndex) % 1f;
-            float fadeAmount = 1f - (0.5f + (Mathf.Cos(fadeInLerp * (Mathf.PI * 2f)) * 0.5f));
-            fadeAmount = Mathf.Pow(fadeAmount, 1f); // Make fade stronger.
-
-            //print(lastLeaderIndex + "   " + currentLeaderIndex);
-            if (lastLeaderIndex != currentLeaderIndex)
+            if(showLeaderboard || showPeopleLeaderBoard)
             {
-                lastLeaderIndex = currentLeaderIndex;
-                relativesToHighlight = FindRelatives(leaderboard[currentLeaderIndex]);
-            }
+                List<int> leaderList = (showPeopleLeaderBoard) ? leaderboardCaptured : leaderboard;
+                float timePerIndex = 3f; // How long each leaderboard entry is highlighted.
+                currentLeaderIndex = leaderList.Count > 0 ? Mathf.FloorToInt((Time.time / timePerIndex) % (float)leaderList.Count) : 0;
+                float fadeInLerp = (Time.time / timePerIndex) % 1f;
+                float fadeAmount = 1f - (0.5f + (Mathf.Cos(fadeInLerp * (Mathf.PI * 2f)) * 0.5f));
+                fadeAmount = Mathf.Pow(fadeAmount, 1f); // Make fade stronger.
+
+                //print(lastLeaderIndex + "   " + currentLeaderIndex);
+                if (lastLeaderIndex != currentLeaderIndex && leaderList.Count > 0)
+                {
+                    lastLeaderIndex = currentLeaderIndex;
+                    relativesToHighlight = FindRelatives(leaderList[currentLeaderIndex]);
+                }
 
 
-            for (int i = 0; i < relativesToHighlight.Count - 1; i++)
-            {
-                GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount));
+                for (int i = 0; i < relativesToHighlight.Count - 1; i++)
+                {
+                    GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount));
+                }
             }
 
-            /*
-            foreach(Assembly someAssembly in relativesToHighlight){
-                GLDebug.DrawLine(someAssembly.Position, Vector3.zero, new Color(0f, 1f, 1f, fadeAmount));
-            }
-            */
 
             if (Input.GetKeyUp(KeyCode.L))
+            {
                 showLeaderboard = !showLeaderboard;
+                showPeopleLeaderBoard = false;
+            }
+            if (Input.GetKeyUp(KeyCode.P))
+            {
+                showPeopleLeaderBoard = !showPeopleLeaderBoard;
+                showLeaderboard = false;
+            }
         }
 
 	} // End of Update().
@@ -450,23 +455,25 @@ public class NodeController : MonoBehaviour {
 		}
 
         // Leaderboard
-        if (PersistentGameManager.IsServer && showLeaderboard)
+        if (PersistentGameManager.IsServer && (showLeaderboard || showPeopleLeaderBoard))
         {
 			GUI.color = Color.white;
+            List<int> leaderList = showPeopleLeaderBoard ? leaderboardCaptured : leaderboard;
             GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
             GUI.skin.label.alignment = TextAnchor.UpperLeft;
             GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.04f);
             GUILayout.Label("Leaderboard", GUILayout.Height(Mathf.Max(GUI.skin.label.fontSize + 6, Mathf.CeilToInt(Screen.height * 0.05f))));
             GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.02f);
             int leaderCount = 0;
-            foreach (int leaderEntry in leaderboard)
+            foreach (int leaderEntry in leaderList)
             {
                 if (currentLeaderIndex == leaderCount)
                     GUI.color = Color.cyan;
                 else
                     GUI.color = Color.white;
 
-                GUILayout.Label("  " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(assemblyNameDictionary[leaderEntry]) + " - " + assemblyScores[leaderEntry].ToString("0.0"));
+                if (assemblyNameDictionary.ContainsKey(leaderEntry) && assemblyScores.ContainsKey(leaderEntry) )
+                    GUILayout.Label("  " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(assemblyNameDictionary[leaderEntry]) + " - " + assemblyScores[leaderEntry].ToString("0.0"));
 
                 ++leaderCount;
                 if (leaderCount >= leaderboardMaxDisplaySize)
@@ -492,11 +499,11 @@ public class NodeController : MonoBehaviour {
 
 
     // Leader Board
-    static int LeaderboardIndex(int assemblyID)
+    static int LeaderboardIndex(int assemblyID, List<int> leaderList)
     {
         int idx = -1;
-        for (int i = 0; i < leaderboard.Count && idx == -1; ++i)
-            if (leaderboard[i] == assemblyID)
+        for (int i = 0; i < leaderList.Count && idx == -1; ++i)
+            if (leaderList[i] == assemblyID)
                 idx = i;
         return idx;
     }
@@ -506,73 +513,100 @@ public class NodeController : MonoBehaviour {
     {
         assemblyScores.Clear();
         leaderboard.Clear();
+        leaderboardCaptured.Clear();
     }
 
     public static void UpdateBirthCount(int assemblyID, int generationRemoved)
     {
         float posGen = (generationRemoved < 0) ? 0f : (float)generationRemoved;
+        if (!assemblyScores.ContainsKey(assemblyID))
+            assemblyScores.Add(assemblyID, 0);
         assemblyScores[assemblyID] += 1f / (posGen + 1f);
 
-        int idx = LeaderboardIndex(assemblyID);
-        if (idx != -1)
-        {
-            // find new insert point
-            int newIdx = -1;
-            for (int i = 1; i <= idx && assemblyScores[leaderboard[idx - i]] < assemblyScores[assemblyID]; ++i)
-                newIdx = idx - i;
+        MaintainLeaderboardOnBirth(assemblyID, leaderboard);
+        if (Assembly.captured.Contains(assemblyID))
+            MaintainLeaderboardOnBirth(assemblyID, leaderboardCaptured);
+    }
 
-            if (newIdx != -1)
-            {
-                leaderboard.RemoveAt(idx);
-                leaderboard.Insert(newIdx, assemblyID);
-            }
-        }
+    private static void MaintainLeaderboardOnBirth(int assemblyID, List<int> leaderList)
+    {
+        int idx = LeaderboardIndex(assemblyID, leaderList);
+        if (idx != -1)
+            AdjustExistingLeaderBoardEntry(assemblyID, idx, leaderList);
         else
+            InsertLeaderBoardEntry(assemblyID, leaderList);
+    }
+
+    private static void AdjustExistingLeaderBoardEntry(int assemblyID, int currentIdx, List<int> leaderList){
+        // find new insert point
+        int newIdx = -1;
+        for (int i = 1; i <= currentIdx && assemblyScores[leaderList[currentIdx - i]] < assemblyScores[assemblyID]; ++i)
+            newIdx = currentIdx - i;
+
+        if (newIdx != -1)
         {
-            if (leaderboard.Count < leaderboardMaxSize || assemblyScores[leaderboard.Last<int>()] < assemblyScores[assemblyID])
-            {
-                // find insert point
-                int insertIdx = -1;
-                for (int i = 1; i <= leaderboard.Count && assemblyScores[leaderboard[leaderboard.Count - i]] < assemblyScores[assemblyID]; ++i)
-                    insertIdx = leaderboard.Count - i;
-                if (insertIdx != -1)
-                    leaderboard.Insert(insertIdx, assemblyID);
-                else
-                    leaderboard.Add(assemblyID);
-            }
-            if (leaderboard.Count > leaderboardMaxSize)
-                leaderboard.RemoveAt(leaderboard.Count - 1);
+            leaderList.RemoveAt(currentIdx);
+            leaderList.Insert(newIdx, assemblyID);
         }
     }
+
+    private static void InsertLeaderBoardEntry(int assemblyID, List<int> leaderList)
+    {
+        if (leaderList.Count < leaderboardMaxSize || assemblyScores[leaderList.Last<int>()] < assemblyScores[assemblyID])
+        {
+            // find insert point
+            int insertIdx = -1;
+            for (int i = 1; i <= leaderList.Count && assemblyScores[leaderList[leaderList.Count - i]] < assemblyScores[assemblyID]; ++i)
+                insertIdx = leaderList.Count - i;
+            if (insertIdx != -1)
+                leaderList.Insert(insertIdx, assemblyID);
+            else
+                leaderList.Add(assemblyID);
+        }
+        if (leaderList.Count > leaderboardMaxSize)
+            leaderList.RemoveAt(leaderList.Count - 1);
+    }
+
 
     public static void UpdateDeathCount(int assemblyID, int generationRemoved)
     {
         float posGen = (generationRemoved < 0) ? 0f : (float)generationRemoved;
+        if (!assemblyScores.ContainsKey(assemblyID))
+            assemblyScores.Add(assemblyID, 0);
         assemblyScores[assemblyID] -= 1f / (posGen + 1f);
-        int idx = LeaderboardIndex(assemblyID);
+
+        MaintainLeaderboardOnDeath(assemblyID, leaderboard);
+        MaintainLeaderboardOnDeath(assemblyID, leaderboardCaptured);
+
+    }
+
+    private static void MaintainLeaderboardOnDeath(int assemblyID, List<int> leaderList)
+    {
+        int idx = LeaderboardIndex(assemblyID, leaderList);
         if (idx != -1)
         {
-            if (assemblyScores[assemblyID] == 0)
-                leaderboard.RemoveAt(idx);
+            if (!assemblyScores.ContainsKey(assemblyID) || assemblyScores[assemblyID] == 0)
+                leaderList.RemoveAt(idx);
             else
             {
 
                 // find new insert point
                 int newIdx = -1;
-                for (int i = idx + 1; i < leaderboard.Count && assemblyScores[leaderboard[i]] > assemblyScores[assemblyID]; ++i)
+                for (int i = idx + 1; i < leaderList.Count && assemblyScores[leaderList[i]] > assemblyScores[assemblyID]; ++i)
                     newIdx = i;
 
                 if (newIdx != -1)
                 {
-                    leaderboard.RemoveAt(idx);
-                    leaderboard.Insert(newIdx, assemblyID);
+                    leaderList.RemoveAt(idx);
+                    leaderList.Insert(newIdx, assemblyID);
                 }
             }
         }
 
-        if (assemblyScores[assemblyID] == 0)
+        if (assemblyScores.ContainsKey(assemblyID) && assemblyScores[assemblyID] <= 0)
             assemblyScores.Remove(assemblyID);
 
     }
+
 
 } // End of PhysNodeController.
