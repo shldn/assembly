@@ -10,8 +10,8 @@ public class AssemblyEditor : MonoBehaviour {
     public Node selectedNode = null;
 
     // Test parameters
-    int numTestAssemblies = 10;
-    float mutationRate = 0.25f;
+    public int numTestAssemblies = 10;
+    public float mutationRate = 0.25f;
 
 	public Texture2D visionRangeIcon;
 	public Texture2D visionFOVIcon;
@@ -266,7 +266,7 @@ public class AssemblyEditor : MonoBehaviour {
                 capturedAssembly.Destroy();
                 break;
 			case(MenuType.iq):
-				SpawnTestAssemblies(numTestAssemblies, mutationRate, capturedAssembly.spawnRotation);
+				//SpawnTestAssemblies(numTestAssemblies, mutationRate, capturedAssembly.spawnRotation);
 				testObject = new GameObject("maxIQTester", typeof(Test_IQ));
 				testObject.transform.position = capturedAssembly.Position;
 				capturedAssembly.Destroy();
