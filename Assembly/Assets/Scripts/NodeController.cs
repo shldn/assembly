@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Globalization;
 
 
 public class NodeController : MonoBehaviour {
@@ -27,6 +28,7 @@ public class NodeController : MonoBehaviour {
 	int maxNodes = 15;
 
 	public int worldNodeThreshold = 1000;
+    public bool showLeaderboard = false;
 
 	int nextAssemblyID = 0;
 	Dictionary<int, string> assemblyDictionary = new Dictionary<int, string>();
@@ -233,6 +235,9 @@ public class NodeController : MonoBehaviour {
 		}
 		*/
 
+        if( Input.GetKeyUp(KeyCode.L))
+            showLeaderboard = !showLeaderboard;
+
 	} // End of Update().
 
 
@@ -396,26 +401,30 @@ public class NodeController : MonoBehaviour {
 		*/
 
         // Leaderboard
-		GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
-		GUI.skin.label.alignment = TextAnchor.UpperLeft;
-		GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.01f);
-        GUILayout.Label((PersistentGameManager.IsServer) ? "Leaderboard" : "");
-        int leaderCount = 0;
-        foreach (int leaderEntry in leaderboard)
+        if (PersistentGameManager.IsServer && showLeaderboard)
         {
-            if (currentLeaderIndex == leaderCount)
-                GUI.color = Color.cyan;
-            else
-                GUI.color = Color.white;
+            GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
+            GUI.skin.label.alignment = TextAnchor.UpperLeft;
+            GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.04f);
+            GUILayout.Label("Leaderboard", GUILayout.Height(Mathf.Max(GUI.skin.label.fontSize + 6, Mathf.CeilToInt(Screen.height * 0.05f))));
+            GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.02f);
+            int leaderCount = 0;
+            foreach (int leaderEntry in leaderboard)
+            {
+                if (currentLeaderIndex == leaderCount)
+                    GUI.color = Color.cyan;
+                else
+                    GUI.color = Color.white;
 
-            GUILayout.Label(leaderEntry.ToString() + " - " + assemblyScores[leaderEntry].ToString("0.0"));
+                GUILayout.Label("  " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(assemblyNameDictionary[leaderEntry]) + " - " + assemblyScores[leaderEntry].ToString("0.0"));
 
-            ++leaderCount;
-            if (leaderCount >= leaderboardMaxDisplaySize)
-                break;
+                ++leaderCount;
+                if (leaderCount >= leaderboardMaxDisplaySize)
+                    break;
 
+            }
+            GUILayout.EndArea();
         }
-		GUILayout.EndArea();
 
 	} // End of OnGUI().
 

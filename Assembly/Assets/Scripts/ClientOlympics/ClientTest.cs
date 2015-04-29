@@ -70,6 +70,7 @@ public class ClientTest : MonoBehaviour {
         float step = 100f / (float)(testDuration);
 		for(int i = 0; i < runTime * step; i++)
 			progressBar += "|";
+        GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.width * 0.02f);
 		GUI.skin.label.alignment = TextAnchor.LowerLeft;
         GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), progressBar + " " + (runTime * step).ToString("F0") + "%");
 	} // End of OnGUI().
