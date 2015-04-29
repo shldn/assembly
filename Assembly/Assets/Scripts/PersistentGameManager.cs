@@ -98,6 +98,10 @@ public class PersistentGameManager : MonoBehaviour {
 
 
     public void EnviroImpulse(Vector3 pos, float force){
+
+		// Disabled for now.
+		return;
+
         // Apply physics
         foreach(Node someNode in Node.getAll){
             Vector3 vecToAssem = pos - someNode.Position;

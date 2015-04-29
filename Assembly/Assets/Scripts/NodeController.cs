@@ -46,6 +46,10 @@ public class NodeController : MonoBehaviour {
     static int leaderboardMaxSize = leaderboardMaxDisplaySize + 5;  // The number of entries that will be stored in memory, store more to avoid searching if/when some fall off the leaderboard.
 	static Dictionary<int, float> assemblyScores = new Dictionary<int, float>();  // maps assembly id to score
 
+	// Food will be populated in the environment randomly until the max food pellets count is hit, at which point it will convert to the helical pattern.
+	bool foodInitialized = false;
+
+
 	void Awake(){
 		Inst = this;
 		bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
@@ -65,6 +69,13 @@ public class NodeController : MonoBehaviour {
 
 
 	void Update(){
+
+		// World grows as food nodes are consumed.
+		worldSize.z = Mathf.Lerp(worldSize.z, 150f * (1f + (FoodPellet.numExhausted * 0.01f)), 0.1f * Time.deltaTime);
+
+		// Don't need it to get TOO big.
+		worldSize.z = Mathf.Clamp(worldSize.z, 0f, 385f);
+
 
 		foreach(Node someNode in Node.getAll)
 			someNode.DoMath();
@@ -207,17 +218,20 @@ public class NodeController : MonoBehaviour {
 			}
 
 			if(FoodPellet.all.Count < foodPellets){
-				/*
-				float randomSeed = Random.Range(-100f, 100f);
-				float radius = worldSize * 0.5f;
-				float spiralIntensity = 0.1f;
-				Vector3 foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
-				*/
 
-				Vector3 foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
+				Vector3 foodPosition = Vector3.zero;
+
+				if(foodInitialized){
+					float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
+					float radius = worldSize.x * 0.5f;
+					float spiralIntensity = 0.2f;
+					foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
+				}else
+					foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
 
 				new FoodPellet(foodPosition);
-			}
+			}else
+				foodInitialized = true;
 		}
 
 
@@ -438,6 +452,7 @@ public class NodeController : MonoBehaviour {
         // Leaderboard
         if (PersistentGameManager.IsServer && showLeaderboard)
         {
+			GUI.color = Color.white;
             GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
             GUI.skin.label.alignment = TextAnchor.UpperLeft;
             GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.04f);

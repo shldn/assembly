@@ -304,7 +304,9 @@ public class CaptureNet_Manager : MonoBehaviour {
         //if (!GameManager.Inst)
             //return;
 
-        Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 100f);
+		// Ensure assemblies are dropped in at a viable position, relative to the camera.
+        Vector3 assemblyNewPos = Camera.main.transform.position.normalized * Mathf.Min(NodeController.Inst.worldSize.x, NodeController.Inst.worldSize.y, NodeController.Inst.worldSize.z, Camera.main.transform.position.magnitude - 25f);
+		assemblyNewPos += Random.insideUnitSphere * 5f;
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
