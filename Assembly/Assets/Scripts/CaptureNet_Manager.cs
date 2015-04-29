@@ -49,7 +49,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 		Inst = this;
 
         if (Debug.isDebugBuild)
-            connectToIP = new List<string>() { "127.0.0.1" };
+            connectToIP = new List<string>() { "132.239.235.116" };
         else
             gameObject.AddComponent<DownloadHelper>().StartDownload(remoteIpList, HandleRemoteListDownloadComplete);
 
