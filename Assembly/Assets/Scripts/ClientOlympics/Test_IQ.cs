@@ -6,7 +6,7 @@ public class Test_IQ : ClientTest
     Vector3[] targetDir = { Vector3.forward, Vector3.up, -2f * Vector3.forward, Vector3.right };
     int[] targetEndFrame = {100, 200, 400, 500};
     int targetIdx = 0;
-
+    List<Assembly> testAssemblies = new List<Assembly>();
     Quaternion rotation = Quaternion.identity;
 
     void Awake()
@@ -15,6 +15,20 @@ public class Test_IQ : ClientTest
         nodePower = 0.2f;
         testDuration = 500; // frames
         unlockFrameRate = false;
+
+        SpawnTestAssemblies(AssemblyEditor.Inst.numTestAssemblies, AssemblyEditor.Inst.mutationRate, AssemblyEditor.Inst.capturedAssembly.spawnRotation);
+    }
+
+    void SpawnTestAssemblies(int num, float mutationRate, Quaternion? rot, float posOffset = 0.0f)
+    {
+        Vector3 initPos = AssemblyEditor.Inst.capturedAssembly.Position;
+        Vector3 offset = posOffset * Camera.main.transform.right;
+        for (int i = 0; i < num; i++)
+        {
+            Assembly newPhysAssem = new Assembly(IOHelper.AssemblyToString(AssemblyEditor.Inst.capturedAssembly), rot, initPos + i * offset, false);
+            newPhysAssem.Mutate(mutationRate);
+            testAssemblies.Add(newPhysAssem);
+        }
     }
 
 	void Start () {
@@ -50,7 +64,7 @@ public class Test_IQ : ClientTest
 
     Quaternion GetRotationToFirstSense()
     {
-        foreach (Assembly someAssembly in Assembly.getAll)
+        foreach (Assembly someAssembly in testAssemblies)
             if (!someAssembly.cull)
                 foreach (KeyValuePair<Triplet, Node> kvp in someAssembly.NodeDict)
                     if (kvp.Value.IsSense)
@@ -76,7 +90,7 @@ public class Test_IQ : ClientTest
         if (clearFood)
             FoodPellet.DestroyAll();
         int count = 0;
-        foreach (Assembly someAssembly in Assembly.getAll)
+        foreach (Assembly someAssembly in testAssemblies)
         {
             if (!someAssembly.cull)
                 AddFoodAtCenterOfSense(someAssembly, dist, setAsOwner, showOnlyOne && count != 0);
