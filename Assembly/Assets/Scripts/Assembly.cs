@@ -216,11 +216,11 @@ public class Assembly : CaptureObject{
 				newAssembly.name = name.Substring(0, Mathf.RoundToInt(name.Length * 0.5f)) + matingWith.name.Substring(matingWith.name.Length - Mathf.RoundToInt(matingWith.name.Length * 0.5f), Mathf.RoundToInt(matingWith.name.Length * 0.5f));
 				foreach(int someInt in familyTree){
 					newAssembly.familyTree.Add(someInt);
-                    NodeController.UpdateBirthCount(someInt);
+                    //NodeController.UpdateBirthCount(someInt);
 				}
 				foreach(int someInt in matingWith.familyTree){
 					newAssembly.familyTree.Add(someInt);
-                    NodeController.UpdateBirthCount(someInt);
+                    //NodeController.UpdateBirthCount(someInt);
 				}
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(matingWith);
