@@ -10,6 +10,7 @@ public class Assembly : CaptureObject{
 	public static implicit operator bool(Assembly exists){return exists != null;}
 
 	public HashSet<int> familyTree = new HashSet<int>();
+    public Dictionary<int, int> familyGenerationRemoved = new Dictionary<int, int>(); // how many generations removed is an entity in familyTree (maps assemblyID to generationCount) - parents would have value of 1
 	public string name = "Some Unimportant Assembly";
 
 	Dictionary<Triplet, Node> nodeDict = new Dictionary<Triplet, Node>();
@@ -221,6 +222,8 @@ public class Assembly : CaptureObject{
 					newAssembly.familyTree.Add(someInt);
                     NodeController.UpdateBirthCount(someInt);
 				}
+                newAssembly.UpdateFamilyTreeFromParent(this);
+                newAssembly.UpdateFamilyTreeFromParent(matingWith);
 
 				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length);
 				Triplet spawnHexPos = Triplet.zero;
@@ -258,6 +261,18 @@ public class Assembly : CaptureObject{
         
 	} // End of Update().
 
+    private void UpdateFamilyTreeFromParent(Assembly parent)
+    {
+        foreach (int someInt in parent.familyTree)
+        {
+            familyTree.Add(someInt);
+            if (familyGenerationRemoved.ContainsKey(someInt))
+                familyGenerationRemoved[someInt] = Mathf.Min(familyGenerationRemoved[someInt], parent.familyGenerationRemoved[someInt] + 1);
+            else
+                familyGenerationRemoved.Add(someInt, parent.familyGenerationRemoved[someInt] + 1);
+            NodeController.UpdateBirthCount(someInt, familyGenerationRemoved[someInt]);
+        }
+    }
 
 	public void HandleFindMate(Assembly someAssembly){
 		if((someAssembly == this) || (someAssembly.matingWith) || matingWith)
@@ -340,7 +355,7 @@ public class Assembly : CaptureObject{
 
 		allAssemblyTree.Remove(this);
         foreach (int someInt in familyTree)
-            NodeController.UpdateDeathCount(someInt);
+            NodeController.UpdateDeathCount(someInt, familyGenerationRemoved[someInt]);
 		PersistentGameManager.CaptureObjects.Remove(this);
 		cull = true;
 	} // End of Destroy().

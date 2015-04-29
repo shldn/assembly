@@ -42,7 +42,7 @@ public class NodeController : MonoBehaviour {
     static List<int> leaderboard = new List<int>(); // list of assembly ids -- will keep sorted by assemblyScores
     static int leaderboardMaxDisplaySize = 10;
     static int leaderboardMaxSize = leaderboardMaxDisplaySize + 5;  // The number of entries that will be stored in memory, store more to avoid searching if/when some fall off the leaderboard.
-	static Dictionary<int, int> assemblyScores = new Dictionary<int, int>();  // maps assembly id to count
+	static Dictionary<int, float> assemblyScores = new Dictionary<int, float>();  // maps assembly id to score
 
 	void Awake(){
 		Inst = this;
@@ -169,10 +169,11 @@ public class NodeController : MonoBehaviour {
 				Assembly newAssembly = new Assembly(assemblySpawnPos, Quaternion.identity);
 				int newAssemID = GetNewAssemblyID();
 				newAssembly.familyTree.Add(newAssemID);
+                newAssembly.familyGenerationRemoved.Add(newAssemID, 0);
 				assemblyDictionary.Add(newAssemID, newAssembly.ToString());
 				assemblyNameDictionary.Add(newAssemID, newAssembly.name);
 				assemblyScores.Add(newAssemID, 0);
-                UpdateBirthCount(newAssemID);
+                UpdateBirthCount(newAssemID,0);
 
 				// Try a node structure... if there are no sense nodes, re-roll.
 				bool containsSenseNode = false;
@@ -398,7 +399,7 @@ public class NodeController : MonoBehaviour {
 		GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
 		GUI.skin.label.alignment = TextAnchor.UpperLeft;
 		GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.01f);
-		GUILayout.Label("Leaderboard");
+        GUILayout.Label((PersistentGameManager.IsServer) ? "Leaderboard" : "");
         int leaderCount = 0;
         foreach (int leaderEntry in leaderboard)
         {
@@ -407,8 +408,7 @@ public class NodeController : MonoBehaviour {
             else
                 GUI.color = Color.white;
 
-            //GUILayout.Label(leaderEntry.ToString() + " - " + assemblyScores[leaderEntry].ToString());
-            GUILayout.Label(assemblyNameDictionary[leaderEntry] + " - " + assemblyScores[leaderEntry].ToString());
+            GUILayout.Label(leaderEntry.ToString() + " - " + assemblyScores[leaderEntry].ToString("0.0"));
 
             ++leaderCount;
             if (leaderCount >= leaderboardMaxDisplaySize)
@@ -450,9 +450,10 @@ public class NodeController : MonoBehaviour {
         leaderboard.Clear();
     }
 
-    public static void UpdateBirthCount(int assemblyID)
+    public static void UpdateBirthCount(int assemblyID, int generationRemoved)
     {
-        assemblyScores[assemblyID]++;
+        float posGen = (generationRemoved < 0) ? 0f : (float)generationRemoved;
+        assemblyScores[assemblyID] += 1f / (posGen + 1f);
 
         int idx = LeaderboardIndex(assemblyID);
         if (idx != -1)
@@ -486,9 +487,10 @@ public class NodeController : MonoBehaviour {
         }
     }
 
-    public static void UpdateDeathCount(int assemblyID)
+    public static void UpdateDeathCount(int assemblyID, int generationRemoved)
     {
-        assemblyScores[assemblyID]--;
+        float posGen = (generationRemoved < 0) ? 0f : (float)generationRemoved;
+        assemblyScores[assemblyID] -= 1f / (posGen + 1f);
         int idx = LeaderboardIndex(assemblyID);
         if (idx != -1)
         {
