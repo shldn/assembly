@@ -75,6 +75,12 @@ public class IOHelper
             nodes.Add(Node.FromString(stream.ReadLine()));
     }
 
+	public static string ReadAssemblyNameFromStream(TextReader stream)
+    {
+        int fileFormat = int.Parse(stream.ReadLine());
+        return stream.ReadLine();
+	}
+
     private static void WriteAssemblyToStream(Assembly assembly, TextWriter stream){
         stream.WriteLine(assemblyFileFormatVersion);
         stream.WriteLine(assembly.name);

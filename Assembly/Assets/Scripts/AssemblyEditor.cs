@@ -6,10 +6,6 @@ public class AssemblyEditor : MonoBehaviour {
 
     public static AssemblyEditor Inst = null;
 
-    public GuiKnob burnRateKnob = null;
-    public GuiKnob densityKnob = null;
-    public GuiKnob speedKnob = null;
-
     public Assembly capturedAssembly = null;
     public Node selectedNode = null;
 
@@ -24,6 +20,8 @@ public class AssemblyEditor : MonoBehaviour {
 	public Texture2D rotationIcon;
 	public Texture2D undulationIcon;
 	public Texture2D iqIcon;
+
+	public Texture2D helpIcon;
 
 	public GUISkin guiSkin;
 
@@ -40,6 +38,7 @@ public class AssemblyEditor : MonoBehaviour {
 
 	enum MenuType {
 		main,
+		help,
 		test,
 		visionRange,
 		visionScope,
@@ -76,7 +75,24 @@ public class AssemblyEditor : MonoBehaviour {
         GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.width * 0.03f);
         GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.width * 0.03f);
 
-        if(capturedAssembly){
+
+		// Help menu button
+		float helpButtonSize = Screen.height * 0.08f;
+		if(GUI.Button(new Rect(10f, Screen.height - (helpButtonSize + 10f), helpButtonSize, helpButtonSize), helpIcon)){
+			if(menu == MenuType.help)
+				menu = MenuType.main;
+			else
+				menu = MenuType.help;
+		}
+
+		if(menu == MenuType.help){
+			GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+			GUILayout.Label("Doodle on your device while looking for your cursor on the main screen.");
+			GUILayout.Label("Draw a circle around an Assembly you wish to capture.");
+			GUILayout.Label("Once captured, use the buttons on the right-hand side of your device to run micro-evolutionary tests on your captured Assembly.");
+			GUILayout.Label("When you are satisfied with your Assembly, drop it back into the environment with the 'Release' button.");
+		}
+		else if(capturedAssembly){
 			float controlBarWidthRatio = 0.3f;
 			float gutter = Screen.height * 0.01f;
 			float defaultButtonSize = Screen.height * 0.1f;
@@ -130,6 +146,8 @@ public class AssemblyEditor : MonoBehaviour {
 						Instantiate(PersistentGameManager.Inst.pingBurstObj, CaptureEditorManager.capturedObj.Position, Quaternion.identity);
 						Cleanup();
 					}
+				}else if(menu == MenuType.help){
+
 				}else{
 					// Test details
 					string title = "";
@@ -207,7 +225,8 @@ public class AssemblyEditor : MonoBehaviour {
 				GUILayout.EndArea();
 			}
         }
-    }
+
+    } // End of OnGUI().
 
 
 	void DoTest(){

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 
 public class NodeController : MonoBehaviour {
@@ -29,12 +30,11 @@ public class NodeController : MonoBehaviour {
 
 	int nextAssemblyID = 0;
 	Dictionary<int, string> assemblyDictionary = new Dictionary<int, string>();
+	Dictionary<int, string> assemblyNameDictionary = new Dictionary<int, string>();
 
 	string[] nameList;
 
 	List<Assembly> relativesToHighlight = new List<Assembly>();
-	Assembly showHierarchyAssembly = null;
-	Assembly lastHierarchyAssembly = null;
 	int currentLeaderIndex = 0;
 	int lastLeaderIndex = 0;
 
@@ -73,6 +73,7 @@ public class NodeController : MonoBehaviour {
 		
 		for(int i = 0; i < Assembly.getAll.Count; i++){
 			Assembly curAssem = Assembly.getAll[i];
+
 			if(curAssem.cull){
 				Assembly.getAll.RemoveAt(i);
 				i--;
@@ -108,6 +109,11 @@ public class NodeController : MonoBehaviour {
 		Assembly selectedAssem = CameraControl.Inst.selectedAssembly;
 		Assembly hoveredAssem = CameraControl.Inst.hoveredPhysAssembly;
 		if(selectedAssem){
+
+			// debug
+			if(Input.GetKeyDown(KeyCode.N))
+				CameraControl.Inst.selectedAssembly.AddRandomNode();
+
 			/*
 			foreach(KeyValuePair<Triplet, PhysNode> kvp in selectedAssem.NodeDict){
 				Triplet curPos = kvp.Key;
@@ -164,6 +170,7 @@ public class NodeController : MonoBehaviour {
 				int newAssemID = GetNewAssemblyID();
 				newAssembly.familyTree.Add(newAssemID);
 				assemblyDictionary.Add(newAssemID, newAssembly.ToString());
+				assemblyNameDictionary.Add(newAssemID, newAssembly.name);
 				assemblyScores.Add(newAssemID, 0);
                 UpdateBirthCount(newAssemID);
 
@@ -201,16 +208,29 @@ public class NodeController : MonoBehaviour {
 		}
 
 
-		if(showHierarchyAssembly != lastHierarchyAssembly){
-			lastHierarchyAssembly = showHierarchyAssembly;
-			relativesToHighlight = FindRelatives(showHierarchyAssembly);
+		// Leaderboard
+		float timePerIndex = 3f; // How long each leaderboard entry is highlighted.
+		currentLeaderIndex = Mathf.FloorToInt((Time.time / timePerIndex) % 10f);
+		float fadeInLerp = (Time.time / timePerIndex) % 1f;
+		float fadeAmount = 1f - (0.5f + (Mathf.Cos(fadeInLerp * (Mathf.PI * 2f)) * 0.5f));
+		fadeAmount = Mathf.Pow(fadeAmount, 1f); // Make fade stronger.
+
+		//print(lastLeaderIndex + "   " + currentLeaderIndex);
+        if(lastLeaderIndex != currentLeaderIndex){
+            lastLeaderIndex = currentLeaderIndex;
+			relativesToHighlight = FindRelatives(leaderboard[currentLeaderIndex]);
+        }
+
+
+		for(int i = 0; i < relativesToHighlight.Count - 1; i++){
+			GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount));
 		}
 
+		/*
 		foreach(Assembly someAssembly in relativesToHighlight){
-			GLDebug.DrawLine(someAssembly.Position, showHierarchyAssembly.Position, Color.green);
+			GLDebug.DrawLine(someAssembly.Position, Vector3.zero, new Color(0f, 1f, 1f, fadeAmount));
 		}
-
-		//IEnumerable<KeyValuePair<int, int>> leaderboard = from entry in assemblyScores orderby entry.Value ascending select entry;
+		*/
 
 	} // End of Update().
 
@@ -223,6 +243,19 @@ public class NodeController : MonoBehaviour {
 					relatives.Add(someAssembly);
 					continue;
 				}
+			}
+		}
+
+		return relatives;
+	} // End of FindRelatives().
+
+
+	List<Assembly> FindRelatives(int id){
+		List<Assembly> relatives = new List<Assembly>();
+		foreach(Assembly someAssembly in Assembly.getAll){
+			if(someAssembly.familyTree.Contains(id)){
+				relatives.Add(someAssembly);
+				continue;
 			}
 		}
 
@@ -349,7 +382,7 @@ public class NodeController : MonoBehaviour {
 				
 
 				if(relativesToHighlight.Contains(someAssem))
-					GUI.color = Color.green;
+					GUI.color = Color.cyan;
 				else
 					GUI.color = Color.white;
 
@@ -361,19 +394,6 @@ public class NodeController : MonoBehaviour {
 		}
 		*/
 
-        /*
-        currentLeaderIndex = Mathf.FloorToInt(Time.time % 10f);
-        if(lastLeaderIndex != currentLeaderIndex){
-            lastLeaderIndex = currentLeaderIndex;
-            int randomAssemNum = Random.Range(0, Assembly.getAll.Count);
-            foreach(Assembly randomAssembly in Assembly.getAll){
-                randomAssemNum--;
-                if(randomAssemNum == 0)
-                    showHierarchyAssembly = randomAssembly;
-                break;
-            }
-        }
-        */
         // Leaderboard
 		GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
 		GUI.skin.label.alignment = TextAnchor.UpperLeft;
@@ -383,11 +403,12 @@ public class NodeController : MonoBehaviour {
         foreach (int leaderEntry in leaderboard)
         {
             if (currentLeaderIndex == leaderCount)
-                GUI.color = Color.green;
+                GUI.color = Color.cyan;
             else
                 GUI.color = Color.white;
 
-            GUILayout.Label(leaderEntry.ToString() + " - " + assemblyScores[leaderEntry].ToString());
+            //GUILayout.Label(leaderEntry.ToString() + " - " + assemblyScores[leaderEntry].ToString());
+            GUILayout.Label(assemblyNameDictionary[leaderEntry] + " - " + assemblyScores[leaderEntry].ToString());
 
             ++leaderCount;
             if (leaderCount >= leaderboardMaxDisplaySize)

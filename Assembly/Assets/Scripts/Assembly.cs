@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Assembly : CaptureObject{
 
@@ -113,10 +114,11 @@ public class Assembly : CaptureObject{
 	} // End of AddNodes().
 
 
-	public void AddNode(Triplet nodePos, NodeProperties? nodeProps = null){
+	public Node AddNode(Triplet nodePos, NodeProperties? nodeProps = null){
 		Node newPhysNode = new Node(this, nodePos);
 		newPhysNode.nodeProperties = nodeProps ?? NodeProperties.random;
         IntegrateNode(nodePos, newPhysNode);
+		return newPhysNode;
 	} // End of AddNode().
 
     private void IntegrateNode(Triplet nodePos, Node physNode)
@@ -132,8 +134,10 @@ public class Assembly : CaptureObject{
         for (int dir = 0; dir < 12; dir++)
         {
             Triplet testPos = nodePos + HexUtilities.Adjacent(dir);
-            if (nodeDict.ContainsKey(testPos))
+            if (nodeDict.ContainsKey(testPos)){
                 physNode.AttachNeighbor(nodeDict[testPos]);
+                nodeDict[testPos].AttachNeighbor(physNode);
+			}
         }
     }
 
@@ -208,6 +212,7 @@ public class Assembly : CaptureObject{
 			if(mateCompletion >= 1f){
 				// Spawn a new assembly between the two.
 				Assembly newAssembly = new Assembly((Position + matingWith.Position) / 2f, Random.rotation);
+				newAssembly.name = name.Substring(0, Mathf.RoundToInt(name.Length * 0.5f)) + matingWith.name.Substring(matingWith.name.Length - Mathf.RoundToInt(matingWith.name.Length * 0.5f), Mathf.RoundToInt(matingWith.name.Length * 0.5f));
 				foreach(int someInt in familyTree){
 					newAssembly.familyTree.Add(someInt);
                     NodeController.UpdateBirthCount(someInt);
@@ -302,6 +307,31 @@ public class Assembly : CaptureObject{
 		foreach(Node someNode in NodeDict.Values)
 			someNode.Mutate(amount);
 	} // End of Mutate().
+
+
+	public void AddRandomNode(){
+		int randomStart = Random.Range(0, NodeDict.Count);
+		for(int index = 0; index < NodeDict.Count; index++) {
+			KeyValuePair<Triplet, Node> item = NodeDict.ElementAt((index + randomStart) % NodeDict.Count);
+			Triplet structurePos = item.Key;
+
+			int randomDir = Random.Range(0, 12);
+			for(int i = 0; i < 12; i++){
+				Triplet testPos = structurePos + HexUtilities.Adjacent((randomDir + i) % 12);
+				// If this position is not filled, we have our position.
+				if(!NodeDict.Keys.Contains(testPos)){
+					Node newNode = AddNode(testPos);
+					MonoBehaviour.print(newNode.localHexPos);
+					return;
+				}
+			}
+		}
+	} // End of AddRandomNode().
+
+
+	public void RemoveRandomNode(){
+
+	} // End of RemoveRandomNode().
 
 
 	public void Destroy(){
