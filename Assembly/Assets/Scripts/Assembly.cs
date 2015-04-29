@@ -57,7 +57,7 @@ public class Assembly : CaptureObject{
 	public bool needAddToList = true;
     public bool hasBeenCaptured = false;
 
-	public float nametagFade = 10f;
+	public float nametagFade = 0f;
 
 	public bool wantToMate = false;
 	public Assembly matingWith = null;
