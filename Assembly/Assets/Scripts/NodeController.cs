@@ -206,8 +206,16 @@ public class NodeController : MonoBehaviour {
 					someNode.ComputeEnergyNetwork();
 			}
 
-			if(FoodPellet.all.Count < foodPellets)
-				new FoodPellet(Random.insideUnitSphere * worldSize);
+			if(FoodPellet.all.Count < foodPellets){
+				//Vector3 foodPosition = Random.insideUnitSphere * worldSize;
+
+				float randomSeed = Random.Range(-100f, 100f);
+				float radius = worldSize * 0.5f;
+				float spiralIntensity = 0.1f;
+				Vector3 foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
+
+				new FoodPellet(foodPosition);
+			}
 		}
 
 
