@@ -84,14 +84,8 @@ public class CameraControl : MonoBehaviour {
             selectedJellyfish = Jellyfish.all[0];
             center = Jellyfish.all[0].transform.position;
         }
-		else if(PersistentGameManager.IsClient && NodeController.Inst){
-			List<Vector3> pts = new List<Vector3>();
-			foreach(Assembly someAssembly in Assembly.getAll)
-				pts.Add(someAssembly.Position);
-			float sphereRadius = 0f;
-            MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);
-			targetRadius = (sphereRadius + 10f) / Mathf.Tan(Camera.main.fieldOfView * 0.4f * Mathf.Deg2Rad);
-        }
+        else if (PersistentGameManager.IsClient && NodeController.Inst && ClientTest.Inst)
+            KeepAssembliesInView();
         // Grotto
         else if(selectedJellyfish)
             center = selectedJellyfish.transform.position;
@@ -196,6 +190,17 @@ public class CameraControl : MonoBehaviour {
 		
 
 	} // End of Update().
+
+    public void KeepAssembliesInView()
+    {
+        List<Vector3> pts = new List<Vector3>();
+        foreach (Assembly someAssembly in Assembly.getAll)
+            if( !someAssembly.cull )
+                pts.Add(someAssembly.Position);
+        float sphereRadius = 0f;
+        MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);
+        targetRadius = (sphereRadius + 10f) / Mathf.Tan(Camera.main.fieldOfView * 0.4f * Mathf.Deg2Rad);
+    } // End of KeepAssembliesInView().
 
 
     void OnGUI(){

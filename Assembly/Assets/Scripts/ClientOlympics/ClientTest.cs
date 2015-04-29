@@ -33,6 +33,8 @@ public class ClientTest : MonoBehaviour {
     protected virtual void EndTest()
     {
         DestroyAllButWinner();
+        CameraControl.Inst.KeepAssembliesInView();
+        CameraControl.Inst.selectedAssembly = winner;
         Destroy(gameObject);
     } // End of EndTest().
 

@@ -90,11 +90,16 @@ public class AssemblyEditor : MonoBehaviour {
         }
 
 		if(menu == MenuType.help){
-			GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-			GUILayout.Label("Doodle on your device while looking for your cursor on the main screen.");
-			GUILayout.Label("Draw a circle around an Assembly you wish to capture.");
-			GUILayout.Label("Once captured, use the buttons on the right-hand side of your device to run micro-evolutionary tests on your captured Assembly.");
-			GUILayout.Label("When you are satisfied with your Assembly, drop it back into the environment with the 'Release' button.");
+			GUI.skin.label.alignment = TextAnchor.MiddleLeft;
+            GUILayout.BeginArea(new Rect(0.1f * Screen.width, 0.1f * Screen.height, 0.8f * Screen.width, Screen.height));
+			    GUILayout.Label("Doodle on your device while looking for your cursor on the main screen.");
+                GUILayout.Label("");
+			    GUILayout.Label("Draw a circle around an Assembly you wish to capture.");
+                GUILayout.Label("");
+			    GUILayout.Label("Once captured, use the side menu to genetically engineer your Assembly for desired traits.");
+                GUILayout.Label("");
+			    GUILayout.Label("Use the 'Release' button to drop it back into the environment.");
+           GUILayout.EndArea();
 		}
 		else if(capturedAssembly){
 			float controlBarWidthRatio = 0.3f;
