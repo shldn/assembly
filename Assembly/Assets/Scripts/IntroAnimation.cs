@@ -43,8 +43,10 @@ public class IntroAnimation : MonoBehaviour {
 		if(step == 2){
 			transform.position = Vector3.Lerp(hangPosEnd.position, endPos.position, Mathf.Pow(lerp, 2f));
 			lerp += Time.deltaTime * 0.75f;
-			if(lerp > 1f)
+			if(lerp > 1f){
 				step = 3;
+				Application.LoadLevel(Application.loadedLevel + 1);
+			}
 		}
 	
 	}
