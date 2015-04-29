@@ -39,6 +39,8 @@ public class Assembly : CaptureObject{
 	public bool cull = false;
 	public bool needAddToList = true;
 
+	public float nametagFade = 10f;
+
 	public bool wantToMate = false;
 	public Assembly matingWith = null;
 	float mateAttractDist = 100f;
@@ -52,7 +54,7 @@ public class Assembly : CaptureObject{
     public static Octree<Assembly> AllAssemblyTree{ 
         get{
             if(allAssemblyTree == null){
-                allAssemblyTree = new Octree<Assembly>(new Bounds(Vector3.zero, 2.0f * NodeController.Inst.WorldSize * Vector3.one), (Assembly x) => x.Position, 5);
+                allAssemblyTree = new Octree<Assembly>(new Bounds(Vector3.zero, 2.0f * NodeController.Inst.maxWorldSize * Vector3.one), (Assembly x) => x.Position, 5);
 			}
             return allAssemblyTree;
         }
@@ -152,6 +154,8 @@ public class Assembly : CaptureObject{
 	public void Update(){
 		//MonoBehaviour.print(energy - lastEnergy);
 		lastEnergy = energy;
+
+		nametagFade -= Time.deltaTime;
 
 		if(myNodesIndexed.Length != nodeDict.Values.Count){
 			myNodesIndexed = new Node[nodeDict.Values.Count];

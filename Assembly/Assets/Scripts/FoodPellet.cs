@@ -17,7 +17,7 @@ public class FoodPellet {
     public static Octree<FoodPellet> AllFoodTree{ 
         get{
             if(allFoodTree == null){
-                allFoodTree = new Octree<FoodPellet>(new Bounds(Vector3.zero, 2.0f * NodeController.Inst.WorldSize * Vector3.one), (FoodPellet x) => x.worldPosition, 5);
+                allFoodTree = new Octree<FoodPellet>(new Bounds(Vector3.zero, 2.0f * NodeController.Inst.maxWorldSize * Vector3.one), (FoodPellet x) => x.worldPosition, 5);
 			}
             return allFoodTree;
         }
@@ -26,8 +26,8 @@ public class FoodPellet {
         }
     }
 
-	public float energy = 100f;
-	float maxEnergy = 100f;
+	public float energy = 10f;
+	float maxEnergy = 10f;
 	public bool cull = false;
 
     // For Olympics
@@ -50,8 +50,10 @@ public class FoodPellet {
 	public void Update(){
 		transform.localScale = Vector3.one * (energy / maxEnergy);
 
-		if(energy < 0f)
+		if(energy < 0f){
 			cull = true;
+			MonoBehaviour.print("Dead food node");
+		}
 	} // End of Update().
 
 

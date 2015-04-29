@@ -86,7 +86,7 @@ public class Node {
     public static Octree<Node> AllSenseNodeTree{ 
         get{
             if(allSenseNodeTree == null){
-                allSenseNodeTree = new Octree<Node>(new Bounds(Vector3.zero, 2.0f * NodeController.Inst.WorldSize * Vector3.one), (Node x) => x.position, 5);
+                allSenseNodeTree = new Octree<Node>(new Bounds(Vector3.zero, 2.0f * NodeController.Inst.maxWorldSize * Vector3.one), (Node x) => x.position, 5);
 			}
             return allSenseNodeTree;
         }

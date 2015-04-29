@@ -309,6 +309,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
         Assembly a = new Assembly(assemblyStr, null, assemblyNewPos);
+		a.nametagFade = 30f;
 
     } // End of PushAssembly().
 

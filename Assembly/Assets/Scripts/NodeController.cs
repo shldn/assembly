@@ -14,8 +14,8 @@ public class NodeController : MonoBehaviour {
 	public Transform physFoodPrefab = null;
 	MarchingCubes myCubes;
 
-	int worldSize = 150;
-	public int WorldSize {get{return worldSize;}}
+	public Vector3 worldSize = new Vector3(150f, 150f, 150f);
+	public float maxWorldSize = 300f;
 
 	float[][][] densityMap;
 
@@ -166,7 +166,7 @@ public class NodeController : MonoBehaviour {
 		// Keep the world populated
 		if(PersistentGameManager.IsServer){
 			if(Node.getAll.Count < worldNodeThreshold * 0.7f){
-				Vector3 assemblySpawnPos = Random.insideUnitSphere * worldSize;
+				Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, worldSize);
 
 				Assembly newAssembly = new Assembly(assemblySpawnPos, Quaternion.identity);
 				int newAssemID = GetNewAssemblyID();
@@ -207,12 +207,14 @@ public class NodeController : MonoBehaviour {
 			}
 
 			if(FoodPellet.all.Count < foodPellets){
-				//Vector3 foodPosition = Random.insideUnitSphere * worldSize;
-
+				/*
 				float randomSeed = Random.Range(-100f, 100f);
 				float radius = worldSize * 0.5f;
 				float spiralIntensity = 0.1f;
 				Vector3 foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
+				*/
+
+				Vector3 foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
 
 				new FoodPellet(foodPosition);
 			}
@@ -408,6 +410,26 @@ public class NodeController : MonoBehaviour {
 		}
 		*/
 
+		// Show nametags for dropped-in Assemblies
+		if(!PersistentGameManager.IsClient){
+			foreach(Assembly someAssem in Assembly.getAll){
+
+				if(someAssem.nametagFade < 0f)
+					continue;
+
+				Vector3 screenPos = Camera.main.WorldToScreenPoint(someAssem.Position);
+				//screenPos.y = Screen.height - screenPos.y;
+				if(screenPos.z < 0f)
+					continue;
+
+				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+				GUI.skin.label.fontSize = Mathf.Clamp(Mathf.CeilToInt(20f / (screenPos.z * 0.01f)), 0, 50);
+				
+				GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(someAssem.nametagFade * 0.3f));
+				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y - (Screen.height * 3f / screenPos.z), 1000f), someAssem.name);
+			}
+		}
+
         // Leaderboard
         if (PersistentGameManager.IsServer && showLeaderboard)
         {
@@ -450,7 +472,6 @@ public class NodeController : MonoBehaviour {
 
 
     // Leader Board
-
     static int LeaderboardIndex(int assemblyID)
     {
         int idx = -1;
