@@ -7,11 +7,28 @@ public class Assembly : CaptureObject{
 
 	static List<Assembly> all = new List<Assembly>();
 	public static List<Assembly> getAll {get{return all;}}
+    public static HashSet<int> captured = new HashSet<int>(); // contains assembly ids of the assemblies that have been captured by users.
+    public static Dictionary<int, HashSet<int>> cachedFamilyTrees = new Dictionary<int, HashSet<int>>();
+    public static Dictionary<int, Dictionary<int, int>> cachedFamilyGenerationsRemoved = new Dictionary<int, Dictionary<int, int>>();
 	public static implicit operator bool(Assembly exists){return exists != null;}
 
 	public HashSet<int> familyTree = new HashSet<int>();
     public Dictionary<int, int> familyGenerationRemoved = new Dictionary<int, int>(); // how many generations removed is an entity in familyTree (maps assemblyID to generationCount) - parents would have value of 1
 	public string name = "Some Unimportant Assembly";
+    public int id = -1;
+    public int Id { 
+        get { return id; } 
+        set { 
+            id = value;
+            if( id != -1 )
+            {
+                familyTree.Add(value);
+                familyGenerationRemoved.Add(value, 0);
+                NodeController.Inst.assemblyNameDictionary.Add(value, name);
+                NodeController.assemblyScores.Add(value, 0);
+            }
+        } 
+    }
 
 	Dictionary<Triplet, Node> nodeDict = new Dictionary<Triplet, Node>();
 	public Dictionary<Triplet, Node> NodeDict {get{return nodeDict;}}
@@ -38,6 +55,7 @@ public class Assembly : CaptureObject{
 	float lastEnergy = 0f; // debug
 	public bool cull = false;
 	public bool needAddToList = true;
+    public bool hasBeenCaptured = false;
 
 	public bool wantToMate = false;
 	public Assembly matingWith = null;
@@ -64,6 +82,7 @@ public class Assembly : CaptureObject{
     public static void DestroyAll()
     {
         all.Clear();
+        captured.Clear();
         allAssemblyTree = null;
     }
 
@@ -85,9 +104,19 @@ public class Assembly : CaptureObject{
         List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         if(isFilePath)
-            IOHelper.LoadAssemblyFromFile(str, ref name, ref worldPos, ref newNodes);
+            IOHelper.LoadAssemblyFromFile(str, ref name, ref id, ref worldPos, ref newNodes);
         else
-            IOHelper.LoadAssemblyFromString(str, ref name, ref worldPos, ref newNodes);
+            IOHelper.LoadAssemblyFromString(str, ref name, ref id, ref worldPos, ref newNodes);
+        hasBeenCaptured = !isFilePath && id != -1;
+        if( hasBeenCaptured )
+            captured.Add(Id);
+        if( PersistentGameManager.IsServer )
+        {
+            RebuildFamilyTree();
+            if( hasBeenCaptured )
+                foreach (int someInt in familyTree)
+                    NodeController.UpdateBirthCount(someInt, familyGenerationRemoved[someInt]);
+        }
 
 		this.spawnPosition = spawnPosition ?? worldPos;
 		this.spawnRotation = spawnRotation ?? Random.rotation;
@@ -265,6 +294,32 @@ public class Assembly : CaptureObject{
             NodeController.UpdateBirthCount(someInt, familyGenerationRemoved[someInt]);
         }
     }
+
+    // Captured assembly is released back into the world, retrieve its cached family tree
+    private void RebuildFamilyTree()
+    {
+        if( id == -1 && Debug.isDebugBuild )
+        {
+            Debug.LogError("Attempting to rebuild family tree for an invalid index");
+            return;
+        }
+
+        familyTree = cachedFamilyTrees[id];
+        familyGenerationRemoved = cachedFamilyGenerationsRemoved[id];
+
+        cachedFamilyTrees.Remove(id);
+        cachedFamilyGenerationsRemoved.Remove(id);
+    }
+
+    // When an assembly is captured, server saves its family tree until its return
+    public void SaveFamilyTree()
+    {
+        if( id == -1 )
+            Id = NodeController.Inst.GetNewAssemblyID();
+        cachedFamilyTrees.Add(id, familyTree);
+        cachedFamilyGenerationsRemoved.Add(id, familyGenerationRemoved);
+    }
+
 
 	public void HandleFindMate(Assembly someAssembly){
 		if((someAssembly == this) || (someAssembly.matingWith) || matingWith)

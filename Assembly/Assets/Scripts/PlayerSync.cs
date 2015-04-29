@@ -186,7 +186,10 @@ public class PlayerSync : MonoBehaviour {
             print("Sending assembly to player " + networkView.owner);
             Assembly a = capturedObj as Assembly;
             if( a != null )
+            {
+                a.SaveFamilyTree();
                 networkView.RPC("CaptureAssembly", networkView.owner, (a).ToFileString());
+            }
             else
                 networkView.RPC("CaptureUCreature", networkView.owner);
         }
