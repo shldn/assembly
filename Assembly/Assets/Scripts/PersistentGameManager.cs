@@ -16,7 +16,7 @@ public class PersistentGameManager : MonoBehaviour {
         }
     }
 
-    public static bool IsAdminClient { get { return true; } }
+    public static bool IsAdminClient { get { return false; } }
     public static bool IsClient { get { return Application.loadedLevelName == "CaptureClient"; } }
     public static bool IsServer { get { return !IsClient; } }
 
@@ -59,7 +59,7 @@ public class PersistentGameManager : MonoBehaviour {
             cursorLock = false;
         else
 			cursorLock = true;
-	}
+	} 
 
 
 	void Update () {
@@ -98,6 +98,10 @@ public class PersistentGameManager : MonoBehaviour {
 
 
     public void EnviroImpulse(Vector3 pos, float force){
+
+		// Disabled for now.
+		return;
+
         // Apply physics
         foreach(Node someNode in Node.getAll){
             Vector3 vecToAssem = pos - someNode.Position;

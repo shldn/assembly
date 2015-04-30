@@ -57,6 +57,8 @@ public class Assembly : CaptureObject{
 	public bool needAddToList = true;
     public bool hasBeenCaptured = false;
 
+	public float nametagFade = 0f;
+
 	public bool wantToMate = false;
 	public Assembly matingWith = null;
 	float mateAttractDist = 100f;
@@ -70,7 +72,7 @@ public class Assembly : CaptureObject{
     public static Octree<Assembly> AllAssemblyTree{ 
         get{
             if(allAssemblyTree == null){
-                allAssemblyTree = new Octree<Assembly>(new Bounds(Vector3.zero, 2.0f * NodeController.Inst.WorldSize * Vector3.one), (Assembly x) => x.Position, 5);
+                allAssemblyTree = new Octree<Assembly>(new Bounds(Vector3.zero, 2.0f * NodeController.Inst.maxWorldSize * Vector3.one), (Assembly x) => x.Position, 5);
 			}
             return allAssemblyTree;
         }
@@ -182,6 +184,8 @@ public class Assembly : CaptureObject{
 		//MonoBehaviour.print(energy - lastEnergy);
 		lastEnergy = energy;
 
+		nametagFade -= Time.deltaTime;
+
 		if(myNodesIndexed.Length != nodeDict.Values.Count){
 			myNodesIndexed = new Node[nodeDict.Values.Count];
 			nodeDict.Values.CopyTo(myNodesIndexed, 0);
@@ -279,6 +283,11 @@ public class Assembly : CaptureObject{
         distanceCovered += Vector3.Distance(lastPosition, newPosition);
         velocity = (newPosition - lastPosition) / Time.deltaTime;
         lastPosition = newPosition;
+
+		if(Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f){
+			foreach(Node someNode in nodeDict.Values)
+				someNode.delayPosition += -Position * 0.1f;
+		}
         
 	} // End of Update().
 

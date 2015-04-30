@@ -49,7 +49,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 		Inst = this;
 
         if (Debug.isDebugBuild)
-            connectToIP = new List<string>() { "127.0.0.1" };
+            connectToIP = new List<string>() { "132.239.235.116" };
         else
             gameObject.AddComponent<DownloadHelper>().StartDownload(remoteIpList, HandleRemoteListDownloadComplete);
 
@@ -304,11 +304,14 @@ public class CaptureNet_Manager : MonoBehaviour {
         //if (!GameManager.Inst)
             //return;
 
-        Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 100f);
+		// Ensure assemblies are dropped in at a viable position, relative to the camera.
+        Vector3 assemblyNewPos = Camera.main.transform.position.normalized * Mathf.Min(NodeController.Inst.worldSize.x, NodeController.Inst.worldSize.y, NodeController.Inst.worldSize.z, Camera.main.transform.position.magnitude - 25f);
+		assemblyNewPos += Random.insideUnitSphere * 5f;
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
         Assembly a = new Assembly(assemblyStr, null, assemblyNewPos);
+		a.nametagFade = 30f;
 
     } // End of PushAssembly().
 

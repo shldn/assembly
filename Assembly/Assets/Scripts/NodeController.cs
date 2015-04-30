@@ -14,8 +14,8 @@ public class NodeController : MonoBehaviour {
 	public Transform physFoodPrefab = null;
 	MarchingCubes myCubes;
 
-	int worldSize = 150;
-	public int WorldSize {get{return worldSize;}}
+	public Vector3 worldSize = new Vector3(150f, 150f, 150f);
+	public float maxWorldSize = 300f;
 
 	float[][][] densityMap;
 
@@ -48,6 +48,18 @@ public class NodeController : MonoBehaviour {
     static int leaderboardMaxSize = leaderboardMaxDisplaySize + 5;  // The number of entries that will be stored in memory, store more to avoid searching if/when some fall off the leaderboard.
 	public static Dictionary<int, float> assemblyScores = new Dictionary<int, float>();  // maps assembly id to score
 
+	// Food will be populated in the environment randomly until the max food pellets count is hit, at which point it will convert to the helical pattern.
+	bool foodInitialized = false;
+
+
+	enum WorldAnim{
+		capsule,
+		sphere
+	}
+	WorldAnim worldAnim = WorldAnim.capsule;
+	float targetWorldSize = 150f;
+
+
 	void Awake(){
 		Inst = this;
 		bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
@@ -66,7 +78,32 @@ public class NodeController : MonoBehaviour {
 	} // End of GetRandomName().
 
 
+	// Moves the world animation forward in the animation cycle (called when a food node is depleted, etc.)
+	public void AdvanceWorldTick(){
+		if(worldAnim == WorldAnim.capsule)
+			targetWorldSize = Mathf.MoveTowards(targetWorldSize, 385f, 1f);
+		else if(worldAnim == WorldAnim.sphere)
+			targetWorldSize = Mathf.MoveTowards(targetWorldSize, 150f, 1f);
+	} // End of AdvanceWorldTick().
+
+
 	void Update(){
+
+		// World grows as food nodes are consumed.
+		worldSize.z = Mathf.Lerp(worldSize.z, targetWorldSize, 0.1f * Time.deltaTime);
+
+		// Once we get to a capsule, switch back to sphere.
+		if(targetWorldSize >= 385f){
+			worldAnim = WorldAnim.sphere;
+		}
+
+		// Once we get to sphere, switch back to capsule.
+		if(targetWorldSize <= 150f){
+			worldAnim = WorldAnim.capsule;
+		}
+
+
+
 
 		foreach(Node someNode in Node.getAll)
 			someNode.DoMath();
@@ -168,7 +205,7 @@ public class NodeController : MonoBehaviour {
 		// Keep the world populated
 		if(PersistentGameManager.IsServer){
 			if(Node.getAll.Count < worldNodeThreshold * 0.7f){
-				Vector3 assemblySpawnPos = Random.insideUnitSphere * worldSize;
+				Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, worldSize);
 
 				Assembly newAssembly = new Assembly(assemblySpawnPos, Quaternion.identity);
 				int newAssemID = GetNewAssemblyID();
@@ -205,15 +242,20 @@ public class NodeController : MonoBehaviour {
 			}
 
 			if(FoodPellet.all.Count < foodPellets){
-				//Vector3 foodPosition = Random.insideUnitSphere * worldSize;
 
-				float randomSeed = Random.Range(-100f, 100f);
-				float radius = worldSize * 0.5f;
-				float spiralIntensity = 0.1f;
-				Vector3 foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
+				Vector3 foodPosition = Vector3.zero;
+
+				if(foodInitialized && (worldAnim == WorldAnim.capsule)){
+					float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
+					float radius = worldSize.x * 0.5f;
+					float spiralIntensity = 0.2f;
+					foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
+				}else
+					foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
 
 				new FoodPellet(foodPosition);
-			}
+			}else
+				foodInitialized = true;
 		}
 
 
@@ -418,9 +460,30 @@ public class NodeController : MonoBehaviour {
 		}
 		*/
 
+		// Show nametags for dropped-in Assemblies
+		if(!PersistentGameManager.IsClient){
+			foreach(Assembly someAssem in Assembly.getAll){
+
+				if(someAssem.nametagFade < 0f)
+					continue;
+
+				Vector3 screenPos = Camera.main.WorldToScreenPoint(someAssem.Position);
+				//screenPos.y = Screen.height - screenPos.y;
+				if(screenPos.z < 0f)
+					continue;
+
+				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+				GUI.skin.label.fontSize = Mathf.Clamp(Mathf.CeilToInt(20f / (screenPos.z * 0.01f)), 0, 50);
+				
+				GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(someAssem.nametagFade * 0.3f));
+				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y - (Screen.height * 3f / screenPos.z), 1000f), someAssem.name);
+			}
+		}
+
         // Leaderboard
         if (PersistentGameManager.IsServer && (showLeaderboard || showPeopleLeaderBoard))
         {
+			GUI.color = Color.white;
             List<int> leaderList = showPeopleLeaderBoard ? leaderboardCaptured : leaderboard;
             GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
             GUI.skin.label.alignment = TextAnchor.UpperLeft;
@@ -462,7 +525,6 @@ public class NodeController : MonoBehaviour {
 
 
     // Leader Board
-
     static int LeaderboardIndex(int assemblyID, List<int> leaderList)
     {
         int idx = -1;
