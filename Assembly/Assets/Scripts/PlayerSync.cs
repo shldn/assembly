@@ -131,6 +131,8 @@ public class PlayerSync : MonoBehaviour {
             // Determine circled objects
             if(!selecting && (lastPoints.Count > 0)){
                 if(Network.peerType == NetworkPeerType.Server){
+                    CaptureObject captureObj = null;
+                    float distToCam = 9999999f;
                     foreach(CaptureObject someObj in PersistentGameManager.CaptureObjects){
                         Vector3 objScreenPos = Camera.main.WorldToScreenPoint(someObj.Position);
                         objScreenPos.y = Screen.height - objScreenPos.y;
@@ -148,11 +150,16 @@ public class PlayerSync : MonoBehaviour {
                         }
 
                         float angleForgiveness = 40f;
-                        if(Mathf.Abs(totalAngle) > (360f - angleForgiveness)){
-                            HandleCapturedObject(someObj);
-                            break;
+                        float currDistToCam = (someObj.Position - Camera.main.transform.position).sqrMagnitude;
+                        if (Mathf.Abs(totalAngle) > (360f - angleForgiveness) && (captureObj == null || currDistToCam < distToCam))
+                        {
+                            captureObj = someObj;
+                            distToCam = currDistToCam;
                         }
                     }
+                    if(captureObj != null)
+                        HandleCapturedObject(captureObj);
+
                 }
 
                 lastPoints.Clear();
