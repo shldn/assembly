@@ -52,6 +52,14 @@ public class NodeController : MonoBehaviour {
 	bool foodInitialized = false;
 
 
+	enum WorldAnim{
+		capsule,
+		sphere
+	}
+	WorldAnim worldAnim = WorldAnim.capsule;
+	float targetWorldSize = 150f;
+
+
 	void Awake(){
 		Inst = this;
 		bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
@@ -70,13 +78,31 @@ public class NodeController : MonoBehaviour {
 	} // End of GetRandomName().
 
 
+	// Moves the world animation forward in the animation cycle (called when a food node is depleted, etc.)
+	public void AdvanceWorldTick(){
+		if(worldAnim == WorldAnim.capsule)
+			targetWorldSize = Mathf.MoveTowards(targetWorldSize, 385f, 1f);
+		else if(worldAnim == WorldAnim.sphere)
+			targetWorldSize = Mathf.MoveTowards(targetWorldSize, 150f, 1f);
+	} // End of AdvanceWorldTick().
+
+
 	void Update(){
 
 		// World grows as food nodes are consumed.
-		worldSize.z = Mathf.Lerp(worldSize.z, 150f * (1f + (FoodPellet.numExhausted * 0.01f)), 0.1f * Time.deltaTime);
+		worldSize.z = Mathf.Lerp(worldSize.z, targetWorldSize, 0.1f * Time.deltaTime);
 
-		// Don't need it to get TOO big.
-		worldSize.z = Mathf.Clamp(worldSize.z, 0f, 385f);
+		// Once we get to a capsule, switch back to sphere.
+		if(targetWorldSize >= 385f){
+			worldAnim = WorldAnim.sphere;
+		}
+
+		// Once we get to sphere, switch back to capsule.
+		if(targetWorldSize <= 150f){
+			worldAnim = WorldAnim.capsule;
+		}
+
+
 
 
 		foreach(Node someNode in Node.getAll)
@@ -219,7 +245,7 @@ public class NodeController : MonoBehaviour {
 
 				Vector3 foodPosition = Vector3.zero;
 
-				if(foodInitialized){
+				if(foodInitialized && (worldAnim == WorldAnim.capsule)){
 					float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
 					float radius = worldSize.x * 0.5f;
 					float spiralIntensity = 0.2f;

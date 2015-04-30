@@ -30,9 +30,6 @@ public class FoodPellet {
 	float maxEnergy = 10f;
 	public bool cull = false;
 
-	// How many food pellets have been naturally exhausted.
-	public static int numExhausted = 0;
-
     // For Olympics
     public Assembly owner = null; // to restrict energy consumption to just this entity
 
@@ -54,7 +51,7 @@ public class FoodPellet {
 		transform.localScale = Vector3.one * (energy / maxEnergy);
 
 		if(energy < 0f){
-			numExhausted++;
+			NodeController.Inst.AdvanceWorldTick();
 			cull = true;
 			MonoBehaviour.print("Dead food node");
 		}

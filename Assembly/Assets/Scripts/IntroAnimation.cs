@@ -4,8 +4,7 @@ using System.Collections;
 public class IntroAnimation : MonoBehaviour {
 
 	public Transform startPos;
-	public Transform hangPosStart;
-	public Transform hangPosEnd;
+	public Transform hangPos;
 	public Transform endPos;
 
 	int step = 0;
@@ -23,7 +22,7 @@ public class IntroAnimation : MonoBehaviour {
 	void Update(){
 
 		if(step == 0){
-			transform.position = Vector3.Lerp(startPos.position, hangPosStart.position, 1f - Mathf.Pow(1f - lerp, 2f));
+			transform.position = Vector3.Lerp(startPos.position, hangPos.position, 1f - Mathf.Pow(1f - lerp, 2f));
 			lerp += Time.deltaTime * 0.5f;
 			if(lerp > 1f){
 				lerp = 0f;
@@ -32,16 +31,15 @@ public class IntroAnimation : MonoBehaviour {
 		}
 
 		if(step == 1){
-			transform.position = Vector3.Lerp(hangPosStart.position, hangPosEnd.position, lerp);
-			lerp += Time.deltaTime * 0.1f;
-			if(lerp > 1f){
-				lerp = 0f;
+			transform.position = hangPos.position;
+			if(Input.anyKeyDown){
 				step = 2;
+				lerp = 0f;
 			}
 		}
 
 		if(step == 2){
-			transform.position = Vector3.Lerp(hangPosEnd.position, endPos.position, Mathf.Pow(lerp, 2f));
+			transform.position = Vector3.Lerp(hangPos.position, endPos.position, Mathf.Pow(lerp, 2f));
 			lerp += Time.deltaTime * 0.75f;
 			if(lerp > 1f){
 				step = 3;
