@@ -82,6 +82,9 @@ public class CaptureNet_Manager : MonoBehaviour {
             // Create the server.
 			Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
 	    }
+
+        if (Input.GetKeyUp(KeyCode.Q))
+            showQRCode = !showQRCode;
     } // End of Update().
 
     // Once the text file with the list of ips is downloaded, add the ips to the connection list.
