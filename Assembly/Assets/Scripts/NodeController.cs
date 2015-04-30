@@ -476,7 +476,7 @@ public class NodeController : MonoBehaviour {
 				GUI.skin.label.fontSize = Mathf.Clamp(Mathf.CeilToInt(20f / (screenPos.z * 0.01f)), 0, 50);
 				
 				GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(someAssem.nametagFade * 0.3f));
-				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y - (Screen.height * 3f / screenPos.z), 1000f), someAssem.name);
+				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y - (Screen.height * 3f / screenPos.z), 1000f), CultureInfo.CurrentCulture.TextInfo.ToTitleCase(someAssem.name));
 			}
 		}
 
