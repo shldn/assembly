@@ -154,10 +154,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 			{
 				int texSize = Screen.width / 8;
 				int gutter = 20;
-				GUI.DrawTexture(new Rect(Screen.width - texSize - gutter, Screen.height - texSize - gutter, texSize, texSize), PersistentGameManager.Inst.qrCodeTexture, ScaleMode.ScaleToFit);
-				GUI.skin.label.alignment = TextAnchor.UpperRight;
-				GUI.Label(new Rect(Screen.width - texSize - gutter - 500, Screen.height - gutter, texSize + 500, gutter), "http://imagination.ucsd.edu/assembly.apk");
-            
+				GUI.DrawTexture(new Rect(Screen.width - texSize - gutter, Screen.height - texSize - gutter, texSize, texSize), PersistentGameManager.Inst.qrCodeTexture, ScaleMode.ScaleToFit);            
 			}
 		}
     } // End of OnGUI().
