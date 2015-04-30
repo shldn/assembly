@@ -21,7 +21,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     bool useNAT = false; // Not sure what NAT is... do some research.
     string ipAddress;
     string port;
-    int maxNumberOfPlayers = 16;
+    int maxNumberOfPlayers = 500;
     public static string playerName;
     string serverName;
     string serverTagline;
