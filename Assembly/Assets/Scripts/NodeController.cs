@@ -29,7 +29,6 @@ public class NodeController : MonoBehaviour {
 
 	public int worldNodeThreshold = 1000;
     public bool showLeaderboard = false;
-    public bool showPeopleLeaderBoard = false; // shows the leaderboard only of entities that have been captured
 
 	int nextAssemblyID = 0;
     HashSet<int> assemblyCaptured = new HashSet<int>(); // contains assembly ids if the assembly has been captured by a user.
@@ -262,20 +261,20 @@ public class NodeController : MonoBehaviour {
 		// Leaderboard
         if (PersistentGameManager.IsServer)
         {
-            if(showLeaderboard || showPeopleLeaderBoard)
+            if(showLeaderboard)
             {
-                List<int> leaderList = (showPeopleLeaderBoard) ? leaderboardCaptured : leaderboard;
+                int entriesDisplayed = Mathf.Min(leaderboard.Count, leaderboardMaxDisplaySize) + Mathf.Min(leaderboardCaptured.Count, leaderboardMaxDisplaySize);
                 float timePerIndex = 3f; // How long each leaderboard entry is highlighted.
-                currentLeaderIndex = leaderList.Count > 0 ? Mathf.FloorToInt((Time.time / timePerIndex) % (float)leaderList.Count) : 0;
+                currentLeaderIndex = entriesDisplayed > 0 ? Mathf.FloorToInt((Time.time / timePerIndex) % (float)entriesDisplayed) : 0;
                 float fadeInLerp = (Time.time / timePerIndex) % 1f;
                 float fadeAmount = 1f - (0.5f + (Mathf.Cos(fadeInLerp * (Mathf.PI * 2f)) * 0.5f));
                 fadeAmount = Mathf.Pow(fadeAmount, 1f); // Make fade stronger.
 
                 //print(lastLeaderIndex + "   " + currentLeaderIndex);
-                if (lastLeaderIndex != currentLeaderIndex && leaderList.Count > 0)
+                if (lastLeaderIndex != currentLeaderIndex && entriesDisplayed > 0)
                 {
                     lastLeaderIndex = currentLeaderIndex;
-                    relativesToHighlight = FindRelatives(leaderList[currentLeaderIndex]);
+                    relativesToHighlight = FindRelatives(GetHighlightedAssemblyID(currentLeaderIndex));
                 }
 
 
@@ -286,20 +285,24 @@ public class NodeController : MonoBehaviour {
             }
 
 
-            if (Input.GetKeyUp(KeyCode.L))
-            {
+            if (Input.GetKeyUp(KeyCode.L) || Input.GetKeyUp(KeyCode.P))
                 showLeaderboard = !showLeaderboard;
-                showPeopleLeaderBoard = false;
-            }
-            if (Input.GetKeyUp(KeyCode.P))
-            {
-                showPeopleLeaderBoard = !showPeopleLeaderBoard;
-                showLeaderboard = false;
-            }
         }
 
 	} // End of Update().
 
+    int GetHighlightedAssemblyID(int idx)
+    {
+        int leaderBoardEntries = Mathf.Min(leaderboard.Count, leaderboardMaxDisplaySize);
+        if (idx < leaderBoardEntries)
+            return leaderboard[idx];
+
+        idx = idx % leaderBoardEntries;
+        leaderBoardEntries = Mathf.Min(leaderboardCaptured.Count, leaderboardMaxDisplaySize);
+        if (idx < leaderBoardEntries)
+            return leaderboardCaptured[idx];
+        return -1;
+    }
 
 	List<Assembly> FindRelatives(Assembly assembly){
 		List<Assembly> relatives = new List<Assembly>();
@@ -481,35 +484,41 @@ public class NodeController : MonoBehaviour {
 		}
 
         // Leaderboard
-        if (PersistentGameManager.IsServer && (showLeaderboard || showPeopleLeaderBoard))
+        if (PersistentGameManager.IsServer && showLeaderboard)
         {
-			GUI.color = Color.white;
-            List<int> leaderList = showPeopleLeaderBoard ? leaderboardCaptured : leaderboard;
             GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
-            GUI.skin.label.alignment = TextAnchor.UpperLeft;
-            GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.04f);
-            GUILayout.Label("Leaderboard", GUILayout.Height(Mathf.Max(GUI.skin.label.fontSize + 6, Mathf.CeilToInt(Screen.height * 0.05f))));
-            GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.02f);
-            int leaderCount = 0;
-            foreach (int leaderEntry in leaderList)
-            {
-                if (currentLeaderIndex == leaderCount)
-                    GUI.color = Color.cyan;
-                else
-                    GUI.color = Color.white;
-
-                if (assemblyNameDictionary.ContainsKey(leaderEntry) && assemblyScores.ContainsKey(leaderEntry) )
-                    GUILayout.Label("  " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(assemblyNameDictionary[leaderEntry]) + " - " + assemblyScores[leaderEntry].ToString("0.0"));
-
-                ++leaderCount;
-                if (leaderCount >= leaderboardMaxDisplaySize)
-                    break;
-
-            }
+            ShowLeaderList("Leaderboard", leaderboard);
+            ShowLeaderList("Players", leaderboardCaptured);
             GUILayout.EndArea();
         }
 
 	} // End of OnGUI().
+
+    void ShowLeaderList(string title, List<int> leaderList)
+    {
+        if (leaderList.Count == 0)
+            return;
+        GUI.skin.label.alignment = TextAnchor.UpperLeft;
+        GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.04f);
+        GUI.color = Color.white;
+        GUILayout.Label(title, GUILayout.Height(Mathf.Max(GUI.skin.label.fontSize + 6, Mathf.CeilToInt(Screen.height * 0.054f))));
+        GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.02f);
+        int leaderCount = 0;
+        foreach (int leaderEntry in leaderList)
+        {
+            if (GetHighlightedAssemblyID(currentLeaderIndex) == leaderEntry)
+                GUI.color = Color.cyan;
+            else
+                GUI.color = Color.white;
+
+            if (assemblyNameDictionary.ContainsKey(leaderEntry) && assemblyScores.ContainsKey(leaderEntry))
+                GUILayout.Label("  " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(assemblyNameDictionary[leaderEntry]) + " - " + assemblyScores[leaderEntry].ToString("0.0"));
+
+            ++leaderCount;
+            if (leaderCount >= leaderboardMaxDisplaySize)
+                break;
+        }
+    }
 
 
     void OnDestroy()
