@@ -303,12 +303,16 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 		// Ensure assemblies are dropped in at a viable position, relative to the camera.
         Vector3 assemblyNewPos = Camera.main.transform.position.normalized * Mathf.Min(NodeController.Inst.worldSize.x, NodeController.Inst.worldSize.y, NodeController.Inst.worldSize.z, Camera.main.transform.position.magnitude - 25f);
-		assemblyNewPos += Random.insideUnitSphere * 5f;
+		assemblyNewPos += Random.insideUnitSphere * 10f;
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
         Assembly a = new Assembly(assemblyStr, null, assemblyNewPos);
 		a.nametagFade = 30f;
+
+		// Assembly is "thrown" back into the environment.
+		foreach(Node someNode in a.NodeDict.Values)
+			someNode.velocity = (Camera.main.transform.forward * 3f) + Random.insideUnitSphere * 1.5f;
 
     } // End of PushAssembly().
 

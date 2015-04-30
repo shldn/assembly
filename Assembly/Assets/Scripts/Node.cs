@@ -49,7 +49,7 @@ public class Node {
 	float smoothedPower = 0f;
 	float waveformRunner = 0f;
 
-	Vector3 velocity = Vector3.zero;
+	public Vector3 velocity = Vector3.zero;
 
 	Vector3 position  = Vector3.zero;
 	public Vector3 Position {

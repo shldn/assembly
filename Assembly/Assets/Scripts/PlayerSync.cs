@@ -196,6 +196,12 @@ public class PlayerSync : MonoBehaviour {
             {
                 a.SaveFamilyTree();
                 networkView.RPC("CaptureAssembly", networkView.owner, (a).ToFileString());
+
+				// Clear mating data
+				if(a.matingWith){
+					a.matingWith.matingWith = null;
+					a.matingWith = null;
+				}
             }
             else
                 networkView.RPC("CaptureUCreature", networkView.owner);
