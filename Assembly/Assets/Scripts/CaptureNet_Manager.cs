@@ -21,7 +21,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     bool useNAT = false; // Not sure what NAT is... do some research.
     string ipAddress;
     string port;
-    int maxNumberOfPlayers = 16;
+    int maxNumberOfPlayers = 500;
     public static string playerName;
     string serverName;
     string serverTagline;
@@ -82,6 +82,9 @@ public class CaptureNet_Manager : MonoBehaviour {
             // Create the server.
 			Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
 	    }
+
+        if (Input.GetKeyUp(KeyCode.Q))
+            showQRCode = !showQRCode;
     } // End of Update().
 
     // Once the text file with the list of ips is downloaded, add the ips to the connection list.
