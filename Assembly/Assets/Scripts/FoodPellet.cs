@@ -53,7 +53,6 @@ public class FoodPellet {
 		if(energy < 0f){
 			NodeController.Inst.AdvanceWorldTick();
 			cull = true;
-			MonoBehaviour.print("Dead food node");
 		}
 
 		// Destroy nodes outside of worlds

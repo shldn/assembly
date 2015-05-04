@@ -9,11 +9,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 	public static CaptureNet_Manager Inst = null;
 
     // Multiplayer variables
-    public static ANetworkPlayer[] playerList = new ANetworkPlayer[0];
 
-    static int nextViewID;
-
-    string titleMessage = "Assembly --- http://imagination.ucsd.edu/assembly";
     string remoteIpList = "http://132.239.235.40:5000/fbsharing/AT9dONfV"; // This file lives on khan: /Khan/Assembly/app_data/ipList.txt
     List<string> connectToIP = new List<string>();
     List<string> backupConnectToIP = new List<string>(){"127.0.0.1", "132.239.235.116", "132.239.235.115", "75.80.103.34", "67.58.54.68"};
@@ -23,18 +19,14 @@ public class CaptureNet_Manager : MonoBehaviour {
     string port;
     int maxNumberOfPlayers = 500;
     public static string playerName;
-    string serverName;
-    string serverTagline;
-    string serverNameForClient;
-    bool iWantToHost = false;
-    bool iWantToConnect = false;
+    string serverName = "";
+    string serverTagline = "";
 	public bool autoIPConnect = true;
 
     // admin client vars
     bool showQRCode = false;
 
     public static NetworkView myNetworkView;
-    public NetworkPlayer myOwner;
     public PlayerSync playerSync = null;
 
     
@@ -49,7 +41,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 		Inst = this;
 
         if (Debug.isDebugBuild)
-            connectToIP = new List<string>() { "132.239.235.116" };
+            connectToIP = new List<string>() { "127.0.0.1", "132.239.235.116" };
         else
             gameObject.AddComponent<DownloadHelper>().StartDownload(remoteIpList, HandleRemoteListDownloadComplete);
 
@@ -104,32 +96,9 @@ public class CaptureNet_Manager : MonoBehaviour {
     void OnPlayerDisconnected(NetworkPlayer networkPlayer){
 	    // If the server sees a player disconnect, remove their presence across the network.
 	    Network.DestroyPlayerObjects(networkPlayer);
-	    networkView.RPC("PlayerHasLeft", RPCMode.Others, networkPlayer);
 	    Network.RemoveRPCs(networkPlayer);
 
-	    // Remove player from player list.
-        if (playerList.Length > 0){
-            ANetworkPlayer[] newPlayerList = new ANetworkPlayer[playerList.Length - 1];
-            for (int i = 0; i < playerList.Length; i++)
-            {
-                if (playerList[i].player == networkPlayer)
-                {
-                    //ConsoleScript.Inst.WriteToLog("![" + playerList[i].playerName + "] has disconnected.");
-                    // Update playerList, subtracting the disconnected player.
-                    for (int j = 0; j < playerList.Length; j++)
-                    {
-                        if (j < i)
-                            newPlayerList[j] = playerList[j];
-                        if (j > i)
-                            newPlayerList[j - 1] = playerList[j];
-                    }
-                    // Skip the rest.
-                    i = playerList.Length;
-                }
-            }
-            playerList = newPlayerList;
-        }
-    } // End of function OnPlayerDisconnected(NetworkPlayer networkPlayer).
+    } // End of OnPlayerDisconnected(NetworkPlayer networkPlayer).
 
 
     void OnGUI(){
@@ -171,30 +140,12 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 
     void OnPlayerConnected(NetworkPlayer networkPlayer){
-	    networkView.RPC("ServerInfo", networkPlayer, serverName, serverTagline);
-	
-	    // Send the new player information for existing players.
-	    for(int i = 0; i < playerList.Length; i++)
-		    networkView.RPC("Credentials", networkPlayer, playerList[i].player, playerList[i].playerName);
     } // End of OnPlayerConnected().
 
 
-    // When I connect to a server, send my credentials to everybody.
-    // Show a message when a player has connected.
     void OnConnectedToServer(){
-	    // Set me up as the first player.
-	    playerList = new ANetworkPlayer[1];
-	    playerList[0] = new ANetworkPlayer();
-	
-	    playerList[0].player = Network.player;
-	    playerList[0].playerName = playerName;
-        ANetworkPlayer.me = playerList[0];
 
 		ClientAdminMenu.Inst.CloseAll();
-	
-	    //networkView.RPC("Credentials", RPCMode.Others, Network.player, playerName);
-	    //ConsoleScript.Inst.GlobalWriteToLog("![" + playerName + "] has connected.", RPCMode.Others);
-        //ConsoleScript.Inst.WriteToLog("Connected to server as [" + playerName + "].");
 
         //GameObject newNetAmalgamGO = Network.Instantiate(netAmalgamPrefab, Vector3.zero, Quaternion.identity, 0) as GameObject;
         //Net_Amalgam newNetAmalgam = newNetAmalgamGO.GetComponent<Net_Amalgam>();
@@ -214,49 +165,12 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     [RPC] // Receive another player's credentials; if that player is not in my list, add him.
     void Credentials(NetworkPlayer networkPlayer, string newPlayerName){	
-	    bool playerAlreadyInList = false;
-	    for(int i = 0; i < playerList.Length; i++)
-		    if(playerList[i].player == networkPlayer){
-			    playerAlreadyInList = true;
-			    playerList[i].playerName = newPlayerName;
-		    }
-	
-	    if(!playerAlreadyInList){	
-		    ANetworkPlayer[] newPlayerList = new ANetworkPlayer[ playerList.Length + 1 ];
-		    for(int j = 0; j < playerList.Length; j++)
-			    newPlayerList[j] = playerList[j];
-			
-		    newPlayerList[ newPlayerList.Length - 1 ] = new ANetworkPlayer();
-		
-		    newPlayerList[ newPlayerList.Length - 1 ].player = networkPlayer;
-		    newPlayerList[ newPlayerList.Length - 1 ].playerName = newPlayerName;
-		
-		    playerList = newPlayerList;
-	    }
     } // End of Credentials().
 
 
     [RPC] // Update playerList, removing the disconnected player.
     void PlayerHasLeft(NetworkPlayer networkPlayer){
-	    // Remove player from player list.
-	    ANetworkPlayer[] newPlayerList = new ANetworkPlayer[ playerList.Length - 1 ];
-	    for(int i = 0; i < playerList.Length; i++){
-		    if(playerList[i].player == networkPlayer){
-			    // Update playerList, subtracting the disconnected player.
-			    for(int j = 0; j < playerList.Length; j++){
-				    if(j < i)
-					    newPlayerList[j] = playerList[j];
-				    if(j > i)
-					    newPlayerList[j - 1] = playerList[j];
-			    }
-			    // Skip the rest.
-			    i = playerList.Length;
-		    }
-	    }
-	    playerList = newPlayerList;
     } // End of PlayerHasLeft().
-
-
     // Removes RPCs for a certain networkViewID.
     public static void RemoveBufferedRPCs(NetworkViewID viewID){
 	    if(Network.peerType == NetworkPeerType.Server)
