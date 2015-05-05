@@ -640,7 +640,13 @@ public class NodeController : MonoBehaviour {
         }
 
         if (assemblyScores.ContainsKey(assemblyID) && assemblyScores[assemblyID] <= 0)
+        {
             assemblyScores.Remove(assemblyID);
+            if( Inst.assemblyNameDictionary.ContainsKey(assemblyID))
+                Inst.assemblyNameDictionary.Remove(assemblyID);
+            if (Assembly.captured.Contains(assemblyID))
+                Assembly.captured.Remove(assemblyID);
+        }
 
     }
 
