@@ -22,6 +22,7 @@ public class PlayerSync : MonoBehaviour {
 	float lastPinchDist = -1f;
 
 	bool orbitModeInit = false;
+    int levelWasLoadedFrame = 0;
 
     void Awake()
     {
@@ -180,6 +181,26 @@ public class PlayerSync : MonoBehaviour {
         }
 
     } // End of Update().
+
+    void OnLevelWasLoaded(int level)
+    {
+        if(PersistentGameManager.IsServer)
+        {
+            // for some reason flares go crazy on level switching, disabling and re-enabling fixes, not sure why the problem occurs.
+            enabled = false;
+            levelWasLoadedFrame = Time.frameCount;
+            Invoke("ReEnable", 0.1f);
+        }
+
+    } // End of OnLevelWasLoaded().
+
+    void ReEnable()
+    {
+        if (Time.frameCount > levelWasLoadedFrame)
+            enabled = true;
+        else
+            Invoke("ReEnable", 0.1f);
+    } // End of ReEnable().
 
     void HandleCapturedObject(CaptureObject capturedObj)
     {
