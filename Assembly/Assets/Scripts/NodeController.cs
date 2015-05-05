@@ -51,6 +51,12 @@ public class NodeController : MonoBehaviour {
 	bool foodInitialized = false;
 
 
+    // Reset Variables
+    float timeUntilReset = 1.5f * 60f * 60f; // seconds
+    float timeAfterDisconnectToReset = 15f * 60f; // seconds;
+    System.DateTime lastResetTime = System.DateTime.Now;
+    System.DateTime lastPlayerDisconnectTime = System.DateTime.Now;
+
 	enum WorldAnim{
 		capsule,
 		sphere
@@ -288,6 +294,8 @@ public class NodeController : MonoBehaviour {
             if (Input.GetKeyUp(KeyCode.L) || Input.GetKeyUp(KeyCode.P))
                 showLeaderboard = !showLeaderboard;
         }
+
+        HandleReset();
 
 	} // End of Update().
 
@@ -650,5 +658,16 @@ public class NodeController : MonoBehaviour {
 
     }
 
+    void HandleReset()
+    {
+        if (Network.connections.Length == 0 && (float)((System.DateTime.Now - lastResetTime).TotalSeconds) > timeUntilReset)
+        {
+            if (((float)((System.DateTime.Now - lastPlayerDisconnectTime).TotalSeconds) > timeAfterDisconnectToReset))
+                LevelManager.LoadLevel(Application.loadedLevel);
+        }
+        else
+            lastPlayerDisconnectTime = System.DateTime.Now;
 
-} // End of PhysNodeController.
+    } // End HandleReset().
+
+} // End of NodeController.
