@@ -76,7 +76,8 @@ public class FoodPellet {
         try
         {
             foreach (FoodPellet food in all)
-                Object.Destroy(food.transform.gameObject);
+                if( food.transform != null )
+                    Object.Destroy(food.transform.gameObject);
         }
         catch(System.Exception e)
         {
