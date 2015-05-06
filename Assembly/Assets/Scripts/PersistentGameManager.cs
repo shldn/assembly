@@ -78,11 +78,13 @@ public class PersistentGameManager : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.Escape))
             Application.Quit();
 
+		/*
         if (Debug.isDebugBuild && Input.GetKeyUp(KeyCode.C) )
         {
             GameObject go = new GameObject("CursorBotManager");
             go.AddComponent<CursorBotManager>();
         }
+		*/
 
 		if(Input.GetKeyDown(KeyCode.F1))
 			cursorLock = !cursorLock;
