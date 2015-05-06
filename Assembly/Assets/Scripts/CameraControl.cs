@@ -49,6 +49,9 @@ public class CameraControl : MonoBehaviour {
 	Assembly assemblyOfInterest = null;
 	float assemblyOfInterestStaleness = 0f;
 
+	Vector2 targetPanTilt = Vector2.zero;
+	Vector2 panTiltVel = Vector2.zero;
+
 
     void Awake(){
         Inst = this;
@@ -215,7 +218,14 @@ public class CameraControl : MonoBehaviour {
 					assemblyOfInterest = null;
 			}
 
-			transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime);
+			targetPanTilt = targetRotation.eulerAngles;
+			Vector3 tempEulers = transform.eulerAngles;
+			float panTiltSmoothTime = 2f;
+			tempEulers.x = Mathf.SmoothDampAngle(tempEulers.x, targetPanTilt.x, ref panTiltVel.x, panTiltSmoothTime);
+			tempEulers.y = Mathf.SmoothDampAngle(tempEulers.y, targetPanTilt.y, ref panTiltVel.y, panTiltSmoothTime);
+			transform.eulerAngles = tempEulers;
+
+			//transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime);
 		}
 
 
