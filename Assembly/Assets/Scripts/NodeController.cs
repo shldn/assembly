@@ -52,10 +52,10 @@ public class NodeController : MonoBehaviour {
 
 
     // Reset Variables
-    float timeUntilReset = 1.5f * 60f * 60f; // seconds
-    float timeAfterDisconnectToReset = 15f * 60f; // seconds;
+    float timeUntilReset = 1.0f * 60f * 60f; // seconds
+    float timeAfterActivityToReset = 15f * 60f; // seconds;
     System.DateTime lastResetTime = System.DateTime.Now;
-    System.DateTime lastPlayerDisconnectTime = System.DateTime.Now;
+    public System.DateTime lastPlayerActivityTime = System.DateTime.Now;
 
 	enum WorldAnim{
 		capsule,
@@ -662,13 +662,14 @@ public class NodeController : MonoBehaviour {
 
     void HandleReset()
     {
-        if (Network.connections.Length == 0 && (float)((System.DateTime.Now - lastResetTime).TotalSeconds) > timeUntilReset)
+        if ((float)((System.DateTime.Now - lastResetTime).TotalSeconds) > timeUntilReset)
         {
-            if (((float)((System.DateTime.Now - lastPlayerDisconnectTime).TotalSeconds) > timeAfterDisconnectToReset))
-                LevelManager.LoadLevel(Application.loadedLevel);
+            if (((float)((System.DateTime.Now - lastPlayerActivityTime).TotalSeconds) > timeAfterActivityToReset))
+            {
+                LevelManager.LoadPrevLevel();
+                lastResetTime = System.DateTime.Now;
+            }
         }
-        else
-            lastPlayerDisconnectTime = System.DateTime.Now;
 
     } // End HandleReset().
 

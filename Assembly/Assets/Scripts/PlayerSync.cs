@@ -354,6 +354,9 @@ public class PlayerSync : MonoBehaviour {
 
             stream.Serialize(ref screenRelativePos);
             screenPos = new Vector3(screenRelativePos.x * Screen.width, screenRelativePos.y * Screen.height, screenRelativePos.z);
+
+            if (PersistentGameManager.IsServer && NodeController.Inst)
+                NodeController.Inst.lastPlayerActivityTime = System.DateTime.Now;
 		}
     } // End of OnSerializeNetworkView().
 
