@@ -10,6 +10,8 @@ public class IntroAnimation : MonoBehaviour {
 	int step = 0;
 	float lerp = 0f;
 
+	float elapsedTime = 0f;
+
 	public Texture2D white;
 
 
@@ -20,6 +22,7 @@ public class IntroAnimation : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update(){
+		elapsedTime += Time.deltaTime;
 
 		if(step == 0){
 			transform.position = Vector3.Lerp(startPos.position, hangPos.position, 1f - Mathf.Pow(1f - lerp, 2f));
@@ -32,7 +35,7 @@ public class IntroAnimation : MonoBehaviour {
 
 		if(step == 1){
 			transform.position = hangPos.position;
-			if(Input.anyKeyDown){
+			if(Input.anyKeyDown || (elapsedTime > 20f)){
 				step = 2;
 				lerp = 0f;
 			}

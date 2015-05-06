@@ -44,6 +44,11 @@ public class CameraControl : MonoBehaviour {
     public Assembly selectedAssembly = null;
 	public Assembly hoveredPhysAssembly = null;
 
+	public bool galleryCam = true;
+
+	Assembly assemblyOfInterest = null;
+	float assemblyOfInterestStaleness = 0f;
+
 
     void Awake(){
         Inst = this;
@@ -67,6 +72,22 @@ public class CameraControl : MonoBehaviour {
 	
 
 	void LateUpdate(){
+
+		if(Input.GetKeyDown(KeyCode.C))
+			galleryCam = !galleryCam;
+
+		// Gallery cam
+		if(galleryCam){
+			float radiusPulseTime = 200f;
+			float maxPulseRadius = 500f;
+
+			float elevationPulseTime = 90f;
+			float maxPulseElevation = 45f;
+			targetRadius = (0.5f + (Mathf.Cos((Time.time / radiusPulseTime) * (Mathf.PI * 2f)) * 0.5f)) * maxPulseRadius;
+			targetOrbit.y = (0.5f + (Mathf.Cos((Time.time / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f)) * maxPulseElevation;
+		}
+
+
         // Smooth time is slowed down if cursor is locked ("cinematic mode")
         float effectiveSmoothTime = smoothTime;
         if(!PersistentGameManager.IsClient){
@@ -153,7 +174,49 @@ public class CameraControl : MonoBehaviour {
         centerOffset = Vector3.SmoothDamp(centerOffset, Vector3.zero, ref centerOffsetVel, effectiveSmoothTime);
         Quaternion cameraRot = Quaternion.Euler(-orbit.y, orbit.x, 0f);
         transform.position = center + centerOffset + (cameraRot * (Vector3.forward * radius));
-        transform.rotation = cameraRot * Quaternion.AngleAxis(180f, Vector3.up);
+
+		Quaternion orbitCamRot = cameraRot * Quaternion.AngleAxis(180f, Vector3.up);
+
+		if(!galleryCam)
+	        transform.rotation = orbitCamRot;
+		else{
+			Quaternion targetRotation = orbitCamRot;
+
+			if(!assemblyOfInterest){
+				assemblyOfInterestStaleness = 0f;
+
+				// Try to find an assembly that is mating.
+				foreach(Assembly someAssem in Assembly.getAll){
+					float dist = Vector3.Distance(transform.position, someAssem.Position);
+					if((dist < 60f) && someAssem.matingWith){
+						assemblyOfInterest = someAssem;
+						break;
+					}
+				}
+
+				// If no mating, look for one that is active.
+				if(!assemblyOfInterest){
+					foreach(Assembly someAssem in Assembly.getAll){
+						float dist = Vector3.Distance(transform.position, someAssem.Position);
+						if((dist < 60f) && (someAssem.energy > (someAssem.NodeDict.Values.Count * 0.5f))){
+							assemblyOfInterest = someAssem;
+							break;
+						}
+					}
+				}
+			}
+			
+			if(assemblyOfInterest){
+				assemblyOfInterestStaleness += Time.deltaTime;
+
+				targetRotation = Quaternion.LookRotation(assemblyOfInterest.Position - transform.position);
+				float dist = Vector3.Distance(transform.position, assemblyOfInterest.Position);
+				if((dist > 80f) || (!assemblyOfInterest.matingWith && (assemblyOfInterestStaleness > 10f)))
+					assemblyOfInterest = null;
+			}
+
+			transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime);
+		}
 
 
         // Object selection ------------------------------------------- //
