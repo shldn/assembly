@@ -7,6 +7,8 @@ public class IntroAnimation : MonoBehaviour {
 	public Transform hangPos;
 	public Transform endPos;
 
+    float animDuration = 5f; // Time until auto advance
+
 	int step = 0;
 	float lerp = 0f;
 
@@ -14,13 +16,6 @@ public class IntroAnimation : MonoBehaviour {
 
 	public Texture2D white;
 
-
-	// Use this for initialization
-	void Start(){
-	
-	}
-	
-	// Update is called once per frame
 	void Update(){
 		elapsedTime += Time.deltaTime;
 
@@ -35,7 +30,7 @@ public class IntroAnimation : MonoBehaviour {
 
 		if(step == 1){
 			transform.position = hangPos.position;
-			if(Input.anyKeyDown || (elapsedTime > 20f)){
+            if (Input.anyKeyDown || (elapsedTime > animDuration)){
 				step = 2;
 				lerp = 0f;
 			}
