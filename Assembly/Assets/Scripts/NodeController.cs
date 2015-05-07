@@ -39,6 +39,7 @@ public class NodeController : MonoBehaviour {
 	List<Assembly> relativesToHighlight = new List<Assembly>();
 	int currentLeaderIndex = 0;
 	int lastLeaderIndex = 0;
+    float maxScoreForLines = 20f;
 
 	// Highest-'ranked' assemblies, based on the number of times the index shows up in hierarchies.
     static List<int> leaderboard = new List<int>(); // list of assembly ids -- will keep sorted by assemblyScores
@@ -52,7 +53,7 @@ public class NodeController : MonoBehaviour {
 
 
     // Reset Variables
-    float timeUntilReset = 1.0f * 60f * 60f; // seconds
+    float timeUntilReset = -1f; //1.0f * 60f * 60f; // seconds -- negative number will disable reset
     float timeAfterActivityToReset = 15f * 60f; // seconds;
     System.DateTime lastResetTime = System.DateTime.Now;
     public System.DateTime lastPlayerActivityTime = System.DateTime.Now;
@@ -267,7 +268,7 @@ public class NodeController : MonoBehaviour {
 		// Leaderboard
         if (PersistentGameManager.IsServer)
         {
-            if(showLeaderboard)
+            if (showLeaderboard && (leaderboard.Count > 0 && (!assemblyScores.ContainsKey(leaderboard[0]) || assemblyScores[leaderboard[0]] < maxScoreForLines)))
             {
                 int entriesDisplayed = Mathf.Min(leaderboard.Count, leaderboardMaxDisplaySize) + Mathf.Min(leaderboardCaptured.Count, leaderboardMaxDisplaySize);
                 float timePerIndex = 3f; // How long each leaderboard entry is highlighted.
@@ -289,6 +290,8 @@ public class NodeController : MonoBehaviour {
                     GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount));
                 }
             }
+            else
+                currentLeaderIndex = -1;
 
 
             if (Input.GetKeyUp(KeyCode.L) || Input.GetKeyUp(KeyCode.P))
@@ -301,6 +304,9 @@ public class NodeController : MonoBehaviour {
 
     int GetHighlightedAssemblyID(int idx)
     {
+        if (idx < 0)
+            return -1;
+
         int leaderBoardEntries = Mathf.Min(leaderboard.Count, leaderboardMaxDisplaySize);
         if (idx < leaderBoardEntries)
             return leaderboard[idx];
@@ -662,7 +668,7 @@ public class NodeController : MonoBehaviour {
 
     void HandleReset()
     {
-        if ((float)((System.DateTime.Now - lastResetTime).TotalSeconds) > timeUntilReset)
+        if (timeUntilReset > 0f && (float)((System.DateTime.Now - lastResetTime).TotalSeconds) > timeUntilReset)
         {
             if (((float)((System.DateTime.Now - lastPlayerActivityTime).TotalSeconds) > timeAfterActivityToReset))
             {
