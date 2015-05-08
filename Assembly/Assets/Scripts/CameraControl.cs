@@ -55,6 +55,9 @@ public class CameraControl : MonoBehaviour {
 
     void Awake(){
         Inst = this;
+
+        if (PersistentGameManager.IsClient)
+            galleryCam = false;
     } // End of Awake().
 
 
