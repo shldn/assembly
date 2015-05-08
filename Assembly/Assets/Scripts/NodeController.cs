@@ -39,7 +39,7 @@ public class NodeController : MonoBehaviour {
 	List<Assembly> relativesToHighlight = new List<Assembly>();
 	int currentLeaderIndex = 0;
 	int lastLeaderIndex = 0;
-    float maxScoreForLines = 20f;
+    int maxScoreLines = 30; // Cap on the number of lines drawn for relationship graphs.
 
 	// Highest-'ranked' assemblies, based on the number of times the index shows up in hierarchies.
     static List<int> leaderboard = new List<int>(); // list of assembly ids -- will keep sorted by assemblyScores
@@ -268,7 +268,7 @@ public class NodeController : MonoBehaviour {
 		// Leaderboard
         if (PersistentGameManager.IsServer)
         {
-            if (showLeaderboard && (leaderboard.Count > 0 && (!assemblyScores.ContainsKey(leaderboard[0]) || assemblyScores[leaderboard[0]] < maxScoreForLines)))
+            if (showLeaderboard)
             {
                 int entriesDisplayed = Mathf.Min(leaderboard.Count, leaderboardMaxDisplaySize) + Mathf.Min(leaderboardCaptured.Count, leaderboardMaxDisplaySize);
                 float timePerIndex = 3f; // How long each leaderboard entry is highlighted.
@@ -281,7 +281,7 @@ public class NodeController : MonoBehaviour {
                 if (lastLeaderIndex != currentLeaderIndex && entriesDisplayed > 0)
                 {
                     lastLeaderIndex = currentLeaderIndex;
-                    relativesToHighlight = FindRelatives(GetHighlightedAssemblyID(currentLeaderIndex));
+                    relativesToHighlight = FindRelatives(GetHighlightedAssemblyID(currentLeaderIndex), maxScoreLines, true);
                 }
 
 
@@ -333,14 +333,21 @@ public class NodeController : MonoBehaviour {
 	} // End of FindRelatives().
 
 
-	List<Assembly> FindRelatives(int id){
+    // Randomize helpful for showing variety when limiting the results.
+	List<Assembly> FindRelatives(int id, int limit = -1, bool randomize = false){
 		List<Assembly> relatives = new List<Assembly>();
-		foreach(Assembly someAssembly in Assembly.getAll){
-			if(someAssembly.familyTree.Contains(id)){
-				relatives.Add(someAssembly);
-				continue;
-			}
-		}
+        int offset = randomize ? Random.Range(0, Assembly.getAll.Count) : 0;
+        int numAssemblies = Assembly.getAll.Count;
+        for (int i = 0; i < numAssemblies; ++i )
+        {
+            Assembly a = Assembly.getAll[(i + offset) % numAssemblies];
+            if (a.familyTree.Contains(id))
+            {
+                relatives.Add(a);
+                if (limit > 0 && relatives.Count >= limit)
+                    return relatives;
+            }
+        }
 
 		return relatives;
 	} // End of FindRelatives().
