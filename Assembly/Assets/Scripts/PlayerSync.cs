@@ -9,12 +9,15 @@ public class PlayerSync : MonoBehaviour {
     Vector3 screenPosVel = Vector3.zero;
     float screenPosSmoothTime = 0.1f;
 
-    List<Vector2> lastPoints = new List<Vector2>();
+    LinkedList<Vector2> lastPoints = new LinkedList<Vector2>();
+    LinkedList<float> lastPointDists = new LinkedList<float>();
     bool selecting = false;
     bool initialPosSent = false;
 
     public Transform cursorObject;
     public LineRenderer cursorLine;
+    float cursorLineDist = 0.0f;
+    float cursorLineMaxDist = 40000f;
 
     bool editing = false;
 
@@ -28,6 +31,7 @@ public class PlayerSync : MonoBehaviour {
     {
         screenPos = new Vector3(0.5f * Screen.width, 0.5f * Screen.height, 0.0f);
         screenPosSmoothed = screenPos;
+        cursorLineMaxDist = 2 * Screen.width + 2 * Screen.height;
         DontDestroyOnLoad(this);
     }
 
@@ -125,8 +129,21 @@ public class PlayerSync : MonoBehaviour {
 
             // Collect points for gestural control.
             if(selecting)
-                if((lastPoints.Count < 2) || (Vector3.Distance(screenPosSmoothed, lastPoints[lastPoints.Count - 1]) > 10f))
-                    lastPoints.Add(screenPosSmoothed);
+            {
+                float distToCurrent = (lastPoints.Count > 0) ? Vector3.Distance(screenPosSmoothed, lastPoints.Last.Value) : 0f;
+                if ((lastPoints.Count < 2) || distToCurrent > 10f)
+                {
+                    lastPoints.AddLast(screenPosSmoothed);
+                    lastPointDists.AddLast(distToCurrent);
+                    cursorLineDist += distToCurrent;
+                    while (cursorLineDist > cursorLineMaxDist && lastPoints.Count > 0)
+                    {
+                        cursorLineDist -= lastPointDists.First.Value;
+                        lastPoints.RemoveFirst();
+                        lastPointDists.RemoveFirst();
+                    }
+                }
+            }
 
 
             // Determine circled objects
@@ -140,14 +157,16 @@ public class PlayerSync : MonoBehaviour {
 
                         float totalAngle = 0f;
                         float lastAngleToJelly = 0f;
-                        for(int i = 0; i < lastPoints.Count; i++){
-                            Vector2 currentVec = new Vector2(objScreenPos.x, objScreenPos.y) - lastPoints[i];
+                        bool firstElem = true;
+                        foreach(Vector2 pt in lastPoints){
+                            Vector2 currentVec = new Vector2(objScreenPos.x, objScreenPos.y) - pt;
                             float angleToJelly = Mathf.Atan2(currentVec.x, currentVec.y) * Mathf.Rad2Deg;
 
-                            if(i > 0)
+                            if (!firstElem)
                                 totalAngle += Mathf.DeltaAngle(angleToJelly, lastAngleToJelly);
 
                             lastAngleToJelly = angleToJelly;
+                            firstElem = false;
                         }
 
                         float angleForgiveness = 40f;
@@ -164,13 +183,17 @@ public class PlayerSync : MonoBehaviour {
                 }
 
                 lastPoints.Clear();
+                lastPointDists.Clear();
+                cursorLineDist = 0f;
             }
 
             if(lastPoints.Count > 2){
                 cursorLine.SetVertexCount(lastPoints.Count + 1);
-                for(int i = 0; i < lastPoints.Count; i++){
-                    Ray pointRay = Camera.main.ScreenPointToRay(new Vector3(lastPoints[i].x, Screen.height - lastPoints[i].y, 0f));
-                    cursorLine.SetPosition(i, pointRay.origin + pointRay.direction * 1f);
+                int count = 0;
+                foreach (Vector2 pt in lastPoints){
+                    Ray pointRay = Camera.main.ScreenPointToRay(new Vector3(pt.x, Screen.height - pt.y, 0f));
+                    cursorLine.SetPosition(count, pointRay.origin + pointRay.direction * 1f);
+                    ++count;
                 }
                 cursorLine.SetPosition(lastPoints.Count, cursorObject.position);
 
