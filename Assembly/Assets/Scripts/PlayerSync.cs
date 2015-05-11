@@ -31,7 +31,7 @@ public class PlayerSync : MonoBehaviour {
     {
         screenPos = new Vector3(0.5f * Screen.width, 0.5f * Screen.height, 0.0f);
         screenPosSmoothed = screenPos;
-        cursorLineMaxDist = 2 * Screen.width + 2 * Screen.height;
+        cursorLineMaxDist = Screen.width + Screen.height;
         DontDestroyOnLoad(this);
     }
 
