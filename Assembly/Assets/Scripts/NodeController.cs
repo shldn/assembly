@@ -521,10 +521,11 @@ public class NodeController : MonoBehaviour {
         if (leaderList.Count == 0)
             return;
         GUI.skin.label.alignment = TextAnchor.UpperLeft;
-        GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.04f);
+        GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.03f);
         GUI.color = Color.white;
-        GUILayout.Label(title, GUILayout.Height(Mathf.Max(GUI.skin.label.fontSize + 6, Mathf.CeilToInt(Screen.height * 0.054f))));
-        GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.02f);
+		GUI.skin.label.padding = new RectOffset(0, 0, 0, 0);
+        GUILayout.Label(title, GUILayout.Height(Mathf.Max(GUI.skin.label.fontSize + 2, Mathf.CeilToInt(Screen.height * 0.035f))));
+        GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.015f);
         int leaderCount = 0;
         foreach (int leaderEntry in leaderList)
         {

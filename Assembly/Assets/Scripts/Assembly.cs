@@ -202,7 +202,7 @@ public class Assembly : CaptureObject{
 
 		if(!PersistentGameManager.IsClient && (Node.getAll.Count < NodeController.Inst.worldNodeThreshold * 0.9f) && (energy > (maxEnergy * 0.9f)))
 			wantToMate = true;
-		else if((Node.getAll.Count > (NodeController.Inst.worldNodeThreshold * 0.8f)) || (energy < maxEnergy * 0.5f)){
+		else if((Node.getAll.Count > (NodeController.Inst.worldNodeThreshold * 0.8f)) || (energy < maxEnergy * 0.5f) && (Random.Range(0f, 1f) < 0.01f)){
 			wantToMate = false;
 			mateCompletion = 0f;
 
@@ -243,6 +243,7 @@ public class Assembly : CaptureObject{
 				}
 			}
 
+			// Create offspring!
 			if(mateCompletion >= 1f){
 				// Spawn a new assembly between the two.
 				Assembly newAssembly = new Assembly((Position + matingWith.Position) / 2f, Random.rotation);
@@ -250,7 +251,7 @@ public class Assembly : CaptureObject{
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(matingWith);
 
-				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length);
+				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length + 1);
 				Triplet spawnHexPos = Triplet.zero;
 				while(numNodes > 0){
 					// Make sure no phys node is here currently.

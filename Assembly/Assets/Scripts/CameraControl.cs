@@ -213,7 +213,8 @@ public class CameraControl : MonoBehaviour {
 			}
 			
 			if(assemblyOfInterest){
-				assemblyOfInterestStaleness += Time.deltaTime;
+				if(!assemblyOfInterest.matingWith)
+					assemblyOfInterestStaleness += Time.deltaTime;
 
 				targetRotation = Quaternion.LookRotation(assemblyOfInterest.Position - transform.position);
 				float dist = Vector3.Distance(transform.position, assemblyOfInterest.Position);
@@ -252,7 +253,6 @@ public class CameraControl : MonoBehaviour {
 				}
 			}
         }
-
 		
         if(Input.GetKeyDown(KeyCode.Return)){
             if(selectedNode){
@@ -263,7 +263,6 @@ public class CameraControl : MonoBehaviour {
                 targetRadius = maxRadius;
             }
         }
-		
 
 	} // End of Update().
 
@@ -271,7 +270,7 @@ public class CameraControl : MonoBehaviour {
     {
         List<Vector3> pts = new List<Vector3>();
         foreach (Assembly someAssembly in Assembly.getAll)
-            if( !someAssembly.cull )
+            if(!someAssembly.cull)
                 pts.Add(someAssembly.Position);
         float sphereRadius = 0f;
         MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);

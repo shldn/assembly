@@ -6,6 +6,7 @@ public class DisplayIP : MonoBehaviour {
 
 	void OnGUI () {
         GUI.skin.label.fontSize = 30;
+		GUI.skin.label.alignment = TextAnchor.LowerLeft;
         GUI.Label(new Rect(0,0,Screen.width, Screen.height), Network.player.ipAddress);
 	}
 }
