@@ -5,7 +5,7 @@ public class ClientAdminMenu : MonoBehaviour {
 
 	public static ClientAdminMenu Inst = null;
 
-    public bool showMenu = true;
+    public bool showMenu = false;
     public Texture settingsIconTexture = null;
 	public GUIStyle clientGUISkin = null;
     int gutter = 10;
@@ -19,7 +19,7 @@ public class ClientAdminMenu : MonoBehaviour {
     void Awake(){
 		Inst = this;
         enabled = PersistentGameManager.IsAdminClient;
-		showMenu = true;
+		showMenu = false;
 
 		if(PlayerPrefs.HasKey("manualIP"))
 			ipString = PlayerPrefs.GetString("manualIP");
@@ -97,14 +97,14 @@ public class ClientAdminMenu : MonoBehaviour {
 					showIPNumpad = true;
 				}
 
-				if(!CaptureNet_Manager.Inst.autoIPConnect){
+				if(!CaptureNet_Manager.Inst.useKhanServerList){
 					if (GUILayout.Button("Auto-Connect (IP list)", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true))){
-						CaptureNet_Manager.Inst.autoIPConnect = true;
+						CaptureNet_Manager.Inst.useKhanServerList = true;
 						showMenu = false;
 					}
 				}else{
 					if (GUILayout.Button("Auto-connecting...", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true))){
-						CaptureNet_Manager.Inst.autoIPConnect = false;
+						CaptureNet_Manager.Inst.useKhanServerList = false;
 					}
 				}
 
