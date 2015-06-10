@@ -46,7 +46,7 @@ public class CameraControl : MonoBehaviour {
 
 	public bool galleryCam = true;
 
-	Assembly assemblyOfInterest = null;
+	public Assembly assemblyOfInterest = null;
 	float assemblyOfInterestStaleness = 0f;
 
 	Vector2 targetPanTilt = Vector2.zero;

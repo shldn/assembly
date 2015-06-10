@@ -12,12 +12,9 @@ public class NodeController : MonoBehaviour {
 
 	public Transform physNodePrefab = null;
 	public Transform physFoodPrefab = null;
-	MarchingCubes myCubes;
 
 	public Vector3 worldSize = new Vector3(150f, 150f, 150f);
 	public float maxWorldSize = 300f;
-
-	float[][][] densityMap;
 
 	public static float physicsStep = 0.05f;
 
@@ -28,7 +25,7 @@ public class NodeController : MonoBehaviour {
 	int maxNodes = 15;
 
 	public int worldNodeThreshold = 1000;
-    bool showLeaderboard = true;
+    bool showLeaderboard = false;
 
 	int nextAssemblyID = 0;
     HashSet<int> assemblyCaptured = new HashSet<int>(); // contains assembly ids if the assembly has been captured by a user.
@@ -64,6 +61,7 @@ public class NodeController : MonoBehaviour {
 	}
 	WorldAnim worldAnim = WorldAnim.capsule;
 	float targetWorldSize = 150f;
+
 
 
 	void Awake(){
@@ -297,6 +295,21 @@ public class NodeController : MonoBehaviour {
             if (Input.GetKeyUp(KeyCode.L) || Input.GetKeyUp(KeyCode.P))
                 showLeaderboard = !showLeaderboard;
         }
+
+
+
+
+		// Server-local capture.
+		if(Input.GetKeyDown(KeyCode.Insert)){
+			Assembly assemToCap = CameraControl.Inst.assemblyOfInterest;
+			if(!assemToCap)
+				assemToCap = Assembly.getAll[Random.Range(0, Assembly.getAll.Count)];
+
+			PersistentGameManager.Inst.serverCapturedAssem = assemToCap.ToString();
+			Application.LoadLevel("CaptureClient");
+		}
+
+
 
         HandleReset();
 

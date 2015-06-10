@@ -37,6 +37,9 @@ public class PersistentGameManager : MonoBehaviour {
     bool cursorLock = false;
     public bool CursorLock {get{return cursorLock;}}
 
+	public bool singlePlayer = false;
+	public string serverCapturedAssem = "";
+
 
 	void Awake () {
         DontDestroyOnLoad(this);
@@ -59,7 +62,7 @@ public class PersistentGameManager : MonoBehaviour {
             cursorLock = false;
         else
 			cursorLock = true;
-	} 
+	}
 
 
 	void Update () {

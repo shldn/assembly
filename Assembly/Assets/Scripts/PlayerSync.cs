@@ -35,12 +35,21 @@ public class PlayerSync : MonoBehaviour {
         DontDestroyOnLoad(this);
     }
 
+	void Start(){
+	} // End of Start().
+
     void LateUpdate(){
+
+		if(Application.loadedLevelName.Equals("CaptureClient") && PersistentGameManager.Inst.serverCapturedAssem != ""){
+			print("Whoop!");
+			CaptureAssembly(PersistentGameManager.Inst.serverCapturedAssem);
+			PersistentGameManager.Inst.serverCapturedAssem = "";
+		}
 
         screenPosSmoothed = Vector3.SmoothDamp(screenPosSmoothed, screenPos, ref screenPosVel, screenPosSmoothTime);
 
         if(cursorObject){
-            cursorObject.gameObject.SetActive(!editing);
+            cursorObject.gameObject.SetActive(!editing || PersistentGameManager.Inst.singlePlayer);
         }
 
         if(cursorObject && (PersistentGameManager.IsClient) && !networkView.isMine)
@@ -234,12 +243,18 @@ public class PlayerSync : MonoBehaviour {
             networkView.RPC("CaptureJelly", networkView.owner, j.creator.headNum, j.creator.tailNum, j.creator.boballNum, j.creator.wingNum);
         }
         else{
-            print("Sending assembly to player " + networkView.owner);
-            Assembly a = capturedObj as Assembly;
+			Assembly a = capturedObj as Assembly;
+
             if( a != null )
             {
                 a.SaveFamilyTree();
                 networkView.RPC("CaptureAssembly", networkView.owner, (a).ToFileString());
+
+				// Single-player
+				if(PersistentGameManager.Inst.singlePlayer){
+					PersistentGameManager.Inst.serverCapturedAssem = (a).ToFileString();
+					Application.LoadLevel("CaptureClient");
+				}
 
 				// Clear mating data
 				if(a.matingWith){

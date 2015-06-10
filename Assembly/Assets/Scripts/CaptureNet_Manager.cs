@@ -77,6 +77,13 @@ public class CaptureNet_Manager : MonoBehaviour {
 
         if (Input.GetKeyUp(KeyCode.Q))
             showQRCode = !showQRCode;
+
+
+		// "Single-player"
+		if(Input.GetKeyDown(KeyCode.End)){
+			PersistentGameManager.Inst.singlePlayer = true;
+			playerSync = (Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<PlayerSync>();
+		}
     } // End of Update().
 
     // Once the text file with the list of ips is downloaded, add the ips to the connection list.
@@ -215,6 +222,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     [RPC] // Server receives this from client when they send an assembly back.
     void PushAssembly(string assemblyStr)
     {
+		print("PushAssembly()");
         //if (!GameManager.Inst)
             //return;
 

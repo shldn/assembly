@@ -148,6 +148,9 @@ public class AssemblyEditor : MonoBehaviour {
 					buttonRect.y += buttonRect.height + gutter;
 					if(GUI.Button(buttonRect, "Release"))
 					{
+						if(PersistentGameManager.Inst.singlePlayer)
+							Application.LoadLevel("SoupPhysics");
+
 						Assembly a = CaptureEditorManager.capturedObj as Assembly;
 						Network.SetSendingEnabled(0, true);
 						CaptureNet_Manager.myNetworkView.RPC("PushAssembly", RPCMode.Server, a.ToFileString());
