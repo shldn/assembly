@@ -19,9 +19,10 @@ public class CaptureNet_Manager : MonoBehaviour {
     string port;
     int maxNumberOfPlayers = 500;
     public static string playerName;
-    string serverName = "";
-    string serverTagline = "";
-	public bool autoIPConnect = true;
+    string masterServerGameType = "ClarkeCenterAssemblySim";
+    string serverName = "Assembly";
+    string serverTagline = System.Environment.UserName + "\'s Computer";
+	public bool useKhanServerList = false;
 
     // admin client vars
     bool showQRCode = false;
@@ -36,9 +37,16 @@ public class CaptureNet_Manager : MonoBehaviour {
 	// orbit option
     public HashSet<NetworkPlayer> orbitPlayers = new HashSet<NetworkPlayer>();
 
+    // Master server helpers
+    int connectingBlock = 0;
+    bool hostListReceived = false;
+
 
     void Awake(){
 		Inst = this;
+
+        if( PersistentGameManager.IsClient && !useKhanServerList)
+            RequestMasterServerHostList();
 
         if (Debug.isDebugBuild)
             connectToIP = new List<string>() { "127.0.0.1", "132.239.235.116" };
@@ -55,14 +63,14 @@ public class CaptureNet_Manager : MonoBehaviour {
         DontDestroyOnLoad(this);
 
 		if(PersistentGameManager.IsAdminClient)
-			autoIPConnect = false;
+			useKhanServerList = false;
     } // End of Awake().
 
 
     void Update(){
 	    connectCooldown -= Time.deltaTime;
         // Cycle through available IPs to connect to.
-        if (autoIPConnect && (connectToIP.Count > 0) && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f) && (!ClientAdminMenu.Inst.showMenu || !PersistentGameManager.IsAdminClient)){
+        if (useKhanServerList && (connectToIP.Count > 0) && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f) && (!ClientAdminMenu.Inst.showMenu || !PersistentGameManager.IsAdminClient)){
 			Network.Connect(connectToIP[ipListConnect], connectionPort);
             ipListConnect = (ipListConnect + 1) % connectToIP.Count;
 
@@ -73,6 +81,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         if ((!PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
             // Create the server.
 			Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
+            MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
 	    }
 
         if (Input.GetKeyUp(KeyCode.Q))
@@ -107,17 +116,75 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     } // End of OnPlayerDisconnected(NetworkPlayer networkPlayer).
 
-
     void OnGUI(){
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 
         // Client GUI
-		if (((ClientAdminMenu.Inst && !ClientAdminMenu.Inst.showMenu) || !PersistentGameManager.IsAdminClient)  && autoIPConnect){
+		if (((ClientAdminMenu.Inst && !ClientAdminMenu.Inst.showMenu) || !PersistentGameManager.IsAdminClient)  && useKhanServerList){
 			if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
 				GUI.skin.label.fontSize = 40;
 				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 				GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Connecting to server...");
 			}
+        }
+        if (PersistentGameManager.IsClient && (Network.peerType == NetworkPeerType.Disconnected) && !useKhanServerList && Time.frameCount > connectingBlock + 10)
+        {
+            GUI.skin = AssemblyEditor.Inst.guiSkin;
+            GUI.skin.button.font = PrefabManager.Inst.assemblyFont;
+            GUI.skin.label.font = PrefabManager.Inst.assemblyFont;
+
+            HostData[] data = MasterServer.PollHostList();
+            if( data.Length == 0 )
+            {
+                if(hostListReceived)
+                {
+                    MasterServer.ClearHostList();
+                    Invoke("RequestMasterServerHostList", 0.5f);
+                    hostListReceived = false;
+                }
+                GUI.skin.label.fontSize = 40;
+                GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Searching for servers...");
+            }
+            else if( data.Length == 1 )
+            {
+                // Only one server -- auto connect
+                Network.Connect(data[0]);
+                connectingBlock = Time.frameCount;
+            }
+            else
+            {
+                GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
+                GUILayout.BeginVertical(GUILayout.MinWidth(300));
+                GUI.skin.label.alignment = TextAnchor.UpperLeft;
+                GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.04f);
+                GUI.color = Color.white;
+                GUILayout.Label("Choose a Server:", GUILayout.Height(Mathf.Max(GUI.skin.label.fontSize + 6, Mathf.CeilToInt(Screen.height * 0.054f))));
+                GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.02f);
+
+                // Go through all the hosts in the host list
+                foreach (var element in data)
+                {
+                    //var name = element.gameName + " " + element.connectedPlayers + " / " + element.playerLimit;
+                    string buttonStr = element.comment;
+                    if( string.IsNullOrEmpty(buttonStr) )
+                    {
+                        buttonStr = "[";
+                        foreach (var host in element.ip)
+                            buttonStr = buttonStr + host + ":" + element.port + " ";
+                        buttonStr = buttonStr + "]";
+                    }
+                    if (GUILayout.Button(buttonStr))
+                    {
+                        // Connect to HostData struct, internally the correct method is used (GUID when using NAT).
+                        Network.Connect(element);
+                        connectingBlock = Time.frameCount;
+                    }
+
+                }
+                GUILayout.EndVertical();
+                GUILayout.EndArea();
+            }
         }
 
         // Server GUI
@@ -138,6 +205,10 @@ public class CaptureNet_Manager : MonoBehaviour {
 		}
     } // End of OnGUI().
 
+    void RequestMasterServerHostList()
+    {
+        MasterServer.RequestHostList(masterServerGameType);
+    }
 
     [RPC] // Tell the MultiplayerScript in connected players the server info.
     void ServerInfo(string theServerName, string theServerTagline){
@@ -195,6 +266,8 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void OnApplicationQuit(){
         Network.Disconnect();
+        if(PersistentGameManager.IsServer)
+            MasterServer.UnregisterHost();
     } // End of OnApplicationQuit().
 
 
@@ -269,6 +342,19 @@ public class CaptureNet_Manager : MonoBehaviour {
     {
         AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.pushClip, Vector3.zero);
         Instantiate(PersistentGameManager.Inst.pingBurstObj, pos, Quaternion.identity);
+    }
+
+    void OnFailedToConnectToMasterServer(NetworkConnectionError info)
+    {
+        Debug.LogError("Could not connect to Master server " + info);
+
+    }
+
+    void OnMasterServerEvent(MasterServerEvent msEvent)
+    {
+        if (msEvent == MasterServerEvent.HostListReceived)
+            hostListReceived = true;
+
     }
 
 } // End of CaptureNet_Manager.
