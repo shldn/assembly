@@ -47,7 +47,7 @@ public class VoxelGen : MonoBehaviour {
 	
 
 	void Update(){
-		if(Input.GetKeyDown(KeyCode.M))
+		if(Input.GetKeyDown(KeyCode.M) && !ConsoleScript.active)
 			UpdateMesh();
 
 		Mesh mesh = meshFilter.sharedMesh;
@@ -85,7 +85,7 @@ public class VoxelGen : MonoBehaviour {
 			verts[randomIdx] += normals[randomIdx] * 10000f;
 		}
 
-		if(Input.GetKeyDown(KeyCode.V)){
+		if(Input.GetKeyDown(KeyCode.V) && !ConsoleScript.active){
 			verts = initialVerts;
 		}
 

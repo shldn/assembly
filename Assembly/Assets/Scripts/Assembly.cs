@@ -180,6 +180,11 @@ public class Assembly : CaptureObject{
 	} // End of AddNode().
 
 
+	public Assembly Duplicate(){
+		return new Assembly(ToString(), spawnRotation, Position);
+	} // End of Duplicate().
+
+
 	public void Update(){
 		//MonoBehaviour.print(energy - lastEnergy);
 		lastEnergy = energy;

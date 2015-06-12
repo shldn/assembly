@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class FoodPellet {
 
-	public static HashSet<FoodPellet> all = new HashSet<FoodPellet>();
+	public static List<FoodPellet> all = new List<FoodPellet>();
 
 	private Vector3 worldPosition = Vector3.zero;
     public Vector3 WorldPosition { get { return worldPosition; } set { worldPosition = value; transform.position = value; } }

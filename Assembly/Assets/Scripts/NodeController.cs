@@ -91,6 +91,13 @@ public class NodeController : MonoBehaviour {
 	} // End of AdvanceWorldTick().
 
 
+	public void ClearAll(){
+		foreach(Assembly someAssembly in Assembly.getAll){
+			someAssembly.Destroy();
+		}
+	} // End of ClearAll().
+
+
 	void Update(){
 
 		// World grows as food nodes are consumed.

@@ -25,11 +25,14 @@ public class LevelManager {
             LoadNextLevel();
         if (Input.GetKeyUp(KeyCode.Minus))
             LoadPrevLevel();
+
+		/*
         if (Input.GetKeyUp(KeyCode.Alpha1))
             LoadLevel(0);
         if (Input.GetKeyUp(KeyCode.Alpha2))
             LoadLevel(1);
         if (Input.GetKeyUp(KeyCode.Alpha3))
             LoadLevel(2);
+		*/
     }
 }

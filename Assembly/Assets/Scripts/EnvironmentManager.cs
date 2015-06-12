@@ -1,4 +1,4 @@
-﻿/*using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -19,6 +19,7 @@ public class EnvironmentManager {
             Debug.LogError("EnvironmentManager null file name");
             return;
         }
+		file = "data/" + file;
         ConsoleScript.Inst.WriteToLog("Loading: " + file);
         using (StreamReader sr = new StreamReader(file))
         {
@@ -83,9 +84,9 @@ public class EnvironmentManager {
                 WriteFoodPositions(sw);
 
                 // write all assembly positions
-                string aStr = (Assembly.GetAll().Count > 0) ? IOHelper.ToCommaString(Assembly.GetAll()[0].WorldPosition) : "";
-                for (int i = 1; i < Assembly.GetAll().Count; ++i)
-                    aStr += "," + IOHelper.ToCommaString(Assembly.GetAll()[i].WorldPosition);
+                string aStr = (Assembly.getAll.Count > 0) ? IOHelper.ToCommaString(Assembly.getAll[0].Position) : "";
+                for (int i = 1; i < Assembly.getAll.Count; ++i)
+                    aStr += "," + IOHelper.ToCommaString(Assembly.getAll[i].Position);
                 sw.WriteLine(aStr);
             }
         }
@@ -104,14 +105,15 @@ public class EnvironmentManager {
         for (int i = 0; assemblyPositions != null && i < assemblyPositions.Count; ++i)
         {
             Assembly a = null;
-            if( seed == null )
-                 a = Assembly.GetRandomAssembly(UnityEngine.Random.Range(assemblyMinSize, assemblyMaxSize));
+            if( seed == null ){
+                 //a = Assembly.GetRandomAssembly(UnityEngine.Random.Range(assemblyMinSize, assemblyMaxSize));
+			}
             else
             {
                 a = seed.Duplicate();
                 a.Mutate(mutationDeviation);
             }
-            a.WorldPosition = assemblyPositions[i];
+            a.spawnPosition = assemblyPositions[i];
             newAssemblies.Add(a);
         }
         return newAssemblies;
@@ -125,11 +127,10 @@ public class EnvironmentManager {
 
     private static void WriteFoodPositions(StreamWriter sw)
     {
-        string foodStr = (FoodPellet.GetAll().Count > 0) ? IOHelper.ToCommaString(FoodPellet.GetAll()[0].worldPosition) : "";
-        for (int i = 1; i < FoodPellet.GetAll().Count; ++i)
-            foodStr += "," + IOHelper.ToCommaString(FoodPellet.GetAll()[i].worldPosition);
+        string foodStr = (FoodPellet.all.Count > 0) ? IOHelper.ToCommaString(FoodPellet.all[0].WorldPosition) : "";
+        for (int i = 1; i < FoodPellet.all.Count; ++i)
+            foodStr += "," + IOHelper.ToCommaString(FoodPellet.all[i].WorldPosition);
         sw.WriteLine(foodStr);
     }
 
 }
-*/

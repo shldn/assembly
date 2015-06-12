@@ -70,6 +70,7 @@ public class ConsoleScript : MonoBehaviour {
         commands["clear"].func = delegate(string[] args)
         {
             //GameManager.ClearAll();
+			NodeController.Inst.ClearAll();
         };
 
         commands["disband"].func = delegate(string[] args)
@@ -94,7 +95,7 @@ public class ConsoleScript : MonoBehaviour {
             GlobalWriteToLog(Net_Manager.playerName + " \"" + messageToSend + "\"", RPCMode.All);
         };
 
-        /*commands["load"].func = delegate(string[] args)
+        commands["load"].func = delegate(string[] args)
         {
             if (args.Length <= 1)
                 WriteToLog("Please specify a file to load");
@@ -105,7 +106,7 @@ public class ConsoleScript : MonoBehaviour {
                     path += " " + args[i];
                 EnvironmentManager.Load(path);
             }
-        };*/
+        };
 
         commands["demo"].func = delegate(string[] args)
         {
@@ -128,13 +129,13 @@ public class ConsoleScript : MonoBehaviour {
 
         };
 
-        /*commands["save"].func = delegate(string[] args)
+        commands["save"].func = delegate(string[] args)
         {
             if( args.Length > 1 && (args[1] == "pos" || args[1] == "position") )
                 EnvironmentManager.SavePositionsOnly(IOHelper.GetValidFileName("./data/", "env", ".txt"));
             else
                 EnvironmentManager.Save(IOHelper.GetValidFileName("./data/", "env", ".txt"));
-        };*/
+        };
 
         commands["saveselected"].func = delegate(string[] args)
         {
@@ -252,6 +253,7 @@ public class ConsoleScript : MonoBehaviour {
         GUI.color = new Color(1f, 1f, 1f, logFade);
         Rect consoleRect = new Rect(5, 0, Screen.width, Screen.height - (inputTextRectHeight + 5));
         GUI.skin.label.alignment = TextAnchor.LowerLeft;
+		GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.015f);
         GUI.Label(consoleRect, consoleText);
 
 	} // End of OnGUI().
