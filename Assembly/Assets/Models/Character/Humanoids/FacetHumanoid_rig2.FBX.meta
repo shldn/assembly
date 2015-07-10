@@ -1,0 +1,957 @@
+fileFormatVersion: 2
+guid: 471c23e41cbcb0945b6bfed6e2cdf3ab
+ModelImporter:
+  serializedVersion: 16
+  fileIDToRecycleName:
+    100000: Facet
+    100002: Facet_MainC
+    100004: Facet_MainHipC
+    100006: Facet_MainHipCG
+    100008: Facet_ROOTJ
+    100010: Facet_SH_HeadJ
+    100012: Facet_SH_HeadTipJ
+    100014: Facet_SH_JawJ
+    100016: Facet_SH_JawTipJ
+    100018: Facet_SH_lAnkleJ
+    100020: Facet_SH_lBallJ
+    100022: Facet_SH_lClavicleJ
+    100024: Facet_SH_lElbowJ
+    100026: Facet_SH_lEyeJ
+    100028: Facet_SH_lFinger1J1
+    100030: Facet_SH_lFinger1J2
+    100032: Facet_SH_lFinger1J3
+    100034: Facet_SH_lFinger1JTip
+    100036: Facet_SH_lFinger2J1
+    100038: Facet_SH_lFinger2J2
+    100040: Facet_SH_lFinger2J3
+    100042: Facet_SH_lFinger2JTip
+    100044: Facet_SH_lFinger3J1
+    100046: Facet_SH_lFinger3J2
+    100048: Facet_SH_lFinger3J3
+    100050: Facet_SH_lFinger3JTip
+    100052: Facet_SH_lFinger4J1
+    100054: Facet_SH_lFinger4J2
+    100056: Facet_SH_lFinger4J3
+    100058: Facet_SH_lFinger4JTip
+    100060: Facet_SH_lForearmJ
+    100062: Facet_SH_lHipJ
+    100064: Facet_SH_lKneeJ
+    100066: Facet_SH_lPalmJ
+    100068: Facet_SH_lShoulderJ
+    100070: Facet_SH_lThumbJ1
+    100072: Facet_SH_lThumbJ2
+    100074: Facet_SH_lThumbJ3
+    100076: Facet_SH_lThumbJTip
+    100078: Facet_SH_lToeJ
+    100080: Facet_SH_lWristJ
+    100082: Facet_SH_Neck01J
+    100084: Facet_SH_rAnkleJ
+    100086: Facet_SH_rBallJ
+    100088: Facet_SH_rClavicleJ
+    100090: Facet_SH_rElbowJ
+    100092: Facet_SH_rEyeJ
+    100094: Facet_SH_rFinger1J1
+    100096: Facet_SH_rFinger1J2
+    100098: Facet_SH_rFinger1J3
+    100100: Facet_SH_rFinger1JTip
+    100102: Facet_SH_rFinger2J1
+    100104: Facet_SH_rFinger2J2
+    100106: Facet_SH_rFinger2J3
+    100108: Facet_SH_rFinger2JTip
+    100110: Facet_SH_rFinger3J1
+    100112: Facet_SH_rFinger3J2
+    100114: Facet_SH_rFinger3J3
+    100116: Facet_SH_rFinger3JTip
+    100118: Facet_SH_rFinger4J1
+    100120: Facet_SH_rFinger4J2
+    100122: Facet_SH_rFinger4J3
+    100124: Facet_SH_rFinger4JTip
+    100126: Facet_SH_rForearmJ
+    100128: Facet_SH_rHipJ
+    100130: Facet_SH_rKneeJ
+    100132: Facet_SH_ROOTJ
+    100134: Facet_SH_rPalmJ
+    100136: Facet_SH_rShoulderJ
+    100138: Facet_SH_rThumbJ1
+    100140: Facet_SH_rThumbJ2
+    100142: Facet_SH_rThumbJ3
+    100144: Facet_SH_rThumbJTip
+    100146: Facet_SH_rToeJ
+    100148: Facet_SH_rWristJ
+    100150: Facet_SH_Spine01J
+    100152: Facet_SH_Spine02J
+    100154: Facet_SH_Spine03J
+    100156: Facet_SH_SpineTopJ
+    100158: //RootNode
+    100160: FacetMesh
+    400000: Facet
+    400002: Facet_MainC
+    400004: Facet_MainHipC
+    400006: Facet_MainHipCG
+    400008: Facet_ROOTJ
+    400010: Facet_SH_HeadJ
+    400012: Facet_SH_HeadTipJ
+    400014: Facet_SH_JawJ
+    400016: Facet_SH_JawTipJ
+    400018: Facet_SH_lAnkleJ
+    400020: Facet_SH_lBallJ
+    400022: Facet_SH_lClavicleJ
+    400024: Facet_SH_lElbowJ
+    400026: Facet_SH_lEyeJ
+    400028: Facet_SH_lFinger1J1
+    400030: Facet_SH_lFinger1J2
+    400032: Facet_SH_lFinger1J3
+    400034: Facet_SH_lFinger1JTip
+    400036: Facet_SH_lFinger2J1
+    400038: Facet_SH_lFinger2J2
+    400040: Facet_SH_lFinger2J3
+    400042: Facet_SH_lFinger2JTip
+    400044: Facet_SH_lFinger3J1
+    400046: Facet_SH_lFinger3J2
+    400048: Facet_SH_lFinger3J3
+    400050: Facet_SH_lFinger3JTip
+    400052: Facet_SH_lFinger4J1
+    400054: Facet_SH_lFinger4J2
+    400056: Facet_SH_lFinger4J3
+    400058: Facet_SH_lFinger4JTip
+    400060: Facet_SH_lForearmJ
+    400062: Facet_SH_lHipJ
+    400064: Facet_SH_lKneeJ
+    400066: Facet_SH_lPalmJ
+    400068: Facet_SH_lShoulderJ
+    400070: Facet_SH_lThumbJ1
+    400072: Facet_SH_lThumbJ2
+    400074: Facet_SH_lThumbJ3
+    400076: Facet_SH_lThumbJTip
+    400078: Facet_SH_lToeJ
+    400080: Facet_SH_lWristJ
+    400082: Facet_SH_Neck01J
+    400084: Facet_SH_rAnkleJ
+    400086: Facet_SH_rBallJ
+    400088: Facet_SH_rClavicleJ
+    400090: Facet_SH_rElbowJ
+    400092: Facet_SH_rEyeJ
+    400094: Facet_SH_rFinger1J1
+    400096: Facet_SH_rFinger1J2
+    400098: Facet_SH_rFinger1J3
+    400100: Facet_SH_rFinger1JTip
+    400102: Facet_SH_rFinger2J1
+    400104: Facet_SH_rFinger2J2
+    400106: Facet_SH_rFinger2J3
+    400108: Facet_SH_rFinger2JTip
+    400110: Facet_SH_rFinger3J1
+    400112: Facet_SH_rFinger3J2
+    400114: Facet_SH_rFinger3J3
+    400116: Facet_SH_rFinger3JTip
+    400118: Facet_SH_rFinger4J1
+    400120: Facet_SH_rFinger4J2
+    400122: Facet_SH_rFinger4J3
+    400124: Facet_SH_rFinger4JTip
+    400126: Facet_SH_rForearmJ
+    400128: Facet_SH_rHipJ
+    400130: Facet_SH_rKneeJ
+    400132: Facet_SH_ROOTJ
+    400134: Facet_SH_rPalmJ
+    400136: Facet_SH_rShoulderJ
+    400138: Facet_SH_rThumbJ1
+    400140: Facet_SH_rThumbJ2
+    400142: Facet_SH_rThumbJ3
+    400144: Facet_SH_rThumbJTip
+    400146: Facet_SH_rToeJ
+    400148: Facet_SH_rWristJ
+    400150: Facet_SH_Spine01J
+    400152: Facet_SH_Spine02J
+    400154: Facet_SH_Spine03J
+    400156: Facet_SH_SpineTopJ
+    400158: //RootNode
+    400160: FacetMesh
+    4300000: FacetMesh
+    9500000: //RootNode
+    13700000: FacetMesh
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 3
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .00999999978
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    human:
+    - boneName: Facet_SH_ROOTJ
+      humanName: Hips
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lHipJ
+      humanName: LeftUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rHipJ
+      humanName: RightUpperLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lKneeJ
+      humanName: LeftLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rKneeJ
+      humanName: RightLowerLeg
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lAnkleJ
+      humanName: LeftFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rAnkleJ
+      humanName: RightFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_Spine01J
+      humanName: Spine
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_Spine02J
+      humanName: Chest
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_Neck01J
+      humanName: Neck
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_HeadJ
+      humanName: Head
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lClavicleJ
+      humanName: LeftShoulder
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rClavicleJ
+      humanName: RightShoulder
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lShoulderJ
+      humanName: LeftUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rShoulderJ
+      humanName: RightUpperArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lElbowJ
+      humanName: LeftLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rElbowJ
+      humanName: RightLowerArm
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lWristJ
+      humanName: LeftHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rWristJ
+      humanName: RightHand
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rBallJ
+      humanName: RightToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lThumbJ1
+      humanName: Left Thumb Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lThumbJ2
+      humanName: Left Thumb Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lThumbJ3
+      humanName: Left Thumb Distal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lFinger1J1
+      humanName: Left Index Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lFinger1J2
+      humanName: Left Index Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lFinger2J1
+      humanName: Left Middle Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lFinger2J2
+      humanName: Left Middle Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lFinger3J1
+      humanName: Left Ring Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lFinger3J2
+      humanName: Left Ring Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lFinger4J1
+      humanName: Left Little Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_lFinger4J2
+      humanName: Left Little Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rThumbJ1
+      humanName: Right Thumb Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rThumbJ2
+      humanName: Right Thumb Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rFinger1J1
+      humanName: Right Index Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rFinger1J2
+      humanName: Right Index Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rFinger2J1
+      humanName: Right Middle Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rFinger2J2
+      humanName: Right Middle Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rFinger3J1
+      humanName: Right Ring Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rFinger3J2
+      humanName: Right Ring Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rFinger4J1
+      humanName: Right Little Proximal
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Facet_SH_rFinger4J2
+      humanName: Right Little Intermediate
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    skeleton:
+    - name: FacetHumanoid_rig2(Clone)
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: 0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet
+      position: {x: .280725002, y: .790852666, z: .128245607}
+      rotation: {x: 0, y: -0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_MainC
+      position: {x: -.280725002, y: -.790852666, z: -.128245607}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_MainHipCG
+      position: {x: -0, y: .86925, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_MainHipC
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -.029711606, y: 0, z: -0, w: .999558508}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_ROOTJ
+      position: {x: -0, y: .86925, z: 0}
+      rotation: {x: -.029711606, y: 0, z: -0, w: .999558508}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_SH_ROOTJ
+      position: {x: -0, y: .86925, z: 0}
+      rotation: {x: 0, y: 0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: .99999994}
+      transformModified: 1
+    - name: Facet_SH_Spine01J
+      position: {x: -0, y: .125219554, z: .00662208069}
+      rotation: {x: 1.81898913e-10, y: 0, z: 0, w: 1}
+      scale: {x: .927246809, y: 1.00000012, z: .927246869}
+      transformModified: 1
+    - name: Facet_SH_Spine02J
+      position: {x: -0, y: .125407293, z: .00095959357}
+      rotation: {x: -2.0463628e-10, y: 0, z: 0, w: 1}
+      scale: {x: .927246809, y: .999999523, z: .927247345}
+      transformModified: 1
+    - name: Facet_SH_Spine03J
+      position: {x: -0, y: .0717481524, z: .000485208409}
+      rotation: {x: -2.27373675e-11, y: 0, z: 0, w: 1}
+      scale: {x: .927246809, y: .999999881, z: .927246869}
+      transformModified: 1
+    - name: Facet_SH_SpineTopJ
+      position: {x: 6.30072208e-17, y: .125399336, z: .000409698172}
+      rotation: {x: -.5, y: .5, z: -.5, w: .5}
+      scale: {x: .999999106, y: 1.00000095, z: .999999881}
+      transformModified: 1
+    - name: Facet_SH_Neck01J
+      position: {x: -.0968778804, y: -.00688339025, z: -6.03572517e-17}
+      rotation: {x: .530948937, y: -.467004597, z: .530948937, w: .467004597}
+      scale: {x: 1.00000024, y: 1.00083375, z: 1.00081706}
+      transformModified: 1
+    - name: Facet_SH_HeadJ
+      position: {x: 1.2471815e-16, y: .0985940695, z: .015268188}
+      rotation: {x: -.510121703, y: .489669144, z: -.510121703, w: .489669204}
+      scale: {x: .99746114, y: 1.00218606, z: .999999881}
+      transformModified: 1
+    - name: Facet_SH_HeadTipJ
+      position: {x: -.172666952, y: -.000539699162, z: 7.68283831e-17}
+      rotation: {x: .477766126, y: -.521286368, z: .477766126, w: .521286428}
+      scale: {x: .99999994, y: .996564269, z: 1.00342023}
+      transformModified: 1
+    - name: Facet_SH_JawJ
+      position: {x: -.012181852, y: -.0263071768, z: 4.42385249e-18}
+      rotation: {x: .477766126, y: -.521286368, z: .477766126, w: .521286428}
+      scale: {x: .99999994, y: .996564269, z: 1.00342023}
+      transformModified: 1
+    - name: Facet_SH_JawTipJ
+      position: {x: 3.793489e-17, y: -.0627198145, z: .0749578476}
+      rotation: {x: 6.82121026e-11, y: -1.11022319e-14, z: -1.24683263e-16, w: 1}
+      scale: {x: 1, y: 1, z: .99999994}
+      transformModified: 1
+    - name: Facet_SH_lEyeJ
+      position: {x: -.0787896886, y: -.0655109286, z: -.0324900001}
+      rotation: {x: .477766126, y: -.521286368, z: .477766126, w: .521286428}
+      scale: {x: .99999994, y: .996564269, z: 1.00342023}
+      transformModified: 1
+    - name: Facet_SH_rEyeJ
+      position: {x: -.0787896886, y: -.0655109286, z: .0324900001}
+      rotation: {x: .477766126, y: -.521286368, z: .477766126, w: .521286428}
+      scale: {x: .99999994, y: .996564269, z: 1.00342023}
+      transformModified: 1
+    - name: Facet_SH_lClavicleJ
+      position: {x: -.0478559621, y: 8.86716066e-07, z: -.0712499991}
+      rotation: {x: .548805118, y: -.445311159, z: .445687711, w: .549430072}
+      scale: {x: 1.00000012, y: 1.00000012, z: 1.00000012}
+      transformModified: 1
+    - name: Facet_SH_lShoulderJ
+      position: {x: -.102799997, y: -.0464057848, z: -.000158105307}
+      rotation: {x: -.0796981677, y: -.0124381194, z: .0594793148, w: .994965196}
+      scale: {x: 1.01045549, y: 1.01045549, z: .999999881}
+      transformModified: 1
+    - name: Facet_SH_lElbowJ
+      position: {x: -.273615092, y: 1.42108544e-16, z: -1.77635673e-16}
+      rotation: {x: -.157887265, y: .0198691115, z: .0267861914, w: .986893773}
+      scale: {x: 1.00825155, y: 1.00042689, z: .994035542}
+      transformModified: 1
+    - name: Facet_SH_lForearmJ
+      position: {x: -.104063012, y: 0, z: -7.1054272e-17}
+      rotation: {x: 2.45038425e-08, y: 3.06124726e-08, z: -1.85078974e-08, w: 1}
+      scale: {x: 1, y: 1.00000012, z: 1.00000012}
+      transformModified: 1
+    - name: Facet_SH_lWristJ
+      position: {x: -.208126023, y: -1.42108544e-16, z: -1.42108544e-16}
+      rotation: {x: .256377786, y: .0202580541, z: -.0294746347, w: .965914786}
+      scale: {x: 1.01467574, y: .9602018, z: 1.02717185}
+      transformModified: 1
+    - name: Facet_SH_lPalmJ
+      position: {x: -.04868358, y: -.0253426228, z: -.000787175552}
+      rotation: {x: 2.83916588e-11, y: -2.41540572e-11, z: 2.48066119e-08, w: 1}
+      scale: {x: 1.00000012, y: 1.00000012, z: 1.00000012}
+      transformModified: 1
+    - name: Facet_SH_lFinger1J1
+      position: {x: -.0411219485, y: .0168293212, z: .0135601973}
+      rotation: {x: -.00818868354, y: .0222908258, z: .102625422, w: .994436622}
+      scale: {x: 1.00110316, y: .99999994, z: .999812961}
+      transformModified: 1
+    - name: Facet_SH_lFinger1J2
+      position: {x: -.0341173522, y: .00528108748, z: -.00156287104}
+      rotation: {x: .0014949874, y: -.00226236414, z: -.0588796809, w: .998261392}
+      scale: {x: 1.00076079, y: 1.00000012, z: .999344528}
+      transformModified: 1
+    - name: Facet_SH_lFinger1J3
+      position: {x: -.0442746244, y: -.000503303541, z: -.00131799595}
+      rotation: {x: -8.35879277e-09, y: -.00727508683, z: -3.4644458e-08, w: .999973536}
+      scale: {x: .999237001, y: .99999994, z: 1.00067329}
+      transformModified: 1
+    - name: Facet_SH_lFinger1JTip
+      position: {x: -.0306928866, y: -.00136463426, z: -.00203444483}
+      rotation: {x: 2.01389376e-08, y: .0061843046, z: 9.22804873e-08, w: .999980867}
+      scale: {x: 1.00060201, y: 1, z: .999479592}
+      transformModified: 1
+    - name: Facet_SH_lFinger2J1
+      position: {x: -.0536077805, y: .010231778, z: -.00710682664}
+      rotation: {x: -.000431278982, y: .000726481958, z: .0042488263, w: .999990702}
+      scale: {x: .99999994, y: 1, z: .99999994}
+      transformModified: 1
+    - name: Facet_SH_lFinger2J2
+      position: {x: -.0359899998, y: 4.26325632e-16, z: -.00379009685}
+      rotation: {x: -.00531706261, y: -.0216910541, z: .0442163646, w: .998772383}
+      scale: {x: 1.00000012, y: 1.00000012, z: 1}
+      transformModified: 1
+    - name: Facet_SH_lFinger2J3
+      position: {x: -.0413677767, y: .00578445056, z: -.000954762741}
+      rotation: {x: 2.83916588e-11, y: -2.41540572e-11, z: 2.48066119e-08, w: 1}
+      scale: {x: 1.00000012, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_SH_lFinger2JTip
+      position: {x: -.0278333928, y: -.00356346415, z: -.00130022073}
+      rotation: {x: 2.83916588e-11, y: -2.41540572e-11, z: 2.48066119e-08, w: 1}
+      scale: {x: .999999881, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_SH_lFinger3J1
+      position: {x: -.0240975395, y: .00700086867, z: -.0219702143}
+      rotation: {x: 2.44571208e-09, y: -.0631065369, z: -7.92119863e-08, w: .998006821}
+      scale: {x: .999713838, y: 1, z: 1.00083828}
+      transformModified: 1
+    - name: Facet_SH_lFinger3J2
+      position: {x: -.0341245048, y: -.00564011559, z: -.00214292016}
+      rotation: {x: -.00163316494, y: -.0466520749, z: .0174703132, w: .998757064}
+      scale: {x: 1.00394225, y: 1, z: .996991038}
+      transformModified: 1
+    - name: Facet_SH_lFinger3J3
+      position: {x: -.0393129848, y: -.00291339029, z: -.000333248667}
+      rotation: {x: 1.74218648e-08, y: .00438775076, z: 2.30942874e-08, w: .999990344}
+      scale: {x: .999429524, y: 1, z: 1.00050187}
+      transformModified: 1
+    - name: Facet_SH_lFinger3JTip
+      position: {x: -.0332793742, y: -.00655791583, z: .000613065029}
+      rotation: {x: -1.39204008e-17, y: .0289429072, z: 1.27079106e-18, w: .999581099}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_SH_lFinger4J1
+      position: {x: -.00232267799, y: -.00249030418, z: -.0374433026}
+      rotation: {x: -.00278770574, y: -.132260367, z: .0269624311, w: .990844369}
+      scale: {x: 1.00049293, y: 1, z: 1.00331426}
+      transformModified: 1
+    - name: Facet_SH_lFinger4J2
+      position: {x: -.0290288702, y: -.000611635274, z: .00161451485}
+      rotation: {x: -3.08248431e-08, y: .043165803, z: -4.44967334e-08, w: .999067962}
+      scale: {x: .992336273, y: 1.00000012, z: 1.00704455}
+      transformModified: 1
+    - name: Facet_SH_lFinger4J3
+      position: {x: -.0434411988, y: -.000863219087, z: -.000684173661}
+      rotation: {x: 3.73879239e-08, y: -.0267814193, z: 2.8366367e-08, w: .999641359}
+      scale: {x: 1.0037148, y: .99999994, z: .996730208}
+      transformModified: 1
+    - name: Facet_SH_lFinger4JTip
+      position: {x: -.0365269482, y: -.00149137445, z: .00272594206}
+      rotation: {x: 3.0076132e-20, y: .034592431, z: -8.68922214e-19, w: .99940151}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_SH_lThumbJ1
+      position: {x: -.0358553566, y: -.0246739406, z: .0237095486}
+      rotation: {x: .403777063, y: .405699074, z: -.0271799024, w: .819532573}
+      scale: {x: .988950074, y: .934228778, z: 1.08898592}
+      transformModified: 1
+    - name: Facet_SH_lThumbJ2
+      position: {x: -.0253018085, y: .00546107814, z: -.00582230557}
+      rotation: {x: -.11479637, y: -.0644664243, z: -.0200280622, w: .991092741}
+      scale: {x: .945263505, y: 1.0452913, z: 1.00885749}
+      transformModified: 1
+    - name: Facet_SH_lThumbJ3
+      position: {x: -.0320631117, y: .00369601604, z: -.0026844989}
+      rotation: {x: .0830025747, y: .0563614182, z: -.0897735506, w: .990895867}
+      scale: {x: .953842103, y: 1.04645288, z: .9991588}
+      transformModified: 1
+    - name: Facet_SH_lThumbJTip
+      position: {x: -.0336879976, y: -.00383880897, z: -.00743756583}
+      rotation: {x: .051592391, y: -.811505437, z: .0776149109, w: .576864958}
+      scale: {x: 1.00890541, y: 1.02203965, z: .96881187}
+      transformModified: 1
+    - name: Facet_SH_rClavicleJ
+      position: {x: -.0478559621, y: 8.86716066e-07, z: .0712499991}
+      rotation: {x: .5, y: .5, z: .5, w: -.5}
+      scale: {x: 1.00000012, y: 1.00000012, z: 1.00000012}
+      transformModified: 1
+    - name: Facet_SH_rShoulderJ
+      position: {x: .122648992, y: 4.42511782e-12, z: 5.28919467e-17}
+      rotation: {x: -.0744835585, y: -.00789009966, z: -.0248942506, w: .996880293}
+      scale: {x: 1.01045549, y: 1.01045537, z: .999999762}
+      transformModified: 1
+    - name: Facet_SH_rElbowJ
+      position: {x: .291621447, y: 1.01778143e-11, z: 2.31004538e-12}
+      rotation: {x: -.157932132, y: .025533868, z: .0195353404, w: .986926496}
+      scale: {x: 1.00825167, y: 1.00042689, z: .994035542}
+      transformModified: 1
+    - name: Facet_SH_rForearmJ
+      position: {x: .100211412, y: 3.3448088e-12, z: 1.36999743e-12}
+      rotation: {x: 1.27809123e-08, y: -6.63376376e-09, z: -1.92775196e-09, w: 1}
+      scale: {x: 1, y: 1.00000012, z: .999999881}
+      transformModified: 1
+    - name: Facet_SH_rWristJ
+      position: {x: .200422823, y: 6.68876499e-12, z: 2.74084748e-12}
+      rotation: {x: .256377816, y: .020258043, z: -.0294746347, w: .965914786}
+      scale: {x: 1.01467562, y: .96020174, z: 1.02717161}
+      transformModified: 1
+    - name: Facet_SH_rPalmJ
+      position: {x: .03695767, y: .0114245666, z: -.00377498893}
+      rotation: {x: -3.97457427e-08, y: -1.39546206e-08, z: -2.78836723e-08, w: 1}
+      scale: {x: 1, y: .999999881, z: 1}
+      transformModified: 1
+    - name: Facet_SH_rFinger1J1
+      position: {x: .0318195708, y: -.000942918472, z: -.0132999253}
+      rotation: {x: -.998032272, y: .0158785712, z: -.0554459952, w: .0246032123}
+      scale: {x: 1.0011034, y: 1.00000024, z: .999813199}
+      transformModified: 1
+    - name: Facet_SH_rFinger1J2
+      position: {x: .0344122574, y: -.00706921518, z: .00848450977}
+      rotation: {x: -.000235626663, y: -.0524282046, z: -.0485469289, w: .997443974}
+      scale: {x: .999522388, y: .99999994, z: 1.00042033}
+      transformModified: 1
+    - name: Facet_SH_rFinger1J3
+      position: {x: .0426058955, y: -.00335483183, z: .00329898461}
+      rotation: {x: 2.95650064e-08, y: .0359021835, z: 8.80288624e-08, w: .999355316}
+      scale: {x: .996857285, y: 1, z: 1.00292492}
+      transformModified: 1
+    - name: Facet_SH_rFinger1JTip
+      position: {x: .0326775312, y: -.0155820828, z: .00134246866}
+      rotation: {x: -2.78023709e-17, y: -.0186283793, z: -2.25302761e-18, w: .999826491}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_SH_rFinger2J1
+      position: {x: .0502308458, y: .00349298748, z: .00704801641}
+      rotation: {x: -1, y: -5.16645926e-08, z: -1.39546206e-08, w: -3.97457427e-08}
+      scale: {x: 1.00000012, y: 1.00000012, z: 1.00000024}
+      transformModified: 1
+    - name: Facet_SH_rFinger2J2
+      position: {x: .0358687527, y: -.00711571425, z: .0041536619}
+      rotation: {x: -.00195193628, y: -.00255909748, z: .0121481931, w: .999921083}
+      scale: {x: 1.00000012, y: .999999881, z: .99999994}
+      transformModified: 1
+    - name: Facet_SH_rFinger2J3
+      position: {x: .0401008502, y: -.0117779262, z: .00361446617}
+      rotation: {x: -.0840165988, y: -1.6207039e-09, z: -1.16631682e-08, w: .996464431}
+      scale: {x: .999999881, y: .998437524, z: 1.00156319}
+      transformModified: 1
+    - name: Facet_SH_rFinger2JTip
+      position: {x: .0368836299, y: -.0115174064, z: -.000702045218}
+      rotation: {x: .084016636, y: -1.45847014e-08, z: -1.19294326e-08, w: .996464431}
+      scale: {x: 1.00000012, y: .999991894, z: 1.00004435}
+      transformModified: 1
+    - name: Facet_SH_rFinger3J1
+      position: {x: .0262544751, y: .00130333635, z: .0254731998}
+      rotation: {x: -.99615252, y: .0695191398, z: -.0532418452, w: -.00355227152}
+      scale: {x: .999713957, y: 1.00000024, z: 1.00083852}
+      transformModified: 1
+    - name: Facet_SH_rFinger3J2
+      position: {x: .0310852472, y: -.0140958838, z: .00115524116}
+      rotation: {x: -.0456464775, y: -.0531171672, z: -.0770511851, w: .994564354}
+      scale: {x: 1.00394225, y: 1.00000012, z: .996991277}
+      transformModified: 1
+    - name: Facet_SH_rFinger3J3
+      position: {x: .0390711427, y: -.0105041387, z: -.00642254995}
+      rotation: {x: 2.4474085e-08, y: -.00438781409, z: 1.10790353e-07, w: .999990404}
+      scale: {x: .999429524, y: .99999994, z: 1.00050163}
+      transformModified: 1
+    - name: Facet_SH_rFinger3JTip
+      position: {x: .0330379754, y: -.0126405032, z: -.00418585073}
+      rotation: {x: 1.38779681e-17, y: -.0289429072, z: -1.94724119e-19, w: .999581099}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_SH_rFinger4J1
+      position: {x: .00113999995, y: .00528935762, z: .0425546728}
+      rotation: {x: -.997627437, y: .0428923815, z: -.0461662151, w: -.0277229566}
+      scale: {x: 1.00049305, y: 1.00000024, z: 1.0033145}
+      transformModified: 1
+    - name: Facet_SH_rFinger4J2
+      position: {x: .0299688783, y: -.00876576733, z: -.00345552503}
+      rotation: {x: .00569739239, y: -.0424977019, z: .034829855, w: .998473048}
+      scale: {x: .992336333, y: .999999821, z: 1.00704467}
+      transformModified: 1
+    - name: Facet_SH_rFinger4J3
+      position: {x: .0331497602, y: -.0146332346, z: -.00655617891}
+      rotation: {x: -1.25198181e-08, y: .0267814193, z: 4.35566569e-08, w: .999641359}
+      scale: {x: 1.0037148, y: 1, z: .996730208}
+      transformModified: 1
+    - name: Facet_SH_rFinger4JTip
+      position: {x: .0291063469, y: -.0231632385, z: -.00712064561}
+      rotation: {x: 3.0076132e-20, y: -.034592431, z: 8.68922214e-19, w: .99940151}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    - name: Facet_SH_rThumbJ1
+      position: {x: .0304803643, y: -.000435793161, z: -.0393948108}
+      rotation: {x: -.311049789, y: .341025442, z: -.885218382, w: -.0577764995}
+      scale: {x: .986400068, y: .954555988, z: 1.06855047}
+      transformModified: 1
+    - name: Facet_SH_rThumbJ2
+      position: {x: -.0354470834, y: -1.20380149e-12, z: -1.83462132e-13}
+      rotation: {x: .117097504, y: .0222045034, z: .0216479357, w: .992636144}
+      scale: {x: .967985451, y: 1.02958715, z: 1.00090814}
+      transformModified: 1
+    - name: Facet_SH_rThumbJ3
+      position: {x: -.0350202546, y: -1.25794481e-12, z: -9.11715094e-14}
+      rotation: {x: .180981636, y: .152007312, z: .0011424605, w: .971667707}
+      scale: {x: .977336049, y: .987780929, z: 1.03468657}
+      transformModified: 1
+    - name: Facet_SH_rThumbJTip
+      position: {x: -.0361624733, y: -1.17708512e-12, z: -4.24478215e-13}
+      rotation: {x: .091928944, y: -.662498295, z: .0425494574, w: .742182493}
+      scale: {x: 1.01343715, y: 1.02494013, z: .960184634}
+      transformModified: 1
+    - name: Facet_SH_lHipJ
+      position: {x: -.0980399996, y: -.045599997, z: 0}
+      rotation: {x: .47072342, y: .527654767, z: .481866658, w: .517498314}
+      scale: {x: .99999994, y: .99999994, z: .99999994}
+      transformModified: 1
+    - name: Facet_SH_lKneeJ
+      position: {x: -.423827857, y: -3.5527136e-17, z: -1.24344979e-16}
+      rotation: {x: .0396506675, y: -.00759944459, z: .188079298, w: .981323719}
+      scale: {x: 1.00000012, y: 1.00000012, z: 1.00000012}
+      transformModified: 1
+    - name: Facet_SH_lAnkleJ
+      position: {x: -.342962563, y: 1.1546319e-16, z: 5.3290704e-17}
+      rotation: {x: -.0367045254, y: -.0177895743, z: -.536264062, w: .843064189}
+      scale: {x: .999999702, y: .999999881, z: .999999702}
+      transformModified: 1
+    - name: Facet_SH_lBallJ
+      position: {x: -.107918292, y: -3.99680272e-17, z: -5.3290704e-17}
+      rotation: {x: 1.93945304e-08, y: 6.34811703e-10, z: -.353675008, w: .935368419}
+      scale: {x: 1.00000024, y: .999999821, z: 1.00000012}
+      transformModified: 1
+    - name: Facet_SH_lToeJ
+      position: {x: -.0968999937, y: 5.61752515e-17, z: 1.59872109e-16}
+      rotation: {x: 6.6984704e-08, y: -.707106829, z: 6.82585366e-08, w: .707106829}
+      scale: {x: 1.00000012, y: 1.00000012, z: 1}
+      transformModified: 1
+    - name: Facet_SH_rHipJ
+      position: {x: .0980399996, y: -.045599997, z: 0}
+      rotation: {x: .503063083, y: -.465730309, z: .541950464, w: -.486119866}
+      scale: {x: 1.00000012, y: 1.00000012, z: .99999994}
+      transformModified: 1
+    - name: Facet_SH_rKneeJ
+      position: {x: .423827857, y: 0, z: -3.5527136e-17}
+      rotation: {x: -.0100302519, y: .00192249124, z: -.188222975, w: -.982073247}
+      scale: {x: .99999994, y: .999999821, z: .999999881}
+      transformModified: 1
+    - name: Facet_SH_rAnkleJ
+      position: {x: .342962563, y: 4.44089183e-17, z: -7.1054272e-17}
+      rotation: {x: .0367044881, y: .0177895725, z: .536264062, w: -.843064249}
+      scale: {x: 1.00000024, y: 1.00000036, z: 1.00000024}
+      transformModified: 1
+    - name: Facet_SH_rBallJ
+      position: {x: .107918292, y: -8.881784e-18, z: 1.7763568e-17}
+      rotation: {x: 1.91194505e-09, y: 4.14239167e-08, z: -.353675067, w: .935368359}
+      scale: {x: .999999762, y: .999999762, z: .999999881}
+      transformModified: 1
+    - name: Facet_SH_rToeJ
+      position: {x: .0968999937, y: 7.19729652e-17, z: 1.01252339e-15}
+      rotation: {x: -1.01460678e-07, y: .707106829, z: 9.92076181e-08, w: .707106829}
+      scale: {x: 1.00000012, y: 1, z: 1}
+      transformModified: 1
+    - name: FacetMesh
+      position: {x: 0, y: 0, z: 0}
+      rotation: {x: 0, y: -0, z: 0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+      transformModified: 1
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 3
+  additionalBone: 0
+  userData: 
