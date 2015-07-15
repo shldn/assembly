@@ -22,10 +22,15 @@ public class CaptureNet_Manager : MonoBehaviour {
     string masterServerGameType = "ClarkeCenterAssemblySim";
     string serverName = "Assembly";
     string serverTagline = System.Environment.UserName + "\'s Computer";
-	public bool useKhanServerList = false;
+	
 
     // admin client vars
     bool showQRCode = false;
+
+    // server option vars
+    public bool useKhanServerList = false;
+    bool showNameServer = false;
+    string tempServerName = "";
 
     public static NetworkView myNetworkView;
     public PlayerSync playerSync = null;
@@ -64,6 +69,17 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 		if(PersistentGameManager.IsAdminClient)
 			useKhanServerList = false;
+
+        if(PlayerPrefs.HasKey("AServerName"))
+            serverTagline = PlayerPrefs.GetString("AServerName");
+        else
+        {
+            Debug.LogError("No AServerName");
+            showNameServer = true;
+        }
+            
+        tempServerName = serverTagline;
+
     } // End of Awake().
 
 
@@ -78,18 +94,25 @@ public class CaptureNet_Manager : MonoBehaviour {
         }
 
         // If player is not connected, run the ConnectWindow function.
-        if ((!PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
-            // Create the server.
-			Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
-            MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
-	    }
+        if( PersistentGameManager.IsServer )
+        {
+            if ((Network.peerType == NetworkPeerType.Disconnected) && !showNameServer)
+            {
+                // Create the server.
+                Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
+                MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
+            }
 
-        if (Input.GetKeyUp(KeyCode.Q))
-            showQRCode = !showQRCode;
+            if (KeyInput.GetKeyUp(KeyCode.Q))
+                showQRCode = !showQRCode;
+
+            if (KeyInput.GetKeyUp(KeyCode.N))
+                showNameServer = true;
+        }
 
 
 		// "Single-player"
-		if(Input.GetKeyDown(KeyCode.End)){
+        if (KeyInput.GetKeyDown(KeyCode.End)) {
 			PersistentGameManager.Inst.singlePlayer = true;
 			playerSync = (Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<PlayerSync>();
 		}
@@ -193,7 +216,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 			if (Network.peerType == NetworkPeerType.Disconnected){
 				GUI.skin.label.fontSize = 20;
 				GUI.skin.label.alignment = TextAnchor.LowerCenter;
-				GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Initializing server...");
+				GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height-10), "Initializing server...");
 			}
 
 			if (showQRCode)
@@ -202,6 +225,30 @@ public class CaptureNet_Manager : MonoBehaviour {
 				int gutter = 20;
 				GUI.DrawTexture(new Rect(Screen.width - texSize - gutter, Screen.height - texSize - gutter, texSize, texSize), PersistentGameManager.Inst.qrCodeTexture, ScaleMode.ScaleToFit);            
 			}
+
+            if (showNameServer)
+            {
+                GUI.SetNextControlName("NameServerTextField");
+                tempServerName = GUI.TextField(new Rect(10, Screen.height - 30, 200, 20), tempServerName, 30);
+                GUI.FocusControl("NameServerTextField");
+                if (Event.current.type == EventType.keyUp && Event.current.keyCode == KeyCode.Return)
+                {
+                    if (tempServerName != serverTagline)
+                    {
+                        serverTagline = tempServerName;
+                        PlayerPrefs.SetString("AServerName", serverTagline);
+                        MasterServer.UnregisterHost();
+                        if(Network.peerType != NetworkPeerType.Disconnected)
+                            MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
+                        //else
+                            // Next update will RegisterHost with MasterServer
+                    }
+                    else if(!PlayerPrefs.HasKey("AServerName"))
+                        PlayerPrefs.SetString("AServerName", serverTagline);
+                    showNameServer = false;
+                }
+                KeyInput.Locked = showNameServer;
+            }
 		}
     } // End of OnGUI().
 
@@ -347,6 +394,8 @@ public class CaptureNet_Manager : MonoBehaviour {
     void OnFailedToConnectToMasterServer(NetworkConnectionError info)
     {
         Debug.LogError("Could not connect to Master server " + info);
+        if (PersistentGameManager.IsClient)
+            useKhanServerList = true;
 
     }
 

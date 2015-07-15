@@ -79,7 +79,7 @@ public class CameraControl : MonoBehaviour {
 
 	void LateUpdate(){
 
-		if(Input.GetKeyDown(KeyCode.C))
+        if (KeyInput.GetKeyDown(KeyCode.C))
 			galleryCam = !galleryCam;
 
 		// Gallery cam
@@ -157,9 +157,9 @@ public class CameraControl : MonoBehaviour {
         // Mouse zoom
         targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel") * radiusSensitivity ;
 
-		if(Input.GetKey(KeyCode.Comma))
+        if (KeyInput.GetKey(KeyCode.Comma))
 	        targetRadius += targetRadius * -Time.deltaTime * radiusSensitivity ;
-		if(Input.GetKey(KeyCode.Period))
+        if (KeyInput.GetKey(KeyCode.Period))
 	        targetRadius += targetRadius * Time.deltaTime * radiusSensitivity ;
 
         // Mouse/touch orbit.
@@ -253,8 +253,8 @@ public class CameraControl : MonoBehaviour {
 				}
 			}
         }
-		
-        if(Input.GetKeyDown(KeyCode.Return)){
+
+        if (KeyInput.GetKeyDown(KeyCode.Return)) {
             if(selectedNode){
                 selectedNode = null;
             // Deselect all--return to main orbit.

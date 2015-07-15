@@ -19,7 +19,6 @@ public class ClientAdminMenu : MonoBehaviour {
     void Awake(){
 		Inst = this;
         enabled = PersistentGameManager.IsAdminClient;
-		showMenu = !PersistentGameManager.Inst.singlePlayer;
 
 		if(PlayerPrefs.HasKey("manualIP"))
 			ipString = PlayerPrefs.GetString("manualIP");
