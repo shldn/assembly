@@ -49,7 +49,7 @@ public class Node {
 	float smoothedPower = 0f;
 	float waveformRunner = 0f;
 
-	float velocityCoefficient = 0.1f; // How much of motion is converted to velocity.
+	float velocityCoefficient = 0.2f; // How much of motion is converted to velocity.
 
 	public Vector3 velocity = Vector3.zero;
 
@@ -60,7 +60,7 @@ public class Node {
 		}set{
 			// Neutralize velocity.
 			Vector3 flux = position - value;
-			velocity += flux * velocityCoefficient;
+			//velocity += flux * velocityCoefficient;
 
 			position = value;
 		}
@@ -136,7 +136,7 @@ public class Node {
 		if(cull || !physAssembly)
 			return;
 
-		//power = 1f;
+		power = 1f;
 
 		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / nodeProperties.oscillateFrequency)) * smoothedPower;
 		waveformRunner += NodeController.physicsStep * power;
@@ -274,7 +274,10 @@ public class Node {
 
 		Vector3 thisFrameVelocity = delayPosition - Position;
 		velocity += thisFrameVelocity * velocityCoefficient;
-		velocity *= 0.98f;
+		velocity *= 0.99f;
+
+		if(Input.GetKey(KeyCode.V))
+			velocity += Vector3.forward * NodeController.physicsStep;
 
 		// In-editor control
 		rotation *= Quaternion.Inverse(Rotation) * cubeTransform.rotation;
@@ -329,6 +332,8 @@ public class Node {
 			case 3 : 
 				break;
 		}
+
+		//GLDebug.DrawCube(Position, rotation, Vector3.one * velocity.magnitude * 10f);
 	} // End of UpdateTransform().
 
 
@@ -539,7 +544,7 @@ public struct NodeProperties {
 
         senseVector = Quaternion.identity;
         fieldOfView = 90.0f;
-        senseRange = 120.0f;
+        senseRange = 150.0f;
         muscleStrength = 1.0f;
         actuateVector = Quaternion.identity;
 

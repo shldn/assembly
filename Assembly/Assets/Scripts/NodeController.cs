@@ -224,31 +224,31 @@ public class NodeController : MonoBehaviour {
 		*/
 
 		// Keep the world populated
-		/*
-		if(PersistentGameManager.IsServer){
-			if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.7f)){
-				Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, worldSize);
+		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
+			if(PersistentGameManager.IsServer){
+				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.7f)){
+					Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, worldSize);
 
-				Assembly newAssembly = Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
-			}
+					Assembly newAssembly = Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
+				}
 
-			if(populationControl && (FoodPellet.all.Count < foodPellets)){
+				if(populationControl && (FoodPellet.all.Count < foodPellets)){
 
-				Vector3 foodPosition = Vector3.zero;
+					Vector3 foodPosition = Vector3.zero;
 
-				if(foodInitialized && (worldAnim == WorldAnim.capsule)){
-					float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
-					float radius = worldSize.x * 0.5f;
-					float spiralIntensity = 0.2f;
-					foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
+					if(foodInitialized && (worldAnim == WorldAnim.capsule)){
+						float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
+						float radius = worldSize.x * 0.5f;
+						float spiralIntensity = 0.2f;
+						foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
+					}else
+						foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
+
+					new FoodPellet(foodPosition);
 				}else
-					foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
-
-				new FoodPellet(foodPosition);
-			}else
-				foodInitialized = true;
+					foodInitialized = true;
+			}
 		}
-		*/
 
 		// Leaderboard
         if (PersistentGameManager.IsServer)

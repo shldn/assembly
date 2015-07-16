@@ -55,9 +55,6 @@ public class CameraControl : MonoBehaviour {
 
     void Awake(){
         Inst = this;
-
-        if (PersistentGameManager.IsClient)
-            galleryCam = false;
     } // End of Awake().
 
 
@@ -74,6 +71,8 @@ public class CameraControl : MonoBehaviour {
         targetOrbit.x = Random.Range(0f, 360f);
         targetOrbit.y = (minTilt + maxTilt) * 0.5f;
         orbit = targetOrbit;
+
+		galleryCam = Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient;
 	} // End of Start().
 	
 
@@ -125,16 +124,19 @@ public class CameraControl : MonoBehaviour {
 		// Show all assemblies constrained to the screen.
         else{
 			center = Vector3.zero;
-			// Center on average assembly position
-			for(int i = 0; i < Assembly.getAll.Count; i++)
-				center += Assembly.getAll[i].Position;
-			center /= Assembly.getAll.Count;
+
+			if(!Environment.Inst || !Environment.Inst.isActiveAndEnabled){
+				// Center on average assembly position
+				for(int i = 0; i < Assembly.getAll.Count; i++)
+					center += Assembly.getAll[i].Position;
+				center /= Assembly.getAll.Count;
+			}
 		}
 
-		/*
-		if(Assembly.getAll.Count > 0f)
+
+		if((Assembly.getAll.Count > 0f) && Environment.Inst && Environment.Inst.isActiveAndEnabled)
 			targetOrbit.x -= 1f * Time.deltaTime;
-		*/
+
 
         // General camera controls. ----------------------------------------------- //
         // Touch-screen pinch-zoom
