@@ -49,6 +49,8 @@ public class Node {
 	float smoothedPower = 0f;
 	float waveformRunner = 0f;
 
+	float velocityCoefficient = 0.1f; // How much of motion is converted to velocity.
+
 	public Vector3 velocity = Vector3.zero;
 
 	Vector3 position  = Vector3.zero;
@@ -56,8 +58,11 @@ public class Node {
 		get{
 			return position;
 		}set{
+			// Neutralize velocity.
+			Vector3 flux = position - value;
+			velocity += flux * velocityCoefficient;
+
 			position = value;
-			delayPosition = value;
 		}
 	}
 	Quaternion rotation = Quaternion.identity;
@@ -244,6 +249,12 @@ public class Node {
 			cubeTransform.renderer.material.color = nodeColor;
 
 
+		// Reel in to amalgam
+		//if(Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f){
+		if(physAssembly.amalgam && (Vector3.Distance(Position, physAssembly.amalgam.transform.position) > physAssembly.amalgam.radius)){
+			Position -= (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
+		}
+
 
 		// Reset power
 		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep);
@@ -262,7 +273,7 @@ public class Node {
 			return;
 
 		Vector3 thisFrameVelocity = delayPosition - Position;
-		velocity += thisFrameVelocity * 0.1f;
+		velocity += thisFrameVelocity * velocityCoefficient;
 		velocity *= 0.98f;
 
 		// In-editor control
@@ -284,7 +295,8 @@ public class Node {
 			case 1 : 
 				Debug.DrawRay(Position, (Rotation * nodeProperties.senseVector * Vector3.forward) * 2f, Color.green);
 
-				viewConeTrans.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
+				//viewConeTrans.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
+				viewConeTrans.position = Position;
 				viewConeTrans.localScale = Vector3.one * viewConeSize;
 
 				// Billboard the arc with the main camera.
@@ -526,7 +538,7 @@ public struct NodeProperties {
     public NodeProperties(string str){
 
         senseVector = Quaternion.identity;
-        fieldOfView = 45.0f;
+        fieldOfView = 90.0f;
         senseRange = 120.0f;
         muscleStrength = 1.0f;
         actuateVector = Quaternion.identity;

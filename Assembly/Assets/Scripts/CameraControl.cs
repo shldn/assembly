@@ -79,7 +79,7 @@ public class CameraControl : MonoBehaviour {
 
 	void LateUpdate(){
 
-		if(Input.GetKeyDown(KeyCode.C))
+		if(Input.GetKeyDown(KeyCode.C) && !ConsoleScript.active)
 			galleryCam = !galleryCam;
 
 		// Gallery cam
@@ -125,11 +125,16 @@ public class CameraControl : MonoBehaviour {
 		// Show all assemblies constrained to the screen.
         else{
 			center = Vector3.zero;
+			// Center on average assembly position
+			for(int i = 0; i < Assembly.getAll.Count; i++)
+				center += Assembly.getAll[i].Position;
+			center /= Assembly.getAll.Count;
 		}
 
+		/*
 		if(Assembly.getAll.Count > 0f)
 			targetOrbit.x -= 1f * Time.deltaTime;
-
+		*/
 
         // General camera controls. ----------------------------------------------- //
         // Touch-screen pinch-zoom
@@ -157,9 +162,9 @@ public class CameraControl : MonoBehaviour {
         // Mouse zoom
         targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel") * radiusSensitivity ;
 
-		if(Input.GetKey(KeyCode.Comma))
+		if(Input.GetKey(KeyCode.Comma) && !ConsoleScript.active)
 	        targetRadius += targetRadius * -Time.deltaTime * radiusSensitivity ;
-		if(Input.GetKey(KeyCode.Period))
+		if(Input.GetKey(KeyCode.Period) && !ConsoleScript.active)
 	        targetRadius += targetRadius * Time.deltaTime * radiusSensitivity ;
 
         // Mouse/touch orbit.
@@ -254,7 +259,7 @@ public class CameraControl : MonoBehaviour {
 			}
         }
 		
-        if(Input.GetKeyDown(KeyCode.Return)){
+        if(Input.GetKeyDown(KeyCode.Return) && !ConsoleScript.active){
             if(selectedNode){
                 selectedNode = null;
             // Deselect all--return to main orbit.
