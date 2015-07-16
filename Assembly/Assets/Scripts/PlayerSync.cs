@@ -253,6 +253,9 @@ public class PlayerSync : MonoBehaviour {
 				// Single-player
 				if(PersistentGameManager.Inst.singlePlayer){
 					PersistentGameManager.Inst.serverCapturedAssem = (a).ToFileString();
+					string validFilename = IOHelper.GetValidFileName("./data/", "env", ".txt");
+					EnvironmentManager.Save(validFilename);
+					PersistentGameManager.Inst.capturedWorldFilename = validFilename.Substring(7);
 					Application.LoadLevel("CaptureClient");
 				}
 

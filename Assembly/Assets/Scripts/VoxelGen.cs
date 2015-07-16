@@ -75,11 +75,11 @@ public class VoxelGen : MonoBehaviour {
 				//verts[i] += normals[i] * Mathf.Sin(Time.time + (initialVerts[i].x * 1f)) * 0.15f;
 
 				// Loyalty to initial shape.
-				verts[i] = Vector3.Lerp(verts[i], initialVerts[i], 0.05f);
+				//verts[i] = Vector3.Lerp(verts[i], initialVerts[i], 0.05f);
 
 			}
 		}
-
+		
 		if(Input.GetKeyDown(KeyCode.B)){
 			int randomIdx = Random.Range(0, verts.Length);
 			verts[randomIdx] += normals[randomIdx] * 10000f;

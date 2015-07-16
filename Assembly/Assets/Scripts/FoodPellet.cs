@@ -5,9 +5,10 @@ using System.Collections.Generic;
 public class FoodPellet {
 
 	public static List<FoodPellet> all = new List<FoodPellet>();
+	public Amalgam amalgam = null;
 
 	private Vector3 worldPosition = Vector3.zero;
-    public Vector3 WorldPosition { get { return worldPosition; } set { worldPosition = value; transform.position = value; } }
+    public Vector3 WorldPosition { get { return worldPosition; } set { worldPosition = value; if(gameObject) gameObject.transform.position = value; } }
 	public Quaternion worldRotation = Quaternion.identity;
 
 	Transform transform = null;
@@ -54,11 +55,6 @@ public class FoodPellet {
 			NodeController.Inst.AdvanceWorldTick();
 			cull = true;
 		}
-
-		// Destroy nodes outside of worlds
-		if(Mathf.Sqrt(Mathf.Pow(worldPosition.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(worldPosition.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(worldPosition.z / NodeController.Inst.worldSize.z, 2f)) > 1f){
-			cull = true;
-		}
 	} // End of Update().
 
 
@@ -68,6 +64,8 @@ public class FoodPellet {
             if(!AllFoodTree.Remove(this, false))
                 Debug.LogError("Failed to remove Food Node: " + worldPosition.ToString());
         }
+		if(amalgam)
+			amalgam.foodPellets.Remove(this);
         Object.Destroy(transform.gameObject);
     }
 

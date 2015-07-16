@@ -102,7 +102,7 @@ public class AssemblyEditor : MonoBehaviour {
            GUILayout.EndArea();
 		}
 		else if(capturedAssembly){
-			float controlBarWidthRatio = 0.3f;
+            float controlBarWidthRatio = 0.34f;
 			float gutter = Screen.height * 0.01f;
 			float defaultButtonSize = Screen.height * 0.1f;
             Rect controlBarRect = new Rect(Screen.width * (1f - controlBarWidthRatio), gutter, (Screen.width * controlBarWidthRatio) - gutter, Screen.height - (gutter * 2));

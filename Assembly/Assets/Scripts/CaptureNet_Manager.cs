@@ -14,7 +14,6 @@ public class CaptureNet_Manager : MonoBehaviour {
     List<string> connectToIP = new List<string>();
     List<string> backupConnectToIP = new List<string>(){"127.0.0.1", "132.239.235.116", "132.239.235.115", "75.80.103.34", "67.58.54.68"};
     public int connectionPort = 25565;
-    bool useNAT = false; // Not sure what NAT is... do some research.
     string ipAddress;
     string port;
     int maxNumberOfPlayers = 500;
@@ -73,10 +72,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         if(PlayerPrefs.HasKey("AServerName"))
             serverTagline = PlayerPrefs.GetString("AServerName");
         else
-        {
-            Debug.LogError("No AServerName");
             showNameServer = true;
-        }
             
         tempServerName = serverTagline;
 
@@ -99,7 +95,7 @@ public class CaptureNet_Manager : MonoBehaviour {
             if ((Network.peerType == NetworkPeerType.Disconnected) && !showNameServer)
             {
                 // Create the server.
-                Network.InitializeServer(maxNumberOfPlayers, connectionPort, useNAT);
+                Network.InitializeServer(maxNumberOfPlayers, connectionPort, !Network.HavePublicAddress());
                 MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
             }
 
@@ -180,10 +176,20 @@ public class CaptureNet_Manager : MonoBehaviour {
                 GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
                 GUILayout.BeginVertical(GUILayout.MinWidth(300));
                 GUI.skin.label.alignment = TextAnchor.UpperLeft;
-                GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.04f);
+                GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.06f);
                 GUI.color = Color.white;
                 GUILayout.Label("Choose a Server:", GUILayout.Height(Mathf.Max(GUI.skin.label.fontSize + 6, Mathf.CeilToInt(Screen.height * 0.054f))));
-                GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.02f);
+                GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.height * 0.1f);
+                if( data.Length >= 4 )
+                    GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.height * 0.35f / (float)data.Length);
+
+                RectOffset prevPadding = GUI.skin.button.padding;
+                RectOffset prevMargin = GUI.skin.button.margin;
+                int padding = GUI.skin.button.fontSize / 5;
+                int margin = GUI.skin.button.fontSize / 5;
+                GUI.skin.button.padding = new RectOffset(padding, padding, padding, padding);
+                GUI.skin.button.margin = new RectOffset(margin, margin, margin, margin);
+
 
                 // Go through all the hosts in the host list
                 foreach (var element in data)
@@ -207,6 +213,9 @@ public class CaptureNet_Manager : MonoBehaviour {
                 }
                 GUILayout.EndVertical();
                 GUILayout.EndArea();
+
+                GUI.skin.button.padding = prevPadding;
+                GUI.skin.button.margin = prevMargin; 
             }
         }
 
@@ -228,6 +237,8 @@ public class CaptureNet_Manager : MonoBehaviour {
 
             if (showNameServer)
             {
+                GUI.skin.label.fontSize = Mathf.Max(14, Mathf.CeilToInt(Screen.height * 0.02f));
+                GUI.Label(new Rect(10, Screen.height - 50, 200, 20), "Enter Server Name:");
                 GUI.SetNextControlName("NameServerTextField");
                 tempServerName = GUI.TextField(new Rect(10, Screen.height - 30, 200, 20), tempServerName, 30);
                 GUI.FocusControl("NameServerTextField");

@@ -68,6 +68,8 @@ public class Assembly : CaptureObject{
 	Vector3 lastPosition = Vector3.zero;
     Vector3 velocity = Vector3.zero;
 
+	public Amalgam amalgam = null;
+
 	private static Octree<Assembly> allAssemblyTree;
     public static Octree<Assembly> AllAssemblyTree{ 
         get{
@@ -80,6 +82,7 @@ public class Assembly : CaptureObject{
             allAssemblyTree = value;
         }
     }
+
 
     public static void DestroyAll()
     {
@@ -100,6 +103,7 @@ public class Assembly : CaptureObject{
 		PersistentGameManager.CaptureObjects.Add(this);
 		name = NodeController.Inst.GetRandomName();
 	} // End of constructor.
+
 
 	// Load from string--file path, etc.
 	public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false){
@@ -131,7 +135,45 @@ public class Assembly : CaptureObject{
 			someNode.ComputeEnergyNetwork();
 
 		PersistentGameManager.CaptureObjects.Add(this);
-     } // End of constructor (from serialized).
+    } // End of constructor (from serialized).
+
+
+	public static Assembly RandomAssembly(Vector3 spawnPos, Quaternion rotation, int numNodes){
+		Assembly newAssembly = new Assembly(spawnPos, rotation);
+		int newAssemID = NodeController.Inst.GetNewAssemblyID();
+        newAssembly.Id = newAssemID;
+        NodeController.UpdateBirthCount(newAssemID, 0);
+
+		// Try a node structure... if there are no sense nodes, re-roll.
+		bool containsSenseNode = false;
+		do{
+			foreach(Node someNode in newAssembly.NodeDict.Values)
+				someNode.Destroy();
+			newAssembly.NodeDict.Clear();
+			Triplet spawnHexPos = Triplet.zero;
+			int nodesToMake = numNodes;
+			while(nodesToMake > 0){
+				// Make sure no phys node is here currently.
+				if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
+					newAssembly.AddNode(spawnHexPos);
+					nodesToMake--;
+				}
+				spawnHexPos += HexUtilities.RandomAdjacent();
+			}
+
+			foreach(Node someNode in newAssembly.NodeDict.Values){
+				if(someNode.neighbors.Count == 1){
+					containsSenseNode = true;
+					break;
+				}
+			}
+		}while(!containsSenseNode);
+
+		foreach(Node someNode in newAssembly.NodeDict.Values)
+			someNode.ComputeEnergyNetwork();
+
+		return newAssembly;
+	} // End of RandomAssembly().
 
 
 	public void AddNodes(List<Node> nodesList){
@@ -153,6 +195,7 @@ public class Assembly : CaptureObject{
 		return newPhysNode;
 	} // End of AddNode().
 
+
     private void IntegrateNode(Triplet nodePos, Node physNode)
     {
         physNode.PhysAssembly = this;
@@ -160,6 +203,7 @@ public class Assembly : CaptureObject{
         AssignNodeNeighbors(nodePos, physNode);
         energy += 1f;
     }
+
 
     private void AssignNodeNeighbors(Triplet nodePos, Node physNode)
     {
@@ -205,6 +249,7 @@ public class Assembly : CaptureObject{
 		if(!PersistentGameManager.IsClient)
 			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
+		/*
 		if(!PersistentGameManager.IsClient && (Node.getAll.Count < NodeController.Inst.worldNodeThreshold * 0.9f) && (energy > (maxEnergy * 0.9f)))
 			wantToMate = true;
 		else if((Node.getAll.Count > (NodeController.Inst.worldNodeThreshold * 0.8f)) || (energy < maxEnergy * 0.5f) && (Random.Range(0f, 1f) < 0.01f)){
@@ -223,6 +268,7 @@ public class Assembly : CaptureObject{
 				energy *= 0.5f;
 			}
 		}
+		*/
 
 		// We won't want to mate if our population cap has been reached.
 		if(wantToMate && !matingWith){
@@ -289,12 +335,6 @@ public class Assembly : CaptureObject{
         distanceCovered += Vector3.Distance(lastPosition, newPosition);
         velocity = (newPosition - lastPosition) / Time.deltaTime;
         lastPosition = newPosition;
-
-		if(Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f){
-			foreach(Node someNode in nodeDict.Values)
-				someNode.velocity += -Position.normalized * NodeController.physicsStep;
-		}
-        
 	} // End of Update().
 
     private void UpdateFamilyTreeFromParent(Assembly parent)
@@ -319,11 +359,14 @@ public class Assembly : CaptureObject{
             return;
         }
 
-        familyTree = cachedFamilyTrees[id];
-        familyGenerationRemoved = cachedFamilyGenerationsRemoved[id];
-
-        cachedFamilyTrees.Remove(id);
-        cachedFamilyGenerationsRemoved.Remove(id);
+		if( cachedFamilyTrees.ContainsKey(id) )
+		{
+	        familyTree = cachedFamilyTrees[id];
+		    familyGenerationRemoved = cachedFamilyGenerationsRemoved[id];
+			
+			cachedFamilyTrees.Remove(id);
+			cachedFamilyGenerationsRemoved.Remove(id);
+		}
     }
 
     // When an assembly is captured, server saves its family tree until its return
@@ -419,6 +462,9 @@ public class Assembly : CaptureObject{
         foreach (int someInt in familyTree)
             NodeController.UpdateDeathCount(someInt, familyGenerationRemoved[someInt]);
 		PersistentGameManager.CaptureObjects.Remove(this);
+
+		if(amalgam)
+			amalgam.assemblies.Remove(this);
 		cull = true;
 	} // End of Destroy().
 
@@ -430,7 +476,7 @@ public class Assembly : CaptureObject{
 
 
     public void Save(string path){
-        ConsoleScript.Inst.WriteToLog("Saving " + path);
+        //ConsoleScript.Inst.WriteToLog("Saving " + path);
         IOHelper.SaveAssembly(path, this);
     } // End of Save().
 

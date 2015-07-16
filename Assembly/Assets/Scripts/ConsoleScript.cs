@@ -32,6 +32,7 @@ public class ConsoleScript : MonoBehaviour {
     public float logFade = 0f;
     public float logVisibleTime = 0f;
 
+	bool consoleVisible = false; // Console text will be hidden until user decides to show it.
     public static bool active = false;
     public bool consoleKeyCleared = false;
 
@@ -62,6 +63,7 @@ public class ConsoleScript : MonoBehaviour {
 
     } // End of Awake().
 
+
     void RegisterCommands(List<ConsoleCommand> cmdList)
     {
         for (int i = 0; i < cmdList.Count; ++i)
@@ -70,6 +72,7 @@ public class ConsoleScript : MonoBehaviour {
         commands["clear"].func = delegate(string[] args)
         {
             //GameManager.ClearAll();
+			NodeController.Inst.populationControl = false;
 			NodeController.Inst.ClearAll();
         };
 
@@ -101,10 +104,13 @@ public class ConsoleScript : MonoBehaviour {
                 WriteToLog("Please specify a file to load");
             else
             {
+				NodeController.Inst.populationControl = false;
+				NodeController.Inst.ClearAll(); 
+
                 string path = args[1];
                 for (int i = 2; i < args.Length; ++i)
                     path += " " + args[i];
-                EnvironmentManager.Load(path);
+                EnvironmentManager.Load(path + ".txt");
             }
         };
 
@@ -153,6 +159,7 @@ public class ConsoleScript : MonoBehaviour {
 
     } // End of RegisterCommands().
 
+
     void Update()
     {
         string[] commandArgs = new string[0];
@@ -173,6 +180,7 @@ public class ConsoleScript : MonoBehaviour {
             inputText = "";
 
         if(Input.GetKeyDown(KeyCode.BackQuote)){
+			consoleVisible = true;
             if(!active){
                 active = true;
                 inputText = "";
@@ -218,11 +226,11 @@ public class ConsoleScript : MonoBehaviour {
 
     } // End of InterperetCommand().
 
+
     public void WriteToLog(string text){
         lines.Add(text);
         logVisibleTime = 5f;
     } // End of WriteToConsoleLog().
-
 
 
     void Clear(){
@@ -250,11 +258,13 @@ public class ConsoleScript : MonoBehaviour {
             consoleText += currentLine + "\n";
         }
 
-        GUI.color = new Color(1f, 1f, 1f, logFade);
-        Rect consoleRect = new Rect(5, 0, Screen.width, Screen.height - (inputTextRectHeight + 5));
-        GUI.skin.label.alignment = TextAnchor.LowerLeft;
-		GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.015f);
-        GUI.Label(consoleRect, consoleText);
+		if(consoleVisible){
+			GUI.color = new Color(1f, 1f, 1f, logFade);
+			Rect consoleRect = new Rect(5, 0, Screen.width, Screen.height - (inputTextRectHeight + 5));
+			GUI.skin.label.alignment = TextAnchor.LowerLeft;
+			GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.015f);
+			GUI.Label(consoleRect, consoleText);
+		}
 
 	} // End of OnGUI().
 

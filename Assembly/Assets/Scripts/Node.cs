@@ -49,6 +49,8 @@ public class Node {
 	float smoothedPower = 0f;
 	float waveformRunner = 0f;
 
+	float velocityCoefficient = 0.2f; // How much of motion is converted to velocity.
+
 	public Vector3 velocity = Vector3.zero;
 
 	Vector3 position  = Vector3.zero;
@@ -56,8 +58,11 @@ public class Node {
 		get{
 			return position;
 		}set{
+			// Neutralize velocity.
+			Vector3 flux = position - value;
+			//velocity += flux * velocityCoefficient;
+
 			position = value;
-			delayPosition = value;
 		}
 	}
 	Quaternion rotation = Quaternion.identity;
@@ -131,7 +136,7 @@ public class Node {
 		if(cull || !physAssembly)
 			return;
 
-		//power = 1f;
+		power = 1f;
 
 		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / nodeProperties.oscillateFrequency)) * smoothedPower;
 		waveformRunner += NodeController.physicsStep * power;
@@ -244,6 +249,12 @@ public class Node {
 			cubeTransform.renderer.material.color = nodeColor;
 
 
+		// Reel in to amalgam
+		//if(Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f){
+		if(physAssembly.amalgam && (Vector3.Distance(Position, physAssembly.amalgam.transform.position) > physAssembly.amalgam.radius)){
+			Position -= (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
+		}
+
 
 		// Reset power
 		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep);
@@ -262,8 +273,11 @@ public class Node {
 			return;
 
 		Vector3 thisFrameVelocity = delayPosition - Position;
-		velocity += thisFrameVelocity * 0.1f;
-		velocity *= 0.98f;
+		velocity += thisFrameVelocity * velocityCoefficient;
+		velocity *= 0.99f;
+
+		if(Input.GetKey(KeyCode.V))
+			velocity += Vector3.forward * NodeController.physicsStep;
 
 		// In-editor control
 		rotation *= Quaternion.Inverse(Rotation) * cubeTransform.rotation;
@@ -284,7 +298,8 @@ public class Node {
 			case 1 : 
 				Debug.DrawRay(Position, (Rotation * nodeProperties.senseVector * Vector3.forward) * 2f, Color.green);
 
-				viewConeTrans.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
+				//viewConeTrans.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
+				viewConeTrans.position = Position;
 				viewConeTrans.localScale = Vector3.one * viewConeSize;
 
 				// Billboard the arc with the main camera.
@@ -317,6 +332,8 @@ public class Node {
 			case 3 : 
 				break;
 		}
+
+		//GLDebug.DrawCube(Position, rotation, Vector3.one * velocity.magnitude * 10f);
 	} // End of UpdateTransform().
 
 
@@ -526,8 +543,8 @@ public struct NodeProperties {
     public NodeProperties(string str){
 
         senseVector = Quaternion.identity;
-        fieldOfView = 45.0f;
-        senseRange = 120.0f;
+        fieldOfView = 90.0f;
+        senseRange = 150.0f;
         muscleStrength = 1.0f;
         actuateVector = Quaternion.identity;
 

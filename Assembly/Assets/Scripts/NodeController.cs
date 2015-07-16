@@ -48,6 +48,8 @@ public class NodeController : MonoBehaviour {
 	// Food will be populated in the environment randomly until the max food pellets count is hit, at which point it will convert to the helical pattern.
 	bool foodInitialized = false;
 
+	public bool populationControl = true;
+
 
     // Reset Variables
     float timeUntilReset = -1f; //1.0f * 60f * 60f; // seconds -- negative number will disable reset
@@ -63,7 +65,6 @@ public class NodeController : MonoBehaviour {
 	float targetWorldSize = 150f;
 
 
-
 	void Awake(){
 		Inst = this;
 		bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
@@ -74,6 +75,11 @@ public class NodeController : MonoBehaviour {
 
 
 	void Start(){
+		// Are we loading a saved world for a singleplayer run?
+		if(Application.loadedLevelName.Equals("SoupPhysics") && (PersistentGameManager.Inst.capturedWorldFilename != "")){
+			EnvironmentManager.Load(PersistentGameManager.Inst.capturedWorldFilename);
+			print("Loading singleplayer world...");
+		}
 	} // End of Start().
 
 
@@ -95,6 +101,10 @@ public class NodeController : MonoBehaviour {
 		foreach(Assembly someAssembly in Assembly.getAll){
 			someAssembly.Destroy();
 		}
+
+		foreach(FoodPellet someFood in FoodPellet.all){
+			someFood.cull = true;
+		}
 	} // End of ClearAll().
 
 
@@ -113,7 +123,7 @@ public class NodeController : MonoBehaviour {
 			worldAnim = WorldAnim.capsule;
 		}
 
-
+		
 
 
 		foreach(Node someNode in Node.getAll)
@@ -214,61 +224,31 @@ public class NodeController : MonoBehaviour {
 		*/
 
 		// Keep the world populated
-		if(PersistentGameManager.IsServer){
-			if(Node.getAll.Count < worldNodeThreshold * 0.7f){
-				Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, worldSize);
+		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
+			if(PersistentGameManager.IsServer){
+				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.7f)){
+					Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, worldSize);
 
-				Assembly newAssembly = new Assembly(assemblySpawnPos, Quaternion.identity);
-				int newAssemID = GetNewAssemblyID();
-                newAssembly.Id = newAssemID;
-                UpdateBirthCount(newAssemID,0);
+					Assembly newAssembly = Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
+				}
 
-				// Try a node structure... if there are no sense nodes, re-roll.
-				bool containsSenseNode = false;
-				do{
-					foreach(Node someNode in newAssembly.NodeDict.Values)
-						someNode.Destroy();
-					newAssembly.NodeDict.Clear();
+				if(populationControl && (FoodPellet.all.Count < foodPellets)){
 
-					int numNodes = Random.Range(minNodes, maxNodes);
-					Triplet spawnHexPos = Triplet.zero;
-					while(numNodes > 0){
-						// Make sure no phys node is here currently.
-						if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
-							newAssembly.AddNode(spawnHexPos);
-							numNodes--;
-						}
-						spawnHexPos += HexUtilities.RandomAdjacent();
-					}
+					Vector3 foodPosition = Vector3.zero;
 
-					foreach(Node someNode in newAssembly.NodeDict.Values)
-						if(someNode.neighbors.Count == 1){
-							containsSenseNode = true;
-							break;
-						}
-				}while(!containsSenseNode);
+					if(foodInitialized && (worldAnim == WorldAnim.capsule)){
+						float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
+						float radius = worldSize.x * 0.5f;
+						float spiralIntensity = 0.2f;
+						foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
+					}else
+						foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
 
-				foreach(Node someNode in newAssembly.NodeDict.Values)
-					someNode.ComputeEnergyNetwork();
-			}
-
-			if(FoodPellet.all.Count < foodPellets){
-
-				Vector3 foodPosition = Vector3.zero;
-
-				if(foodInitialized && (worldAnim == WorldAnim.capsule)){
-					float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
-					float radius = worldSize.x * 0.5f;
-					float spiralIntensity = 0.2f;
-					foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
+					new FoodPellet(foodPosition);
 				}else
-					foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
-
-				new FoodPellet(foodPosition);
-			}else
-				foodInitialized = true;
+					foodInitialized = true;
+			}
 		}
-
 
 		// Leaderboard
         if (PersistentGameManager.IsServer)

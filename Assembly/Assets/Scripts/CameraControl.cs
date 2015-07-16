@@ -55,9 +55,6 @@ public class CameraControl : MonoBehaviour {
 
     void Awake(){
         Inst = this;
-
-        if (PersistentGameManager.IsClient)
-            galleryCam = false;
     } // End of Awake().
 
 
@@ -74,12 +71,14 @@ public class CameraControl : MonoBehaviour {
         targetOrbit.x = Random.Range(0f, 360f);
         targetOrbit.y = (minTilt + maxTilt) * 0.5f;
         orbit = targetOrbit;
+
+		galleryCam = Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient;
 	} // End of Start().
 	
 
 	void LateUpdate(){
 
-        if (KeyInput.GetKeyDown(KeyCode.C))
+		if(Input.GetKeyDown(KeyCode.C) && !ConsoleScript.active)
 			galleryCam = !galleryCam;
 
 		// Gallery cam
@@ -125,9 +124,17 @@ public class CameraControl : MonoBehaviour {
 		// Show all assemblies constrained to the screen.
         else{
 			center = Vector3.zero;
+
+			if(!Environment.Inst || !Environment.Inst.isActiveAndEnabled){
+				// Center on average assembly position
+				for(int i = 0; i < Assembly.getAll.Count; i++)
+					center += Assembly.getAll[i].Position;
+				center /= Assembly.getAll.Count;
+			}
 		}
 
-		if(Assembly.getAll.Count > 0f)
+
+		if((Assembly.getAll.Count > 0f) && Environment.Inst && Environment.Inst.isActiveAndEnabled)
 			targetOrbit.x -= 1f * Time.deltaTime;
 
 
@@ -157,9 +164,9 @@ public class CameraControl : MonoBehaviour {
         // Mouse zoom
         targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel") * radiusSensitivity ;
 
-        if (KeyInput.GetKey(KeyCode.Comma))
+		if(Input.GetKey(KeyCode.Comma) && !ConsoleScript.active)
 	        targetRadius += targetRadius * -Time.deltaTime * radiusSensitivity ;
-        if (KeyInput.GetKey(KeyCode.Period))
+		if(Input.GetKey(KeyCode.Period) && !ConsoleScript.active)
 	        targetRadius += targetRadius * Time.deltaTime * radiusSensitivity ;
 
         // Mouse/touch orbit.
@@ -253,8 +260,8 @@ public class CameraControl : MonoBehaviour {
 				}
 			}
         }
-
-        if (KeyInput.GetKeyDown(KeyCode.Return)) {
+		
+        if(Input.GetKeyDown(KeyCode.Return) && !ConsoleScript.active){
             if(selectedNode){
                 selectedNode = null;
             // Deselect all--return to main orbit.

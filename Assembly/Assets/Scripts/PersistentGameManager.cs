@@ -39,6 +39,7 @@ public class PersistentGameManager : MonoBehaviour {
 
 	public bool singlePlayer = false;
 	public string serverCapturedAssem = "";
+	public string capturedWorldFilename = "";
 
 
 	void Awake () {
