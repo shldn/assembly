@@ -173,7 +173,7 @@ public class NodeController : MonoBehaviour {
 		if(selectedAssem){
 
 			// debug
-			if(Input.GetKeyDown(KeyCode.N))
+			if(KeyInput.GetKeyDown(KeyCode.N))
 				CameraControl.Inst.selectedAssembly.AddRandomNode();
 
 			/*
@@ -187,7 +187,7 @@ public class NodeController : MonoBehaviour {
 			}*/
 
 			// Duplicate assembly using string IO methods
-			if(Input.GetKey(KeyCode.D)){
+			if(KeyInput.GetKey(KeyCode.D)){
 				new Assembly(IOHelper.AssemblyToString(selectedAssem), null, null, false);
 			}
 		}/*
@@ -279,7 +279,7 @@ public class NodeController : MonoBehaviour {
                 currentLeaderIndex = -1;
 
 
-            if (Input.GetKeyUp(KeyCode.L) || Input.GetKeyUp(KeyCode.P))
+            if (KeyInput.GetKeyUp(KeyCode.L) || KeyInput.GetKeyUp(KeyCode.P))
                 showLeaderboard = !showLeaderboard;
         }
 

@@ -47,7 +47,7 @@ public class VoxelGen : MonoBehaviour {
 	
 
 	void Update(){
-		if(Input.GetKeyDown(KeyCode.M) && !ConsoleScript.active)
+		if(KeyInput.GetKeyUp(KeyCode.M) && !ConsoleScript.active)
 			UpdateMesh();
 
 		Mesh mesh = meshFilter.sharedMesh;
