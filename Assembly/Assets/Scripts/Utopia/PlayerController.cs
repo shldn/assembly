@@ -39,9 +39,9 @@ public class PlayerController : MonoBehaviour {
     public Player playerScript = null; // Set by the Player script automatically.
 
     // Movement characteristics ----------------------------------------------------- //
-    float walkSpeed = 10f;
-    float runSpeed = 20f;
-    float sprintSpeed = 30f;
+    float walkSpeed = 3f;
+    float runSpeed = 7f;
+    float sprintSpeed = 20f;
     public enum MovementSpeed{
         walk,
         run,
