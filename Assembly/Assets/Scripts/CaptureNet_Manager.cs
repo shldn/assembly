@@ -72,10 +72,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         if(PlayerPrefs.HasKey("AServerName"))
             serverTagline = PlayerPrefs.GetString("AServerName");
         else
-        {
-            Debug.LogError("No AServerName");
             showNameServer = true;
-        }
             
         tempServerName = serverTagline;
 
