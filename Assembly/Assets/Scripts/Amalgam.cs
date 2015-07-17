@@ -231,6 +231,10 @@ public class Amalgam : MonoBehaviour
 			GLDebug.DrawLine(activeVertices[shortestPath[i]].worldPoint, activeVertices[shortestPath[i + 1]].worldPoint, new Color(0f, 1f, 1f));
 		}
 		*/
+
+		renderer.material.SetColor("Rim Color", Color.white);
+		renderer.material.SetColor("_MainColor", Color.white);
+
 	} // End of Update().
 	
 

@@ -125,7 +125,7 @@ public class CameraControl : MonoBehaviour {
         else{
 			center = Vector3.zero;
 
-			if(!Environment.Inst || !Environment.Inst.isActiveAndEnabled){
+			if((!Environment.Inst || !Environment.Inst.isActiveAndEnabled) && (Assembly.getAll.Count > 0)){
 				// Center on average assembly position
 				for(int i = 0; i < Assembly.getAll.Count; i++)
 					center += Assembly.getAll[i].Position;
