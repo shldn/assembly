@@ -126,6 +126,8 @@ public class Amalgam : MonoBehaviour
 			}
 		}
 
+		renderer.material.SetColor("_RimColor", new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)));
+
 	} // End of Start().
 
 
@@ -181,7 +183,7 @@ public class Amalgam : MonoBehaviour
 			// Draw energy lines between neighbors.
 			for(int j = 0; j < activeVertices[i].neighbors.Length; j++){
 				if(activeVertices[i].openGates[j] && (activeVertices[i].energy > 0.01f)){
-					GLDebug.DrawLine(activeVertices[i].worldPoint, activeVertices[i].neighbors[j].worldPoint, new Color(0f, 0f, 1f, activeVertices[i].energy));
+					//GLDebug.DrawLine(activeVertices[i].worldPoint, activeVertices[i].neighbors[j].worldPoint, new Color(0f, 0f, 1f, activeVertices[i].energy));
 				}
 			}
 		}
@@ -231,6 +233,7 @@ public class Amalgam : MonoBehaviour
 			GLDebug.DrawLine(activeVertices[shortestPath[i]].worldPoint, activeVertices[shortestPath[i + 1]].worldPoint, new Color(0f, 1f, 1f));
 		}
 		*/
+
 	} // End of Update().
 	
 
