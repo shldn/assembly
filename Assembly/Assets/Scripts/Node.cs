@@ -255,6 +255,13 @@ public class Node {
 			Position -= (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
 		}
 
+		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
+			Vector3 tempPosition = Position;
+			tempPosition.x = Mathf.Clamp(tempPosition.x, -NodeController.Inst.worldSize.x, NodeController.Inst.worldSize.x);
+			tempPosition.y = Mathf.Clamp(tempPosition.y, -NodeController.Inst.worldSize.y, NodeController.Inst.worldSize.y);
+			tempPosition.z = Mathf.Clamp(tempPosition.z, -NodeController.Inst.worldSize.z, NodeController.Inst.worldSize.z);
+		}
+
 
 		// Reset power
 		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep);
