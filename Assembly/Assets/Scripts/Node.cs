@@ -49,7 +49,7 @@ public class Node {
 	float smoothedPower = 0f;
 	float waveformRunner = 0f;
 
-	float velocityCoefficient = 0.2f; // How much of motion is converted to velocity.
+	float velocityCoefficient = 0.1f; // How much of motion is converted to velocity.
 
 	public Vector3 velocity = Vector3.zero;
 
@@ -255,14 +255,6 @@ public class Node {
 			Position -= (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
 		}
 
-		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
-			Vector3 tempPosition = Position;
-			tempPosition.x = Mathf.Clamp(tempPosition.x, -NodeController.Inst.worldSize.x, NodeController.Inst.worldSize.x);
-			tempPosition.y = Mathf.Clamp(tempPosition.y, -NodeController.Inst.worldSize.y, NodeController.Inst.worldSize.y);
-			tempPosition.z = Mathf.Clamp(tempPosition.z, -NodeController.Inst.worldSize.z, NodeController.Inst.worldSize.z);
-		}
-
-
 		// Reset power
 		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep);
 
@@ -281,17 +273,20 @@ public class Node {
 
 		Vector3 thisFrameVelocity = delayPosition - Position;
 		velocity += thisFrameVelocity * velocityCoefficient;
-		velocity *= 0.99f;
-
-		if(Input.GetKey(KeyCode.V))
-			velocity += Vector3.forward * NodeController.physicsStep;
+		velocity *= 0.98f;
 
 		// In-editor control
 		rotation *= Quaternion.Inverse(Rotation) * cubeTransform.rotation;
 		position += cubeTransform.position - Position;
 
-		Position = delayPosition + velocity;
+		delayPosition += velocity;
+		Position = delayPosition;
 		Rotation = delayRotation;
+
+		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
+			if((Mathf.Abs(delayPosition.x) > NodeController.Inst.worldSize.x) || (Mathf.Abs(delayPosition.y) > NodeController.Inst.worldSize.y) || (Mathf.Abs(delayPosition.z) > NodeController.Inst.worldSize.z))
+				velocity += -delayPosition.normalized * NodeController.physicsStep;
+		}
 
 		cubeTransform.position = Position;
 		cubeTransform.rotation = Rotation;

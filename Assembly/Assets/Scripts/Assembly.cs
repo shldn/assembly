@@ -249,7 +249,6 @@ public class Assembly : CaptureObject{
 		if(!PersistentGameManager.IsClient)
 			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
-		/*
 		if(!PersistentGameManager.IsClient && (Node.getAll.Count < NodeController.Inst.worldNodeThreshold * 0.9f) && (energy > (maxEnergy * 0.9f)))
 			wantToMate = true;
 		else if((Node.getAll.Count > (NodeController.Inst.worldNodeThreshold * 0.8f)) || (energy < maxEnergy * 0.5f) && (Random.Range(0f, 1f) < 0.01f)){
@@ -268,7 +267,6 @@ public class Assembly : CaptureObject{
 				energy *= 0.5f;
 			}
 		}
-		*/
 
 		// We won't want to mate if our population cap has been reached.
 		if(wantToMate && !matingWith){

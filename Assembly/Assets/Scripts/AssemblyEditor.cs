@@ -25,6 +25,9 @@ public class AssemblyEditor : MonoBehaviour {
 
 	public GUISkin guiSkin;
 
+	public AudioClip buttonForwardClip;
+	public AudioClip buttonBackwardClip;
+
 
     void Start(){
         CaptureEditorManager.ObjectCaptured += HandleObjectCaptured;
@@ -121,28 +124,40 @@ public class AssemblyEditor : MonoBehaviour {
 					Rect buttonRect = new Rect(controlBarRect.x, controlBarRect.y, controlBarRect.width, buttonSize);
 					buttonRect = new Rect(controlBarRect.width * 0.5f, 0f, controlBarRect.width * 0.5f, buttonSize);
 
-					if(GUI.Button(buttonRect, visionRangeIcon))
+					if(GUI.Button(buttonRect, visionRangeIcon)){
+						AudioSource.PlayClipAtPoint(buttonForwardClip, Vector3.zero);
 						menu = MenuType.visionRange;
+					}
 					buttonRect.y += buttonRect.height + gutter;
 
-					if(GUI.Button(buttonRect, visionFOVIcon))
+					if(GUI.Button(buttonRect, visionFOVIcon)){
+						AudioSource.PlayClipAtPoint(buttonForwardClip, Vector3.zero);
 						menu = MenuType.visionScope;
+					}
 					buttonRect.y += buttonRect.height + gutter;
 
-					if(GUI.Button(buttonRect, travelIcon))
+					if(GUI.Button(buttonRect, travelIcon)){
+						AudioSource.PlayClipAtPoint(buttonForwardClip, Vector3.zero);
 						menu = MenuType.maximumTravel;
+					}
 					buttonRect.y += buttonRect.height + gutter;
 
-					if(GUI.Button(buttonRect, speedIcon))
+					if(GUI.Button(buttonRect, speedIcon)){
+						AudioSource.PlayClipAtPoint(buttonForwardClip, Vector3.zero);
 						menu = MenuType.maximumSpeed;
+					}
 					buttonRect.y += buttonRect.height + gutter;
 
-					if(GUI.Button(buttonRect, rotationIcon))
+					if(GUI.Button(buttonRect, rotationIcon)){
+						AudioSource.PlayClipAtPoint(buttonForwardClip, Vector3.zero);
 						menu = MenuType.rotation;
+					}
 					buttonRect.y += buttonRect.height + gutter;
 
-					if(GUI.Button(buttonRect, iqIcon))
+					if(GUI.Button(buttonRect, iqIcon)){
+						AudioSource.PlayClipAtPoint(buttonForwardClip, Vector3.zero);
 						menu = MenuType.iq;
+					}
 					buttonRect.y += buttonRect.height + gutter;
 
 					buttonRect.y += buttonRect.height + gutter;
@@ -222,14 +237,17 @@ public class AssemblyEditor : MonoBehaviour {
 					GUILayout.BeginHorizontal();
 					if(GUILayout.Button("Low", GUILayout.Height(defaultButtonSize))){
 						mutationRate = 0.1f;
+						AudioSource.PlayClipAtPoint(buttonForwardClip, Vector3.zero);
 						DoTest();
 					}
 					if(GUILayout.Button("High", GUILayout.Height(defaultButtonSize))){
 						mutationRate = 0.25f;
+						AudioSource.PlayClipAtPoint(buttonForwardClip, Vector3.zero);
 						DoTest();
 					}
 					GUILayout.EndHorizontal();
 					if(GUILayout.Button("Cancel", GUILayout.Height(defaultButtonSize))){
+						AudioSource.PlayClipAtPoint(buttonBackwardClip, Vector3.zero);
 						menu = MenuType.main;
 					}
 				}

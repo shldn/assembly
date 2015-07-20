@@ -336,8 +336,8 @@ public class CaptureNet_Manager : MonoBehaviour {
         if (!JellyfishGameManager.Inst)
             return;
 
-        Vector3 newJellyPos = Camera.main.transform.position + (Camera.main.transform.forward * 10f);
-        PlayInstantiationEffect(newJellyPos);
+        Vector3 newJellyPos = Camera.main.transform.position + (Camera.main.transform.forward * -50f) + (Random.insideUnitSphere * 30f);
+        //PlayInstantiationEffect(newJellyPos);
 
         Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, newJellyPos, Random.rotation) as Transform;
         JellyFishCreator newJellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
@@ -358,8 +358,8 @@ public class CaptureNet_Manager : MonoBehaviour {
             //return;
 
 		// Ensure assemblies are dropped in at a viable position, relative to the camera.
-        Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 20f);
-		assemblyNewPos += Random.insideUnitSphere * 10f;
+        Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 20f) + (Random.insideUnitSphere * 10f);
+        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.pushClip, Vector3.zero);
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 

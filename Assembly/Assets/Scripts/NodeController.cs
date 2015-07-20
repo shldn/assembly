@@ -25,7 +25,7 @@ public class NodeController : MonoBehaviour {
 	int maxNodes = 15;
 
 	public int worldNodeThreshold = 1000;
-    bool showLeaderboard = false;
+    bool showLeaderboard = true;
 
 	int nextAssemblyID = 0;
     HashSet<int> assemblyCaptured = new HashSet<int>(); // contains assembly ids if the assembly has been captured by a user.

@@ -272,6 +272,7 @@ public class PlayerSync : MonoBehaviour {
         Instantiate(PersistentGameManager.Inst.pingBurstObj, capturedObj.Position, Quaternion.identity);
         AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.captureClip, capturedObj.Position);
         editing = true;
+        //capturedObj.Destroy();
         capturedObj.Destroy();
     }
 
