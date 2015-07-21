@@ -72,6 +72,8 @@ public class CameraControl : MonoBehaviour {
         targetOrbit.y = (minTilt + maxTilt) * 0.5f;
         orbit = targetOrbit;
 
+		targetPanTilt = new Vector2(Mathf.DeltaAngle(0f, transform.eulerAngles.y), Mathf.DeltaAngle(0f, transform.eulerAngles.x));
+
 		galleryCam = Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient;
 	} // End of Start().
 	
@@ -88,8 +90,11 @@ public class CameraControl : MonoBehaviour {
 
 			float elevationPulseTime = 90f;
 			float maxPulseElevation = 45f;
-			targetRadius = (0.5f + (Mathf.Cos((Time.time / radiusPulseTime) * (Mathf.PI * 2f)) * 0.5f)) * maxPulseRadius;
-			targetOrbit.y = (0.5f + (Mathf.Cos((Time.time / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f)) * maxPulseElevation;
+			targetRadius = (Mathf.Cos((Time.time / radiusPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseRadius;
+			targetOrbit.y = (Mathf.Sin((Time.time / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseElevation;
+
+			print(targetOrbit);
+
 		}
 
 
