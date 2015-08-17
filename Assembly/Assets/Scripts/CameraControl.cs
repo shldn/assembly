@@ -93,8 +93,6 @@ public class CameraControl : MonoBehaviour {
 			targetRadius = (Mathf.Cos((Time.time / radiusPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseRadius;
 			targetOrbit.y = (Mathf.Sin((Time.time / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseElevation;
 
-			print(targetOrbit);
-
 		}
 
 
