@@ -43,34 +43,28 @@ public class TimedTrailRenderer : MonoBehaviour
  
    void Start()
    {
-      lastPosition = transform.position;
-      Destroy(o);
-      o = new GameObject("Trail");
-      o.layer = LayerMask.NameToLayer("TransparentFX");
-      o.transform.parent = null;
-      o.transform.position = Vector3.zero;
-      o.transform.rotation = Quaternion.identity;
-      o.transform.localScale = Vector3.one;
-      o.AddComponent(typeof(MeshFilter));
-      o.AddComponent(typeof(MeshRenderer));
-      o.renderer.material = material;
+       if (o == null)
+           Init();
    }
  
    void OnEnable ()
    {
-      lastPosition = transform.position;
-      Destroy(o);
-      o = new GameObject("Trail");
-      o.layer = LayerMask.NameToLayer("TransparentFX");
-      o.transform.parent = null;
-      o.transform.position = Vector3.zero;
-      o.transform.rotation = Quaternion.identity;
-      o.transform.localScale = Vector3.one;
-      o.AddComponent(typeof(MeshFilter));
-      o.AddComponent(typeof(MeshRenderer));
-      o.renderer.material = material;
+       Init();
    }
 
+   void Init(){
+       lastPosition = transform.position;
+       Destroy(o);
+       o = new GameObject("Trail");
+       o.layer = LayerMask.NameToLayer("TransparentFX");
+       o.transform.parent = null;
+       o.transform.position = Vector3.zero;
+       o.transform.rotation = Quaternion.identity;
+       o.transform.localScale = Vector3.one;
+       o.AddComponent(typeof(MeshFilter));
+       o.AddComponent(typeof(MeshRenderer));
+       o.renderer.material = material;
+   }
 
 	void OnDestroy(){
 		Destroy(o);
@@ -166,9 +160,9 @@ public class TimedTrailRenderer : MonoBehaviour
       {
         re = true;   
       }
- 
- 
-      if(re)
+
+
+      if(re && o.renderer.isVisible)
       {
         lastRebuildTime = Time.time;
  
