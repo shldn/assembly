@@ -336,8 +336,9 @@ public class CaptureNet_Manager : MonoBehaviour {
         if (!JellyfishGameManager.Inst)
             return;
 
-        Vector3 newJellyPos = Camera.main.transform.position + (Camera.main.transform.forward * -50f) + (Random.insideUnitSphere * 30f);
-        //PlayInstantiationEffect(newJellyPos);
+        float distInFrontOfCam = 10f;
+        Vector3 newJellyPos = Camera.main.transform.position + (Camera.main.transform.forward * distInFrontOfCam) + (Random.insideUnitSphere * 0.6f * distInFrontOfCam);
+        PlayInstantiationEffect(newJellyPos);
 
         Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, newJellyPos, Random.rotation) as Transform;
         JellyFishCreator newJellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
