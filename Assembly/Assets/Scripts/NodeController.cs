@@ -57,6 +57,9 @@ public class NodeController : MonoBehaviour {
     System.DateTime lastResetTime = System.DateTime.Now;
     public System.DateTime lastPlayerActivityTime = System.DateTime.Now;
 
+    // Debug
+    public int NumAssembliesAllocated { get { return nextAssemblyID; } }
+
 	enum WorldAnim{
 		capsule,
 		sphere

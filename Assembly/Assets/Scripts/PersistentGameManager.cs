@@ -78,6 +78,15 @@ public class PersistentGameManager : MonoBehaviour {
                 displayIP.enabled = !displayIP.enabled;
         }
 
+        if (KeyInput.GetKeyDown(KeyCode.F))
+        {
+            DiagnosticHUD diagnosticHud = gameObject.GetComponent<DiagnosticHUD>();
+            if (diagnosticHud == null)
+                diagnosticHud = gameObject.AddComponent<DiagnosticHUD>();
+            else
+                diagnosticHud.enabled = !diagnosticHud.enabled;
+        }
+
         // Quit on Escape
         if (Input.GetKeyUp(KeyCode.Escape))
             Application.Quit();
