@@ -34,8 +34,12 @@ public class TimedTrailRenderer : MonoBehaviour
    private float lastRebuildTime = 0.00f;
    private bool lastFrameEmit = true;
 
-    // Triangle List helper
+   // Bounds calcultation
+   Bounds meshBounds = new Bounds();
+
+   // Triangle List helper
    private static List<int> triangles = new List<int>();
+
  
    public class Point
    {
@@ -99,6 +103,7 @@ public class TimedTrailRenderer : MonoBehaviour
       if(!Camera.main) return;
  
       bool re = false;
+      bool dirtyBounds = false;
  
       // if we have moved enough, create a new vertex and make sure we rebuild the mesh
       float theDistance = (lastPosition - transform.position).magnitude;
@@ -125,6 +130,12 @@ public class TimedTrailRenderer : MonoBehaviour
             p.timeCreated = Time.time;
             points.AddLast(p);
             lastPosition = transform.position;
+            dirtyBounds = !meshBounds.Contains(p.position + Vector3.one) || !meshBounds.Contains(p.position - Vector3.one);
+            if(dirtyBounds)
+            {
+                meshBounds.Encapsulate(p.position + Vector3.one);
+                meshBounds.Encapsulate(p.position - Vector3.one);
+            }
           }
           else
           {
@@ -258,9 +269,14 @@ public class TimedTrailRenderer : MonoBehaviour
           mesh.triangles = GetTriangles(points.Count);
         }
       }
+      else if(dirtyBounds)
+      {
+          Mesh mesh = (o.GetComponent(typeof(MeshFilter)) as MeshFilter).mesh;
+          mesh.bounds = meshBounds;
+      }
    }
 
-    private static int[] GetTriangles(int numPoints)
+   private static int[] GetTriangles(int numPoints)
    {
        UpdateTriangleList(numPoints);
        return triangles.GetRange(0, (numPoints - 1) * 6).ToArray();
