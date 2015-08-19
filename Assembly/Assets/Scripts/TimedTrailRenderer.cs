@@ -202,7 +202,6 @@ public class TimedTrailRenderer : MonoBehaviour
           Vector3[] newVertices = new Vector3[points.Count * 2];
           Vector2[] newUV = new Vector2[points.Count * 2];
           Color[] newColors = new Color[points.Count * 2];
-          UpdateTriangleList(points.Count);
  
           int i = 0;
           float curDistance = 0.00f;
