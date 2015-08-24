@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
  
 public class TimedTrailRenderer : MonoBehaviour
 {
@@ -26,13 +26,20 @@ public class TimedTrailRenderer : MonoBehaviour
  
    public bool autoDestruct = false;
  
-   private ArrayList points = new ArrayList();
-   private GameObject o;
+   private LinkedList<Point> points = new LinkedList<Point>();
+   private GameObject o = null;
    private Vector3 lastPosition;
    private Vector3 lastCameraPosition1;
    private Vector3 lastCameraPosition2;
    private float lastRebuildTime = 0.00f;
    private bool lastFrameEmit = true;
+
+   // Bounds calcultation
+   Bounds meshBounds = new Bounds();
+
+   // Triangle List helper
+   private static List<int> triangles = new List<int>();
+
  
    public class Point
    {
@@ -43,34 +50,29 @@ public class TimedTrailRenderer : MonoBehaviour
  
    void Start()
    {
-      lastPosition = transform.position;
-      Destroy(o);
-      o = new GameObject("Trail");
-      o.layer = LayerMask.NameToLayer("TransparentFX");
-      o.transform.parent = null;
-      o.transform.position = Vector3.zero;
-      o.transform.rotation = Quaternion.identity;
-      o.transform.localScale = Vector3.one;
-      o.AddComponent(typeof(MeshFilter));
-      o.AddComponent(typeof(MeshRenderer));
-      o.renderer.material = material;
+        if(o == null)
+            Init();
    }
  
    void OnEnable ()
    {
-      lastPosition = transform.position;
-      Destroy(o);
-      o = new GameObject("Trail");
-      o.layer = LayerMask.NameToLayer("TransparentFX");
-      o.transform.parent = null;
-      o.transform.position = Vector3.zero;
-      o.transform.rotation = Quaternion.identity;
-      o.transform.localScale = Vector3.one;
-      o.AddComponent(typeof(MeshFilter));
-      o.AddComponent(typeof(MeshRenderer));
-      o.renderer.material = material;
+       Init();
    }
 
+   void Init()
+   {
+       lastPosition = transform.position;
+       Destroy(o);
+       o = new GameObject("Trail");
+       o.layer = LayerMask.NameToLayer("TransparentFX");
+       o.transform.parent = null;
+       o.transform.position = Vector3.zero;
+       o.transform.rotation = Quaternion.identity;
+       o.transform.localScale = Vector3.one;
+       o.AddComponent(typeof(MeshFilter));
+       o.AddComponent(typeof(MeshRenderer));
+       o.renderer.material = material;
+   }
 
 	void OnDestroy(){
 		Destroy(o);
@@ -101,6 +103,7 @@ public class TimedTrailRenderer : MonoBehaviour
       if(!Camera.main) return;
  
       bool re = false;
+      bool dirtyBounds = false;
  
       // if we have moved enough, create a new vertex and make sure we rebuild the mesh
       float theDistance = (lastPosition - transform.position).magnitude;
@@ -115,8 +118,8 @@ public class TimedTrailRenderer : MonoBehaviour
           }
           else
           {
-            Vector3 l1 = ((Point)points[points.Count - 2]).position - ((Point)points[points.Count - 3]).position;
-            Vector3 l2 = ((Point)points[points.Count - 1]).position - ((Point)points[points.Count - 2]).position;
+            Vector3 l1 = points.Last.Previous.Value.position - points.Last.Previous.Previous.Value.position;
+            Vector3 l2 = points.Last.Value.position - points.Last.Previous.Value.position;
             if(Vector3.Angle(l1, l2) > maxAngle || theDistance > maxVertexDistance) make = true;
           }
  
@@ -125,31 +128,37 @@ public class TimedTrailRenderer : MonoBehaviour
             Point p = new Point();
             p.position = transform.position;
             p.timeCreated = Time.time;
-            points.Add(p);
+            points.AddLast(p);
             lastPosition = transform.position;
+            dirtyBounds = !meshBounds.Contains(p.position + Vector3.one) || !meshBounds.Contains(p.position - Vector3.one);
+            if(dirtyBounds)
+            {
+                meshBounds.Encapsulate(p.position + Vector3.one);
+                meshBounds.Encapsulate(p.position - Vector3.one);
+            }
           }
           else
           {
-            ((Point)points[points.Count - 1]).position = transform.position;
-            ((Point)points[points.Count - 1]).timeCreated = Time.time;
+            points.Last.Value.position = transform.position;
+            points.Last.Value.timeCreated = Time.time;
           }
         }
         else if(points.Count > 0)
         {
-          ((Point)points[points.Count - 1]).position = transform.position;
-          ((Point)points[points.Count - 1]).timeCreated = Time.time;
+          points.Last.Value.position = transform.position;
+          points.Last.Value.timeCreated = Time.time;
         }
       }
- 
-      if(!emit && lastFrameEmit && points.Count > 0) ((Point)points[points.Count - 1]).lineBreak = true;
+
+      if(!emit && lastFrameEmit && points.Count > 0) points.Last.Value.lineBreak = true;
       lastFrameEmit = emit;
  
       // approximate if we should rebuild the mesh or not
       if(points.Count > 1)
       {
-        Vector3 cur1 = Camera.main.WorldToScreenPoint(((Point)points[0]).position);
+        Vector3 cur1 = Camera.main.WorldToScreenPoint(points.First.Value.position);
         lastCameraPosition1.z = 0;
-        Vector3 cur2 = Camera.main.WorldToScreenPoint(((Point)points[points.Count - 1]).position);
+        Vector3 cur2 = Camera.main.WorldToScreenPoint(points.Last.Value.position);
         lastCameraPosition2.z = 0;
  
         float distance = (lastCameraPosition1 - cur1).magnitude;
@@ -166,37 +175,41 @@ public class TimedTrailRenderer : MonoBehaviour
       {
         re = true;   
       }
- 
- 
-      if(re)
+
+
+      if(re && o.renderer.isVisible)
       {
         lastRebuildTime = Time.time;
  
-        ArrayList remove = new ArrayList();
-        int i = 0;
-        foreach (Point p in points)
+        LinkedListNode<Point> it = points.First;
+        while(it != null)
         {
-          // cull old points first
-           if (Time.time - p.timeCreated > lifeTime) remove.Add(p);
-          i++;
+            if (Time.time - it.Value.timeCreated > lifeTime)
+            {
+                LinkedListNode<Point> toRemove = it;
+                it = it.Next;
+                points.Remove(toRemove);
+            }
+            else
+            {
+                // the points are in order, so once we reach a point with valid lifetime, all points added after it will be valid as well.
+                it = null;
+            }
         }
- 
-        foreach (Point p in remove) points.Remove(p);
-        remove.Clear();
  
         if(points.Count > 1)
         {
           Vector3[] newVertices = new Vector3[points.Count * 2];
           Vector2[] newUV = new Vector2[points.Count * 2];
-          int[] newTriangles = new int[(points.Count - 1) * 6];
           Color[] newColors = new Color[points.Count * 2];
  
-          i = 0;
+          int i = 0;
           float curDistance = 0.00f;
- 
-          foreach (Point p in points)
+
+          it = points.First;
+          while (it != null)
           {
-            float time = (Time.time - p.timeCreated) / lifeTime;
+            float time = (Time.time - it.Value.timeCreated) / lifeTime;
  
             Color color = Color.Lerp(Color.white, Color.clear, time);
             if (colors != null && colors.Length > 0)
@@ -223,35 +236,28 @@ public class TimedTrailRenderer : MonoBehaviour
             }
  
             Vector3 lineDirection = Vector3.zero;
-            if(i == 0) lineDirection = p.position - ((Point)points[i + 1]).position;
-            else lineDirection = ((Point)points[i - 1]).position - p.position;
- 
-            Vector3 vectorToCamera = Camera.main.transform.position - p.position;
+            if (i == 0) lineDirection = it.Value.position - it.Next.Value.position;
+            else lineDirection = it.Previous.Value.position - it.Value.position;
+
+            Vector3 vectorToCamera = Camera.main.transform.position - it.Value.position;
             Vector3 perpendicular = Vector3.Cross(lineDirection, vectorToCamera).normalized;
- 
-            newVertices[i * 2] = p.position + (perpendicular * (size * 0.5f));
-            newVertices[(i * 2) + 1] = p.position + (-perpendicular * (size * 0.5f));
+
+            newVertices[i * 2] = it.Value.position + (perpendicular * (size * 0.5f));
+            newVertices[(i * 2) + 1] = it.Value.position + (-perpendicular * (size * 0.5f));
  
             newColors[i * 2] = newColors[(i * 2) + 1] = color;
  
             newUV[i * 2] = new Vector2(curDistance * uvLengthScale, 0);
             newUV[(i * 2) + 1] = new Vector2(curDistance * uvLengthScale, 1);
  
-            if(i > 0 && !((Point)points[i - 1]).lineBreak)
+            if(i > 0 && !(it.Previous.Value.lineBreak))
             {
-               if(higherQualityUVs) curDistance += (p.position - ((Point)points[i - 1]).position).magnitude;
-               else curDistance += (p.position - ((Point)points[i - 1]).position).sqrMagnitude;
- 
-               newTriangles[(i - 1) * 6] = (i * 2) - 2;
-               newTriangles[((i - 1) * 6) + 1] = (i * 2) - 1;
-               newTriangles[((i - 1) * 6) + 2] = i * 2;
- 
-               newTriangles[((i - 1) * 6) + 3] = (i * 2) + 1;
-               newTriangles[((i - 1) * 6) + 4] = i * 2;
-               newTriangles[((i - 1) * 6) + 5] = (i * 2) - 1;
+               if(higherQualityUVs) curDistance += (it.Value.position - (it.Previous.Value.position)).magnitude;
+               else curDistance += (it.Value.position - (it.Previous.Value.position)).sqrMagnitude;
             }
  
             i++;
+            it = it.Next;
           }
  
           Mesh mesh = (o.GetComponent(typeof(MeshFilter)) as MeshFilter).mesh;
@@ -259,8 +265,38 @@ public class TimedTrailRenderer : MonoBehaviour
           mesh.vertices = newVertices;
           mesh.colors = newColors;
           mesh.uv = newUV;
-          mesh.triangles = newTriangles;
+          mesh.triangles = GetTriangles(points.Count);
         }
       }
+      else if(dirtyBounds)
+      {
+          Mesh mesh = (o.GetComponent(typeof(MeshFilter)) as MeshFilter).mesh;
+          mesh.bounds = meshBounds;
+      }
+   }
+
+   private static int[] GetTriangles(int numPoints)
+   {
+       UpdateTriangleList(numPoints);
+       return triangles.GetRange(0, (numPoints - 1) * 6).ToArray();
+   }
+
+    // Maintains a static triangle list
+    // since the triangle indices never change across instances, they can pull from the same single static list.
+    // pass in the ptSize needed, to make sure the triangle list is long enough for this instance.
+   private static void UpdateTriangleList(int numPoints)
+   {
+       int size = (numPoints - 1) * 6;
+       while( size > triangles.Count )
+       {
+           int i = (triangles.Count / 6) + 1;
+           triangles.Add((i * 2) - 2);
+           triangles.Add((i * 2) - 1);
+           triangles.Add(i * 2);
+
+           triangles.Add((i * 2) + 1);
+           triangles.Add(i * 2);
+           triangles.Add((i * 2) - 1);
+       }
    }
 }
