@@ -2,6 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 
+
+public enum CameraMode {
+	STATIC, // Camera will stay in one place.
+	USER_ORBIT, // Camera will orbit and zoom based on user mouse input.
+	USER_FREECAM, // Camera can be moved around freely with WASDQE and mouse.
+	SIMPLE_DEMO, // Camera will slowly pan around world origin while zooming in and out.
+	SMART_DEMO, // Camera will move the same as SIMPLE_DEMO but also rotate to focus on interesting things in the environment.
+	NEURO_SCALE // Camera control is relegated to the NeuroScaleDemo script.
+} // End of CameraMode.
+
+
 public class CameraControl : MonoBehaviour {
 
     public static CameraControl Inst;
@@ -12,13 +23,14 @@ public class CameraControl : MonoBehaviour {
     public float smoothTime = 0.5f;
 
     // Orbit = pan/tilt x/y of the camera around the centerPos.
-    public float orbitSensitivity = 1f;
-    Vector2 orbit = Vector2.zero;
+    public float mouseSensitivity = 1f;
     public Vector2 targetOrbit = Vector2.zero;
-    Vector2 orbitVel = Vector2.zero;
+    Vector2 orbit = Vector2.zero;
+    Vector2 orbitVel = Vector2.zero; // for smoothdamp
+
     // How high or low the camera can be tilted.
-    public float minTilt = 0f;
-    public float maxTilt = 80f;
+    public float minTilt = 80f;
+    public float maxTilt = -80f;
 
     // Radius = distance from the center position. "Orbit distance"
     public float minRadius = 1f;
@@ -49,7 +61,7 @@ public class CameraControl : MonoBehaviour {
 	public Assembly assemblyOfInterest = null;
 	float assemblyOfInterestStaleness = 0f;
 
-	Vector2 targetPanTilt = Vector2.zero;
+	Vector2 targetPanTilt = new Vector2(0f, 0f);
 	Vector2 panTiltVel = Vector2.zero;
 
 
@@ -68,11 +80,12 @@ public class CameraControl : MonoBehaviour {
         // Camera initial values
         targetRadius = maxRadius;
         radius = targetRadius;
-        targetOrbit.x = Random.Range(0f, 360f);
+        targetOrbit.x = 300f;
         targetOrbit.y = (minTilt + maxTilt) * 0.5f;
         orbit = targetOrbit;
 
-		targetPanTilt = new Vector2(Mathf.DeltaAngle(0f, transform.eulerAngles.y), Mathf.DeltaAngle(0f, transform.eulerAngles.x));
+		transform.eulerAngles = new Vector3(0f, 120f, 0f);
+
 
 		galleryCam = Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient;
 	} // End of Start().
@@ -86,14 +99,12 @@ public class CameraControl : MonoBehaviour {
 		// Gallery cam
 		if(galleryCam){
 			float radiusPulseTime = 200f;
-			float maxPulseRadius = 500f;
+			float maxPulseRadius = (Environment.Inst && Environment.Inst.enabled)? 500f : 1000f;
 
 			float elevationPulseTime = 90f;
 			float maxPulseElevation = 45f;
 			targetRadius = (Mathf.Cos((Time.time / radiusPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseRadius;
 			targetOrbit.y = (Mathf.Sin((Time.time / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseElevation;
-
-			print(targetOrbit);
 
 		}
 
@@ -130,7 +141,7 @@ public class CameraControl : MonoBehaviour {
         else{
 			center = Vector3.zero;
 
-			if((!Environment.Inst || !Environment.Inst.isActiveAndEnabled) && (Assembly.getAll.Count > 0)){
+			if(!galleryCam && (!Environment.Inst || !Environment.Inst.isActiveAndEnabled) && (Assembly.getAll.Count > 0)){
 				// Center on average assembly position
 				for(int i = 0; i < Assembly.getAll.Count; i++)
 					center += Assembly.getAll[i].Position;
@@ -176,8 +187,8 @@ public class CameraControl : MonoBehaviour {
 
         // Mouse/touch orbit.
         if((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) && CaptureEditorManager.IsEditing && !NodeEngineering.Inst.uiLockout) || Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease)){
-            targetOrbit.x += Input.GetAxis("Mouse X") * orbitSensitivity;
-            targetOrbit.y += -Input.GetAxis("Mouse Y") * orbitSensitivity;
+            targetOrbit.x += Input.GetAxis("Mouse X") * mouseSensitivity;
+            targetOrbit.y += -Input.GetAxis("Mouse Y") * mouseSensitivity;
         }
             
 

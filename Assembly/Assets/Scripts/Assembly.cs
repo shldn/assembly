@@ -299,6 +299,7 @@ public class Assembly : CaptureObject{
 				newAssembly.name = name.Substring(0, Mathf.RoundToInt(name.Length * 0.5f)) + matingWith.name.Substring(matingWith.name.Length - Mathf.RoundToInt(matingWith.name.Length * 0.5f), Mathf.RoundToInt(matingWith.name.Length * 0.5f));
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(matingWith);
+				newAssembly.amalgam = amalgam;
 
 				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length + 1);
 				Triplet spawnHexPos = Triplet.zero;

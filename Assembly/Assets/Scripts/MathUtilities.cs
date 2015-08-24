@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class MathUtilities {
+public static class MathUtilities {
 
 	public static Vector3 RandomVector3Cube(float radius){
 	    return new Vector3(Random.Range(-radius, radius),
@@ -80,5 +80,9 @@ public class MathUtilities {
 
     return points
 	*/
+
+	public static Color SetAlpha(this Color color, float alpha){
+		return new Color(color.r, color.g, color.b, alpha);
+	} // End of SetAlpha().
 
 } // End of MathUtilities.

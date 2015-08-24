@@ -59,7 +59,7 @@ public class Node {
 			return position;
 		}set{
 			// Neutralize velocity.
-			Vector3 flux = position - value;
+			//Vector3 flux = position - value;
 			//velocity += flux * velocityCoefficient;
 
 			position = value;
