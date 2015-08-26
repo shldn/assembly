@@ -333,6 +333,13 @@ public class Assembly : CaptureObject{
         distanceCovered += Vector3.Distance(lastPosition, newPosition);
         velocity = (newPosition - lastPosition) / Time.deltaTime;
         lastPosition = newPosition;
+
+        // Keeps assemblies in Capsule
+        if (Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f)
+        {
+            foreach (Node someNode in nodeDict.Values)
+                someNode.velocity += -Position.normalized * NodeController.physicsStep;
+        }
 	} // End of Update().
 
     private void UpdateFamilyTreeFromParent(Assembly parent)

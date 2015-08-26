@@ -55,6 +55,12 @@ public class FoodPellet {
 			NodeController.Inst.AdvanceWorldTick();
 			cull = true;
 		}
+
+        // Destroy nodes outside of worlds
+        if (Mathf.Sqrt(Mathf.Pow(worldPosition.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(worldPosition.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(worldPosition.z / NodeController.Inst.worldSize.z, 2f)) > 1f)
+        {
+            cull = true;
+        }
 	} // End of Update().
 
 
