@@ -24,13 +24,6 @@ public class DiagnosticHUD : MonoBehaviour {
     private float logInterval = 0.5f * 60f * 60f;
     private float lastLogTime = 0f;
 
-    System.Diagnostics.Process proc;
-
-
-    void Start()
-    {
-        proc = System.Diagnostics.Process.GetCurrentProcess();
-    }
 
     void Update()
     {
