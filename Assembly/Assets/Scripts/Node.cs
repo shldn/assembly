@@ -179,7 +179,7 @@ public class Node {
 				delayPosition += propulsion;
 			}
 
-			GLDebug.DrawLine(position, curNeighborNode.position, Color.Lerp(cubeTransform.renderer.material.color, curNeighborNode.cubeTransform.renderer.material.color, 0.5f), 0, false);
+			//GLDebug.DrawLine(position, curNeighborNode.position, Color.Lerp(cubeTransform.renderer.material.color, curNeighborNode.cubeTransform.renderer.material.color, 0.5f), 0, false);
 		}
 		
 		// Update node type?
