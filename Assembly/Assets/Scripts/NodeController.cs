@@ -247,7 +247,8 @@ public class NodeController : MonoBehaviour {
 					}else
 						foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
 
-					new FoodPellet(foodPosition);
+                    if(FoodPellet.WithinBoundary(foodPosition))
+    					new FoodPellet(foodPosition);
 				}else
 					foodInitialized = true;
 			}

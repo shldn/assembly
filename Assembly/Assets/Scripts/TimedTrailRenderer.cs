@@ -36,6 +36,8 @@ public class TimedTrailRenderer : MonoBehaviour
 
    // Bounds calcultation
    Bounds meshBounds = new Bounds();
+   bool rebuildBounds = false;
+   bool lastFrameVisible = true;
 
    // Triangle List helper
    private static List<int> triangles = new List<int>();
@@ -72,6 +74,9 @@ public class TimedTrailRenderer : MonoBehaviour
        o.AddComponent(typeof(MeshFilter));
        o.AddComponent(typeof(MeshRenderer));
        o.renderer.material = material;
+
+       meshBounds.center = transform.position;
+       meshBounds.size = Vector3.one;
    }
 
 	void OnDestroy(){
@@ -170,6 +175,8 @@ public class TimedTrailRenderer : MonoBehaviour
           lastCameraPosition1 = cur1;
           lastCameraPosition2 = cur2;
         }
+        if (!lastFrameVisible && IsTrailVisible())
+            re = true;
       }
       else
       {
@@ -177,7 +184,7 @@ public class TimedTrailRenderer : MonoBehaviour
       }
 
 
-      if(re && o.renderer.isVisible)
+      if(re)
       {
         lastRebuildTime = Time.time;
  
@@ -189,6 +196,7 @@ public class TimedTrailRenderer : MonoBehaviour
                 LinkedListNode<Point> toRemove = it;
                 it = it.Next;
                 points.Remove(toRemove);
+                rebuildBounds = true;
             }
             else
             {
@@ -196,8 +204,8 @@ public class TimedTrailRenderer : MonoBehaviour
                 it = null;
             }
         }
- 
-        if(points.Count > 1)
+
+        if (points.Count > 1 && IsTrailVisible())
         {
           Vector3[] newVertices = new Vector3[points.Count * 2];
           Vector2[] newUV = new Vector2[points.Count * 2];
@@ -267,12 +275,37 @@ public class TimedTrailRenderer : MonoBehaviour
           mesh.uv = newUV;
           mesh.triangles = GetTriangles(points.Count);
         }
+        else if(rebuildBounds && points.Count > 0)
+        {
+            meshBounds = new Bounds(points.First.Value.position, Vector3.one);
+            foreach(Point p in points)
+            {
+                meshBounds.Encapsulate(p.position + Vector3.one);
+                meshBounds.Encapsulate(p.position - Vector3.one);
+            }
+            rebuildBounds = false;
+        }
       }
       else if(dirtyBounds)
       {
           Mesh mesh = (o.GetComponent(typeof(MeshFilter)) as MeshFilter).mesh;
           mesh.bounds = meshBounds;
       }
+
+      if (lastFrameVisible && !IsTrailVisible())
+      {
+          // Clear the mesh, or it could be left floating in space while the latest points are still invisible to the camera.
+          Mesh mesh = (o.GetComponent(typeof(MeshFilter)) as MeshFilter).mesh;
+          mesh.Clear();
+      }
+
+      lastFrameVisible = IsTrailVisible();
+   }
+
+   private bool IsTrailVisible()
+   {
+       Plane[] planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
+       return GeometryUtility.TestPlanesAABB(planes, meshBounds);
    }
 
    private static int[] GetTriangles(int numPoints)

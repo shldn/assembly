@@ -76,6 +76,8 @@ public class CaptureNet_Manager : MonoBehaviour {
             
         tempServerName = serverTagline;
 
+        InvokeRepeating("ReregisterMasterServer", 60 * 60, 60 * 60);
+
     } // End of Awake().
 
 
@@ -328,7 +330,11 @@ public class CaptureNet_Manager : MonoBehaviour {
             MasterServer.UnregisterHost();
     } // End of OnApplicationQuit().
 
-
+    void ReregisterMasterServer()
+    {
+        MasterServer.UnregisterHost();
+        MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
+    }
 
     [RPC] // Server receives this from client when they send a jellyfish back.
     void PushJelly(int head, int tail, int bobble, int wing){
