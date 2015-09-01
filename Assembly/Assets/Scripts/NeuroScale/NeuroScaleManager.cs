@@ -31,6 +31,11 @@ public class MessageEventArgs : System.EventArgs
     public string msg;
 }
 
+public enum NeuroPipeline{
+    ECHO,
+    ATTENTION,
+}
+
 public class NeuroScaleManager : MonoBehaviour {
 
     private static NeuroScaleManager mInst = null;
@@ -50,6 +55,8 @@ public class NeuroScaleManager : MonoBehaviour {
     private string subscribe_topic = "/xxxxxxxxxxxxxxxxxxxxxx/out";
     private string publish_topic = "/xxxxxxxxxxxxxxxxxxxxxx/in";
 
+    // Pipeline
+    NeuroPipeline pipeline = NeuroPipeline.ATTENTION;
 
     // Communication helpers
     private MqttClient mqttClient = null;
@@ -80,23 +87,43 @@ public class NeuroScaleManager : MonoBehaviour {
         mqttClient.ConnectionClosed += OnConnectionClosed;
         mqttClient.MqttMsgSubscribed += OnSubscribed;
         mqttClient.MqttMsgUnsubscribed += OnUnsubscribed;
-        mqttClient.MqttMsgPublished += OnPublished;        
+        mqttClient.MqttMsgPublished += OnPublished;
 
         // Create Echo instance
         restHelper = new RESTHelper("http://api2.neuroscale.io/v1/instances", new Dictionary<string, string>() { { "Authorization", "Bearer " + access_token } });
-        InitializeEchoInstance();
+        InitializeInstance();
         InvokeRepeating("ConnectAndSubscribe",10f, 3f);
 
 
 #endif
     }
 
+    void InitializeInstance()
+    {
+        if (pipeline == NeuroPipeline.ATTENTION)
+            InitializeAttentionInstance();
+        else if (pipeline == NeuroPipeline.ECHO)
+            InitializeEchoInstance();
+    }
+
     // Send request to setup an echo instance, parse the response.
     void InitializeEchoInstance()
     {
         string response = restHelper.sendRequest("", "POST", "{\"persist\":{\"dataset_in\":false,\"dataset_out\":false,\"model\":false},\"pipeline\":\"pl_nZcKxcLPkmpcPCskUcbRAZ\"}");
+        SetDataFromInitResponse(response);
 
-        JSONObject jsonObj = JSONObject.Parse(response);
+    }
+
+    // Send request to setup an attention instance, parse the response.
+    void InitializeAttentionInstance()
+    {
+        string response = restHelper.sendRequest("", "POST", "{\"persist\":{\"dataset_in\":false,\"dataset_out\":false,\"model\":false},\"pipeline\":\"pl_attention\",\"properties\":{\"tag\":\"Attention Instance\",\"playername\":\"myplayer\"}}");
+        SetDataFromInitResponse(response);
+    }
+
+    void SetDataFromInitResponse(string responseJSON)
+    {
+        JSONObject jsonObj = JSONObject.Parse(responseJSON);
         if (jsonObj != null && jsonObj.ContainsKey("id"))
         {
             clientID = jsonObj.GetString("id");
@@ -106,13 +133,13 @@ public class NeuroScaleManager : MonoBehaviour {
         if (jsonObj != null && jsonObj.ContainsKey("endpoints"))
         {
             JSONObject endpointsObj = jsonObj.GetObject("endpoints");
-            if(endpointsObj != null && endpointsObj.ContainsKey("data"))
+            if (endpointsObj != null && endpointsObj.ContainsKey("data"))
             {
                 JSONArray dataArr = endpointsObj.GetArray("data");
                 if (dataArr.Length > 0 && dataArr[0].Obj.ContainsKey("url"))
                 {
                     string url = dataArr[0].Obj.GetString("url");
-                    int splitIdx = url.IndexOf('/',8);
+                    int splitIdx = url.IndexOf('/', 8);
                     subscribe_topic = url.Substring(splitIdx);
                     Debug.Log("sub topic: " + subscribe_topic);
                 }
