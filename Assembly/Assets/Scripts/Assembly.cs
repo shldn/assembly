@@ -281,7 +281,8 @@ public class Assembly : CaptureObject{
 				if(matingWith.myNodesIndexed.Length > i){
 					otherNode = matingWith.myNodesIndexed[i];
 
-					GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
+					if(myNode.cubeTransform.renderer.enabled && otherNode.cubeTransform.renderer.enabled)
+						GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
 					Vector3 vectorToMate = myNode.Position - otherNode.Position;
 					float distance = vectorToMate.magnitude;
 			

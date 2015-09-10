@@ -31,6 +31,9 @@ public class FoodPellet {
 	float maxEnergy = 10f;
 	public bool cull = false;
 
+	public bool render = true;
+	Renderer[] renderers;
+
     // For Olympics
     public Assembly owner = null; // to restrict energy consumption to just this entity
 
@@ -39,6 +42,7 @@ public class FoodPellet {
 		worldPosition = position;
 		worldRotation = Random.rotation;
 		transform = MonoBehaviour.Instantiate(NodeController.Inst.physFoodPrefab, worldPosition, worldRotation) as Transform;
+		renderers = transform.GetComponentsInChildren<Renderer>();
 
 		all.Add(this);
 		AllFoodTree.Insert(this);
@@ -61,6 +65,9 @@ public class FoodPellet {
         {
             cull = true;
         }
+
+		for(int i = 0; i < renderers.Length; i++)
+			renderers[i].enabled = render;
 	} // End of Update().
 
 

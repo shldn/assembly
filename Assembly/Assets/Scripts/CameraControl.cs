@@ -87,7 +87,7 @@ public class CameraControl : MonoBehaviour {
 		transform.eulerAngles = new Vector3(0f, 120f, 0f);
 
 
-		galleryCam = Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient;
+		galleryCam = Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient && !NeuroScaleDemo.Inst;
 	} // End of Start().
 	
 
