@@ -5,6 +5,7 @@ using Boomlagoon.JSON;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 using System.Collections.Generic;
+using System;
 
 //----------------------------------------------------------//
 // NeuroScaleManager
@@ -65,6 +66,9 @@ public class NeuroScaleManager : MonoBehaviour {
     // state bools
     private bool instanceRunning = false;
     private bool connected = false;
+
+    // Timing measurements
+    DateTime initTime = DateTime.Now;
     
     // Events
     public delegate void MessageEventHandler(object sender, MessageEventArgs e);
@@ -104,6 +108,8 @@ public class NeuroScaleManager : MonoBehaviour {
             InitializeAttentionInstance();
         else if (pipeline == NeuroPipeline.ECHO)
             InitializeEchoInstance();
+
+        initTime = DateTime.Now;
     }
 
     // Send request to setup an echo instance, parse the response.
@@ -173,7 +179,7 @@ public class NeuroScaleManager : MonoBehaviour {
         if (!IsInstanceRunning())
             return;
 
-        Debug.Log("Connecting and subscribing");
+        Debug.Log("Connecting and subscribing - " + (DateTime.Now - initTime).TotalSeconds + " secs to initialize.");
         mqttClient.Connect(clientID, "", "", true, 120);
         mqttClient.Subscribe(new string[] { subscribe_topic }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
         connected = true;
