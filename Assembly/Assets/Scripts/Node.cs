@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 public class Node {
 
-	static HashSet<Node> all = new HashSet<Node>();
-	public static HashSet<Node> getAll {get{return all;}}
+	static List<Node> all = new List<Node>();
+	public static List<Node> getAll {get{return all;}}
 	public static implicit operator bool(Node exists){return exists != null;}
 
 	public Triplet localHexPos = Triplet.zero;
@@ -59,7 +59,7 @@ public class Node {
 			return position;
 		}set{
 			// Neutralize velocity.
-			Vector3 flux = position - value;
+			//Vector3 flux = position - value;
 			//velocity += flux * velocityCoefficient;
 
 			position = value;
@@ -254,6 +254,15 @@ public class Node {
 		if(physAssembly.amalgam && (Vector3.Distance(Position, physAssembly.amalgam.transform.position) > physAssembly.amalgam.radius)){
 			Position -= (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
 		}
+
+
+		// Trail visibility
+		if(trail)
+			trail.render = cubeTransform.renderer.enabled;
+
+		if(viewCone)
+			viewCone.render = cubeTransform.renderer.enabled;
+
 
 		// Reset power
 		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep);

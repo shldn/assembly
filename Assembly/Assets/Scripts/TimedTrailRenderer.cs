@@ -39,6 +39,8 @@ public class TimedTrailRenderer : MonoBehaviour
    bool rebuildBounds = false;
    bool lastFrameVisible = true;
 
+	public bool render = true;
+
    // Triangle List helper
    private static List<int> triangles = new List<int>();
 
@@ -91,6 +93,8 @@ public class TimedTrailRenderer : MonoBehaviour
  
    void Update ()
    {
+	   o.renderer.enabled = render;
+
       if(emit && emitTime != 0)
       {
         emitTime -= Time.deltaTime;
