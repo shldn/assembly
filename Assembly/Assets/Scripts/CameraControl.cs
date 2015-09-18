@@ -57,6 +57,7 @@ public class CameraControl : MonoBehaviour {
 	public Assembly hoveredPhysAssembly = null;
 
 	public bool galleryCam = true;
+	bool galleryCamInterrupted = false; // If a client goes into orbit mode, this ensures we return to gallery mode when that player releases orbit control.
 
 	public Assembly assemblyOfInterest = null;
 	float assemblyOfInterestStaleness = 0f;
@@ -95,6 +96,18 @@ public class CameraControl : MonoBehaviour {
 
 		if(Input.GetKeyDown(KeyCode.C) && !ConsoleScript.active)
 			galleryCam = !galleryCam;
+
+		// If a player goes into orbit mode while in gallery mode, interrupt it.
+		if((CaptureNet_Manager.Inst.orbitPlayers.Count > 0) && galleryCam){
+			galleryCam = false;
+			galleryCamInterrupted = true;
+		}
+
+		// When no players are orbiting anymore (and we previously interrupted the gallery cam), re-instate it.
+		if((CaptureNet_Manager.Inst.orbitPlayers.Count == 0) && galleryCamInterrupted){
+			galleryCam = true;
+			galleryCamInterrupted = false;
+		}
 
 		// Gallery cam
 		if(galleryCam){
@@ -178,7 +191,8 @@ public class CameraControl : MonoBehaviour {
         }
 
         // Mouse zoom
-        targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel") * radiusSensitivity ;
+		if(!galleryCam)
+	        targetRadius += targetRadius * -Input.GetAxis("Mouse ScrollWheel") * radiusSensitivity ;
 
 		if(Input.GetKey(KeyCode.Comma) && !ConsoleScript.active)
 	        targetRadius += targetRadius * -Time.deltaTime * radiusSensitivity ;
@@ -186,7 +200,7 @@ public class CameraControl : MonoBehaviour {
 	        targetRadius += targetRadius * Time.deltaTime * radiusSensitivity ;
 
         // Mouse/touch orbit.
-        if((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) && CaptureEditorManager.IsEditing && !NodeEngineering.Inst.uiLockout) || Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease)){
+        if(!galleryCam && ((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) && CaptureEditorManager.IsEditing && !NodeEngineering.Inst.uiLockout) || Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease))){
             targetOrbit.x += Input.GetAxis("Mouse X") * mouseSensitivity;
             targetOrbit.y += -Input.GetAxis("Mouse Y") * mouseSensitivity;
         }
@@ -205,6 +219,7 @@ public class CameraControl : MonoBehaviour {
         transform.position = center + centerOffset + (cameraRot * (Vector3.forward * radius));
 
 		Quaternion orbitCamRot = cameraRot * Quaternion.AngleAxis(180f, Vector3.up);
+
 
 		if(!galleryCam)
 	        transform.rotation = orbitCamRot;

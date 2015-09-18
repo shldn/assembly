@@ -131,6 +131,8 @@ public class CaptureNet_Manager : MonoBehaviour {
     }
 
     void OnPlayerDisconnected(NetworkPlayer networkPlayer){
+		orbitPlayers.Remove(networkPlayer);
+
 	    // If the server sees a player disconnect, remove their presence across the network.
 	    Network.DestroyPlayerObjects(networkPlayer);
 	    Network.RemoveRPCs(networkPlayer);

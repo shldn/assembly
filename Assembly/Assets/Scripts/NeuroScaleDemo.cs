@@ -12,7 +12,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 	int numNodesToShow = 1;
 	int numFoodToShow = 0;
 
-
+	//ThreeAxisCreep simulator;
 
 
 
@@ -25,6 +25,10 @@ public class NeuroScaleDemo : MonoBehaviour {
 		RenderSettings.fog = true;
 		RenderSettings.fogMode = FogMode.Linear;
 		RenderSettings.fogColor = Color.black;
+
+		// simulator = gameObject.AddComponent<ThreeAxisCreep>();
+		// simulator.maxCreep = 1f;
+		// simulator.relaxedness = 10f;
 	} // End of Start().
 	
 	void Update(){
@@ -59,10 +63,12 @@ public class NeuroScaleDemo : MonoBehaviour {
 			enviroScale += Time.deltaTime * 0.2f;
 		if(Input.GetKey(KeyCode.DownArrow))
 			enviroScale -= Time.deltaTime * 0.2f;
+
+		//enviroScale = Mathf.Pow(0.5f + simulator.creep.x, 2f);
+
+		CameraControl.Inst.targetOrbit.x -= Time.deltaTime * 5f;
+
 		enviroScale = Mathf.Clamp01(enviroScale);
-
-
-		print(RenderSettings.fogStartDistance);
 	} // End of Update().
 
 
