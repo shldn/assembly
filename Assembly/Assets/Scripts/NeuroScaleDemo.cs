@@ -11,7 +11,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 	// As this increases, the number of nodes shown will increase--chosen radiating out from the origin node.
 	int numNodesToShow = 1;
 	int numFoodToShow = 0;
-    int lastNumNodesToShow = 1;
+    int lastNumNodesToShow = 0;
 
 	//ThreeAxisCreep simulator;
 
@@ -21,7 +21,8 @@ public class NeuroScaleDemo : MonoBehaviour {
     Bounds nodeCullBoundary = new Bounds();
     SortedList<float, Node> nodeSortedSet = new SortedList<float, Node>();
     SortedList<float, FoodPellet> foodSortedSet = new SortedList<float, FoodPellet>();
-
+    int lastAssemblyAllocCount = 0;
+    int lastAssemblyCount = 0;
 
     // Testing
     public bool useOctree = true;
@@ -77,6 +78,8 @@ public class NeuroScaleDemo : MonoBehaviour {
 		enviroScale = Mathf.Clamp01(enviroScale);
 
         lastUseOctree = useOctree;
+        lastAssemblyAllocCount = NodeController.Inst.NumAssembliesAllocated;
+        lastAssemblyCount = Assembly.getAll.Count;
 
 	} // End of Update().
 
@@ -94,7 +97,7 @@ public class NeuroScaleDemo : MonoBehaviour {
             if (CameraControl.Inst.selectedNode.PhysAssembly.NodeDict.Count >= numNodesToShow)
             {
                 // Only cull when the enviroScale amount changes to minimize the popping in and out of nodes in the same assembly as one gets further from the selectedNode
-                if (newSelectedNode || lastNumNodesToShow != numNodesToShow || !lastUseOctree)
+                if (newSelectedNode || lastNumNodesToShow != numNodesToShow || !lastUseOctree || lastAssemblyCount != Assembly.getAll.Count || lastAssemblyAllocCount != NodeController.Inst.NumAssembliesAllocated)
                 {
                     CullNodes(CameraControl.Inst.selectedNode.PhysAssembly);
                     HandleCulledNodeVisibility();
@@ -119,6 +122,8 @@ public class NeuroScaleDemo : MonoBehaviour {
                 FoodPellet.AllFoodTree.RunActionInRange(new System.Action<FoodPellet>(CullFood), foodBoundary);
                 HandleCulledFoodVisibility();
             }
+            else
+                SetAllFoodVisibility(false);
 
 
         }
