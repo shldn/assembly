@@ -81,6 +81,11 @@ public class DiagnosticHUD : MonoBehaviour {
         str += "Num Assemblies: " + Assembly.getAll.Count;
         str += "\n";
         str += "Game Objects: " + goCount;
+        if (NeuroScaleDemo.Inst != null)
+        {
+            str += "\n";
+            str += "EnviroScale: " + NeuroScaleDemo.Inst.enviroScale;
+        }
 
         return str;
     }

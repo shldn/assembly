@@ -20,7 +20,7 @@ public class OctreeNode<T>
 public class Octree<T>{
 
     static bool nodesOnlyInLeaves = true;
-    static bool enableViewer = true;
+    static bool enableViewer = false;
     static int maxDepth = 500;
     Bounds boundary;
     List<T> nodes;

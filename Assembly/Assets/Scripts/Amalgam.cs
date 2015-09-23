@@ -27,6 +27,8 @@ public class Amalgam : MonoBehaviour
 	int[] shortestPath;
 	MeshFilter meshFilter;
 
+	Color color = Color.white;
+
 
 	class ActiveVertex
 	{
@@ -126,7 +128,8 @@ public class Amalgam : MonoBehaviour
 			}
 		}
 
-		renderer.material.SetColor("_RimColor", new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f)));
+		color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
+		renderer.material.SetColor("_RimColor", color);
 
 	} // End of Start().
 
@@ -157,24 +160,27 @@ public class Amalgam : MonoBehaviour
 				activeVertices[i].linkedAssembly = assemblies[Random.Range(0, assemblies.Count)];
 
 			if(activeVertices[i].linkedAssembly){
-				float proximity = Mathf.Clamp01(1f / (1f + (Mathf.Pow(Vector3.SqrMagnitude(activeVertices[i].worldOriginPoint - activeVertices[i].linkedAssembly.Position) * 0.01f, 2f))));
-				activeVertices[i].energy += proximity * NodeController.physicsStep * 100f;
+				float proximity = Mathf.Clamp01(1f / (1f + (Mathf.Pow(Vector3.SqrMagnitude(activeVertices[i].worldOriginPoint - activeVertices[i].linkedAssembly.Position) * 0.002f, 2f))));
+				activeVertices[i].energy += proximity * NodeController.physicsStep * 10f;
 				for(int j = 0; j < activeVertices[i].neighbors.Length; j++){
-					activeVertices[i].neighbors[j].energy += proximity * NodeController.physicsStep * 80f;
+					activeVertices[i].neighbors[j].energy += proximity * NodeController.physicsStep * 8f;
+
+					/*
 					for(int k = 0; k < activeVertices[i].neighbors[j].neighbors.Length; k++){
 						if(activeVertices[i].neighbors[j].neighbors[k] != activeVertices[i])
-							activeVertices[i].neighbors[j].neighbors[k].energy += proximity * NodeController.physicsStep * 50f;
+							activeVertices[i].neighbors[j].neighbors[k].energy += proximity * NodeController.physicsStep * 5f;
 					}
+					*/
 				}
 
 				// Line assembly --> origin
-				GLDebug.DrawLine(activeVertices[i].worldOriginPoint, activeVertices[i].linkedAssembly.Position, new Color(0f, 1f, 1f, proximity * 100f));
+				GLDebug.DrawLine(activeVertices[i].worldOriginPoint, activeVertices[i].linkedAssembly.Position, new Color(0f, 1f, 1f, proximity * 10f));
 				// Box at origin
-				GLDebug.DrawCube(activeVertices[i].worldOriginPoint, Quaternion.LookRotation(meshFilter.mesh.normals[i]), Vector3.one * 2f, new Color(0f, 1f, 1f, proximity * 100f));
+				GLDebug.DrawCube(activeVertices[i].worldOriginPoint, Quaternion.LookRotation(meshFilter.mesh.normals[i]), Vector3.one * 2f, color.SetAlpha(proximity * 10f));
 				// Line origin --> current
-				GLDebug.DrawLine(activeVertices[i].worldOriginPoint, activeVertices[i].worldPoint, new Color(0f, 1f, 0f, proximity * 100f));
+				GLDebug.DrawLine(activeVertices[i].worldOriginPoint, activeVertices[i].worldPoint, color.SetAlpha(proximity * 10f));
 				// Current point box
-				GLDebug.DrawCube(activeVertices[i].worldPoint, Quaternion.LookRotation(meshFilter.mesh.normals[i]), Vector3.one * 4f, new Color(0f, 1f, 0f, proximity * 100f));
+				GLDebug.DrawCube(activeVertices[i].worldPoint, Quaternion.LookRotation(meshFilter.mesh.normals[i]), Vector3.one * 4f, color.SetAlpha(proximity * 10f));
 			}
 
 			// Propel amalgam
@@ -188,12 +194,14 @@ public class Amalgam : MonoBehaviour
 			}
 		}
 
+		/*
 		transform.position += positionChange;
 		for(int i = 0; i < assemblies.Count; i++)
 			foreach(KeyValuePair<Triplet, Node> someNodeKVP in assemblies[i].NodeDict)
 				someNodeKVP.Value.delayPosition += positionChange;
 		for(int i = 0; i < foodPellets.Count; i++)
 			foodPellets[i].WorldPosition += positionChange;
+		*/
 
 		for(int i = 0; i < activeVertices.Length; i++)
 			activeVertices[i].RevengeOfUpdate();

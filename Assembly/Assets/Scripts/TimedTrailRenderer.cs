@@ -39,6 +39,8 @@ public class TimedTrailRenderer : MonoBehaviour
    bool rebuildBounds = false;
    bool lastFrameVisible = true;
 
+	public bool render = true;
+
    // Triangle List helper
    private static List<int> triangles = new List<int>();
 
@@ -91,6 +93,8 @@ public class TimedTrailRenderer : MonoBehaviour
  
    void Update ()
    {
+	   o.renderer.enabled = render;
+
       if(emit && emitTime != 0)
       {
         emitTime -= Time.deltaTime;
@@ -304,8 +308,7 @@ public class TimedTrailRenderer : MonoBehaviour
 
    private bool IsTrailVisible()
    {
-       Plane[] planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
-       return GeometryUtility.TestPlanesAABB(planes, meshBounds);
+       return render && GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(Camera.main), meshBounds);
    }
 
    private static int[] GetTriangles(int numPoints)

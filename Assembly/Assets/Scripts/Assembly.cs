@@ -281,7 +281,8 @@ public class Assembly : CaptureObject{
 				if(matingWith.myNodesIndexed.Length > i){
 					otherNode = matingWith.myNodesIndexed[i];
 
-					GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
+					if(myNode.cubeTransform.renderer.enabled && otherNode.cubeTransform.renderer.enabled)
+						GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
 					Vector3 vectorToMate = myNode.Position - otherNode.Position;
 					float distance = vectorToMate.magnitude;
 			
@@ -299,6 +300,7 @@ public class Assembly : CaptureObject{
 				newAssembly.name = name.Substring(0, Mathf.RoundToInt(name.Length * 0.5f)) + matingWith.name.Substring(matingWith.name.Length - Mathf.RoundToInt(matingWith.name.Length * 0.5f), Mathf.RoundToInt(matingWith.name.Length * 0.5f));
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(matingWith);
+				newAssembly.amalgam = amalgam;
 
 				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length + 1);
 				Triplet spawnHexPos = Triplet.zero;
@@ -457,6 +459,13 @@ public class Assembly : CaptureObject{
 	public void RemoveRandomNode(){
 
 	} // End of RemoveRandomNode().
+
+    public void SetVisibility(bool vis)
+    {
+        foreach (KeyValuePair<Triplet, Node> node in NodeDict)
+            if(node.Value.cubeTransform)
+                node.Value.cubeTransform.renderer.enabled = vis;
+    } // End of SetVisibility().
 
 
 	public void Destroy(){
