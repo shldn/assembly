@@ -7,6 +7,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 	// How much information is shown to the user, from 0f (very little) to 1f (everything)
 	public float enviroScale = 0f;
+    float enviroScaleVel = 0f;
 
 	// As this increases, the number of nodes shown will increase--chosen radiating out from the origin node.
 	int numNodesToShow = 1;
@@ -67,6 +68,8 @@ public class NeuroScaleDemo : MonoBehaviour {
 			enviroScale += Time.deltaTime * 0.2f;
 		if(Input.GetKey(KeyCode.DownArrow))
 			enviroScale -= Time.deltaTime * 0.2f;
+
+        enviroScale = Mathf.SmoothDamp(enviroScale, MuseManager.Inst.LastConcentrationMeasure, ref enviroScaleVel, 1f);
 
 
 		//enviroScale = Mathf.Pow(0.5f + simulator.creep.x, 2f);
