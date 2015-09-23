@@ -21,8 +21,6 @@ public class NeuroScaleDemo : MonoBehaviour {
     Bounds nodeCullBoundary = new Bounds();
     SortedList<float, Node> nodeSortedSet = new SortedList<float, Node>();
     SortedList<float, FoodPellet> foodSortedSet = new SortedList<float, FoodPellet>();
-    int lastAssemblyAllocCount = 0;
-    int lastAssemblyCount = 0;
 
     // Testing
     public bool useOctree = true;
@@ -78,8 +76,6 @@ public class NeuroScaleDemo : MonoBehaviour {
 		enviroScale = Mathf.Clamp01(enviroScale);
 
         lastUseOctree = useOctree;
-        lastAssemblyAllocCount = NodeController.Inst.NumAssembliesAllocated;
-        lastAssemblyCount = Assembly.getAll.Count;
 
 	} // End of Update().
 
@@ -91,16 +87,27 @@ public class NeuroScaleDemo : MonoBehaviour {
 
             // Nodes
 
+            if (!CameraControl.Inst.selectedNode)
+                return;
+
             nodeSortedSet.Clear();
+            Assembly selectedAssembly = CameraControl.Inst.selectedNode.PhysAssembly;
 
             // Only worry about the first assembly if the node count is low enough.
-            if (CameraControl.Inst.selectedNode.PhysAssembly.NodeDict.Count >= numNodesToShow)
+            if (selectedAssembly.NodeDict.Count >= numNodesToShow)
             {
                 // Only cull when the enviroScale amount changes to minimize the popping in and out of nodes in the same assembly as one gets further from the selectedNode
-                if (newSelectedNode || lastNumNodesToShow != numNodesToShow || !lastUseOctree || lastAssemblyCount != Assembly.getAll.Count || lastAssemblyAllocCount != NodeController.Inst.NumAssembliesAllocated)
+                if (newSelectedNode || lastNumNodesToShow != numNodesToShow || !lastUseOctree)
                 {
-                    CullNodes(CameraControl.Inst.selectedNode.PhysAssembly);
+                    CullNodes(selectedAssembly);
                     HandleCulledNodeVisibility();
+                }
+                else
+                {
+                    // make sure if a new assembly is spawned, it gets hidden.
+                    foreach (Assembly a in Assembly.getAll)
+                        if (a != selectedAssembly)
+                            a.SetVisibility(false);
                 }
             }
             else if (enviroScale >= 0.99f || numNodesToShow >= Node.getAll.Count)
@@ -150,17 +157,31 @@ public class NeuroScaleDemo : MonoBehaviour {
         {
             float dist = (node.Value.Position - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
             if (nodeSortedSet.Count < numNodesToShow)
-                nodeSortedSet.Add(dist, node.Value);
+                AddToSortedList(nodeSortedSet, dist, node.Value);
             else
             {
                 if (nodeSortedSet.Keys[nodeSortedSet.Keys.Count - 1] > dist)
                 {
                     nodeSortedSet.RemoveAt(nodeSortedSet.Keys.Count - 1);
-                    nodeSortedSet.Add(dist, node.Value);
+                    AddToSortedList(nodeSortedSet, dist, node.Value);
                 }
             }
         }
     } // End of CullNodes().
+
+    void AddToSortedList<T>(SortedList<float, T> sortedList, float dist, T obj)
+    {
+        try {
+            sortedList.Add(dist, obj);
+        }
+        catch (System.ArgumentException e) {
+            // a node with the same distance away already exists, try again...
+            try {
+                sortedList.Add(dist - Random.Range(0.001f, 0.004f), obj);
+            }
+            catch (System.ArgumentException) { }
+        }
+    }
 
     void SetAllNodeVisibility(bool vis)
     {
@@ -187,13 +208,13 @@ public class NeuroScaleDemo : MonoBehaviour {
     {
         float dist = (someFood.WorldPosition - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
         if (foodSortedSet.Count < numFoodToShow)
-            foodSortedSet.Add(dist, someFood);
+            AddToSortedList(foodSortedSet, dist, someFood);
         else
         {
             if (foodSortedSet.Keys[foodSortedSet.Keys.Count - 1] > dist)
             {
                 foodSortedSet.RemoveAt(foodSortedSet.Keys.Count - 1);
-                foodSortedSet.Add(dist, someFood);
+                AddToSortedList(foodSortedSet, dist, someFood);
             }
         }
     } // End of CullFood().

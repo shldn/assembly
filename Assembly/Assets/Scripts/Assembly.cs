@@ -460,6 +460,13 @@ public class Assembly : CaptureObject{
 
 	} // End of RemoveRandomNode().
 
+    public void SetVisibility(bool vis)
+    {
+        foreach (KeyValuePair<Triplet, Node> node in NodeDict)
+            if(node.Value.cubeTransform)
+                node.Value.cubeTransform.renderer.enabled = vis;
+    } // End of SetVisibility().
+
 
 	public void Destroy(){
 		foreach(KeyValuePair<Triplet, Node> somePair in nodeDict)
