@@ -20,6 +20,7 @@ public class NeuroScaleDemo : MonoBehaviour {
     // Octree optimization -- Perhaps use a sortedList for the first 50 nodes, then just let the octree cull whole assemblies    
     Bounds nodeCullBoundary = new Bounds();
     SortedList<float, Node> nodeSortedSet = new SortedList<float, Node>();
+    SortedList<float, FoodPellet> foodSortedSet = new SortedList<float, FoodPellet>();
 
 
     // Testing
@@ -84,6 +85,9 @@ public class NeuroScaleDemo : MonoBehaviour {
     {
         if (useOctree)
         {
+
+            // Nodes
+
             nodeSortedSet.Clear();
 
             // Only worry about the first assembly if the node count is low enough.
@@ -93,7 +97,7 @@ public class NeuroScaleDemo : MonoBehaviour {
                 if (newSelectedNode || lastNumNodesToShow != numNodesToShow || !lastUseOctree)
                 {
                     CullNodes(CameraControl.Inst.selectedNode.PhysAssembly);
-                    HandleCulledVisibility();
+                    HandleCulledNodeVisibility();
                 }
             }
             else if (enviroScale >= 0.99f || numNodesToShow >= Node.getAll.Count)
@@ -103,8 +107,19 @@ public class NeuroScaleDemo : MonoBehaviour {
                 float boundsSize = RenderSettings.fogEndDistance - RenderSettings.fogStartDistance;
                 nodeCullBoundary = new Bounds(CameraControl.Inst.selectedNode.Position, boundsSize * Vector3.one);
                 Assembly.AllAssemblyTree.RunActionInRange(new System.Action<Assembly>(CullNodes), nodeCullBoundary);
-                HandleCulledVisibility();
+                HandleCulledNodeVisibility();
             }
+
+            // Food
+            if (numFoodToShow > 0)
+            {
+                foodSortedSet.Clear();
+                float boundsSize = RenderSettings.fogEndDistance - RenderSettings.fogStartDistance;
+                Bounds foodBoundary = new Bounds(CameraControl.Inst.selectedNode.Position, boundsSize * Vector3.one);
+                FoodPellet.AllFoodTree.RunActionInRange(new System.Action<FoodPellet>(CullFood), foodBoundary);
+                HandleCulledFoodVisibility();
+            }
+
 
         }
         else
@@ -128,14 +143,11 @@ public class NeuroScaleDemo : MonoBehaviour {
     {
         foreach (KeyValuePair<Triplet, Node> node in someAssembly.NodeDict)
         {
+            float dist = (node.Value.Position - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
             if (nodeSortedSet.Count < numNodesToShow)
-            {
-                float dist = (node.Value.Position - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
                 nodeSortedSet.Add(dist, node.Value);
-            }
             else
             {
-                float dist = (node.Value.Position - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
                 if (nodeSortedSet.Keys[nodeSortedSet.Keys.Count - 1] > dist)
                 {
                     nodeSortedSet.RemoveAt(nodeSortedSet.Keys.Count - 1);
@@ -154,7 +166,7 @@ public class NeuroScaleDemo : MonoBehaviour {
         }
     } // End of SetAllNodeVisibility().
 
-    void HandleCulledVisibility()
+    void HandleCulledNodeVisibility()
     {
         SetAllNodeVisibility(false);
 
@@ -164,8 +176,35 @@ public class NeuroScaleDemo : MonoBehaviour {
             if (nodePair.Value.cubeTransform)
                 nodePair.Value.cubeTransform.renderer.enabled = true;
         }
-    } // End of HandleCulledVisibility().
-    
+    } // End of HandleCulledNodeVisibility().
+
+    void CullFood(FoodPellet someFood)
+    {
+        float dist = (someFood.WorldPosition - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
+        if (foodSortedSet.Count < numFoodToShow)
+            foodSortedSet.Add(dist, someFood);
+        else
+        {
+            if (foodSortedSet.Keys[foodSortedSet.Keys.Count - 1] > dist)
+            {
+                foodSortedSet.RemoveAt(foodSortedSet.Keys.Count - 1);
+                foodSortedSet.Add(dist, someFood);
+            }
+        }
+    } // End of CullFood().
+
+    void SetAllFoodVisibility(bool vis)
+    {
+        for (int i = 0; i < FoodPellet.all.Count; i++)
+            FoodPellet.all[i].render = vis;
+    } // End of SetAllFoodVisibility().
+
+    void HandleCulledFoodVisibility()
+    {
+        SetAllFoodVisibility(false);
+        foreach (KeyValuePair<float, FoodPellet> foodPair in foodSortedSet)
+            foodPair.Value.render = true;
+    } // End of HandleCulledFoodVisibility().
 
 	// bubble-sort nodes
 	void SortNodes(){
