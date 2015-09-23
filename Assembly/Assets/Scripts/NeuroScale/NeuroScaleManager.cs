@@ -35,6 +35,8 @@ public class MessageEventArgs : System.EventArgs
 public enum NeuroPipeline{
     ECHO,
     ATTENTION,
+    HARDCODED,
+    QUERY,
 }
 
 public class NeuroScaleManager : MonoBehaviour {
@@ -49,15 +51,21 @@ public class NeuroScaleManager : MonoBehaviour {
     }
 
     // PASTE YOUR ACCESS TOKEN HERE!
-    private string access_token = "7757077e-9603-4b19-8437-b5ace75b5f58";  // Unique token per client, only change once - Provided by NeuroScale folks
+    private string access_token = "23b0a059-7172-47fb-95ca-8fde8df4abb2";  // Unique token per client, only change once - Provided by NeuroScale folks
 
-    private string broker_address = "streaming2.neuroscale.io";
+    private string broker_address = "streaming.neuroscale.io";
+    private int broker_port = 443; // 1883
     private string clientID = "in_xxxxxxxxxxxxxxxxxxxxxx";
-    private string subscribe_topic = "/xxxxxxxxxxxxxxxxxxxxxx/out";
+    private string subscribe_topic = "/nvo6hBF9xVsq3McM8rEWjE/out/default";
     private string publish_topic = "/xxxxxxxxxxxxxxxxxxxxxx/in";
+    private string instance_clientID = "in_xxxxxxxxxxxxxxxxxxxxxx";
+
+    // When querying for running instances, it will search for this tag.
+    private string instanceTag = "Assembly";
 
     // Pipeline
-    NeuroPipeline pipeline = NeuroPipeline.ATTENTION;
+    NeuroPipeline pipeline = NeuroPipeline.QUERY;
+    bool CreatePipeline { get { return pipeline != NeuroPipeline.QUERY && pipeline != NeuroPipeline.HARDCODED; } }
 
     // Communication helpers
     private MqttClient mqttClient = null;
@@ -84,7 +92,7 @@ public class NeuroScaleManager : MonoBehaviour {
 
         // create client instance
         string brokerIP = Dns.GetHostAddresses(broker_address)[0].ToString();
-        mqttClient = new MqttClient(brokerIP, 1883, false, null);
+        mqttClient = new MqttClient(brokerIP, broker_port, false, null);
 
         // register mqtt events
         mqttClient.MqttMsgPublishReceived += OnMQTTMessage;
@@ -93,10 +101,13 @@ public class NeuroScaleManager : MonoBehaviour {
         mqttClient.MqttMsgUnsubscribed += OnUnsubscribed;
         mqttClient.MqttMsgPublished += OnPublished;
 
-        // Create Echo instance
-        restHelper = new RESTHelper("http://api2.neuroscale.io/v1/instances", new Dictionary<string, string>() { { "Authorization", "Bearer " + access_token } });
+        // random client id -- duplicates can cause issues -- overwritten if creating a new pipeline
+        clientID = "in_" + System.IO.Path.GetRandomFileName().Replace(".", "") + System.IO.Path.GetRandomFileName().Replace(".", "");
+
+        // initialize instance
+        restHelper = new RESTHelper("https://api.neuroscale.io/v1/instances", new Dictionary<string, string>() { { "Authorization", "Bearer " + access_token } });
         InitializeInstance();
-        InvokeRepeating("ConnectAndSubscribe",10f, 3f);
+        InvokeRepeating("ConnectAndSubscribe",3f, 3f);
 
 
 #endif
@@ -108,6 +119,10 @@ public class NeuroScaleManager : MonoBehaviour {
             InitializeAttentionInstance();
         else if (pipeline == NeuroPipeline.ECHO)
             InitializeEchoInstance();
+        else if (pipeline == NeuroPipeline.HARDCODED)
+            InitializeHardCodedInstance();
+        else if (pipeline == NeuroPipeline.QUERY)
+            InitializeQueryInstance();
 
         initTime = DateTime.Now;
     }
@@ -127,14 +142,36 @@ public class NeuroScaleManager : MonoBehaviour {
         SetDataFromInitResponse(response);
     }
 
+    void InitializeHardCodedInstance()
+    {
+        ConnectAndSubscribe();
+    }
+
+    void InitializeQueryInstance()
+    {
+        string response = restHelper.sendRequest("", "GET", "where={\"tag\":\"" + instanceTag + "\"}");
+        Debug.LogError("Query response: " + response);
+        JSONObject jsonObj = JSONObject.Parse(response);
+        SetDataFromInitResponse(jsonObj.GetArray("data")[0].Obj);
+        ConnectAndSubscribe();
+    }
+
+    
     void SetDataFromInitResponse(string responseJSON)
     {
         JSONObject jsonObj = JSONObject.Parse(responseJSON);
+        SetDataFromInitResponse(jsonObj);
+    }
+
+    void SetDataFromInitResponse(JSONObject jsonObj)
+    {
         if (jsonObj != null && jsonObj.ContainsKey("id"))
         {
-            clientID = jsonObj.GetString("id");
-            Debug.Log("Client ID: " + clientID);
+            instance_clientID = jsonObj.GetString("id");
+            Debug.Log("Client ID: " + instance_clientID);
         }
+        if (CreatePipeline)
+            clientID = instance_clientID;
 
         if (jsonObj != null && jsonObj.ContainsKey("endpoints"))
         {
@@ -146,7 +183,7 @@ public class NeuroScaleManager : MonoBehaviour {
                 {
                     string url = dataArr[0].Obj.GetString("url");
                     int splitIdx = url.IndexOf('/', 8);
-                    subscribe_topic = url.Substring(splitIdx);
+                    subscribe_topic = url.Substring(splitIdx) + "/default";
                     Debug.Log("sub topic: " + subscribe_topic);
                 }
                 if (dataArr.Length > 1 && dataArr[1].Obj.ContainsKey("url"))
@@ -167,7 +204,7 @@ public class NeuroScaleManager : MonoBehaviour {
             return true;
 
         Debug.Log("Checking if instance ready...");
-        string response = restHelper.sendRequest(clientID, "GET");
+        string response = restHelper.sendRequest(instance_clientID, "GET");
         JSONObject jsonObj = JSONObject.Parse(response);
         if (jsonObj != null && jsonObj.ContainsKey("state"))
             instanceRunning = jsonObj.GetString("state") == "running";
@@ -176,7 +213,7 @@ public class NeuroScaleManager : MonoBehaviour {
 
     void ConnectAndSubscribe()
     {
-        if (!IsInstanceRunning())
+        if (pipeline != NeuroPipeline.HARDCODED && !IsInstanceRunning())
             return;
 
         Debug.Log("Connecting and subscribing - " + (DateTime.Now - initTime).TotalSeconds + " secs to initialize.");
@@ -189,19 +226,21 @@ public class NeuroScaleManager : MonoBehaviour {
     void CloseEchoInstance()
     {
         Debug.Log("Closing Echo Instance");
-        restHelper.sendRequest(clientID, "DELETE");
+        restHelper.sendRequest(instance_clientID, "DELETE");
     }
 
     void OnDestroy()
     {
-        CloseEchoInstance();
+        // Destroy pipeline, if we created it.
+        if(CreatePipeline)
+            CloseEchoInstance();
     }
 
 
     void OnMQTTMessage(object sender, MqttMsgPublishEventArgs e)
     {
         string msg = System.Text.Encoding.Default.GetString(e.Message);
-        Debug.Log("Got MQTT Message: " + msg);
+        //Debug.Log("Got MQTT Message: " + msg);
 
         // Propagate event
         if(Messages != null)
@@ -229,6 +268,11 @@ public class NeuroScaleManager : MonoBehaviour {
     void OnUnsubscribed(object sender, MqttMsgUnsubscribedEventArgs e)
     {
         Debug.Log("OnUnsubscribed: " + e.MessageId + " " + e.ToString());
+    }
+
+    void OnApplicationQuit()
+    {
+        Debug.LogError("Application closed.");
     }
 
 }
