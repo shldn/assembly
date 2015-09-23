@@ -308,8 +308,7 @@ public class TimedTrailRenderer : MonoBehaviour
 
    private bool IsTrailVisible()
    {
-       Plane[] planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
-       return GeometryUtility.TestPlanesAABB(planes, meshBounds);
+       return render && GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(Camera.main), meshBounds);
    }
 
    private static int[] GetTriangles(int numPoints)
