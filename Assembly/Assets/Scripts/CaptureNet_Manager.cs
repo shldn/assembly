@@ -110,10 +110,16 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 
 		// "Single-player"
-        if (KeyInput.GetKeyDown(KeyCode.End)) {
+        if (playerSync == null && KeyInput.GetKeyDown(KeyCode.End)) {
 			PersistentGameManager.Inst.singlePlayer = true;
 			playerSync = (Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<PlayerSync>();
 		}
+        if (PersistentGameManager.Inst.singlePlayer && KeyInput.GetKeyDown(KeyCode.Home)) {
+            PersistentGameManager.Inst.singlePlayer = false;
+            Destroy(playerSync.cursorObject.gameObject);
+            Destroy(playerSync.gameObject);
+            playerSync = null;
+        }
     } // End of Update().
 
     // Once the text file with the list of ips is downloaded, add the ips to the connection list.
