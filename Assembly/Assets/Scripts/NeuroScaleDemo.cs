@@ -17,6 +17,9 @@ public class NeuroScaleDemo : MonoBehaviour {
 
     bool newSelectedNode = false;
 
+    // Attention Metric
+    Attention attention = null;
+
     // Octree optimization -- Perhaps use a sortedList for the first 50 nodes, then just let the octree cull whole assemblies    
     Bounds nodeCullBoundary = new Bounds();
     SortedList<float, Node> nodeSortedSet = new SortedList<float, Node>();
@@ -28,6 +31,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 	void Awake(){
 		Inst = this;
+        attention = new Attention();
 	} // End of Awake().
 
 
@@ -67,6 +71,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 			enviroScale += Time.deltaTime * 0.2f;
 		if(Input.GetKey(KeyCode.DownArrow))
 			enviroScale -= Time.deltaTime * 0.2f;
+        enviroScale = (float)attention.Value;
 
 
 		//enviroScale = Mathf.Pow(0.5f + simulator.creep.x, 2f);

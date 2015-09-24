@@ -152,7 +152,10 @@ public class NeuroScaleManager : MonoBehaviour {
         string response = restHelper.sendRequest("", "GET", "where={\"tag\":\"" + instanceTag + "\"}");
         Debug.LogError("Query response: " + response);
         JSONObject jsonObj = JSONObject.Parse(response);
-        SetDataFromInitResponse(jsonObj.GetArray("data")[0].Obj);
+        JSONArray array = jsonObj.GetArray("data");
+        for (int i = 0; i < array.Length; ++i)
+            if (array[i].ToString().Contains(instanceTag))
+                SetDataFromInitResponse(array[i].Obj);
         ConnectAndSubscribe();
     }
 
@@ -240,7 +243,6 @@ public class NeuroScaleManager : MonoBehaviour {
     void OnMQTTMessage(object sender, MqttMsgPublishEventArgs e)
     {
         string msg = System.Text.Encoding.Default.GetString(e.Message);
-        //Debug.Log("Got MQTT Message: " + msg);
 
         // Propagate event
         if(Messages != null)
