@@ -17,8 +17,10 @@ public class MuseManager : MonoBehaviour {
     // Accessors
     public bool TouchingForehead{get{return touchingForehead;}}
     public float LastConcentrationMeasure{get{return lastConcentrationMeasure;}}
-    public float BatteryPercentage { get { return batteryLevel; } }
     public float SecondsSinceLastMessage { get { return (float)(DateTime.Now - timeOfLastMessage).TotalSeconds; } }
+    // float (0-1)
+    public float BatteryPercentage { get { return batteryLevel; } }
+    // 4 ints for the 4 sensors --  0 = bad, 1 = good
     public List<int> HeadConnectionStatus { get { return headConnectionStatus; } }
 
 
@@ -38,8 +40,10 @@ public class MuseManager : MonoBehaviour {
             touchingForehead = ((int)packet.Data[0] != 0);
         else if (packet.Address.Contains("concentration"))
             HandleConcentrationSample((float)packet.Data[0]);
-        else if(packet.Address.Contains("is_good"))
+        else if (packet.Address.Contains("is_good"))
             HandleHeadConnectMessage(packet.Data);
+        else if (packet.Address.Contains("batt"))
+            HandleBatteryStatus(packet.Data);
         timeOfLastMessage = DateTime.Now;
     }
 
@@ -58,7 +62,7 @@ public class MuseManager : MonoBehaviour {
 
     void HandleBatteryStatus(List<object> data)
     {
-        batteryLevel = ((int)data[0]) / 100000f;
+        batteryLevel = ((int)data[0]) / 10000f;
     }
 
     void OnGUI()
