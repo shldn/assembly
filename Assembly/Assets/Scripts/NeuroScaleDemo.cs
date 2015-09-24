@@ -5,6 +5,10 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 	public static NeuroScaleDemo Inst;
 
+
+	public bool isActive = true;
+
+
 	// How much information is shown to the user, from 0f (very little) to 1f (everything)
 	public float enviroScale = 0f;
     float enviroScaleVel = 0f;
@@ -27,6 +31,14 @@ public class NeuroScaleDemo : MonoBehaviour {
     public bool useOctree = true;
     bool lastUseOctree = false;
 
+
+	float camRadius = 0f;
+	public float CamRadius {get{return camRadius;}}
+	Node targetNode = null;
+	public Node TargetNode {get{return targetNode;}}
+
+
+
 	void Awake(){
 		Inst = this;
 	} // End of Awake().
@@ -36,26 +48,23 @@ public class NeuroScaleDemo : MonoBehaviour {
 		RenderSettings.fog = true;
 		RenderSettings.fogMode = FogMode.Linear;
 		RenderSettings.fogColor = Color.black;
-
-		// simulator = gameObject.AddComponent<ThreeAxisCreep>();
-		// simulator.maxCreep = 1f;
-		// simulator.relaxedness = 10f;
 	} // End of Start().
 	
 	void Update(){
 
+		isActive = MuseManager.Inst.TouchingForehead;
+
+
         newSelectedNode = false;
-		if((!CameraControl.Inst.selectedNode || CameraControl.Inst.selectedNode.cull) && (Node.getAll.Count > 0)){
-			CameraControl.Inst.selectedNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
+		if((!targetNode || targetNode.cull) && (Node.getAll.Count > 0)){
+			targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
             newSelectedNode = true;
-			print("Getting new node to focus.");
 		}
 
 		
-		CameraControl.Inst.targetRadius = 10f + (200f * Mathf.Pow(enviroScale, 1f));
-		CameraControl.Inst.radius = CameraControl.Inst.targetRadius;
+		camRadius = 10f + (200f * Mathf.Pow(enviroScale, 1f));
 
-		RenderSettings.fogStartDistance = CameraControl.Inst.targetRadius + (1000f * Mathf.Pow(enviroScale, 2f));
+		RenderSettings.fogStartDistance = camRadius + (1000f * Mathf.Pow(enviroScale, 2f));
 		RenderSettings.fogEndDistance = RenderSettings.fogStartDistance * 2f;
 
         lastNumNodesToShow = numNodesToShow;
@@ -69,14 +78,11 @@ public class NeuroScaleDemo : MonoBehaviour {
 		if(Input.GetKey(KeyCode.DownArrow))
 			enviroScale -= Time.deltaTime * 0.2f;
 
-        enviroScale = Mathf.SmoothDamp(enviroScale, MuseManager.Inst.LastConcentrationMeasure, ref enviroScaleVel, 1f);
-
-
-		//enviroScale = Mathf.Pow(0.5f + simulator.creep.x, 2f);
-
-		CameraControl.Inst.targetOrbit.x -= Time.deltaTime * 5f;
-
+        enviroScale = Mathf.SmoothDamp(enviroScale, isActive? MuseManager.Inst.LastConcentrationMeasure : 1f, ref enviroScaleVel, 1f);
 		enviroScale = Mathf.Clamp01(enviroScale);
+
+		if(isActive)
+			CameraControl.Inst.targetOrbit.x -= Time.deltaTime * 5f;
 
         lastUseOctree = useOctree;
 
@@ -90,11 +96,11 @@ public class NeuroScaleDemo : MonoBehaviour {
 
             // Nodes
 
-            if (!CameraControl.Inst.selectedNode)
+            if (!targetNode)
                 return;
 
             nodeSortedSet.Clear();
-            Assembly selectedAssembly = CameraControl.Inst.selectedNode.PhysAssembly;
+            Assembly selectedAssembly = targetNode.PhysAssembly;
 
             // Only worry about the first assembly if the node count is low enough.
             if (selectedAssembly.NodeDict.Count >= numNodesToShow)
@@ -118,7 +124,7 @@ public class NeuroScaleDemo : MonoBehaviour {
             else
             {
                 float boundsSize = RenderSettings.fogEndDistance - RenderSettings.fogStartDistance;
-                nodeCullBoundary = new Bounds(CameraControl.Inst.selectedNode.Position, boundsSize * Vector3.one);
+                nodeCullBoundary = new Bounds(targetNode.Position, boundsSize * Vector3.one);
                 Assembly.AllAssemblyTree.RunActionInRange(new System.Action<Assembly>(CullNodes), nodeCullBoundary);
                 HandleCulledNodeVisibility();
             }
@@ -128,7 +134,7 @@ public class NeuroScaleDemo : MonoBehaviour {
             {
                 foodSortedSet.Clear();
                 float boundsSize = RenderSettings.fogEndDistance - RenderSettings.fogStartDistance;
-                Bounds foodBoundary = new Bounds(CameraControl.Inst.selectedNode.Position, boundsSize * Vector3.one);
+                Bounds foodBoundary = new Bounds(targetNode.Position, boundsSize * Vector3.one);
                 FoodPellet.AllFoodTree.RunActionInRange(new System.Action<FoodPellet>(CullFood), foodBoundary);
                 HandleCulledFoodVisibility();
             }
@@ -158,7 +164,7 @@ public class NeuroScaleDemo : MonoBehaviour {
     {
         foreach (KeyValuePair<Triplet, Node> node in someAssembly.NodeDict)
         {
-            float dist = (node.Value.Position - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
+            float dist = (node.Value.Position - targetNode.Position).sqrMagnitude;
             if (nodeSortedSet.Count < numNodesToShow)
                 AddToSortedList(nodeSortedSet, dist, node.Value);
             else
@@ -209,7 +215,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 
     void CullFood(FoodPellet someFood)
     {
-        float dist = (someFood.WorldPosition - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
+        float dist = (someFood.WorldPosition - targetNode.Position).sqrMagnitude;
         if (foodSortedSet.Count < numFoodToShow)
             AddToSortedList(foodSortedSet, dist, someFood);
         else
@@ -238,8 +244,8 @@ public class NeuroScaleDemo : MonoBehaviour {
 	// bubble-sort nodes
 	void SortNodes(){
 		for (int i = 0; i < Node.getAll.Count - 1; i ++ ){
-			float sqrMag1 = (Node.getAll[i + 0].Position - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
-			float sqrMag2 = (Node.getAll[i + 1].Position - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
+			float sqrMag1 = (Node.getAll[i + 0].Position - targetNode.Position).sqrMagnitude;
+			float sqrMag2 = (Node.getAll[i + 1].Position - targetNode.Position).sqrMagnitude;
          
 			if(sqrMag2 < sqrMag1){
 				Node tempStore = Node.getAll[i];
@@ -253,8 +259,8 @@ public class NeuroScaleDemo : MonoBehaviour {
 	// bubble-sort nodes
 	void SortFood(){
 		for (int i = 0; i < FoodPellet.all.Count - 1; i ++ ){
-			float sqrMag1 = (FoodPellet.all[i + 0].WorldPosition - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
-			float sqrMag2 = (FoodPellet.all[i + 1].WorldPosition - CameraControl.Inst.selectedNode.Position).sqrMagnitude;
+			float sqrMag1 = (FoodPellet.all[i + 0].WorldPosition - targetNode.Position).sqrMagnitude;
+			float sqrMag2 = (FoodPellet.all[i + 1].WorldPosition - targetNode.Position).sqrMagnitude;
          
 			if(sqrMag2 < sqrMag1){
 				FoodPellet tempStore = FoodPellet.all[i];

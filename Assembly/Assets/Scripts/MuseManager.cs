@@ -6,6 +6,9 @@ public class MuseManager : MonoBehaviour {
 
     public static MuseManager Inst = null;
 
+	public Texture2D sensorDisplayOut;
+	public Texture2D sensorDisplayIn;
+
     // Local variables
     private bool touchingForehead = false;
     private float lastConcentrationMeasure = 0f;
@@ -61,11 +64,37 @@ public class MuseManager : MonoBehaviour {
         batteryLevel = ((int)data[0]) / 100000f;
     }
 
+	float[] sensorIndSizes = new float[4];
+	float[] sensorIndSizeVels = new float[4];
+
+	float wearingHeadsetIndication = 0f;
+	float wearingHeadsetIndicationVel = 0f;
+
     void OnGUI()
     {
+		/*
         GUI.skin.label.fontSize = 18;
         GUI.skin.label.alignment = TextAnchor.LowerCenter;
         string statusStr = SecondsSinceLastMessage > 1 ? (SecondsSinceLastMessage.ToString() + " secs since last msg") : ""; // headConnectionStatus[0] + " " + headConnectionStatus[1] + " " + headConnectionStatus[2] + " " + headConnectionStatus[3];
         GUI.Label(new Rect(0.25f * Screen.width, 0.25f * Screen.height, 0.5f * Screen.width, 0.5f * Screen.height), touchingForehead ? statusStr : (statusStr + "\nNo device detected."));
+		*/
+
+		wearingHeadsetIndication = Mathf.SmoothDamp(wearingHeadsetIndication, TouchingForehead? 1f : 0f, ref wearingHeadsetIndicationVel, 1f);
+
+		// Sensor displays
+		float sensorRingSize = 50f * wearingHeadsetIndication;
+		float sensorRingSpacing = 10f;
+		for(int i = 0; i < 4; i++){
+			Vector2 sensorRectCenter = new Vector2(((Screen.width * 0.5f) - ((sensorRingSize * 1.5f) + (sensorRingSpacing * 1.5f))) + (i * (sensorRingSize + sensorRingSpacing)), (sensorRingSpacing + (sensorRingSize * 0.5f)));
+			Rect sensorRect = MathUtilities.CenteredSquare(sensorRectCenter.x, sensorRectCenter.y, sensorRingSize);
+			GUI.DrawTexture(sensorRect, sensorDisplayOut);
+
+			Rect sensorStatusRect = MathUtilities.CenteredSquare(sensorRectCenter.x, sensorRectCenter.y, sensorRingSize * Mathf.InverseLerp(3f, 0f, sensorIndSizes[i]));
+			GUI.DrawTexture(sensorStatusRect, sensorDisplayIn);
+
+			sensorIndSizes[i] = Mathf.SmoothDamp(sensorIndSizes[i], HeadConnectionStatus[i], ref sensorIndSizeVels[i], 0.25f);
+		}
+
+		//GUI.DrawTexture(MathUtilities.CenteredSquare(Screen.width * 0.5f, Screen.height * 0.5f, 100f + (Mathf.Sqrt(NeuroScaleDemo.Inst.enviroScale) * 200f)), sensorDisplayOut);
     }
 }
