@@ -12,12 +12,14 @@ public class MuseManager : MonoBehaviour {
     private float batteryLevel = 1.0f;
     private List<int> headConnectionStatus = new List<int>() {0,0,0,0};
     private DateTime timeOfLastMessage = DateTime.Now;
+    private Queue<int> blinkQueue = new Queue<int>();
 
 
     // Accessors
     public bool TouchingForehead{get{return touchingForehead;}}
     public float LastConcentrationMeasure{get{return lastConcentrationMeasure;}}
     public float SecondsSinceLastMessage { get { return (float)(DateTime.Now - timeOfLastMessage).TotalSeconds; } }
+    public int NumBlinksInLastSecond { get { return Sum(blinkQueue); } }
     // float (0-1)
     public float BatteryPercentage { get { return batteryLevel; } }
     // 4 ints for the 4 sensors -- 1 = good, 2 = ok, >=3 bad
@@ -44,7 +46,18 @@ public class MuseManager : MonoBehaviour {
             HandleHeadConnectMessage(packet.Data);
         else if (packet.Address.Contains("batt"))
             HandleBatteryStatus(packet.Data);
+        else if (packet.Address.Contains("blink"))
+            HandleBlinkSample(packet.Data);
         timeOfLastMessage = DateTime.Now;
+    }
+
+    // blinks expected to come in at 10 samples per second
+    // store the last 10 samples - 1 second of data
+    void HandleBlinkSample(List<object> data)
+    {
+        blinkQueue.Enqueue((int)data[0]);
+        if (blinkQueue.Count > 10)
+            blinkQueue.Dequeue();
     }
 
     void HandleConcentrationSample(float sample)
@@ -63,6 +76,14 @@ public class MuseManager : MonoBehaviour {
     void HandleBatteryStatus(List<object> data)
     {
         batteryLevel = ((int)data[0]) / 10000f;
+    }
+
+    int Sum(IEnumerable<int> q)
+    {
+        int sum = 0;
+        foreach (int e in q)
+            sum += e;
+        return sum;
     }
 
     void OnGUI()
