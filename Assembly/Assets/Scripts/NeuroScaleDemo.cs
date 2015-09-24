@@ -78,7 +78,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 		if(Input.GetKey(KeyCode.DownArrow))
 			enviroScale -= Time.deltaTime * 0.2f;
 
-        enviroScale = Mathf.SmoothDamp(enviroScale, isActive? MuseManager.Inst.LastConcentrationMeasure : 1f, ref enviroScaleVel, 1f);
+        enviroScale = Mathf.SmoothDamp(enviroScale, isActive? MuseManager.Inst.LastConcentrationMeasure : 1f, ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
 		enviroScale = Mathf.Clamp01(enviroScale);
 
 		if(isActive)

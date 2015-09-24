@@ -68,6 +68,7 @@ public class CameraControl : MonoBehaviour {
 
 	float blendToNeuroscale = 0f;
 	float blendToNeuroscaleVel = 0f;
+	bool clientOrbitControl = false;
 
 
     void Awake(){
@@ -99,7 +100,7 @@ public class CameraControl : MonoBehaviour {
 	void LateUpdate(){
 
 		// Blend between normal cam and neuroscale mode.
-		blendToNeuroscale = Mathf.SmoothDamp(blendToNeuroscale, NeuroScaleDemo.Inst.isActive? 1f : 0f, ref blendToNeuroscaleVel, 1f);
+		blendToNeuroscale = Mathf.SmoothDamp(blendToNeuroscale, (NeuroScaleDemo.Inst.isActive && (CaptureNet_Manager.Inst.orbitPlayers.Count == 0))? 1f : 0f, ref blendToNeuroscaleVel, 1f);
 
 
 		if(Input.GetKeyDown(KeyCode.C) && !ConsoleScript.active)
@@ -275,9 +276,9 @@ public class CameraControl : MonoBehaviour {
 			float panTiltSmoothTime = 2f;
 			tempEulers.x = Mathf.SmoothDampAngle(tempEulers.x, targetPanTilt.x, ref panTiltVel.x, panTiltSmoothTime);
 			tempEulers.y = Mathf.SmoothDampAngle(tempEulers.y, targetPanTilt.y, ref panTiltVel.y, panTiltSmoothTime);
-			transform.eulerAngles = tempEulers;
+			Quaternion transformEulers = Quaternion.Euler(tempEulers);
 
-			//transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime);
+			transform.rotation = Quaternion.Lerp(transformEulers, orbitCamRot, blendToNeuroscale);
 		}
 
 

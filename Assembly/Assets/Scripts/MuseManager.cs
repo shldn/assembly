@@ -19,12 +19,17 @@ public class MuseManager : MonoBehaviour {
 
     // Accessors
     public bool TouchingForehead{get{return touchingForehead;}}
-    public float LastConcentrationMeasure{get{return lastConcentrationMeasure;}}
+    public float LastConcentrationMeasure{get{return !invertConcentration? lastConcentrationMeasure : 1f - lastConcentrationMeasure;}}
     public float SecondsSinceLastMessage { get { return (float)(DateTime.Now - timeOfLastMessage).TotalSeconds; } }
     // float (0-1)
     public float BatteryPercentage { get { return batteryLevel; } }
     // 4 ints for the 4 sensors -- 1 = good, 2 = ok, >=3 bad
     public List<int> HeadConnectionStatus { get { return headConnectionStatus; } }
+
+
+	bool invertConcentration = false;
+	bool slowResponse = false;
+	public bool SlowResponse {get{return slowResponse;}}
 
 
     void Awake(){
@@ -35,6 +40,13 @@ public class MuseManager : MonoBehaviour {
 		OSCHandler.Instance.Init ();
         OSCHandler.Instance.Servers["AssemblyOSC"].server.PacketReceivedEvent += Server_PacketReceivedEvent;
     }
+
+	void Update () {
+		if(Input.GetKeyDown(KeyCode.RightAlt))
+			invertConcentration = !invertConcentration;
+		if(Input.GetKeyDown(KeyCode.S))
+			slowResponse = !slowResponse;
+	}
     
     private void Server_PacketReceivedEvent(UnityOSC.OSCServer sender, UnityOSC.OSCPacket packet)
     {
@@ -76,13 +88,6 @@ public class MuseManager : MonoBehaviour {
 
     void OnGUI()
     {
-		/*
-        GUI.skin.label.fontSize = 18;
-        GUI.skin.label.alignment = TextAnchor.LowerCenter;
-        string statusStr = SecondsSinceLastMessage > 1 ? (SecondsSinceLastMessage.ToString() + " secs since last msg") : ""; // headConnectionStatus[0] + " " + headConnectionStatus[1] + " " + headConnectionStatus[2] + " " + headConnectionStatus[3];
-        GUI.Label(new Rect(0.25f * Screen.width, 0.25f * Screen.height, 0.5f * Screen.width, 0.5f * Screen.height), touchingForehead ? statusStr : (statusStr + "\nNo device detected."));
-		*/
-
 		wearingHeadsetIndication = Mathf.SmoothDamp(wearingHeadsetIndication, TouchingForehead? 1f : 0f, ref wearingHeadsetIndicationVel, 1f);
 
 		// Sensor displays
@@ -93,12 +98,34 @@ public class MuseManager : MonoBehaviour {
 			Rect sensorRect = MathUtilities.CenteredSquare(sensorRectCenter.x, sensorRectCenter.y, sensorRingSize);
 			GUI.DrawTexture(sensorRect, sensorDisplayOut);
 
-			Rect sensorStatusRect = MathUtilities.CenteredSquare(sensorRectCenter.x, sensorRectCenter.y, sensorRingSize * Mathf.InverseLerp(3f, 0f, sensorIndSizes[i]));
+			Rect sensorStatusRect = MathUtilities.CenteredSquare(sensorRectCenter.x, sensorRectCenter.y, sensorRingSize * Mathf.InverseLerp(3f, 1f, sensorIndSizes[i]));
 			GUI.DrawTexture(sensorStatusRect, sensorDisplayIn);
 
 			sensorIndSizes[i] = Mathf.SmoothDamp(sensorIndSizes[i], HeadConnectionStatus[i], ref sensorIndSizeVels[i], 0.25f);
 		}
 
-		//GUI.DrawTexture(MathUtilities.CenteredSquare(Screen.width * 0.5f, Screen.height * 0.5f, 100f + (Mathf.Sqrt(NeuroScaleDemo.Inst.enviroScale) * 200f)), sensorDisplayOut);
+        GUI.skin.label.fontSize = 14;
+        GUI.skin.label.alignment = TextAnchor.LowerCenter;
+
+		string statusStr = "";
+		// Attention metric
+		if(SecondsSinceLastMessage < 1f){
+			if(touchingForehead)
+				statusStr += (NeuroScaleDemo.Inst.enviroScale * 100f).ToString("F0") + "%";
+			else
+				statusStr += "EEG device ready.";
+		}
+
+		if(invertConcentration)
+			statusStr += " ~";
+
+		if(slowResponse)
+			statusStr += " s";
+
+		if(BatteryPercentage < 0.2f)
+			statusStr += "\n" + (BatteryPercentage * 100f).ToString("F0") + "% battery remaining.";
+
+
+        GUI.Label(MathUtilities.CenteredSquare(Screen.width * 0.5f, ((sensorRingSize + (sensorRingSpacing)) * Mathf.Sqrt(wearingHeadsetIndication)) + 505f, 1000f), statusStr);
     }
 }

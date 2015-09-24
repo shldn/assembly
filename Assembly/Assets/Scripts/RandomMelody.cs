@@ -13,6 +13,10 @@ public class RandomMelody : MonoBehaviour {
     float cooldown = 0f;
 
 
+	public AudioSource simpleSong;
+	public AudioSource complexSong;
+
+
     void Awake(){
         Inst = this;
     } // End of Awake().
@@ -29,6 +33,9 @@ public class RandomMelody : MonoBehaviour {
             cooldown = Random.Range(1f, 5f);
         }
         */
+
+		simpleSong.volume = 1f - Mathf.Sqrt(NeuroScaleDemo.Inst.enviroScale);
+		complexSong.volume = Mathf.Sqrt(NeuroScaleDemo.Inst.enviroScale);
 
 	} // End of Update().
 
@@ -47,11 +54,11 @@ public class RandomMelody : MonoBehaviour {
         // set other aSource properties here, if desired
 
         aSource.pitch = (notes[Random.Range(0, notes.Length)] * Random.Range(1, 3)) / noteFreq;
-        aSource.volume = 0.4f;
+        aSource.volume = 0.4f * NeuroScaleDemo.Inst.enviroScale;
 
         aSource.Play(); // start the sound
         Destroy(tempGO, noteClip.length); // destroy object after clip duration
-    
+
     } // End of PlayNote().
 
 } // End of RandomMelody.
