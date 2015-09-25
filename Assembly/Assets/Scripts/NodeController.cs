@@ -257,7 +257,7 @@ public class NodeController : MonoBehaviour {
 		// Leaderboard
         if (PersistentGameManager.IsServer)
         {
-            if (showLeaderboard)
+            if (showLeaderboard && (!NeuroScaleDemo.Inst.isActive || NeuroScaleDemo.Inst.enviroScale > 0.8f))
             {
                 int entriesDisplayed = Mathf.Min(leaderboard.Count, leaderboardMaxDisplaySize) + Mathf.Min(leaderboardCaptured.Count, leaderboardMaxDisplaySize);
                 float timePerIndex = 3f; // How long each leaderboard entry is highlighted.
