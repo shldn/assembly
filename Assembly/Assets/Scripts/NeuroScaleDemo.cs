@@ -54,13 +54,11 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 		isActive = MuseManager.Inst.TouchingForehead;
 
-
         newSelectedNode = false;
 		if((!targetNode || targetNode.cull) && (Node.getAll.Count > 0)){
 			targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
             newSelectedNode = true;
 		}
-
 		
 		camRadius = 10f + (200f * Mathf.Pow(enviroScale, 1f));
 
@@ -73,10 +71,12 @@ public class NeuroScaleDemo : MonoBehaviour {
 
         Cull();
 
+		/*
 		if(Input.GetKey(KeyCode.UpArrow))
 			enviroScale += Time.deltaTime * 0.2f;
 		if(Input.GetKey(KeyCode.DownArrow))
 			enviroScale -= Time.deltaTime * 0.2f;
+		*/
 
         enviroScale = Mathf.SmoothDamp(enviroScale, isActive? MuseManager.Inst.LastConcentrationMeasure : 1f, ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
 		enviroScale = Mathf.Clamp01(enviroScale);
@@ -85,6 +85,14 @@ public class NeuroScaleDemo : MonoBehaviour {
 			CameraControl.Inst.targetOrbit.x -= Time.deltaTime * 5f;
 
         lastUseOctree = useOctree;
+
+
+		// Keep targetted assembly from getting too far from the origin.
+		if(targetNode){
+			foreach(KeyValuePair<Triplet, Node> kvp in targetNode.PhysAssembly.NodeDict){
+				kvp.Value.Position += targetNode.PhysAssembly.Position * NodeController.physicsStep * 0.1f;
+			}
+		}
 
 	} // End of Update().
 
@@ -140,7 +148,6 @@ public class NeuroScaleDemo : MonoBehaviour {
             }
             else
                 SetAllFoodVisibility(false);
-
 
         }
         else

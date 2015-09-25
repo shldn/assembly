@@ -170,7 +170,8 @@ public class CameraControl : MonoBehaviour {
 			}
 		}
 
-		center = Vector3.Lerp(center, NeuroScaleDemo.Inst.TargetNode.Position, blendToNeuroscale);
+		if(NeuroScaleDemo.Inst.TargetNode)
+			center = Vector3.Lerp(center, NeuroScaleDemo.Inst.TargetNode.Position, blendToNeuroscale);
 
 
 		if((Assembly.getAll.Count > 0f) && Environment.Inst && Environment.Inst.isActiveAndEnabled)

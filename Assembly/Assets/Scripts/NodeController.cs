@@ -57,6 +57,9 @@ public class NodeController : MonoBehaviour {
     System.DateTime lastResetTime = System.DateTime.Now;
     public System.DateTime lastPlayerActivityTime = System.DateTime.Now;
 
+
+	float leaderboardFadeIn = 0f;
+
     // Debug
     public int NumAssembliesAllocated { get { return nextAssemblyID; } }
 
@@ -255,9 +258,10 @@ public class NodeController : MonoBehaviour {
 		}
 
 		// Leaderboard
+		leaderboardFadeIn = Mathf.MoveTowards(leaderboardFadeIn, (!NeuroScaleDemo.Inst.isActive || (NeuroScaleDemo.Inst.enviroScale > 0.8f)) ? 1f : 0f, Time.deltaTime * 0.25f);
         if (PersistentGameManager.IsServer)
         {
-            if (showLeaderboard && (!NeuroScaleDemo.Inst.isActive || NeuroScaleDemo.Inst.enviroScale > 0.8f))
+            if (showLeaderboard)
             {
                 int entriesDisplayed = Mathf.Min(leaderboard.Count, leaderboardMaxDisplaySize) + Mathf.Min(leaderboardCaptured.Count, leaderboardMaxDisplaySize);
                 float timePerIndex = 3f; // How long each leaderboard entry is highlighted.
@@ -276,7 +280,7 @@ public class NodeController : MonoBehaviour {
 
                 for (int i = 0; i < relativesToHighlight.Count - 1; i++)
                 {
-                    GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount));
+                    GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount * leaderboardFadeIn));
                 }
             }
             else
@@ -526,7 +530,7 @@ public class NodeController : MonoBehaviour {
             return;
         GUI.skin.label.alignment = TextAnchor.UpperLeft;
         GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.03f);
-        GUI.color = Color.white;
+        GUI.color = new Color(1f, 1f, 1f, leaderboardFadeIn);
 		GUI.skin.label.padding = new RectOffset(0, 0, 0, 0);
         GUILayout.Label(title, GUILayout.Height(Mathf.Max(GUI.skin.label.fontSize + 2, Mathf.CeilToInt(Screen.height * 0.035f))));
         GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.015f);
@@ -534,9 +538,9 @@ public class NodeController : MonoBehaviour {
         foreach (int leaderEntry in leaderList)
         {
             if (GetHighlightedAssemblyID(currentLeaderIndex) == leaderEntry)
-                GUI.color = Color.cyan;
+				GUI.color = new Color(0f, 1f, 1f, leaderboardFadeIn);
             else
-                GUI.color = Color.white;
+				GUI.color = new Color(1f, 1f, 1f, leaderboardFadeIn);
 
             if (assemblyNameDictionary.ContainsKey(leaderEntry) && assemblyScores.ContainsKey(leaderEntry))
                 GUILayout.Label("  " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(assemblyNameDictionary[leaderEntry]) + " - " + assemblyScores[leaderEntry].ToString("0.0"));
