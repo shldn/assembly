@@ -19,7 +19,7 @@ public class MuseManager : MonoBehaviour {
 
 
     // Accessors
-    public bool TouchingForehead{get{return touchingForehead;}}
+    public bool TouchingForehead{get{return touchingForehead && (MuseManager.Inst.SecondsSinceLastMessage < 1f);}}
     public float LastConcentrationMeasure{get{return !invertConcentration? lastConcentrationMeasure : 1f - lastConcentrationMeasure;}}
     public float SecondsSinceLastMessage { get { return (float)(DateTime.Now - timeOfLastMessage).TotalSeconds; } }
     public int NumBlinksInLastSecond { get { return Sum(blinkQueue); } }
