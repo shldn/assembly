@@ -14,7 +14,7 @@ public class MuseManager : MonoBehaviour {
     private float lastConcentrationMeasure = 0f;
     private float batteryLevel = 1.0f;
     private List<int> headConnectionStatus = new List<int>() {0,0,0,0};
-    private DateTime timeOfLastMessage = DateTime.Now;
+    private DateTime timeOfLastMessage = DateTime.Now - new TimeSpan(1, 1, 1);
     private Queue<int> blinkQueue = new Queue<int>();
 
 
