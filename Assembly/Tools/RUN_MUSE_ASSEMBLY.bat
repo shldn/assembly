@@ -1,0 +1,2 @@
+START StreamAssemblyMuseData.bat
+START assembly_server.exe
