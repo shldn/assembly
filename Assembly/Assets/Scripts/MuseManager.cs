@@ -44,11 +44,15 @@ public class MuseManager : MonoBehaviour {
     }
 
 	void Update () {
-		if(Input.GetKeyDown(KeyCode.RightAlt))
+        if (Input.GetKeyDown(KeyCode.RightAlt) || Input.GetKeyDown(KeyCode.LeftAlt))
 			invertConcentration = !invertConcentration;
 		if(Input.GetKeyDown(KeyCode.S))
 			slowResponse = !slowResponse;
 	}
+
+    void OnDestroy() {
+        Inst = null;
+    }
     
     private void Server_PacketReceivedEvent(UnityOSC.OSCServer sender, UnityOSC.OSCPacket packet)
     {
