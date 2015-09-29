@@ -35,7 +35,6 @@ public class IntroAnimation : MonoBehaviour {
 				lerp = 0f;
 			}
 		}
-
 		if(step == 2){
 			transform.position = Vector3.Lerp(hangPos.position, endPos.position, Mathf.Pow(lerp, 2f));
 			lerp += Time.deltaTime * 0.75f;
@@ -44,7 +43,6 @@ public class IntroAnimation : MonoBehaviour {
 				Application.LoadLevel(Application.loadedLevel + 1);
 			}
 		}
-	
 	}
 
 	void OnGUI(){

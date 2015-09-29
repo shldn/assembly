@@ -78,13 +78,15 @@ public class DiagnosticHUD : MonoBehaviour {
         str += "\n";
         str += "Assemblies Allocated: " + NodeController.Inst.NumAssembliesAllocated;
         str += "\n";
+		str += "Num Nodes: " + Node.getAll.Count;
+        str += "\n";
         str += "Num Assemblies: " + Assembly.getAll.Count;
         str += "\n";
         str += "Game Objects: " + goCount;
         if (NeuroScaleDemo.Inst != null)
         {
             str += "\n";
-            str += "EnviroScale: " + NeuroScaleDemo.Inst.enviroScale;
+            str += "EnviroScale: " + (NeuroScaleDemo.Inst.enviroScale * 100f).ToString("F0") + "%";
         }
 
         return str;
@@ -92,8 +94,8 @@ public class DiagnosticHUD : MonoBehaviour {
 
     void OnGUI()
     {
-        GUI.skin.label.fontSize = 25;
+        GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.015f);
         GUI.skin.label.alignment = TextAnchor.UpperRight;
-        GUI.Label(new Rect(0.5f * Screen.width, 0, 0.5f * Screen.width, Screen.height), GetDiagnosticString());
+        GUI.Label(new Rect((0.5f * Screen.width) - (Screen.height * 0.02f), Screen.height * 0.02f, 0.5f * Screen.width, Screen.height), GetDiagnosticString());
     }
 }

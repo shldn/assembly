@@ -120,10 +120,10 @@ public class CameraControl : MonoBehaviour {
 
 		// Gallery cam
 		if(galleryCam){
-			float radiusPulseTime = 200f;
-			float maxPulseRadius = (Environment.Inst && Environment.Inst.enabled)? 500f : 1000f;
+			float radiusPulseTime = 120f;
+			float maxPulseRadius = 800f;
 
-			float elevationPulseTime = 90f;
+			float elevationPulseTime = 75f;
 			float maxPulseElevation = 45f;
 			targetRadius = (Mathf.Cos((Time.time / radiusPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseRadius;
 			targetOrbit.y = (Mathf.Sin((Time.time / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseElevation;
