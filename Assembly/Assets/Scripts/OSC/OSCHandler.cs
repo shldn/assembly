@@ -84,7 +84,15 @@ public class OSCHandler : MonoBehaviour
 	
 	private const int _loglength = 25;
 	#endregion
-	
+
+    /// <summary>
+    /// Make sure the object is persistent across level changes
+    /// </summary>
+    private void Awake()
+    {
+        DontDestroyOnLoad(this);
+    }
+
 	/// <summary>
 	/// Initializes the OSC Handler.
 	/// Here you can create the OSC servers and clientes.
@@ -97,8 +105,8 @@ public class OSCHandler : MonoBehaviour
 
         //Initialize OSC servers (listeners)
         //Example:
-
-		CreateServer("AssemblyOSC", 6000);
+        if(!Servers.ContainsKey("AssemblyOSC"))
+		    CreateServer("AssemblyOSC", 6000);
 	}
 	
 	#region Properties
