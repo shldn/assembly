@@ -33,6 +33,7 @@ public class TimedTrailRenderer : MonoBehaviour
    private Vector3 lastCameraPosition2;
    private float lastRebuildTime = 0.00f;
    private bool lastFrameEmit = true;
+   private static readonly Color whiteAlpha = new Color(1f, 1f, 1f, 0f);
 
    // Bounds calcultation
    Bounds meshBounds = new Bounds();
@@ -223,7 +224,7 @@ public class TimedTrailRenderer : MonoBehaviour
           {
             float time = (Time.time - it.Value.timeCreated) / lifeTime;
  
-            Color color = Color.Lerp(Color.white, Color.clear, time);
+            Color color = Color.Lerp(Color.white, whiteAlpha, time);
             if (colors != null && colors.Length > 0)
             {
                float colorTime = time * (colors.Length - 1);
@@ -234,22 +235,20 @@ public class TimedTrailRenderer : MonoBehaviour
                if (max >= colors.Length) max = colors.Length - 1; if (max < 0) max = 0;
                color = Color.Lerp(colors[(int)min], colors[(int)max], lerp);
             }
- 
-            float size = 1f;
-            if (sizes != null && sizes.Length > 0)
+
+            float size = (sizes != null && sizes.Length == 1) ? sizes[0] : 1f;
+            if (sizes != null && sizes.Length > 1)
             {
-               float sizeTime = time * (sizes.Length - 1);
-               float min = Mathf.Floor(sizeTime);
-               float max = Mathf.Clamp(Mathf.Ceil(sizeTime), 1, sizes.Length - 1);
-               float lerp = Mathf.InverseLerp(min, max, sizeTime);
-               if (min >= sizes.Length) min = sizes.Length - 1; if (min < 0) min = 0;
-               if (max >= sizes.Length) max = sizes.Length - 1; if (max < 0) max = 0;
-               size = Mathf.Lerp(sizes[(int)min], sizes[(int)max], lerp);
+              float sizeTime = time * (sizes.Length - 1);
+              float min = Mathf.Floor(sizeTime);
+              float max = Mathf.Clamp(Mathf.Ceil(sizeTime), 1, sizes.Length - 1);
+              float lerp = Mathf.InverseLerp(min, max, sizeTime);
+              if (min >= sizes.Length) min = sizes.Length - 1; if (min < 0) min = 0;
+              if (max >= sizes.Length) max = sizes.Length - 1; if (max < 0) max = 0;
+              size = Mathf.Lerp(sizes[(int)min], sizes[(int)max], lerp);
             }
- 
-            Vector3 lineDirection = Vector3.zero;
-            if (i == 0) lineDirection = it.Value.position - it.Next.Value.position;
-            else lineDirection = it.Previous.Value.position - it.Value.position;
+
+            Vector3 lineDirection = (i == 0) ? it.Value.position - it.Next.Value.position : it.Previous.Value.position - it.Value.position;
 
             Vector3 vectorToCamera = Camera.main.transform.position - it.Value.position;
             Vector3 perpendicular = Vector3.Cross(lineDirection, vectorToCamera).normalized;
