@@ -56,6 +56,7 @@ public class Assembly : CaptureObject{
 	public bool cull = false;
 	public bool needAddToList = true;
     public bool hasBeenCaptured = false;
+	public float Health {get{return energy / nodeDict.Count;}}
 
 	public float nametagFade = 0f;
 
@@ -249,9 +250,9 @@ public class Assembly : CaptureObject{
 		if(!PersistentGameManager.IsClient)
 			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
-		if(!PersistentGameManager.IsClient && (Node.getAll.Count < NodeController.Inst.worldNodeThreshold * 0.9f) && (energy > (maxEnergy * 0.9f)))
+		if(!PersistentGameManager.IsClient && (energy > (maxEnergy * 0.9f)))
 			wantToMate = true;
-		else if((Node.getAll.Count > (NodeController.Inst.worldNodeThreshold * 0.8f)) || (energy < maxEnergy * 0.5f) && (Random.Range(0f, 1f) < 0.01f)){
+		else if(energy < maxEnergy * 0.5f){
 			wantToMate = false;
 			mateCompletion = 0f;
 

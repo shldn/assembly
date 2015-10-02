@@ -66,6 +66,11 @@ public class CameraControl : MonoBehaviour {
 	Vector2 panTiltVel = Vector2.zero;
 
 
+	float blendToNeuroscale = 0f;
+	float blendToNeuroscaleVel = 0f;
+	bool clientOrbitControl = false;
+
+
     void Awake(){
         Inst = this;
     } // End of Awake().
@@ -88,11 +93,15 @@ public class CameraControl : MonoBehaviour {
 		transform.eulerAngles = new Vector3(0f, 120f, 0f);
 
 
-		galleryCam = Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient && !NeuroScaleDemo.Inst;
+		galleryCam = Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient;
 	} // End of Start().
 	
 
 	void LateUpdate(){
+
+		// Blend between normal cam and neuroscale mode.
+		blendToNeuroscale = Mathf.SmoothDamp(blendToNeuroscale, (NeuroScaleDemo.Inst.isActive && (CaptureNet_Manager.Inst.orbitPlayers.Count == 0))? 1f : 0f, ref blendToNeuroscaleVel, 1f);
+
 
 		if(Input.GetKeyDown(KeyCode.C) && !ConsoleScript.active)
 			galleryCam = !galleryCam;
@@ -111,14 +120,13 @@ public class CameraControl : MonoBehaviour {
 
 		// Gallery cam
 		if(galleryCam){
-			float radiusPulseTime = 200f;
-			float maxPulseRadius = (Environment.Inst && Environment.Inst.enabled)? 500f : 1000f;
+			float radiusPulseTime = 120f;
+			float maxPulseRadius = 800f;
 
-			float elevationPulseTime = 90f;
+			float elevationPulseTime = 75f;
 			float maxPulseElevation = 45f;
 			targetRadius = (Mathf.Cos((Time.time / radiusPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseRadius;
 			targetOrbit.y = (Mathf.Sin((Time.time / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseElevation;
-
 		}
 
 
@@ -161,6 +169,9 @@ public class CameraControl : MonoBehaviour {
 				center /= Assembly.getAll.Count;
 			}
 		}
+
+		if(NeuroScaleDemo.Inst.TargetNode)
+			center = Vector3.Lerp(center, NeuroScaleDemo.Inst.TargetNode.Position, blendToNeuroscale);
 
 
 		if((Assembly.getAll.Count > 0f) && Environment.Inst && Environment.Inst.isActiveAndEnabled)
@@ -216,7 +227,7 @@ public class CameraControl : MonoBehaviour {
 
         centerOffset = Vector3.SmoothDamp(centerOffset, Vector3.zero, ref centerOffsetVel, effectiveSmoothTime);
         Quaternion cameraRot = Quaternion.Euler(-orbit.y, orbit.x, 0f);
-        transform.position = center + centerOffset + (cameraRot * (Vector3.forward * radius));
+        transform.position = center + centerOffset + (cameraRot * (Vector3.forward * Mathf.Lerp(radius, NeuroScaleDemo.Inst.CamRadius, blendToNeuroscale)));
 
 		Quaternion orbitCamRot = cameraRot * Quaternion.AngleAxis(180f, Vector3.up);
 
@@ -225,6 +236,7 @@ public class CameraControl : MonoBehaviour {
 	        transform.rotation = orbitCamRot;
 		else{
 			Quaternion targetRotation = orbitCamRot;
+			targetRotation = Quaternion.Lerp(targetRotation, cameraRot, blendToNeuroscale);
 
 			if(!assemblyOfInterest){
 				assemblyOfInterestStaleness = 0f;
@@ -265,9 +277,9 @@ public class CameraControl : MonoBehaviour {
 			float panTiltSmoothTime = 2f;
 			tempEulers.x = Mathf.SmoothDampAngle(tempEulers.x, targetPanTilt.x, ref panTiltVel.x, panTiltSmoothTime);
 			tempEulers.y = Mathf.SmoothDampAngle(tempEulers.y, targetPanTilt.y, ref panTiltVel.y, panTiltSmoothTime);
-			transform.eulerAngles = tempEulers;
+			Quaternion transformEulers = Quaternion.Euler(tempEulers);
 
-			//transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime);
+			transform.rotation = Quaternion.Lerp(transformEulers, orbitCamRot, blendToNeuroscale);
 		}
 
 
