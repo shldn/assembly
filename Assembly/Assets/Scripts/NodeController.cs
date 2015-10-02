@@ -596,9 +596,11 @@ public class NodeController : MonoBehaviour {
     public static void UpdateBirthCount(int assemblyID, int generationRemoved)
     {
         float posGen = (generationRemoved < 0) ? 0f : (float)generationRemoved;
-        if (!assemblyScores.ContainsKey(assemblyID))
-            assemblyScores.Add(assemblyID, 0);
-        assemblyScores[assemblyID] += 1f / (posGen + 1f);
+		if(generationRemoved < 10){
+			if(!assemblyScores.ContainsKey(assemblyID))
+				assemblyScores.Add(assemblyID, 0);
+			assemblyScores[assemblyID] += 1f / (posGen + 1f);
+		}
 
         MaintainLeaderboardOnBirth(assemblyID, leaderboard);
         if (Assembly.captured.Contains(assemblyID))
@@ -648,9 +650,11 @@ public class NodeController : MonoBehaviour {
     public static void UpdateDeathCount(int assemblyID, int generationRemoved)
     {
         float posGen = (generationRemoved < 0) ? 0f : (float)generationRemoved;
-        if (!assemblyScores.ContainsKey(assemblyID))
-            assemblyScores.Add(assemblyID, 0);
-        assemblyScores[assemblyID] -= 1f / (posGen + 1f);
+		if(generationRemoved < 10){
+			if (!assemblyScores.ContainsKey(assemblyID))
+				assemblyScores.Add(assemblyID, 0);
+			assemblyScores[assemblyID] -= 1f / (posGen + 1f);
+		}
 
         MaintainLeaderboardOnDeath(assemblyID, leaderboard);
         MaintainLeaderboardOnDeath(assemblyID, leaderboardCaptured);

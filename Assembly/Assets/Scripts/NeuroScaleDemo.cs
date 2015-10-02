@@ -71,18 +71,8 @@ public class NeuroScaleDemo : MonoBehaviour {
 
         Cull();
 
-		/*
-		if(Input.GetKey(KeyCode.UpArrow))
-			enviroScale += Time.deltaTime * 0.2f;
-		if(Input.GetKey(KeyCode.DownArrow))
-			enviroScale -= Time.deltaTime * 0.2f;
-		*/
-
         enviroScale = Mathf.SmoothDamp(enviroScale, isActive? MuseManager.Inst.LastConcentrationMeasure : 1f, ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
 		enviroScale = Mathf.Clamp01(enviroScale);
-
-		if(isActive)
-			CameraControl.Inst.targetOrbit.x -= Time.deltaTime * 5f;
 
         lastUseOctree = useOctree;
 
