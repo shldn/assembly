@@ -271,7 +271,7 @@ public class NodeController : MonoBehaviour {
 		}
 
 		// Leaderboard
-		leaderboardFadeIn = Mathf.MoveTowards(leaderboardFadeIn, (!NeuroScaleDemo.Inst.isActive || (NeuroScaleDemo.Inst.enviroScale > 0.8f)) ? 1f : 0f, Time.deltaTime * 0.25f);
+		leaderboardFadeIn = Mathf.MoveTowards(leaderboardFadeIn, (!NeuroScaleDemo.Inst || !NeuroScaleDemo.Inst.isActive || (NeuroScaleDemo.Inst.enviroScale > 0.8f)) ? 1f : 0f, Time.deltaTime * 0.25f);
         if (PersistentGameManager.IsServer)
         {
             if (showLeaderboard)
