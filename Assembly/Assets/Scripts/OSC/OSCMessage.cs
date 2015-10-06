@@ -17,7 +17,7 @@
 // 	  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // 	  IN THE SOFTWARE.
 //
-
+#if UNITY_STANDALONE
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -206,3 +206,4 @@ namespace UnityOSC
 		#endregion
 	}
 }
+#endif

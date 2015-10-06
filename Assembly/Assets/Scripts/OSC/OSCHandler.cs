@@ -19,6 +19,7 @@
 //
 //	  Inspired by http://www.unifycommunity.com/wiki/index.php?title=AManagerClass
 
+#if UNITY_STANDALONE
 using System;
 using System.Net;
 using System.Collections.Generic;
@@ -368,3 +369,4 @@ public class OSCHandler : MonoBehaviour
 	#endregion
 }	
 
+#endif

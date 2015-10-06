@@ -39,8 +39,10 @@ public class MuseManager : MonoBehaviour {
     }
 
 	void Start () {
+#if UNITY_STANDALONE
 		OSCHandler.Instance.Init ();
         OSCHandler.Instance.Servers["AssemblyOSC"].server.PacketReceivedEvent += Server_PacketReceivedEvent;
+#endif
     }
 
 	void Update () {
@@ -54,6 +56,7 @@ public class MuseManager : MonoBehaviour {
         Inst = null;
     }
     
+#if UNITY_STANDALONE
     private void Server_PacketReceivedEvent(UnityOSC.OSCServer sender, UnityOSC.OSCPacket packet)
     {
         //Debug.Log("packet: " + packet.Address + " " + OSCHandler.DataToString(packet.Data));
@@ -69,6 +72,7 @@ public class MuseManager : MonoBehaviour {
             HandleBlinkSample(packet.Data);
         timeOfLastMessage = DateTime.Now;
     }
+#endif
 
     // blinks expected to come in at 10 samples per second
     // store the last 10 samples - 1 second of data
