@@ -68,13 +68,11 @@ public class ClientTest : MonoBehaviour {
 
 
     void OnGUI(){
-		string progressBar = "[Testing] ";
         float step = 100f / (float)(testDuration);
-		for(int i = 0; i < runTime * step; i++)
-			progressBar += "|";
-        GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.width * 0.02f);
-		GUI.skin.label.alignment = TextAnchor.LowerLeft;
-        GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), progressBar + " " + (runTime * step).ToString("F0") + "%");
+		string progressBar = (runTime * step).ToString("F0") + "%" + "\n" + "Test in progress...";
+		GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.width * 0.02f);
+		GUI.skin.label.alignment = TextAnchor.LowerCenter;
+        GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), progressBar);
 	} // End of OnGUI().
 
 } // End of ClientTest.

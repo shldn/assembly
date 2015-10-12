@@ -22,11 +22,14 @@ public class AssemblyEditor : MonoBehaviour {
 	public Texture2D iqIcon;
 
 	public Texture2D helpIcon;
+	public Texture2D vignette;
 
 	public GUISkin guiSkin;
 
 	public AudioClip buttonForwardClip;
 	public AudioClip buttonBackwardClip;
+
+	public Light testingLight;
 
 
     void Start(){
@@ -56,6 +59,8 @@ public class AssemblyEditor : MonoBehaviour {
 
     void Update()
     {
+		testingLight.enabled = ClientTest.Inst;
+
         if (capturedAssembly)
         {
             // Update assembly.
@@ -70,6 +75,13 @@ public class AssemblyEditor : MonoBehaviour {
 
 
     void OnGUI(){
+
+		// Vignette
+		GUI.depth = 999;
+		GUI.DrawTexture(new Rect(-10f, -10f, Screen.width + 20f, Screen.height + 20f), vignette);
+
+
+
 		GUI.skin = guiSkin;
 
 		GUI.skin.label.font = PrefabManager.Inst.assemblyFont;
@@ -263,25 +275,25 @@ public class AssemblyEditor : MonoBehaviour {
 		GameObject testObject;
 		switch(menu){
 			case(MenuType.maximumTravel):
-				SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
+				SpawnTestAssemblies(numTestAssemblies, mutationRate, Random.rotation);
 				testObject = new GameObject("maxTravelTester", typeof(Test_MaxTravel));
 				testObject.transform.position = capturedAssembly.Position;
 				capturedAssembly.Destroy();
 				break;
 			case(MenuType.maximumSpeed):
-				SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
+				SpawnTestAssemblies(numTestAssemblies, mutationRate, Random.rotation);
 				testObject = new GameObject("maxSpeedTester", typeof(Test_MaxSpeed));
 				testObject.transform.position = capturedAssembly.Position;
 				capturedAssembly.Destroy();
 				break;
             case (MenuType.visionRange):
-                SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
+                SpawnTestAssemblies(numTestAssemblies, mutationRate, Random.rotation);
                 testObject = new GameObject("maxVisionRange", typeof(Test_SenseRange));
                 testObject.transform.position = capturedAssembly.Position;
                 capturedAssembly.Destroy();
                 break;
             case (MenuType.visionScope):
-                SpawnTestAssemblies(numTestAssemblies, mutationRate, null);
+                SpawnTestAssemblies(numTestAssemblies, mutationRate, Random.rotation);
                 testObject = new GameObject("maxVisionScope", typeof(Test_SenseFov));
                 testObject.transform.position = capturedAssembly.Position;
                 capturedAssembly.Destroy();
@@ -293,7 +305,7 @@ public class AssemblyEditor : MonoBehaviour {
 				capturedAssembly.Destroy();
 				break;
             case(MenuType.rotation):
-                SpawnTestAssemblies(10, mutationRate, null, 2.0f);
+                SpawnTestAssemblies(10, mutationRate, Random.rotation, 2.0f);
 				testObject = new GameObject("rotationTester", typeof(Test_MaxRotation));
 				testObject.transform.position = capturedAssembly.Position;
 				capturedAssembly.Destroy();

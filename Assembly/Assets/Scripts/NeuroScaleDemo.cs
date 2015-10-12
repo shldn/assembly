@@ -78,7 +78,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 
 		// Keep targetted assembly from getting too far from the origin.
-		if(targetNode){
+		if(targetNode && !PersistentGameManager.IsClient){
 			foreach(KeyValuePair<Triplet, Node> kvp in targetNode.PhysAssembly.NodeDict){
 				kvp.Value.Position += targetNode.PhysAssembly.Position * NodeController.physicsStep * 0.1f;
 			}

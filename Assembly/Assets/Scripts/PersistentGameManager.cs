@@ -24,6 +24,7 @@ public class PersistentGameManager : MonoBehaviour {
     public static HashSet<CaptureObject> CaptureObjects = new HashSet<CaptureObject>();
 
     public CaptureNet_Manager captureMgr;
+    public AssemblyRadar assemRadar;
     public bool optimize = true;
 
     // Prefabs
@@ -46,6 +47,8 @@ public class PersistentGameManager : MonoBehaviour {
         DontDestroyOnLoad(this);
         if( !captureMgr )
             captureMgr = gameObject.AddComponent<CaptureNet_Manager>();
+		if( !assemRadar )
+            assemRadar = gameObject.AddComponent<AssemblyRadar>();
 
         // load prefabs
         if( playerSyncObj == null)

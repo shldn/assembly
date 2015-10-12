@@ -338,7 +338,7 @@ public class Assembly : CaptureObject{
         lastPosition = newPosition;
 
         // Keeps assemblies in Capsule
-        if (Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f)
+        if(!PersistentGameManager.IsClient && Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f)
         {
             foreach (Node someNode in nodeDict.Values)
                 someNode.velocity += -Position.normalized * NodeController.physicsStep;

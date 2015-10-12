@@ -143,18 +143,18 @@ public class MuseManager : MonoBehaviour {
 				statusStr += (NeuroScaleDemo.Inst.enviroScale * 100f).ToString("F0") + "%";
 			else
 				statusStr += "EEG device ready.";
+
+			if(invertConcentration)
+				statusStr += " ~";
+
+			if(slowResponse)
+				statusStr += " s";
+
+			if(BatteryPercentage < 0.2f)
+				statusStr += "\n" + (BatteryPercentage * 100f).ToString("F0") + "% battery remaining.";
+
+
+			GUI.Label(MathUtilities.CenteredSquare(Screen.width * 0.5f, ((sensorRingSize + (sensorRingSpacing)) * Mathf.Sqrt(wearingHeadsetIndication)) + 505f, 1000f), statusStr);
 		}
-
-		if(invertConcentration)
-			statusStr += " ~";
-
-		if(slowResponse)
-			statusStr += " s";
-
-		if(BatteryPercentage < 0.2f)
-			statusStr += "\n" + (BatteryPercentage * 100f).ToString("F0") + "% battery remaining.";
-
-
-        GUI.Label(MathUtilities.CenteredSquare(Screen.width * 0.5f, ((sensorRingSize + (sensorRingSpacing)) * Mathf.Sqrt(wearingHeadsetIndication)) + 505f, 1000f), statusStr);
     }
 }

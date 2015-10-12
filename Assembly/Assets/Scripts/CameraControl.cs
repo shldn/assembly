@@ -149,7 +149,7 @@ public class CameraControl : MonoBehaviour {
             selectedJellyfish = Jellyfish.all[0];
             center = Jellyfish.all[0].transform.position;
         }
-        else if (PersistentGameManager.IsClient && NodeController.Inst && ClientTest.Inst)
+        else if(PersistentGameManager.IsClient && NodeController.Inst && ClientTest.Inst)
             KeepAssembliesInView();
         // Grotto
         else if(selectedJellyfish)
@@ -161,7 +161,7 @@ public class CameraControl : MonoBehaviour {
 			center = selectedAssembly.Position;
 		
 		// Show all assemblies constrained to the screen.
-        else{
+        else if(Assembly.getAll.Count > 0){
 			center = Vector3.zero;
 
 			if(!galleryCam && (!Environment.Inst || !Environment.Inst.isActiveAndEnabled) && (Assembly.getAll.Count > 0)){
@@ -217,6 +217,8 @@ public class CameraControl : MonoBehaviour {
 			targetOrbitQ *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * mouseSensitivity, Vector3.up);
 			targetOrbitQ *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * mouseSensitivity, Vector3.right);
         }
+
+		
             
 
         // Increment values, apply camera position/rotation.
@@ -226,7 +228,7 @@ public class CameraControl : MonoBehaviour {
 		if(lockHorizon)
 			targetOrbitQ = Quaternion.Euler(Mathf.Clamp(Mathf.DeltaAngle(0f, targetOrbitQ.eulerAngles.x), -maxTilt, -minTilt), targetOrbitQ.eulerAngles.y, 0f);
 
-		orbitQ = Quaternion.Lerp(orbitQ, targetOrbitQ, effectiveSmoothTime * Time.deltaTime);
+		orbitQ = Quaternion.Lerp(orbitQ, targetOrbitQ, Time.deltaTime / effectiveSmoothTime);
 
         centerOffset = Vector3.SmoothDamp(centerOffset, Vector3.zero, ref centerOffsetVel, effectiveSmoothTime);
         transform.position = center + centerOffset + (orbitQ * (Vector3.forward * (NeuroScaleDemo.Inst? Mathf.Lerp(radius, NeuroScaleDemo.Inst.CamRadius, blendToNeuroscale) : radius)));
