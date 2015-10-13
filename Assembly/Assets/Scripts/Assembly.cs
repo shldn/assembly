@@ -71,6 +71,8 @@ public class Assembly : CaptureObject{
 
 	public Amalgam amalgam = null;
 
+	bool pushedToClients = false;
+
 	private static Octree<Assembly> allAssemblyTree;
     public static Octree<Assembly> AllAssemblyTree{ 
         get{
@@ -103,6 +105,7 @@ public class Assembly : CaptureObject{
 		AllAssemblyTree.Insert(this);
 		PersistentGameManager.CaptureObjects.Add(this);
 		name = NodeController.Inst.GetRandomName();
+		
 	} // End of constructor.
 
 
@@ -343,6 +346,12 @@ public class Assembly : CaptureObject{
             foreach (Node someNode in nodeDict.Values)
                 someNode.velocity += -Position.normalized * NodeController.physicsStep;
         }
+
+		// Send new assembly to clients.
+		if((Network.peerType == NetworkPeerType.Server) && !pushedToClients){
+			pushedToClients = true;
+			AssemblyRadar.Inst.networkView.RPC("CreateBlip", RPCMode.Others, IOHelper.AssemblyToString(this));
+		}
 	} // End of Update().
 
     private void UpdateFamilyTreeFromParent(Assembly parent)
@@ -481,6 +490,10 @@ public class Assembly : CaptureObject{
 		if(amalgam)
 			amalgam.assemblies.Remove(this);
 		cull = true;
+
+		if(Network.peerType == NetworkPeerType.Server){
+			AssemblyRadar.Inst.networkView.RPC("RemoveBlip", RPCMode.Others, id);
+		}
 	} // End of Destroy().
 
 

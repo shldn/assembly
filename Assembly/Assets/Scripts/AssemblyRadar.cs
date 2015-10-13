@@ -25,6 +25,10 @@ public class AssemblyRadar : MonoBehaviour {
 	void Update(){
 		for(int i = 0 ; i < blips.Count; i++){
 			blips[i].Update();
+			if(blips[i].cull){
+				blips.RemoveAt(i);
+				i--;
+			}
 		}
 		
 		// Broadcast assembly position updates across network.
@@ -72,12 +76,23 @@ public class AssemblyRadar : MonoBehaviour {
 		newAssem.Destroy();
 	} // End of CreateBlip().
 
+
+	[RPC]
+	public void RemoveBlip(int id){
+		for(int i = 0; i < blips.Count; i++){
+			if(blips[i].assemblyID == id){
+				blips[i].Destroy();
+				break;
+			}
+		}
+	} // End of CreateBlip().
+
 	
 	[RPC]
 	public void updatePos(int id, Vector3 pos){
 		for(int i = 0; i < blips.Count; i++){
 			if(blips[i].assemblyID == id){
-				blips[i].position = pos;
+				blips[i].targetPosition = pos;
 				break;
 			}
 		}
@@ -91,21 +106,37 @@ public class AssemblyRadarBlip {
 
 	public int assemblyID = 0;
 	public Vector3 position = Vector3.zero;
+
+	public Vector3 targetPosition = Vector3.zero;
+	Vector3 positionVel = Vector3.zero;
+
 	public Quaternion rotation = Quaternion.identity;
 	public BlipNode[] nodes;
 
 	public Vector3 rotationAxis;
+	float rotSpeed = 0f;
+	public bool cull = false;
 
 	public AssemblyRadarBlip(){
 		rotationAxis = Random.rotation * Vector3.forward;
+		rotSpeed = Random.Range(5f, 30f);
 	} // End of AssemblyRadarBlip().
 
 	public void Update(){
-		rotation *= Quaternion.AngleAxis(Time.deltaTime * 30f, rotationAxis);
+		position = Vector3.SmoothDamp(position, targetPosition, ref positionVel, 4f);
+
+		rotation *= Quaternion.AngleAxis(Time.deltaTime * rotSpeed, rotationAxis);
 		for(int i = 0; i < nodes.Length; i++){
 			nodes[i].worldObject.position = position + (rotation * nodes[i].localPos.ToVector3());
 		}
 	} // End of Update().
+
+	public void Destroy(){
+		cull = true;
+		for(int i = 0; i < nodes.Length; i++){
+			GameObject.Destroy(nodes[i].worldObject);
+		}
+	} // End of Destroy().
 
 } // End of AssemblyRadarBlip.
 
