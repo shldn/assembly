@@ -23,20 +23,22 @@ public class AssemblyRadar : MonoBehaviour {
 	
 
 	void Update(){
-		for(int i = 0 ; i < blips.Count; i++){
-			blips[i].Update();
-			if(blips[i].cull){
-				blips.RemoveAt(i);
-				i--;
-			}
-		}
-		
 		// Broadcast assembly position updates across network.
 		if(Network.peerType == NetworkPeerType.Server){
 			networkView.RPC("UpdatePos", RPCMode.Others, Assembly.getAll[assemToBroadcast].id, Assembly.getAll[assemToBroadcast].Position);
 			assemToBroadcast++;
 			if(assemToBroadcast >= Assembly.getAll.Count)
 				assemToBroadcast = 0;
+		}
+
+		int blipsNum = blips.Count;
+		for(int i = 0 ; i < blipsNum; i++){
+			if(blips[i].cull){
+				blips.RemoveAt(i);
+				i--;
+				blipsNum--;
+			}else
+				blips[i].Update();
 		}
 	} // End of Update().
 
@@ -79,6 +81,7 @@ public class AssemblyRadar : MonoBehaviour {
 
 	[RPC]
 	public void RemoveBlip(int id){
+		MonoBehaviour.print("RPC received: RemoveBlip(" + id + ")");
 		for(int i = 0; i < blips.Count; i++){
 			if(blips[i].assemblyID == id){
 				blips[i].Destroy();
@@ -132,10 +135,15 @@ public class AssemblyRadarBlip {
 	} // End of Update().
 
 	public void Destroy(){
+		MonoBehaviour.print("AssemblyRadarBlip.Destroy()");
 		cull = true;
 		for(int i = 0; i < nodes.Length; i++){
-			GameObject.Destroy(nodes[i].worldObject);
+			MonoBehaviour.print("MonoBehaviour.Destroy(nodes[" + i + "].worldObject.gameObject)");
+			MonoBehaviour.Destroy(nodes[i].worldObject.gameObject);
 		}
+
+		MonoBehaviour.print("// End of AssemblyRadarBlip.Destroy()");
+
 	} // End of Destroy().
 
 } // End of AssemblyRadarBlip.
