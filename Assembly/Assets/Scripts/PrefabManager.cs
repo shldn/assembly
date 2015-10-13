@@ -28,6 +28,8 @@ public class PrefabManager : MonoBehaviour {
     public Color actuateColor = new Color(0.67f, 0.22f, 0.22f, 1f);
     public Color controlColor = new Color(0.35f, 0.59f, 0.84f, 1f);
 
+	public Transform nodeBlipPrefab = null;
+
 	public Font assemblyFont = null;
 
     void Awake(){
