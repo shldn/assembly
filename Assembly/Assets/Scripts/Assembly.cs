@@ -490,10 +490,6 @@ public class Assembly : CaptureObject{
 		if(amalgam)
 			amalgam.assemblies.Remove(this);
 		cull = true;
-
-		if(Network.peerType == NetworkPeerType.Server){
-			AssemblyRadar.Inst.networkView.RPC("RemoveBlip", RPCMode.Others, id);
-		}
 	} // End of Destroy().
 
 

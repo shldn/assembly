@@ -143,6 +143,8 @@ public class NodeController : MonoBehaviour {
 			Assembly curAssem = Assembly.getAll[i];
 
 			if(curAssem.cull){
+				if(Network.peerType == NetworkPeerType.Server)
+					AssemblyRadar.Inst.networkView.RPC("RemoveBlip", RPCMode.Others, curAssem.id);
 				Assembly.getAll.RemoveAt(i);
 				i--;
 			}else
