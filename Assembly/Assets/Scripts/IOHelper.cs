@@ -85,7 +85,7 @@ public class IOHelper
     private static void WriteAssemblyToStream(Assembly assembly, TextWriter stream){
         stream.WriteLine(assemblyFileFormatVersion);
         stream.WriteLine(assembly.name);
-        stream.WriteLine(assembly.id);
+        stream.WriteLine(assembly.Id);
         stream.WriteLine(assembly.Position);
         foreach(Node someNode in assembly.NodeDict.Values)
             stream.WriteLine(someNode.ToFileString(assemblyFileFormatVersion));
