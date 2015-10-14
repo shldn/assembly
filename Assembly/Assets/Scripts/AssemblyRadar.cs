@@ -60,11 +60,12 @@ public class AssemblyRadar : MonoBehaviour {
 
 
 	[RPC]
-	public void CreateBlip(string assemblyStr){
+	public void CreateBlip(string assemblyStr, Vector3 pos){
 		Assembly newAssem = new Assembly(assemblyStr, Quaternion.identity, Vector3.zero);
 		AssemblyRadarBlip newBlip = new AssemblyRadarBlip();
 		blips.Add(newBlip);
-		newBlip.position = Random.rotation * Vector3.forward * Random.Range(0f, 50f);
+		newBlip.position = pos;
+		newBlip.targetPosition = pos;
 		newBlip.assemblyID = newAssem.id;
 
 		newBlip.nodes = new BlipNode[newAssem.NodeDict.Values.Count];
