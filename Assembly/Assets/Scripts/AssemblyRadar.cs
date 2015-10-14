@@ -49,7 +49,7 @@ public class AssemblyRadar : MonoBehaviour {
 			Vector3 blipScreenPos = Camera.main.WorldToScreenPoint(curBlip.position);
 			GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 			GUI.skin.label.fontSize = 10;
-			//GUI.Label(MathUtilities.CenteredSquare(blipScreenPos.x, blipScreenPos.y, 500f), i.ToString());
+			GUI.Label(MathUtilities.CenteredSquare(blipScreenPos.x, blipScreenPos.y, 500f), curBlip.assemblyID.ToString());
 
 			if(curBlip == selectedBlip){
 				GUI.DrawTexture(MathUtilities.CenteredSquare(blipScreenPos.x, blipScreenPos.y, 5000f / Vector3.Distance(Camera.main.transform.position, curBlip.position)), selectionRing);

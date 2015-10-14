@@ -350,6 +350,10 @@ public class Assembly : CaptureObject{
 		// Send new assembly to clients.
 		if((Network.peerType == NetworkPeerType.Server) && !pushedToClients){
 			pushedToClients = true;
+			if(Id == -1){
+				int newAssemID = NodeController.Inst.GetNewAssemblyID();
+				Id = newAssemID;
+			}
 			AssemblyRadar.Inst.networkView.RPC("CreateBlip", RPCMode.Others, IOHelper.AssemblyToString(this));
 		}
 	} // End of Update().
