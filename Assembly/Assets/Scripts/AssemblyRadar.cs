@@ -116,10 +116,12 @@ public class AssemblyRadar : MonoBehaviour {
 			GUI.Label(MathUtilities.CenteredSquare((Screen.width * 0.58f) + 500f, Screen.height * 0.5f, 1000f), selectedBlip.name);
 		}
 
-		GUI.skin = AssemblyEditor.Inst.guiSkin;
-		if(selectedBlip != null){
-			if(GUI.Button(MathUtilities.CenteredRect(Screen.width * 0.5f, Screen.height * 0.1f, Screen.width * 0.2f, Screen.height * 0.09f), "Capture")){
-				networkView.RPC("CaptureRequest", RPCMode.Server, Network.player, selectedBlip.assemblyID);
+		if(AssemblyEditor.Inst){
+			GUI.skin = AssemblyEditor.Inst.guiSkin;
+			if(selectedBlip != null){
+				if(GUI.Button(MathUtilities.CenteredRect(Screen.width * 0.5f, Screen.height * 0.1f, Screen.width * 0.2f, Screen.height * 0.09f), "Capture")){
+					networkView.RPC("CaptureRequest", RPCMode.Server, Network.player, selectedBlip.assemblyID);
+				}
 			}
 		}
 	} // End of OnGUI().

@@ -287,7 +287,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void OnPlayerConnected(NetworkPlayer networkPlayer){
 		for(int i = 0; i < Assembly.getAll.Count; i++){
-		    myNetworkView.RPC("CreateBlip", networkPlayer, IOHelper.AssemblyToString(Assembly.getAll[i]));
+		    myNetworkView.RPC("CreateBlip", networkPlayer, IOHelper.AssemblyToString(Assembly.getAll[i]), Assembly.getAll[i].Position);
 		}
     } // End of OnPlayerConnected().
 
