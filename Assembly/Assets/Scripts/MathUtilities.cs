@@ -89,4 +89,9 @@ public static class MathUtilities {
 		return new Color(color.r, color.g, color.b, alpha);
 	} // End of SetAlpha().
 
+	// Converts Y value to Screen.height - Y. Useful for stupid Unity-native mouse positions.
+	public static Vector3 ScreenFixY(this Vector3 vector){
+		return new Vector3(vector.x, Screen.height - vector.y, vector.z);
+	} // End of InvertX().
+
 } // End of MathUtilities.

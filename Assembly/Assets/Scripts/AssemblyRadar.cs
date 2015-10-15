@@ -12,6 +12,7 @@ public class AssemblyRadar : MonoBehaviour {
 	Texture2D selectionRing = null;
 
 	int assemToBroadcast = 0;
+	bool captureButtonHovered = false;
 
 
 	void Awake(){
@@ -46,8 +47,7 @@ public class AssemblyRadar : MonoBehaviour {
 		}
 
 		// Blip selection
-		if(Input.GetMouseButtonDown(0)){
-			print("Searching...");
+		if(Input.GetMouseButtonDown(0) && !captureButtonHovered){
 
 			bool blipFound = false;
 
@@ -70,13 +70,11 @@ public class AssemblyRadar : MonoBehaviour {
 				if(Vector2.SqrMagnitude(screenPos - Input.mousePosition) < (30000f / screenPos.z)){
 					selectedBlip = sortedBlips[i];
 					blipFound = true;
-					print("Found!");
 					break;
 				}
 			}
 
 			if((selectedBlip != null) && !blipFound){
-				print("No selection found.");
 				selectedBlip = null;
 				CameraControl.Inst.targetRadius += 20f;
 			}
@@ -117,8 +115,11 @@ public class AssemblyRadar : MonoBehaviour {
 		}
 
 		GUI.skin = AssemblyEditor.Inst.guiSkin;
+		Rect captureButtonRect = MathUtilities.CenteredRect(Screen.width * 0.5f, Screen.height * 0.1f, Screen.width * 0.2f, Screen.height * 0.09f);
+		captureButtonHovered = captureButtonRect.Contains(Input.mousePosition.ScreenFixY());
 		if(selectedBlip != null){
-			if(GUI.Button(MathUtilities.CenteredRect(Screen.width * 0.5f, Screen.height * 0.1f, Screen.width * 0.2f, Screen.height * 0.09f), "Capture")){
+			if(GUI.Button(captureButtonRect, "Capture")){
+				print("Requesting assembly capture...");
 				networkView.RPC("CaptureRequest", RPCMode.Server, Network.player, selectedBlip.assemblyID);
 			}
 		}
