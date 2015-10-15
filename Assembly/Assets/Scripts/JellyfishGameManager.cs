@@ -30,8 +30,8 @@ public class JellyfishGameManager : MonoBehaviour {
                 SpawnJelly();
         }
         else{
-            Camera.main.clearFlags = CameraClearFlags.Skybox;
-            RenderSettings.skybox = editorSkybox;
+            //Camera.main.clearFlags = CameraClearFlags.Skybox;
+            //RenderSettings.skybox = editorSkybox;
         }
 	}
 

@@ -164,7 +164,7 @@ public class CameraControl : MonoBehaviour {
         else if(Assembly.getAll.Count > 0){
 			center = Vector3.zero;
 
-			if(!galleryCam && (!Environment.Inst || !Environment.Inst.isActiveAndEnabled) && (Assembly.getAll.Count > 0)){
+			if(!PersistentGameManager.IsClient && !galleryCam && (!Environment.Inst || !Environment.Inst.isActiveAndEnabled) && (Assembly.getAll.Count > 0)){
 				// Center on average assembly position
 				for(int i = 0; i < Assembly.getAll.Count; i++)
 					center += Assembly.getAll[i].Position;

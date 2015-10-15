@@ -22,6 +22,10 @@ public static class MathUtilities {
         return new Rect(x - (size * 0.5f), Screen.height - (y + (size * 0.5f)), size, size);
     }
 
+	public static Rect CenteredRect(float centerX, float centerY, float width, float height){
+        return new Rect(centerX - (width * 0.5f), Screen.height - (centerY + (height * 0.5f)), width, height);
+    }
+
 	/*
     public static Rect CenteredSquare(Node node){
         Vector3 nodeScreenPos = Camera.main.WorldToScreenPoint(node.worldPosition);

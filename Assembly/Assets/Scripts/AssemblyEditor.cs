@@ -29,8 +29,6 @@ public class AssemblyEditor : MonoBehaviour {
 	public AudioClip buttonForwardClip;
 	public AudioClip buttonBackwardClip;
 
-	public Light testingLight;
-
 
     void Start(){
         CaptureEditorManager.ObjectCaptured += HandleObjectCaptured;
@@ -59,8 +57,6 @@ public class AssemblyEditor : MonoBehaviour {
 
     void Update()
     {
-		testingLight.enabled = ClientTest.Inst;
-
         if (capturedAssembly)
         {
             // Update assembly.

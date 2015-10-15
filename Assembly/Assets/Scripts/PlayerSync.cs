@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class PlayerSync : MonoBehaviour {
 
+	public static List<PlayerSync> all = new List<PlayerSync>();
+
     Vector3 screenPos = Vector3.zero;
     public Vector3 screenPosSmoothed = Vector3.zero;
     Vector3 screenPosVel = Vector3.zero;
@@ -34,6 +36,7 @@ public class PlayerSync : MonoBehaviour {
         screenPosSmoothed = screenPos;
         cursorLineMaxDist = Screen.width + Screen.height;
         DontDestroyOnLoad(this);
+		all.Add(this);
     }
 
 	void Start(){
@@ -173,7 +176,7 @@ public class PlayerSync : MonoBehaviour {
                             Vector2 currentVec = new Vector2(objScreenPos.x, objScreenPos.y) - pt;
                             float angleToJelly = Mathf.Atan2(currentVec.x, currentVec.y) * Mathf.Rad2Deg;
 
-                            if (!firstElem)
+                            if(!firstElem)
                                 totalAngle += Mathf.DeltaAngle(angleToJelly, lastAngleToJelly);
 
                             lastAngleToJelly = angleToJelly;
@@ -236,7 +239,7 @@ public class PlayerSync : MonoBehaviour {
             Invoke("ReEnable", 0.1f);
     } // End of ReEnable().
 
-    void HandleCapturedObject(CaptureObject capturedObj)
+    public void HandleCapturedObject(CaptureObject capturedObj)
     {
         PersistentGameManager.Inst.EnviroImpulse(capturedObj.Position, -30f);
         
@@ -423,5 +426,9 @@ public class PlayerSync : MonoBehaviour {
         if (Network.isServer)
             PersistentGameManager.Inst.captureMgr.playerSync = this;
     }
+
+	void OnDestroy(){
+		all.Remove(this);
+	} // End of OnDestroy().
 
 } // End of PlayerSync.
