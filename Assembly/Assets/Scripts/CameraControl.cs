@@ -143,6 +143,10 @@ public class CameraControl : MonoBehaviour {
 			}
 		}
 
+		if(AssemblyRadar.Inst && (CaptureEditorManager.capturedObj == null))
+			effectiveSmoothTime *= 5f;
+
+
         // Determine orbit target, if any.
         // Jellyfish grotto client
         if(PersistentGameManager.IsClient && JellyfishGameManager.Inst && (Jellyfish.all.Count > 0f)){
@@ -193,7 +197,7 @@ public class CameraControl : MonoBehaviour {
             pinchDist = Vector2.Distance(touch0, touch1);
 
             if(lastPinchDist != -1)
-                targetRadius -= (pinchDist - lastPinchDist) * 0.05f * radiusSensitivity ;
+                targetRadius -= targetRadius * (pinchDist - lastPinchDist) * 0.005f * radiusSensitivity ;
 
             lastPinchDist = pinchDist;
         }else{
@@ -213,7 +217,7 @@ public class CameraControl : MonoBehaviour {
 	        targetRadius += targetRadius * Time.deltaTime * radiusSensitivity ;
 
         // Mouse/touch orbit.
-        if(!galleryCam && ((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) && CaptureEditorManager.IsEditing && !NodeEngineering.Inst.uiLockout) || Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease))){
+        if(!galleryCam && ((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) && !NodeEngineering.Inst.uiLockout) || Screen.lockCursor || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease))){
 			targetOrbitQ *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * mouseSensitivity, Vector3.up);
 			targetOrbitQ *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * mouseSensitivity, Vector3.right);
         }

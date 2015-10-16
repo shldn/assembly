@@ -14,6 +14,8 @@ public class AssemblyRadar : MonoBehaviour {
 	int assemToBroadcast = 0;
 	bool captureButtonHovered = true;
 
+	float tapCheck = 0f;
+
 
 	void Awake(){
 		Inst = this;
@@ -47,19 +49,23 @@ public class AssemblyRadar : MonoBehaviour {
 		}
 
 		// Blip selection
-		if(Input.GetMouseButtonDown(0) && !captureButtonHovered && (CaptureEditorManager.capturedObj == null)){
+		if(Input.GetMouseButton(0))
+			tapCheck += Time.deltaTime;
+		else
+			tapCheck = 0f;
+		if(Input.GetMouseButtonUp(0) && (tapCheck < 0.25f) && !captureButtonHovered && (CaptureEditorManager.capturedObj == null)){
 
 			bool blipFound = false;
 
 			// Sort assemblies by distance from camera.
 			List<AssemblyRadarBlip> sortedBlips = blips;
-			for (int i = 0; i < Node.getAll.Count - 1; i ++ ){
+			for (int i = 0; i < blips.Count - 1; i ++ ){
 				float sqrMag1 = (blips[i + 0].position - Camera.main.transform.position).sqrMagnitude;
 				float sqrMag2 = (blips[i + 1].position - Camera.main.transform.position).sqrMagnitude;
 				if(sqrMag2 < sqrMag1){
-					Node tempStore = Node.getAll[i];
-					Node.getAll[i] = Node.getAll[i + 1];
-					Node.getAll[i + 1] = tempStore;
+					AssemblyRadarBlip tempStore = blips[i];
+					blips[i] = blips[i + 1];
+					blips[i + 1] = tempStore;
 					i = 0;
 				}
 			}
@@ -67,7 +73,7 @@ public class AssemblyRadar : MonoBehaviour {
 			// Go through and find the first blip that the cursor is close enough to.
 			for(int i = 0; i < sortedBlips.Count; i++){
 				Vector3 screenPos = Camera.main.WorldToScreenPoint(sortedBlips[i].position);
-				if(Vector2.SqrMagnitude(screenPos - Input.mousePosition) < (30000f / screenPos.z)){
+				if((screenPos.z > 0f) && Vector2.SqrMagnitude(screenPos - Input.mousePosition) < (50000f / screenPos.z)){
 					selectedBlip = sortedBlips[i];
 					blipFound = true;
 					break;
@@ -102,10 +108,10 @@ public class AssemblyRadar : MonoBehaviour {
 		for(int i = 0; i < blips.Count; i++){
 			AssemblyRadarBlip curBlip = blips[i];
 			Vector3 blipScreenPos = Camera.main.WorldToScreenPoint(curBlip.position);
-			GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-			GUI.skin.label.fontSize = 10;
 
-//			GUI.Label(MathUtilities.CenteredSquare(blipScreenPos.x, blipScreenPos.y, 500f), curBlip.assemblyID.ToString());
+			//GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+			//GUI.skin.label.fontSize = 10;
+			//GUI.Label(MathUtilities.CenteredSquare(blipScreenPos.x, blipScreenPos.y, 500f), curBlip.assemblyID.ToString());
 
 			if(curBlip == selectedBlip){
 				GUI.DrawTexture(MathUtilities.CenteredSquare(blipScreenPos.x, blipScreenPos.y, 5000f / Vector3.Distance(Camera.main.transform.position, curBlip.position)), selectionRing);
@@ -113,9 +119,11 @@ public class AssemblyRadar : MonoBehaviour {
 		}
 
 		if(selectedBlip != null){
-			GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.04f);
+			GUI.skin.label.fontSize = Mathf.CeilToInt(Screen.height * 0.06f);
 			GUI.skin.label.alignment = TextAnchor.MiddleLeft;
-			GUI.Label(MathUtilities.CenteredSquare((Screen.width * 0.58f) + 500f, Screen.height * 0.5f, 1000f), selectedBlip.name);
+
+			Vector3 labelWorldPos = Camera.main.WorldToScreenPoint(selectedBlip.position + (Camera.main.transform.right * 8f));
+			GUI.Label(MathUtilities.CenteredSquare(labelWorldPos.x + 500f, labelWorldPos.y, 1000f), selectedBlip.name);
 		}
 
 		if(AssemblyEditor.Inst){
