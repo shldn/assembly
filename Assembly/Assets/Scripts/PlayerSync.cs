@@ -55,7 +55,7 @@ public class PlayerSync : MonoBehaviour {
         screenPosSmoothed = Vector3.SmoothDamp(screenPosSmoothed, screenPos, ref screenPosVel, screenPosSmoothTime);
 
         if(cursorObject){
-            cursorObject.gameObject.SetActive(!editing || PersistentGameManager.Inst.singlePlayer);
+            cursorObject.gameObject.SetActive((!editing || PersistentGameManager.Inst.singlePlayer) && lassoSelectEnabled);
         }
 
         if(cursorObject && (PersistentGameManager.IsClient) && !networkView.isMine)
@@ -128,6 +128,10 @@ public class PlayerSync : MonoBehaviour {
             Ray cursorRay = Camera.main.ScreenPointToRay(new Vector3(screenPosSmoothed.x, Screen.height - screenPosSmoothed.y, 0f));
             cursorObject.position = cursorRay.origin + cursorRay.direction * 1f;
 
+			if(!lassoSelectEnabled)
+                Network.SetSendingEnabled(0, true);
+
+
             if(lassoSelectEnabled && networkView.isMine && Input.GetMouseButton(0) && !selecting){
                 selecting = true;
                 Network.SetSendingEnabled(0, selecting);
@@ -141,6 +145,7 @@ public class PlayerSync : MonoBehaviour {
                 // don't send packets while the client is not selecting anything
                 Network.SetSendingEnabled(0, selecting);
             }
+
 
 
             // Collect points for gestural control.

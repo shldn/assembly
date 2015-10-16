@@ -12,7 +12,7 @@ public class AssemblyRadar : MonoBehaviour {
 	Texture2D selectionRing = null;
 
 	int assemToBroadcast = 0;
-	bool captureButtonHovered = false;
+	bool captureButtonHovered = true;
 
 
 	void Awake(){
@@ -124,8 +124,8 @@ public class AssemblyRadar : MonoBehaviour {
 			captureButtonHovered = captureButtonRect.Contains(Input.mousePosition.ScreenFixY());
 			if(selectedBlip != null){
 				if(GUI.Button(captureButtonRect, "Capture")){
-					print("Requesting assembly capture...");
 					networkView.RPC("CaptureRequest", RPCMode.Server, Network.player, selectedBlip.assemblyID);
+					print("Requesting assembly capture...");
 				}
 			}
 		}
