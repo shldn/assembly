@@ -305,6 +305,9 @@ public class PlayerSync : MonoBehaviour {
         newJellyCreator.smallTail(wing);
         CaptureEditorManager.capturedObj = newJellyTrans.GetComponent<Jellyfish>();
 
+		AssemblyRadar.Inst.ClearSelectedBlip();
+
+
     } // End of CaptureJelly().
 
     [RPC] // Client receives this when it captures an assembly.
@@ -316,6 +319,9 @@ public class PlayerSync : MonoBehaviour {
 		CameraControl.Inst.selectedAssembly = a;
         a.spawnPosition = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
         CaptureEditorManager.capturedObj = a;
+
+		AssemblyRadar.Inst.ClearSelectedBlip();
+
     } // End of CaptureAssembly().
 
     [RPC] // Client receives this when it captures a Utopia Creature
@@ -326,6 +332,9 @@ public class PlayerSync : MonoBehaviour {
         SpringCreature c = new SpringCreature();
         c.transform.position = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
         CaptureEditorManager.capturedObj = c;
+
+		AssemblyRadar.Inst.ClearSelectedBlip();
+
     } // End of CaptureAssembly().
 
     // Client calls this to send request to server

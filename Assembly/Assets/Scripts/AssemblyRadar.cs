@@ -47,7 +47,7 @@ public class AssemblyRadar : MonoBehaviour {
 		}
 
 		// Blip selection
-		if(Input.GetMouseButtonDown(0) && !captureButtonHovered){
+		if(Input.GetMouseButtonDown(0) && !captureButtonHovered && (CaptureEditorManager.capturedObj == null)){
 
 			bool blipFound = false;
 
@@ -85,7 +85,7 @@ public class AssemblyRadar : MonoBehaviour {
 
 
 	void LateUpdate(){
-		if(selectedBlip != null){
+		if((CaptureEditorManager.capturedObj == null) && selectedBlip != null){
 			CameraControl.Inst.targetOrbitQ = Quaternion.LookRotation(selectedBlip.position, Camera.main.transform.up);
 			CameraControl.Inst.targetRadius = selectedBlip.position.magnitude + 30f;
 
@@ -95,6 +95,10 @@ public class AssemblyRadar : MonoBehaviour {
 
 
 	void OnGUI(){
+		// Escape if we have a captured object.
+		if(CaptureEditorManager.capturedObj != null)
+			return;
+
 		for(int i = 0; i < blips.Count; i++){
 			AssemblyRadarBlip curBlip = blips[i];
 			Vector3 blipScreenPos = Camera.main.WorldToScreenPoint(curBlip.position);
@@ -191,6 +195,11 @@ public class AssemblyRadar : MonoBehaviour {
 	} // End of CaptureRequest().
 
 
+	public void ClearSelectedBlip(){
+		print("clear selected blip");
+		selectedBlip = null;
+	} // End of ClearSelectedBlip().
+
 } // End of AssemblyRadar.
 
 
@@ -223,6 +232,7 @@ public class AssemblyRadarBlip {
 		rotation *= Quaternion.AngleAxis(Time.deltaTime * rotSpeed, rotationAxis);
 		for(int i = 0; i < nodes.Length; i++){
 			nodes[i].worldObject.position = position + (rotation * nodes[i].localPos.ToVector3() - (rotation * centerOfMass));
+			nodes[i].worldObject.renderer.enabled = CaptureEditorManager.capturedObj == null;
 		}
 	} // End of Update().
 
