@@ -175,13 +175,16 @@ public class AssemblyRadar : MonoBehaviour {
 
 	[RPC]
 	void CaptureRequest(NetworkPlayer requestingPlayer, int assemID){
+		print("Assembly capture request received!");
 		// Find the requesting player's PlayerSync.
 		for(int i = 0; i < PlayerSync.all.Count; i++){
 			if(PlayerSync.all[i].networkView.owner == requestingPlayer){
+				print("Requesting playerSync found!");
 				// Find the target assembly.
 				for(int j = 0; j < Assembly.getAll.Count; j++){
-					if(Assembly.getAll[i].Id == assemID){
-						PlayerSync.all[i].HandleCapturedObject(Assembly.getAll[i]);
+					if(Assembly.getAll[j].Id == assemID){
+						print("Targetted assembly found! Handling capture...");
+						PlayerSync.all[i].HandleCapturedObject(Assembly.getAll[j]);
 						break;
 					}
 				}
