@@ -29,6 +29,8 @@ public class PlayerSync : MonoBehaviour {
 	bool orbitModeInit = false;
     int levelWasLoadedFrame = 0;
 
+	bool lassoSelectEnabled = false;
+
 
     void Awake()
     {
@@ -126,7 +128,7 @@ public class PlayerSync : MonoBehaviour {
             Ray cursorRay = Camera.main.ScreenPointToRay(new Vector3(screenPosSmoothed.x, Screen.height - screenPosSmoothed.y, 0f));
             cursorObject.position = cursorRay.origin + cursorRay.direction * 1f;
 
-            if(networkView.isMine && Input.GetMouseButton(0) && !selecting){
+            if(lassoSelectEnabled && networkView.isMine && Input.GetMouseButton(0) && !selecting){
                 selecting = true;
                 Network.SetSendingEnabled(0, selecting);
                 networkView.RPC("StartSelect", RPCMode.Server);
