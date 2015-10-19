@@ -42,6 +42,8 @@ public class AssemblyRadar : MonoBehaviour {
 		controlTexture = Resources.Load<Texture2D>("Textures/control_pixel");
 		muscleTexture = Resources.Load<Texture2D>("Textures/muscle_pixel");
 		boneTexture = Resources.Load<Texture2D>("Textures/bone_pixel");
+
+		CameraControl.Inst.targetRadius = 100f;
 	} // End of Start().
 	
 
@@ -66,12 +68,7 @@ public class AssemblyRadar : MonoBehaviour {
 			}else
 				blips[i].Update();
 		}
-
-		// Blip selection
-		if(Input.GetMouseButton(0))
-			tapCheck += Time.deltaTime;
-		else
-			tapCheck = 0f;
+		
 		if(Input.GetMouseButtonUp(0) && (tapCheck < 0.25f) && !buttonHovered && (CaptureEditorManager.capturedObj == null)){
 
 			bool blipFound = false;
@@ -92,7 +89,7 @@ public class AssemblyRadar : MonoBehaviour {
 			// Go through and find the first blip that the cursor is close enough to.
 			for(int i = 0; i < sortedBlips.Count; i++){
 				Vector3 screenPos = Camera.main.WorldToScreenPoint(sortedBlips[i].position);
-				if((screenPos.z > 0f) && Vector2.SqrMagnitude(screenPos - Input.mousePosition) < (50000f / screenPos.z)){
+				if((screenPos.z > 0f) && Vector2.SqrMagnitude(screenPos - Input.mousePosition) < (200000f / screenPos.z)){
 					selectedBlip = sortedBlips[i];
 					blipFound = true;
 					break;
@@ -105,6 +102,12 @@ public class AssemblyRadar : MonoBehaviour {
 			}
 
 		}
+
+		// Blip selection
+		if(Input.GetMouseButton(0) || (Input.touchCount > 0))
+			tapCheck += Time.deltaTime;
+		else
+			tapCheck = 0f;
 		
 		buttonHovered = false;
 	} // End of Update().
@@ -116,23 +119,6 @@ public class AssemblyRadar : MonoBehaviour {
 			CameraControl.Inst.targetRadius = selectedBlip.position.magnitude + 30f;
 
 			//GLDebug.DrawLine(selectedBlip.position, Camera.main.ScreenToWorldPoint(new Vector3(Screen.width * 0.55f, Screen.height * 0.5f, 100f)));
-		}
-
-		// Clear dead captured assems
-		for(int i = 0; i < storedAssems.Count; i++){
-			bool found = false;
-			// Find blip with this id.
-			for(int j = 0; j < blips.Count; j++){
-				if(blips[j].assemblyID == storedAssems[i].id){
-					found = true;
-					break;
-				}
-			}
-
-			if(!found){
-				storedAssems.RemoveAt(i);
-				i--;
-			}
 		}
 	} // End of LateUpdate().
 
@@ -174,29 +160,50 @@ public class AssemblyRadar : MonoBehaviour {
 				if(GUI.Button(captureButtonRect, "Capture")){
 					networkView.RPC("CaptureRequest", RPCMode.Server, Network.player, selectedBlip.assemblyID);
 					print("Requesting assembly capture...");
-					storedAssems.Add(new StoredAssem(selectedBlip.assemblyID, selectedBlip.name));
+					
+					// Check for stored assembly...
+					bool alreadyGotIt = false;
+					for(int i = 0; i < storedAssems.Count; i++){
+						if(storedAssems[i].id == selectedBlip.assemblyID){
+							alreadyGotIt = true;
+							break;
+						}
+					}
+					if(!alreadyGotIt)
+						storedAssems.Add(new StoredAssem(selectedBlip.assemblyID, selectedBlip.name));
 				}
 			}
 		}
 
 		// Show captured assemblies
-		GUILayout.BeginArea(new Rect(0f, 0f, Screen.width * 0.3f, Screen.height));
-			GUILayout.BeginVertical();
-				for(int i = 0; i < storedAssems.Count; i++){
-					if(GUILayout.Button(storedAssems[i].name)){
+		int holdFontSize = GUI.skin.button.fontSize;
+		GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.height * 0.03f);
+		if(CaptureEditorManager.capturedObj == null){
+			GUILayout.BeginArea(new Rect(0f, 0f, Screen.width * 0.2f, Screen.height));
+				GUILayout.BeginVertical();
+					for(int i = 0; i < storedAssems.Count; i++){
 						// Find blip with this id.
 						for(int j = 0; j < blips.Count; j++){
 							if(blips[j].assemblyID == storedAssems[i].id){
-								selectedBlip = blips[j];
-								buttonHovered = true;
-								break;
+								if(GUILayout.Button(storedAssems[i].name)){
+									selectedBlip = blips[j];
+									buttonHovered = true;
+									break;
+								}
 							}
 						}
 					}
-				}
-			GUILayout.EndVertical();
-		GUILayout.EndArea();
+				GUILayout.EndVertical();
+			GUILayout.EndArea();
+		}
+		GUI.skin.button.fontSize = holdFontSize;
 	} // End of OnGUI().
+
+
+	void OnDisconnectedFromServer(NetworkDisconnection info){
+		for(int i = 0; i < blips.Count; i++)
+			blips[i].Destroy();
+	} // End of OnDisconnectedFromServer().
 
 
 	[RPC]
