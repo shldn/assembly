@@ -184,7 +184,7 @@ public class AssemblyRadar : MonoBehaviour {
 		int holdFontSize = GUI.skin.button.fontSize;
 		GUI.skin.button.fontSize = Mathf.CeilToInt(Screen.height * 0.03f);
 		if(CaptureEditorManager.capturedObj == null){
-			GUILayout.BeginArea(new Rect(0f, 0f, Screen.width * 0.2f, Screen.height));
+			GUILayout.BeginArea(new Rect(0f, 0f, Screen.width * 0.25f, Screen.height));
 				GUILayout.BeginVertical();
 					for(int i = 0; i < storedAssems.Count; i++){
 						// Find blip with this id.
