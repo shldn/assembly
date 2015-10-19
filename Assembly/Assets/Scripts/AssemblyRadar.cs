@@ -55,7 +55,7 @@ public class AssemblyRadar : MonoBehaviour {
 
 			Assembly broadcastAssem = Assembly.getAll[assemToBroadcast];
 			if(broadcastAssem)
-				networkView.RPC("UpdatePos", RPCMode.Others, broadcastAssem.id, broadcastAssem.Position);
+				networkView.RPC("UpdatePos", RPCMode.Others, broadcastAssem.id, broadcastAssem.Position, NodeController.assemblyScores[broadcastAssem.id]);
 
 			assemToBroadcast++;
 		}
@@ -149,7 +149,7 @@ public class AssemblyRadar : MonoBehaviour {
 			GUI.skin.label.alignment = TextAnchor.MiddleLeft;
 
 			Vector3 labelWorldPos = Camera.main.WorldToScreenPoint(selectedBlip.position + (Camera.main.transform.right * 8f));
-			GUI.Label(MathUtilities.CenteredSquare(labelWorldPos.x + 500f, labelWorldPos.y, 1000f), selectedBlip.name);
+			GUI.Label(MathUtilities.CenteredSquare(labelWorldPos.x + 500f, labelWorldPos.y, 1000f), selectedBlip.name + " " + selectedBlip.smoothedInfluenceScore.ToString("F1"));
 		}
 
 		if(AssemblyEditor.Inst){
@@ -186,7 +186,7 @@ public class AssemblyRadar : MonoBehaviour {
 						// Find blip with this id.
 						for(int j = 0; j < blips.Count; j++){
 							if(blips[j].assemblyID == storedAssems[i].id){
-								if(GUILayout.Button(storedAssems[i].name)){
+								if(GUILayout.Button(storedAssems[i].name + " " + blips[j].smoothedInfluenceScore.ToString("F1"))){
 									selectedBlip = blips[j];
 									buttonHovered = true;
 									break;
@@ -242,10 +242,11 @@ public class AssemblyRadar : MonoBehaviour {
 
 	
 	[RPC]
-	public void UpdatePos(int id, Vector3 pos){
+	public void UpdatePos(int id, Vector3 pos, float influenceScore){
 		for(int i = 0; i < blips.Count; i++){
 			if(blips[i].assemblyID == id){
 				blips[i].targetPosition = pos;
+				blips[i].influenceScore = influenceScore;
 				break;
 			}
 		}
@@ -299,6 +300,9 @@ public class AssemblyRadarBlip {
 	float rotSpeed = 0f;
 	public bool cull = false;
 
+	public float influenceScore = 1f;
+	public float smoothedInfluenceScore = 1f;
+
 	public AssemblyRadarBlip(){
 		rotationAxis = Random.rotation * Vector3.forward;
 		rotSpeed = Random.Range(5f, 30f);
@@ -312,6 +316,8 @@ public class AssemblyRadarBlip {
 			nodes[i].worldObject.position = position + (rotation * nodes[i].localPos.ToVector3() - (rotation * centerOfMass));
 			nodes[i].worldObject.renderer.enabled = CaptureEditorManager.capturedObj == null;
 		}
+
+		smoothedInfluenceScore = Mathf.Lerp(smoothedInfluenceScore, influenceScore, Time.deltaTime);
 	} // End of Update().
 
 	// Compute center of mass based on nodes.
