@@ -50,13 +50,14 @@ public class AssemblyRadar : MonoBehaviour {
 	void Update(){
 		// Broadcast assembly position updates across network.
 		if(Network.peerType == NetworkPeerType.Server){
+			if(assemToBroadcast >= Assembly.getAll.Count)
+				assemToBroadcast = 0;
+
 			Assembly broadcastAssem = Assembly.getAll[assemToBroadcast];
 			if(broadcastAssem)
 				networkView.RPC("UpdatePos", RPCMode.Others, broadcastAssem.id, broadcastAssem.Position);
 
 			assemToBroadcast++;
-			if(assemToBroadcast >= Assembly.getAll.Count)
-				assemToBroadcast = 0;
 		}
 
 		int blipsNum = blips.Count;

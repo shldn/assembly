@@ -120,6 +120,30 @@ public class CaptureNet_Manager : MonoBehaviour {
             Destroy(playerSync.gameObject);
             playerSync = null;
         }
+
+
+		// Clear junk blip requests
+		if(blipRequests.Count > 0){
+			bool connected = false;
+			do{
+				for(int i = 0; i < Network.connections.Length; i++){
+					if(Network.connections[i] == blipRequests[0].player)
+						connected = true;
+						break;
+				}
+				if(!connected)
+					blipRequests.RemoveAt(0);
+			}while((blipRequests.Count > 0) && (connected == false));
+		}
+
+		// Send good requests.
+		if(blipRequests.Count > 0){
+			if(blipRequests[0].assembly){
+				myNetworkView.RPC("CreateBlip", blipRequests[0].player, IOHelper.AssemblyToString(blipRequests[0].assembly), blipRequests[0].assembly.Position);
+				print("Sending blip!");
+			}
+			blipRequests.RemoveAt(0);
+		}
     } // End of Update().
 
     // Once the text file with the list of ips is downloaded, add the ips to the connection list.
@@ -287,9 +311,21 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void OnPlayerConnected(NetworkPlayer networkPlayer){
 		for(int i = 0; i < Assembly.getAll.Count; i++){
-		    myNetworkView.RPC("CreateBlip", networkPlayer, IOHelper.AssemblyToString(Assembly.getAll[i]), Assembly.getAll[i].Position);
+			if(Assembly.getAll[i].ready)
+				blipRequests.Add(new AssemblyBlipRequest(Assembly.getAll[i], networkPlayer));
 		}
     } // End of OnPlayerConnected().
+
+	class AssemblyBlipRequest {
+		public Assembly assembly;
+		public NetworkPlayer player;
+
+		public AssemblyBlipRequest(Assembly assembly, NetworkPlayer player){
+			this.assembly = assembly;
+			this.player = player;
+		} // End of AssemblyBlipRequest().
+	} // End of AssemblyBlipRequest.
+	List<AssemblyBlipRequest> blipRequests = new List<AssemblyBlipRequest>();
 
 
     void OnConnectedToServer(){

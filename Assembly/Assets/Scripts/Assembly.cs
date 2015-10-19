@@ -73,6 +73,8 @@ public class Assembly : CaptureObject{
 
 	bool pushedToClients = false;
 
+	public bool ready = false; // Turns true after having survived an Update() step.
+
 	private static Octree<Assembly> allAssemblyTree;
     public static Octree<Assembly> AllAssemblyTree{ 
         get{
@@ -356,7 +358,13 @@ public class Assembly : CaptureObject{
 			}
 			AssemblyRadar.Inst.networkView.RPC("CreateBlip", RPCMode.Others, IOHelper.AssemblyToString(this), Position);
 		}
+
+
+		ready = true;
+
 	} // End of Update().
+
+
 
     private void UpdateFamilyTreeFromParent(Assembly parent)
     {
