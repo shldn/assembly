@@ -54,8 +54,12 @@ public class AssemblyRadar : MonoBehaviour {
 				assemToBroadcast = 0;
 
 			Assembly broadcastAssem = Assembly.getAll[assemToBroadcast];
-			if(broadcastAssem)
-				networkView.RPC("UpdatePos", RPCMode.Others, broadcastAssem.id, broadcastAssem.Position, NodeController.assemblyScores[broadcastAssem.id]);
+			if(broadcastAssem){
+				float score = 0f;
+				if(NodeController.assemblyScores.ContainsKey(broadcastAssem.id))
+					score = NodeController.assemblyScores[broadcastAssem.id];
+				networkView.RPC("UpdatePos", RPCMode.Others, broadcastAssem.id, broadcastAssem.Position, score);
+			}
 
 			assemToBroadcast++;
 		}
