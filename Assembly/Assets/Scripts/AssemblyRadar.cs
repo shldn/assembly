@@ -12,9 +12,23 @@ public class AssemblyRadar : MonoBehaviour {
 	Texture2D selectionRing = null;
 
 	int assemToBroadcast = 0;
-	bool captureButtonHovered = true;
+	bool buttonHovered = true;
 
 	float tapCheck = 0f;
+
+	[HideInInspector] public Texture2D senseTexture, controlTexture, muscleTexture, boneTexture;
+
+
+	class StoredAssem {
+		public int id = -1;
+		public string name = "unnamed";
+
+		public StoredAssem(int id, string name){
+			this.id = id;
+			this.name = name;
+		} // End of StoredAssem().
+	} // End of StoredAssem.
+	List<StoredAssem> storedAssems = new List<StoredAssem>();
 
 
 	void Awake(){
@@ -23,6 +37,11 @@ public class AssemblyRadar : MonoBehaviour {
 
 	void Start(){
 		selectionRing = Resources.Load<Texture2D>("Textures/selection_circle");
+
+		senseTexture = Resources.Load<Texture2D>("Textures/sense_pixel");
+		controlTexture = Resources.Load<Texture2D>("Textures/control_pixel");
+		muscleTexture = Resources.Load<Texture2D>("Textures/muscle_pixel");
+		boneTexture = Resources.Load<Texture2D>("Textures/bone_pixel");
 	} // End of Start().
 	
 
@@ -53,7 +72,7 @@ public class AssemblyRadar : MonoBehaviour {
 			tapCheck += Time.deltaTime;
 		else
 			tapCheck = 0f;
-		if(Input.GetMouseButtonUp(0) && (tapCheck < 0.25f) && !captureButtonHovered && (CaptureEditorManager.capturedObj == null)){
+		if(Input.GetMouseButtonUp(0) && (tapCheck < 0.25f) && !buttonHovered && (CaptureEditorManager.capturedObj == null)){
 
 			bool blipFound = false;
 
@@ -87,6 +106,7 @@ public class AssemblyRadar : MonoBehaviour {
 
 		}
 		
+		buttonHovered = false;
 	} // End of Update().
 
 
@@ -96,6 +116,23 @@ public class AssemblyRadar : MonoBehaviour {
 			CameraControl.Inst.targetRadius = selectedBlip.position.magnitude + 30f;
 
 			//GLDebug.DrawLine(selectedBlip.position, Camera.main.ScreenToWorldPoint(new Vector3(Screen.width * 0.55f, Screen.height * 0.5f, 100f)));
+		}
+
+		// Clear dead captured assems
+		for(int i = 0; i < storedAssems.Count; i++){
+			bool found = false;
+			// Find blip with this id.
+			for(int j = 0; j < blips.Count; j++){
+				if(blips[j].assemblyID == storedAssems[i].id){
+					found = true;
+					break;
+				}
+			}
+
+			if(!found){
+				storedAssems.RemoveAt(i);
+				i--;
+			}
 		}
 	} // End of LateUpdate().
 
@@ -109,9 +146,11 @@ public class AssemblyRadar : MonoBehaviour {
 			AssemblyRadarBlip curBlip = blips[i];
 			Vector3 blipScreenPos = Camera.main.WorldToScreenPoint(curBlip.position);
 
-			//GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-			//GUI.skin.label.fontSize = 10;
-			//GUI.Label(MathUtilities.CenteredSquare(blipScreenPos.x, blipScreenPos.y, 500f), curBlip.assemblyID.ToString());
+			/*
+			GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+			GUI.skin.label.fontSize = 10;
+			GUI.Label(MathUtilities.CenteredSquare(blipScreenPos.x, blipScreenPos.y, 500f), curBlip.assemblyID.ToString());
+			*/
 
 			if(curBlip == selectedBlip){
 				GUI.DrawTexture(MathUtilities.CenteredSquare(blipScreenPos.x, blipScreenPos.y, 5000f / Vector3.Distance(Camera.main.transform.position, curBlip.position)), selectionRing);
@@ -129,14 +168,34 @@ public class AssemblyRadar : MonoBehaviour {
 		if(AssemblyEditor.Inst){
 			GUI.skin = AssemblyEditor.Inst.guiSkin;
 			Rect captureButtonRect = MathUtilities.CenteredRect(Screen.width * 0.5f, Screen.height * 0.1f, Screen.width * 0.2f, Screen.height * 0.09f);
-			captureButtonHovered = captureButtonRect.Contains(Input.mousePosition.ScreenFixY());
+			if(captureButtonRect.Contains(Input.mousePosition.ScreenFixY()))
+				buttonHovered = true;
 			if(selectedBlip != null){
 				if(GUI.Button(captureButtonRect, "Capture")){
 					networkView.RPC("CaptureRequest", RPCMode.Server, Network.player, selectedBlip.assemblyID);
 					print("Requesting assembly capture...");
+					storedAssems.Add(new StoredAssem(selectedBlip.assemblyID, selectedBlip.name));
 				}
 			}
 		}
+
+		// Show captured assemblies
+		GUILayout.BeginArea(new Rect(0f, 0f, Screen.width * 0.3f, Screen.height));
+			GUILayout.BeginVertical();
+				for(int i = 0; i < storedAssems.Count; i++){
+					if(GUILayout.Button(storedAssems[i].name)){
+						// Find blip with this id.
+						for(int j = 0; j < blips.Count; j++){
+							if(blips[j].assemblyID == storedAssems[i].id){
+								selectedBlip = blips[j];
+								buttonHovered = true;
+								break;
+							}
+						}
+					}
+				}
+			GUILayout.EndVertical();
+		GUILayout.EndArea();
 	} // End of OnGUI().
 
 
@@ -276,19 +335,22 @@ public class BlipNode {
 		worldObject = MonoBehaviour.Instantiate(PrefabManager.Inst.nodeBlipPrefab) as Transform;
 
 		// Set worldObject color according to type.
-		Color nodeColor = PrefabManager.Inst.stemColor;
+		Texture2D tex = null;
 		switch(nodeType){
 			case 1 :
-				nodeColor = PrefabManager.Inst.senseColor;
+				tex = AssemblyRadar.Inst.senseTexture;
 				break;
 			case 2 :
-				nodeColor = PrefabManager.Inst.actuateColor;
+				tex = AssemblyRadar.Inst.controlTexture;
 				break;
 			case 3 :
-				nodeColor = PrefabManager.Inst.controlColor;
+				tex = AssemblyRadar.Inst.muscleTexture;
+				break;
+			default:
+				tex = AssemblyRadar.Inst.boneTexture;
 				break;
 		}
-		worldObject.renderer.material.color = nodeColor;
+		worldObject.renderer.material.mainTexture = tex;
 
 	} // End of BlipNode().
 
