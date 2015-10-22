@@ -76,7 +76,7 @@ public class CaptureNet_Manager : MonoBehaviour {
             
         tempServerName = serverTagline;
 
-        InvokeRepeating("ReregisterMasterServer", 60 * 60, 60 * 60);
+        InvokeRepeating("ReregisterMasterServer", 30 * 60, 30 * 60);
 
     } // End of Awake().
 
