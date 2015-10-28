@@ -57,9 +57,9 @@ public class Test_SenseFov : ClientTest
             if( kvp.Value.IsSense )
             {
                 testNodes.Add(kvp.Value);
-                if (maxSenseFov < kvp.Value.nodeProperties.fieldOfView)
+                if (maxSenseFov < kvp.Value.Properties.fieldOfView)
                 {
-                    maxSenseFov = kvp.Value.nodeProperties.fieldOfView;
+                    maxSenseFov = kvp.Value.Properties.fieldOfView;
                     maxSenseFovIdx = idx;
                     winner = testAssemblies[idx];
                 }
@@ -84,13 +84,13 @@ public class Test_SenseFov : ClientTest
         if (testNodeIdx < testNodes.Count)
         {
             //testNodes[testNodeIdx].ViewCone.gameObject.renderer.material.SetColor("_TintColor", highlightColor);
-            testNodes[testNodeIdx].viewConeSize *= 2f;
+            testNodes[testNodeIdx].viewer.viewConeSize *= 2f;
         }
 
         if (testNodeIdx > 0)
         {
             //testNodes[testNodeIdx-1].ViewCone.gameObject.renderer.material.SetColor("_TintColor", origColor);
-            testNodes[testNodeIdx-1].viewConeSize *= 0.5f;
+            testNodes[testNodeIdx-1].viewer.viewConeSize *= 0.5f;
         }
 
         if (testNodeIdx >= testNodes.Count){

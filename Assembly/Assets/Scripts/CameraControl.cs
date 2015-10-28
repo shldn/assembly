@@ -313,14 +313,17 @@ public class CameraControl : MonoBehaviour {
 			hoveredPhysAssembly = null;
 			if(Physics.Raycast(selectionRay, out selectRay, 1000f)){
 				GameObject hitObject = selectRay.transform.gameObject;
-				foreach(Node somePhysNode in Node.getAll){
-					if(hitObject.transform == somePhysNode.cubeTransform){
-						hoveredPhysAssembly = somePhysNode.PhysAssembly;
-						if(Input.GetMouseButton(0))
-							selectedAssembly = hoveredPhysAssembly;
-						break;
-					}
-				}
+                PhysNode node = hitObject.GetComponent<PhysNode>();
+                if(node != null){
+                    foreach (Assembly a in Assembly.getAll){
+                        if (a.Id == node.nodeViewer.AssemblyProperties.id){
+                            hoveredPhysAssembly = a;
+                            if (Input.GetMouseButton(0))
+                                selectedAssembly = hoveredPhysAssembly;
+                            break;
+                        }
+                    }
+                }
 			}
         }
 		

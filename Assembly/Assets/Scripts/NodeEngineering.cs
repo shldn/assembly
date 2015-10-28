@@ -55,14 +55,14 @@ public class NodeEngineering : MonoBehaviour {
 
             // Sense handle dots
             if(selectedNode.neighbors.Count == 1){
-                senseVec = (selectedNode.Rotation * selectedNode.nodeProperties.senseVector) * Vector3.forward * 2f;
+                senseVec = (selectedNode.Rotation * selectedNode.Properties.senseVector) * Vector3.forward * 2f;
                 Vector3 senseVecEnd = selectedNode.Position + senseVec;
                 Vector3 senseVecEndScreenPos = Camera.main.WorldToScreenPoint(senseVecEnd);
 
                 senseHandle.rect = MathUtilities.CenteredSquare(senseVecEndScreenPos.x, senseVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, senseVecEnd));
 
                 if(senseHandle.held)
-                    selectedNode.nodeProperties.senseVector = Quaternion.Lerp(selectedNode.nodeProperties.senseVector, Quaternion.Inverse(selectedNode.Rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale));
+                    selectedNode.UpdateSenseVector(Quaternion.Lerp(selectedNode.Properties.senseVector, Quaternion.Inverse(selectedNode.Rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale)));
 
                 GUI.color = new Color(1f, 1f, 1f, senseHandle.color.a);
                 for(int i = 0; i < numDots; i++){
@@ -81,14 +81,14 @@ public class NodeEngineering : MonoBehaviour {
 
             // Actuator handle dots
             if(selectedNode.neighbors.Count == 2){
-                actuateVec = (selectedNode.Rotation * selectedNode.nodeProperties.actuateVector) * Vector3.forward * 2f;
+                actuateVec = (selectedNode.Rotation * selectedNode.Properties.actuateVector) * Vector3.forward * 2f;
                 Vector3 actuateVecEnd = selectedNode.Position + actuateVec;
                 Vector3 actuateVecEndScreenPos = Camera.main.WorldToScreenPoint(actuateVecEnd);
 
                 actuateHandle.rect = MathUtilities.CenteredSquare(actuateVecEndScreenPos.x, actuateVecEndScreenPos.y, handleSize / Vector3.Distance(Camera.main.transform.position, actuateVecEnd));
 
                 if(actuateHandle.held)
-                    selectedNode.nodeProperties.actuateVector = Quaternion.Lerp(selectedNode.nodeProperties.actuateVector, Quaternion.Inverse(selectedNode.Rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale));
+                    selectedNode.UpdateActuateVector(Quaternion.Lerp(selectedNode.Properties.actuateVector, Quaternion.Inverse(selectedNode.Rotation) * Camera.main.transform.rotation * Quaternion.LookRotation((Input.mousePosition - selectedNodeScreenPos).normalized, Camera.main.transform.up), 5f * (Time.deltaTime / Time.timeScale)));
 
                 GUI.color = new Color(1f, 1f, 1f, actuateHandle.color.a);
                 for(int i = 0; i < numDots; i++){

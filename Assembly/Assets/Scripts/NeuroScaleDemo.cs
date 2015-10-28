@@ -146,14 +146,9 @@ public class NeuroScaleDemo : MonoBehaviour {
             SortNodes();
             SortFood();
             for (int i = 0; i < Node.getAll.Count; i++)
-            {
-                if (Node.getAll[i].cubeTransform)
-                    Node.getAll[i].cubeTransform.renderer.enabled = i < numNodesToShow;
-            }
+                Node.getAll[i].Visible = i < numNodesToShow;
             for (int i = 0; i < FoodPellet.all.Count; i++)
-            {
-                FoodPellet.all[i].render = i < numNodesToShow;
-            }
+                FoodPellet.all[i].Visible = i < numNodesToShow;
         }
     } // End of Cull().
 
@@ -192,10 +187,7 @@ public class NeuroScaleDemo : MonoBehaviour {
     void SetAllNodeVisibility(bool vis)
     {
         for (int i = 0; i < Node.getAll.Count; i++)
-        {
-            if (Node.getAll[i].cubeTransform)
-                Node.getAll[i].cubeTransform.renderer.enabled = vis;
-        }
+            Node.getAll[i].Visible = vis;
     } // End of SetAllNodeVisibility().
 
     void HandleCulledNodeVisibility()
@@ -204,10 +196,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 
         // turn on selected nodes
         foreach (KeyValuePair<float, Node> nodePair in nodeSortedSet)
-        {
-            if (nodePair.Value.cubeTransform)
-                nodePair.Value.cubeTransform.renderer.enabled = true;
-        }
+            nodePair.Value.Visible = true;
     } // End of HandleCulledNodeVisibility().
 
     void CullFood(FoodPellet someFood)
@@ -228,14 +217,14 @@ public class NeuroScaleDemo : MonoBehaviour {
     void SetAllFoodVisibility(bool vis)
     {
         for (int i = 0; i < FoodPellet.all.Count; i++)
-            FoodPellet.all[i].render = vis;
+            FoodPellet.all[i].Visible = vis;
     } // End of SetAllFoodVisibility().
 
     void HandleCulledFoodVisibility()
     {
         SetAllFoodVisibility(false);
         foreach (KeyValuePair<float, FoodPellet> foodPair in foodSortedSet)
-            foodPair.Value.render = true;
+            foodPair.Value.Visible = true;
     } // End of HandleCulledFoodVisibility().
 
 	// bubble-sort nodes

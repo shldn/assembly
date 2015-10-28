@@ -11,9 +11,6 @@ public class FoodPellet {
     public Vector3 WorldPosition { get { return worldPosition; } set { worldPosition = value; if(gameObject) gameObject.transform.position = value; } }
 	public Quaternion worldRotation = Quaternion.identity;
 
-	Transform transform = null;
-    public GameObject gameObject { get { return (transform != null) ? transform.gameObject : null; } }
-
 	private static Octree<FoodPellet> allFoodTree;
     public static Octree<FoodPellet> AllFoodTree{ 
         get{
@@ -31,12 +28,23 @@ public class FoodPellet {
 	float maxEnergy = 10f;
 	public bool cull = false;
 
-	public bool render = true;
-	Renderer[] renderers;
-
     // For Olympics
     public Assembly owner = null; // to restrict energy consumption to just this entity
 
+    // Viewer variables
+    Transform transform = null;
+    private bool visible = true;
+    Renderer[] renderers;
+    public GameObject gameObject { get { return (transform != null) ? transform.gameObject : null; } }
+    public bool Visible
+    {
+        get { return visible; }
+        set { 
+            visible = value;
+            for (int i = 0; i < renderers.Length; i++)
+                renderers[i].enabled = visible;
+        }
+    }
 
 	public FoodPellet(Vector3 position, Assembly owner_ = null){
 		worldPosition = position;
@@ -66,8 +74,6 @@ public class FoodPellet {
             cull = true;
         }
 
-		for(int i = 0; i < renderers.Length; i++)
-			renderers[i].enabled = render;
 	} // End of Update().
 
     public static bool WithinBoundary(Vector3 worldPosition)
