@@ -74,6 +74,11 @@ public class CameraControl : MonoBehaviour {
 	public bool lockHorizon = false;
 
 
+	// centered cam lazy center
+	Vector3 lazyCenter = Vector3.zero;
+	Vector3 lazyCenterVel = Vector3.zero;
+
+
 
     void Awake(){
         Inst = this;
@@ -146,6 +151,9 @@ public class CameraControl : MonoBehaviour {
 		if(AssemblyRadar.Inst && (CaptureEditorManager.capturedObj == null))
 			effectiveSmoothTime *= 5f;
 
+		if(Amalgam.allAmalgams.Count > 0)
+			effectiveSmoothTime /= 5f;
+
 
         // Determine orbit target, if any.
         // Jellyfish grotto client
@@ -166,14 +174,16 @@ public class CameraControl : MonoBehaviour {
 		
 		// Show all assemblies constrained to the screen.
         else if(Assembly.getAll.Count > 0){
-			center = Vector3.zero;
+			lazyCenter = Vector3.zero;
 
 			if(!PersistentGameManager.IsClient && !galleryCam && (!Environment.Inst || !Environment.Inst.isActiveAndEnabled) && (Assembly.getAll.Count > 0)){
 				// Center on average assembly position
 				for(int i = 0; i < Assembly.getAll.Count; i++)
-					center += Assembly.getAll[i].Position;
-				center /= Assembly.getAll.Count;
+					lazyCenter += Assembly.getAll[i].Position;
+				lazyCenter /= Assembly.getAll.Count;
 			}
+
+			center = Vector3.SmoothDamp(center, lazyCenter, ref lazyCenterVel, 3f);
 		}
 
 		if(NeuroScaleDemo.Inst && NeuroScaleDemo.Inst.TargetNode)
