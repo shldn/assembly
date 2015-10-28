@@ -148,7 +148,7 @@ public class NeuroScaleDemo : MonoBehaviour {
             for (int i = 0; i < Node.getAll.Count; i++)
                 Node.getAll[i].Visible = i < numNodesToShow;
             for (int i = 0; i < FoodPellet.all.Count; i++)
-                FoodPellet.all[i].render = i < numNodesToShow;
+                FoodPellet.all[i].Visible = i < numNodesToShow;
         }
     } // End of Cull().
 
@@ -217,14 +217,14 @@ public class NeuroScaleDemo : MonoBehaviour {
     void SetAllFoodVisibility(bool vis)
     {
         for (int i = 0; i < FoodPellet.all.Count; i++)
-            FoodPellet.all[i].render = vis;
+            FoodPellet.all[i].Visible = vis;
     } // End of SetAllFoodVisibility().
 
     void HandleCulledFoodVisibility()
     {
         SetAllFoodVisibility(false);
         foreach (KeyValuePair<float, FoodPellet> foodPair in foodSortedSet)
-            foodPair.Value.render = true;
+            foodPair.Value.Visible = true;
     } // End of HandleCulledFoodVisibility().
 
 	// bubble-sort nodes
