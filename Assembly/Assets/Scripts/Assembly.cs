@@ -14,12 +14,14 @@ public class Assembly : CaptureObject{
 
 	public HashSet<int> familyTree = new HashSet<int>();
     public Dictionary<int, int> familyGenerationRemoved = new Dictionary<int, int>(); // how many generations removed is an entity in familyTree (maps assemblyID to generationCount) - parents would have value of 1
+    public AssemblyProperties properties = new AssemblyProperties();
 	public string name = "Some Unimportant Assembly";
-    public int id = -1;
+    private int id = -1;
     public int Id { 
         get { return id; } 
         set { 
             id = value;
+            properties.id = id;
             if( id != -1 )
             {
                 familyTree.Add(value);
@@ -60,7 +62,6 @@ public class Assembly : CaptureObject{
 
 	public float nametagFade = 0f;
 
-	public bool wantToMate = false;
 	public Assembly matingWith = null;
 	float mateAttractDist = 100f;
 	float mateCompletion = 0f;
@@ -96,13 +97,11 @@ public class Assembly : CaptureObject{
         allAssemblyTree = null;
     }
 
-	public bool gender = false;
-
 
 	public Assembly(Vector3 spawnPosition, Quaternion spawnRotation){
 		this.spawnPosition = spawnPosition;
 		this.spawnRotation = spawnRotation;
-		gender = Random.Range(0f, 1f) > 0.5f;
+		properties.gender = Random.Range(0f, 1f) > 0.5f;
 		all.Add(this);
 		AllAssemblyTree.Insert(this);
 		PersistentGameManager.CaptureObjects.Add(this);
@@ -132,7 +131,7 @@ public class Assembly : CaptureObject{
 
 		this.spawnPosition = spawnPosition ?? worldPos;
 		this.spawnRotation = spawnRotation ?? Random.rotation;
-		gender = Random.Range(0f, 1f) > 0.5f;
+		properties.gender = Random.Range(0f, 1f) > 0.5f;
 		all.Add(this);
 		AllAssemblyTree.Insert(this);
 
@@ -184,7 +183,7 @@ public class Assembly : CaptureObject{
 
 	public void AddNodes(List<Node> nodesList){
         foreach (Node someNode in nodesList)
-            AddNode(someNode.localHexPos, someNode.nodeProperties);
+            AddNode(someNode.localHexPos, someNode.Properties);
 
         // Destroy the duplicates
         for (int i = nodesList.Count - 1; i >= 0; --i)
@@ -196,7 +195,7 @@ public class Assembly : CaptureObject{
 
 	public Node AddNode(Triplet nodePos, NodeProperties? nodeProps = null){
 		Node newPhysNode = new Node(this, nodePos);
-		newPhysNode.nodeProperties = nodeProps ?? NodeProperties.random;
+		newPhysNode.Properties = nodeProps ?? NodeProperties.random;
         IntegrateNode(nodePos, newPhysNode);
 		return newPhysNode;
 	} // End of AddNode().
@@ -256,26 +255,26 @@ public class Assembly : CaptureObject{
 			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
 		if(!PersistentGameManager.IsClient && (energy > (maxEnergy * 0.9f)))
-			wantToMate = true;
+            properties.wantToMate = true;
 		else if(energy < maxEnergy * 0.5f){
-			wantToMate = false;
+            properties.wantToMate = false;
 			mateCompletion = 0f;
 
 			if(matingWith){
 				matingWith.matingWith = null;
-				matingWith.wantToMate = false;
+                matingWith.properties.wantToMate = false;
 				matingWith.mateCompletion = 0f;
 				matingWith.energy *= 0.5f;
 
 				matingWith = null;
-				wantToMate = false;
+                properties.wantToMate = false;
 				mateCompletion = 0f;
 				energy *= 0.5f;
 			}
 		}
 
 		// We won't want to mate if our population cap has been reached.
-		if(wantToMate && !matingWith){
+        if (properties.wantToMate && !matingWith){
 			Bounds mateAttractBoundary = new Bounds(Position, mateAttractDist * (new Vector3(1, 1, 1)));
 			allAssemblyTree.RunActionInRange(new System.Action<Assembly>(HandleFindMate), mateAttractBoundary);
 		}
@@ -287,7 +286,7 @@ public class Assembly : CaptureObject{
 				if(matingWith.myNodesIndexed.Length > i){
 					otherNode = matingWith.myNodesIndexed[i];
 
-					if(myNode.cubeTransform.renderer.enabled && otherNode.cubeTransform.renderer.enabled)
+					if(myNode.Visible && otherNode.Visible)
 						GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
 					Vector3 vectorToMate = myNode.Position - otherNode.Position;
 					float distance = vectorToMate.magnitude;
@@ -323,12 +322,12 @@ public class Assembly : CaptureObject{
 					someNode.ComputeEnergyNetwork();
 
 				matingWith.matingWith = null;
-				matingWith.wantToMate = false;
+                matingWith.properties.wantToMate = false;
 				matingWith.mateCompletion = 0f;
 				matingWith.energy *= 0.5f;
 
 				matingWith = null;
-				wantToMate = false;
+                properties.wantToMate = false;
 				mateCompletion = 0f;
 				energy *= 0.5f;
 
@@ -418,14 +417,14 @@ public class Assembly : CaptureObject{
 		if(distanceToMate > mateAttractDist)
 			return;
 
-		if(!someAssembly.wantToMate)
+        if (!someAssembly.properties.wantToMate)
 			return;
 
 		matingWith = someAssembly;
-		gender = true;
+		properties.gender = true;
 
 		someAssembly.matingWith = this;
-		someAssembly.gender = false;
+        someAssembly.properties.gender = false;
 	} // End of HandleAttractMate().
 
 
@@ -485,8 +484,7 @@ public class Assembly : CaptureObject{
     public void SetVisibility(bool vis)
     {
         foreach (KeyValuePair<Triplet, Node> node in NodeDict)
-            if(node.Value.cubeTransform)
-                node.Value.cubeTransform.renderer.enabled = vis;
+            node.Value.Visible = vis;
     } // End of SetVisibility().
 
 

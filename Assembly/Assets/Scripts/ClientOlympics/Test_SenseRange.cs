@@ -57,9 +57,9 @@ public class Test_SenseRange : ClientTest
             if( kvp.Value.IsSense )
             {
                 testNodes.Add(kvp.Value);
-                if( maxSenseRange < kvp.Value.nodeProperties.senseRange)
+                if( maxSenseRange < kvp.Value.Properties.senseRange)
                 {
-                    maxSenseRange = kvp.Value.nodeProperties.senseRange;
+                    maxSenseRange = kvp.Value.Properties.senseRange;
                     maxSenseRangeIdx = idx;
                     winner = testAssemblies[idx];
                 }
@@ -83,13 +83,13 @@ public class Test_SenseRange : ClientTest
         if (testNodeIdx < testNodes.Count)
         {
             //testNodes[testNodeIdx].ViewCone.gameObject.renderer.material.SetColor("_TintColor", highlightColor);
-            testNodes[testNodeIdx].viewConeSize *= 2f;
+            testNodes[testNodeIdx].viewer.viewConeSize *= 2f;
         }
 
         if (testNodeIdx > 0)
         {
             //testNodes[testNodeIdx - 1].ViewCone.gameObject.renderer.material.SetColor("_TintColor", origColor);
-            testNodes[testNodeIdx - 1].viewConeSize *= 0.5f;
+            testNodes[testNodeIdx - 1].viewer.viewConeSize *= 0.5f;
         }
 
         if (testNodeIdx >= testNodes.Count)

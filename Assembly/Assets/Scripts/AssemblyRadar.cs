@@ -56,9 +56,9 @@ public class AssemblyRadar : MonoBehaviour {
 			Assembly broadcastAssem = Assembly.getAll[assemToBroadcast];
 			if(broadcastAssem){
 				float score = 0f;
-				if(NodeController.assemblyScores.ContainsKey(broadcastAssem.id))
-					score = NodeController.assemblyScores[broadcastAssem.id];
-				networkView.RPC("UpdatePos", RPCMode.Others, broadcastAssem.id, broadcastAssem.Position, score);
+				if(NodeController.assemblyScores.ContainsKey(broadcastAssem.Id))
+					score = NodeController.assemblyScores[broadcastAssem.Id];
+				networkView.RPC("UpdatePos", RPCMode.Others, broadcastAssem.Id, broadcastAssem.Position, score);
 			}
 
 			assemToBroadcast++;
@@ -218,7 +218,7 @@ public class AssemblyRadar : MonoBehaviour {
 		blips.Add(newBlip);
 		newBlip.position = pos;
 		newBlip.targetPosition = pos;
-		newBlip.assemblyID = newAssem.id;
+		newBlip.assemblyID = newAssem.Id;
 		newBlip.name = newAssem.name;
 
 		newBlip.nodes = new BlipNode[newAssem.NodeDict.Values.Count];

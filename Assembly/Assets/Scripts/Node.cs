@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 
@@ -17,20 +16,28 @@ public class Node {
 	public Assembly PhysAssembly {get{return physAssembly;} set{physAssembly = value;}}
     public bool IsSense{ get{ return neighbors.Count == 1; } }
 
-    public NodeProperties nodeProperties = NodeProperties.random;
+    private NodeProperties nodeProperties = NodeProperties.random;
+    public NodeProperties Properties { 
+        get { return nodeProperties; }
+        set
+        {
+            nodeProperties = value;
+            viewer.Properties = value;
+        }
+    }
+    public bool Visible
+    {
+        get { return viewer.Visible; }
+        set { viewer.Visible = value; }
+    }
 
 	// The offset from actionRotation determined by incoming signal.
 	// For sense nodes, this is the rotation from the sense node to the most powerful food node source.
 	// For actuators, this rotation modifies the muscle output.
 	public Quaternion signalRotation = Quaternion.identity;
 
-	// Type-specific elements, effects
-	public Transform cubeTransform = null;
-	TimedTrailRenderer trail = null;
-	Transform viewConeTrans = null;
-	ViewCone viewCone = null;
-    public float viewConeSize = 3.5f;
-    public Transform ViewConeLeft { get { return viewConeTrans;  } }
+    // Viewer
+    public NodeViewer viewer = null;
 
 	[System.Serializable]
 	public class PhysNeighbor {
@@ -84,9 +91,6 @@ public class Node {
     public Vector3 SenseForward { get { return Rotation * (nodeProperties.senseVector * Vector3.forward); } }
     
 
-	Quaternion transformLastRot = Quaternion.identity; // For in-editor rotation.
-	Vector3 transformLastPos = Vector3.zero; // For in-editor rotation.
-
 	private static Octree<Node> allSenseNodeTree;
     public static Octree<Node> AllSenseNodeTree{ 
         get{
@@ -100,23 +104,18 @@ public class Node {
         }
     }
 
-	Color nodeColor = Color.white;
-	float mateColorLerp = 0f;
-	float genderColorLerp = 0f;
+    Color nodeColor = Color.white;
 
 
 	public Node(Assembly physAssembly, Triplet localHexPos){
 		all.Add(this);
-		this.physAssembly = physAssembly ;
+		this.physAssembly = physAssembly;
 		this.localHexPos = localHexPos;
 		Position = physAssembly.spawnPosition + (physAssembly.spawnRotation * HexUtilities.HexToWorld(localHexPos));
         Rotation = physAssembly.spawnRotation;
 		delayPosition = Position;
 
-		cubeTransform = MonoBehaviour.Instantiate(NodeController.Inst.physNodePrefab, Position, Quaternion.identity) as Transform;
-
-		transformLastRot = cubeTransform.rotation;
-		transformLastPos = cubeTransform.position;
+        viewer = new NodeViewer(Position, nodeProperties, physAssembly.properties);
 	} // End of Awake().
 
 
@@ -125,12 +124,22 @@ public class Node {
 		this.localHexPos = localHexPos;
 		this.nodeProperties = props;
 
-		cubeTransform = MonoBehaviour.Instantiate(NodeController.Inst.physNodePrefab, Position, Quaternion.identity) as Transform;
-
-		transformLastRot = cubeTransform.rotation;
-		transformLastPos = cubeTransform.position;
+        // This constructor appears to create a temporary node, so likely doesn't need a viewer.
+        // Will keep in case usage changes, could change code path to pass in Assembly pointer.
+        viewer = new NodeViewer(Position, props, null);
 	} // End of Awake().
 
+    public void UpdateSenseVector(Quaternion newSenseVector)
+    {
+        nodeProperties.senseVector = newSenseVector;
+        viewer.Properties = nodeProperties;
+    }
+
+    public void UpdateActuateVector(Quaternion newActuateVector)
+    {
+        nodeProperties.actuateVector = newActuateVector;
+        viewer.Properties = nodeProperties;
+    }
 
 	public void DoMath(){
 		if(cull || !physAssembly)
@@ -186,50 +195,13 @@ public class Node {
 		if(neighbors.Count != lastNeighborCount){
 			lastNeighborCount = neighbors.Count;
 
-			if(lastNeighborCount == 2)
+            if (viewer.Neighbors == 2)
 				AllSenseNodeTree.Remove(this);
 
-			if(viewConeTrans)
-				GameObject.Destroy(viewConeTrans.gameObject);
-			if(viewConeTrans)
-				GameObject.Destroy(viewConeTrans.gameObject);
-
-			if(trail)
-            {
-                GameObject.Destroy(trail.gameObject);
-                GameObject.Destroy(trail);
-            }
-
-
-			switch(neighbors.Count){
-			// Sense node.
-			case 1 : 
-				nodeColor = PrefabManager.Inst.senseColor;
-				Transform newViewConeTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.viewCone, Position, Rotation) as Transform;
-				viewConeTrans = newViewConeTrans;
-				viewCone = viewConeTrans.GetComponent<ViewCone>();
+            bool createTrail = neighbors.Count == 2 && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
+            viewer.SetNeighborCount(neighbors.Count, createTrail);
+            if (neighbors.Count == 1)
                 AllSenseNodeTree.Insert(this);
-				break;
-			// Muscle node.
-			case 2 : 
-				nodeColor = PrefabManager.Inst.actuateColor;
-				if((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2)){
-					Transform newTrailTrans = MonoBehaviour.Instantiate(PrefabManager.Inst.motorNodeTrail, Position, Rotation) as Transform;
-					newTrailTrans.parent = cubeTransform;
-					trail = newTrailTrans.GetComponent<TimedTrailRenderer>();
-
-					if(PersistentGameManager.IsClient)
-						trail.lifeTime *= 0.3f;
-				}
-				break;
-			// Control node.
-			case 3 : 
-				nodeColor = PrefabManager.Inst.controlColor;
-				break;
-			default :
-				nodeColor = PrefabManager.Inst.stemColor;
-				break;
-			}
 		}
 
 
@@ -238,30 +210,11 @@ public class Node {
 			physAssembly.energy -= NodeController.physicsStep * 0.01f;
 
 
-		mateColorLerp = Mathf.MoveTowards(mateColorLerp, physAssembly.wantToMate? 1f : 0f, Time.deltaTime);
-		genderColorLerp = Mathf.MoveTowards(genderColorLerp, physAssembly.gender? 1f : 0f, Time.deltaTime);
-
-		Color genderColor = Color.Lerp(Color.magenta, Color.cyan, genderColorLerp);
-
-		if(mateColorLerp > 0f)
-			cubeTransform.renderer.material.color = Color.Lerp(nodeColor, genderColor, mateColorLerp * 0.7f);
-		else
-			cubeTransform.renderer.material.color = nodeColor;
-
-
 		// Reel in to amalgam
 		//if(Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f){
 		if(physAssembly.amalgam && (Vector3.Distance(Position, physAssembly.amalgam.transform.position) > physAssembly.amalgam.radius)){
 			Position -= (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
 		}
-
-
-		// Trail visibility
-		if(trail)
-			trail.render = cubeTransform.renderer.enabled;
-
-		if(viewCone)
-			viewCone.render = cubeTransform.renderer.enabled;
 
 
 		// Reset power
@@ -285,8 +238,8 @@ public class Node {
 		velocity *= 0.98f;
 
 		// In-editor control
-		rotation *= Quaternion.Inverse(Rotation) * cubeTransform.rotation;
-		position += cubeTransform.position - Position;
+        rotation *= Quaternion.Inverse(Rotation) * viewer.Rotation;
+        position += viewer.Position - Position;
 
 		delayPosition += velocity;
 		Position = delayPosition;
@@ -297,32 +250,17 @@ public class Node {
 				velocity += -delayPosition.normalized * NodeController.physicsStep;
 		}
 
-		cubeTransform.position = Position;
-		cubeTransform.rotation = Rotation;
+        viewer.Position = Position;
+        viewer.Rotation = Rotation;
 
 		foreach(PhysNeighbor someNeighbor in neighbors)
 			if(Random.Range(0f, 1f) < 0.2f)
 				someNeighbor.arrowDist = Random.Range(0.25f, 0.4f);
 
+
 		// Type-specific behaviours
 		switch(neighbors.Count){
 			case 1 : 
-				Debug.DrawRay(Position, (Rotation * nodeProperties.senseVector * Vector3.forward) * 2f, Color.green);
-
-				//viewConeTrans.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
-				viewConeTrans.position = Position;
-				viewConeTrans.localScale = Vector3.one * viewConeSize;
-
-				// Billboard the arc with the main camera.
-				viewConeTrans.rotation = Rotation * nodeProperties.senseVector;
-				viewConeTrans.position = Position;
-				viewConeTrans.rotation *= Quaternion.AngleAxis(-90, Vector3.up);
-
-				Vector3 camRelativePos = viewConeTrans.InverseTransformPoint(Camera.main.transform.position);
-				float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
-				viewConeTrans.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
-				viewCone.fovAngle = nodeProperties.fieldOfView;
-
 				//calling detect food on sense node, determines power of node
                 Bounds foodDetectBoundary = new Bounds(position, nodeProperties.senseRange * (new Vector3(1, 1, 1)));
 				FoodPellet.AllFoodTree.RunActionInRange(new System.Action<FoodPellet>(HandleDetectedFood), foodDetectBoundary);
@@ -344,6 +282,8 @@ public class Node {
 				break;
 		}
 
+        viewer.Update();
+
 		//GLDebug.DrawCube(Position, rotation, Vector3.one * velocity.magnitude * 10f);
 	} // End of UpdateTransform().
 
@@ -361,22 +301,8 @@ public class Node {
 		newNeighbor.physNode.AttachNeighbor(this);
 	} // End of AttachNeighbor().
 
-
 	public void Destroy(){
-		if(cubeTransform)
-			MonoBehaviour.Destroy(cubeTransform.gameObject);
-
-		if(viewConeTrans)
-			MonoBehaviour.Destroy(viewConeTrans.gameObject);
-
-		if(trail)
-        {
-            trail.transform.parent = null;
-            MonoBehaviour.Destroy(trail.gameObject);
-            MonoBehaviour.Destroy(trail);
-            trail = null;
-        }
-
+        viewer.Destroy();
 		cull = true;
 	} // End of OnDestroy().
 
