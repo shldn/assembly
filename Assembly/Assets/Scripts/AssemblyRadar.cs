@@ -58,8 +58,8 @@ public class AssemblyRadar : MonoBehaviour {
 				if(broadcastAssem){
 					float score = 0f;
 					if(NodeController.assemblyScores.ContainsKey(broadcastAssem.Id))
-						score = NodeController.assemblyScores[broadcastAssem.id];
-					networkView.RPC("UpdatePos", RPCMode.Others, broadcastAssem.id, broadcastAssem.Position, score);
+						score = NodeController.assemblyScores[broadcastAssem.Id];
+					networkView.RPC("UpdatePos", RPCMode.Others, broadcastAssem.Id, broadcastAssem.Position, score);
 				}
 			}
 
@@ -215,6 +215,9 @@ public class AssemblyRadar : MonoBehaviour {
 
 	[RPC]
 	public void CreateBlip(string assemblyStr, Vector3 pos){
+		if(PlayerSync.local.lassoClient)
+			return;
+
 		Assembly newAssem = new Assembly(assemblyStr, Quaternion.identity, Vector3.zero);
 		AssemblyRadarBlip newBlip = new AssemblyRadarBlip();
 		blips.Add(newBlip);
@@ -238,6 +241,9 @@ public class AssemblyRadar : MonoBehaviour {
 
 	[RPC]
 	public void RemoveBlip(int id){
+		if(PlayerSync.local.lassoClient)
+			return;
+
 		for(int i = 0; i < blips.Count; i++){
 			if(blips[i].assemblyID == id){
 				blips[i].Destroy();
@@ -249,6 +255,9 @@ public class AssemblyRadar : MonoBehaviour {
 	
 	[RPC]
 	public void UpdatePos(int id, Vector3 pos, float influenceScore){
+		if(PlayerSync.local.lassoClient)
+			return;
+
 		for(int i = 0; i < blips.Count; i++){
 			if(blips[i].assemblyID == id){
 				blips[i].targetPosition = pos;

@@ -28,6 +28,8 @@ public class Amalgam : MonoBehaviour
 	public UnityEngine.Object handlePrefabInt = null;
 	public UnityEngine.Object handlePrefabExt = null;
 
+	List<RaidenLaser>absorbEffects = new List<RaidenLaser>();
+
 
 	class ActiveVertex
 	{
@@ -128,6 +130,8 @@ public class Amalgam : MonoBehaviour
 		handlePrefabExt = Resources.Load("AmalgamHandleExt");
 		for(int i = 0; i < 10; i++){
 			handles.Add(new AmalgamHandle(this, Random.Range(0, newIcoSphere.vertexCount)));
+
+			//absorbEffects
         }
 
 	} // End of Start().
@@ -188,7 +192,7 @@ public class Amalgam : MonoBehaviour
 			*/
 
 			// Propel amalgam
-			positionChange += meshFilter.mesh.normals[i] * activeVertices[i].energy * 10f * NodeController.physicsStep;
+			//positionChange += meshFilter.mesh.normals[i] * activeVertices[i].energy * 10f * NodeController.physicsStep;
 			
 			// Draw energy lines between neighbors.
 			for(int j = 0; j < activeVertices[i].neighbors.Length; j++){
@@ -200,13 +204,14 @@ public class Amalgam : MonoBehaviour
 
 
 		// Propel amalgam
+		/*
 		transform.position += positionChange;
 		for(int i = 0; i < assemblies.Count; i++)
 			foreach(KeyValuePair<Triplet, Node> someNodeKVP in assemblies[i].NodeDict)
 				someNodeKVP.Value.delayPosition += positionChange;
 		for(int i = 0; i < foodPellets.Count; i++)
 			foodPellets[i].WorldPosition += positionChange;
-
+		*/
 
 
 		for(int i = 0; i < activeVertices.Length; i++)
@@ -348,6 +353,8 @@ public class AmalgamHandle {
 	public Transform gameObjectExt = null;
 
 	public float frequency = 0f;
+
+	public RaidenLaser raidenLaser;
 
 	public AmalgamHandle (Amalgam amalgam, int attachedVert){
 		this.attachedVert = attachedVert;
