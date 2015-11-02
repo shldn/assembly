@@ -78,10 +78,7 @@ public class Test_IQ : ClientTest
             if (kvp.Value.IsSense)
             {
                 FoodPellet f = new FoodPellet(kvp.Value.Position + dist * (kvp.Value.SenseForward), setAsOwner ? kvp.Value.PhysAssembly : null);
-                f.gameObject.renderer.enabled = !hide;
-                Renderer[] renderers = f.gameObject.GetComponentsInChildren<Renderer>();
-                for (int i = 0; i < renderers.Length; ++i)
-                    renderers[i].enabled = !hide;
+                f.Visible = !hide;
             }
     } // End of AddFoodAtCenterOfSense().
 

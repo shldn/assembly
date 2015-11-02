@@ -8,8 +8,7 @@ public class FoodPellet {
 	public Amalgam amalgam = null;
 
 	private Vector3 worldPosition = Vector3.zero;
-    public Vector3 WorldPosition { get { return worldPosition; } set { worldPosition = value; if(gameObject) gameObject.transform.position = value; } }
-	public Quaternion worldRotation = Quaternion.identity;
+    public Vector3 WorldPosition { get { return worldPosition; } set { worldPosition = value; if (viewer != null) { viewer.Position = value; }  } }
 
 	private static Octree<FoodPellet> allFoodTree;
     public static Octree<FoodPellet> AllFoodTree{ 
@@ -24,33 +23,24 @@ public class FoodPellet {
         }
     }
 
-	public float energy = 10f;
+	float energy = 10f;
+    public float Energy { get { return energy; } set { energy = value; viewer.Scale = energy / maxEnergy; } }
 	float maxEnergy = 10f;
 	public bool cull = false;
 
     // For Olympics
     public Assembly owner = null; // to restrict energy consumption to just this entity
 
-    // Viewer variables
-    Transform transform = null;
-    private bool visible = true;
-    Renderer[] renderers;
-    public GameObject gameObject { get { return (transform != null) ? transform.gameObject : null; } }
+    FoodPelletViewer viewer = null;
     public bool Visible
     {
-        get { return visible; }
-        set { 
-            visible = value;
-            for (int i = 0; i < renderers.Length; i++)
-                renderers[i].enabled = visible;
-        }
+        get { return viewer.Visible; }
+        set { viewer.Visible = value; }
     }
 
 	public FoodPellet(Vector3 position, Assembly owner_ = null){
 		worldPosition = position;
-		worldRotation = Random.rotation;
-		transform = MonoBehaviour.Instantiate(NodeController.Inst.physFoodPrefab, worldPosition, worldRotation) as Transform;
-		renderers = transform.GetComponentsInChildren<Renderer>();
+        viewer = new FoodPelletViewer(worldPosition);
 
 		all.Add(this);
 		AllFoodTree.Insert(this);
@@ -61,7 +51,6 @@ public class FoodPellet {
 
 
 	public void Update(){
-		transform.localScale = Vector3.one * (energy / maxEnergy);
 
 		if(energy < 0f){
 			NodeController.Inst.AdvanceWorldTick();
@@ -90,19 +79,16 @@ public class FoodPellet {
         }
 		if(amalgam)
 			amalgam.foodPellets.Remove(this);
-        Object.Destroy(transform.gameObject);
+        viewer.Destroy();
     }
 
     public static void DestroyAll()
     {
-        try
-        {
+        try {
             foreach (FoodPellet food in all)
-                if( food.transform != null )
-                    Object.Destroy(food.transform.gameObject);
+                food.viewer.Destroy();
         }
-        catch(System.Exception e)
-        {
+        catch(System.Exception e) {
             Debug.LogError("Exception destroying food node: " + e.ToString());
         }
 
