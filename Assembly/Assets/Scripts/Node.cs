@@ -363,7 +363,7 @@ public class Node {
 
 			float foodToPull = NodeController.physicsStep * 0.3f;
 
-			food.energy -= foodToPull;
+            food.Energy -= foodToPull;
 			physAssembly.energy += foodToPull;
 		}
 		//else
