@@ -308,14 +308,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 	    serverTagline = theServerTagline;
     } // End of ServerInfo().
 
-
-    void OnPlayerConnected(NetworkPlayer networkPlayer){
-		for(int i = 0; i < Assembly.getAll.Count; i++){
-			if(Assembly.getAll[i].ready)
-				blipRequests.Add(new AssemblyBlipRequest(Assembly.getAll[i], networkPlayer));
-		}
-    } // End of OnPlayerConnected().
-
+	
 	class AssemblyBlipRequest {
 		public Assembly assembly;
 		public NetworkPlayer player;
@@ -337,8 +330,26 @@ public class CaptureNet_Manager : MonoBehaviour {
         //newNetAmalgam.SendAssemblies();
 
         playerSync = (Network.Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity, 1) as GameObject).GetComponent<PlayerSync>();
+		myNetworkView.RPC("InitClient", RPCMode.Server, Network.player, playerSync.lassoClient? 0 : 1);
 
     } // End of OnConnectedToServer().
+
+
+	[RPC] // Inform server what type of client we are. Server will send data if needed.
+	void InitClient(NetworkPlayer player, int type){
+		for(int i = 0; i < PlayerSync.all.Count; i++){
+			if(PlayerSync.all[i].networkView.owner == player)
+				PlayerSync.all[i].lassoClient = (type == 0)? true : false;
+		}
+
+		if(type == 0){
+			for(int i = 0; i < Assembly.getAll.Count; i++){
+				if(Assembly.getAll[i].ready)
+					blipRequests.Add(new AssemblyBlipRequest(Assembly.getAll[i], player));
+			}
+		}
+	} // End of ClientType().
+
 
     void OnDisconnectedFromServer(NetworkDisconnection info)
     {

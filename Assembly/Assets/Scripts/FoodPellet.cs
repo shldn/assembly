@@ -58,7 +58,7 @@ public class FoodPellet {
 		}
 
         // Destroy nodes outside of worlds
-        if (!WithinBoundary(worldPosition))
+        if (!WithinBoundary(worldPosition) && Environment.Inst)
         {
             cull = true;
         }

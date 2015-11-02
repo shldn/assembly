@@ -5,6 +5,8 @@ using System.Collections.Generic;
 public class PlayerSync : MonoBehaviour {
 
 	public static List<PlayerSync> all = new List<PlayerSync>();
+	public static PlayerSync local;
+	public bool isLocal { get { return local == this; } }
 
     Vector3 screenPos = Vector3.zero;
     public Vector3 screenPosSmoothed = Vector3.zero;
@@ -29,7 +31,7 @@ public class PlayerSync : MonoBehaviour {
 	bool orbitModeInit = false;
     int levelWasLoadedFrame = 0;
 
-	bool lassoSelectEnabled = false;
+	public bool lassoClient = false;
 
 
     void Awake()
@@ -42,6 +44,9 @@ public class PlayerSync : MonoBehaviour {
     }
 
 	void Start(){
+		if(networkView.isMine) {
+			local = this;
+		}
 	} // End of Start().
 
     void LateUpdate(){
@@ -55,7 +60,7 @@ public class PlayerSync : MonoBehaviour {
         screenPosSmoothed = Vector3.SmoothDamp(screenPosSmoothed, screenPos, ref screenPosVel, screenPosSmoothTime);
 
         if(cursorObject){
-            cursorObject.gameObject.SetActive((!editing || PersistentGameManager.Inst.singlePlayer) && lassoSelectEnabled);
+            cursorObject.gameObject.SetActive((!editing || PersistentGameManager.Inst.singlePlayer) && lassoClient);
         }
 
         if(cursorObject && (PersistentGameManager.IsClient) && !networkView.isMine)
@@ -128,11 +133,11 @@ public class PlayerSync : MonoBehaviour {
             Ray cursorRay = Camera.main.ScreenPointToRay(new Vector3(screenPosSmoothed.x, Screen.height - screenPosSmoothed.y, 0f));
             cursorObject.position = cursorRay.origin + cursorRay.direction * 1f;
 
-			if(!lassoSelectEnabled)
+			if(!lassoClient)
                 Network.SetSendingEnabled(0, true);
 
 
-            if(lassoSelectEnabled && networkView.isMine && Input.GetMouseButton(0) && !selecting){
+            if(lassoClient && networkView.isMine && Input.GetMouseButton(0) && !selecting){
                 selecting = true;
                 Network.SetSendingEnabled(0, selecting);
                 networkView.RPC("StartSelect", RPCMode.Server);
