@@ -31,6 +31,7 @@ public class FoodPelletViewer {
     public FoodPelletViewer(Vector3 worldPosition)
     {
         transform = MonoBehaviour.Instantiate(NodeController.Inst.physFoodPrefab, worldPosition, Random.rotation) as Transform;
+        renderers = transform.GetComponentsInChildren<Renderer>();
     }
 
     public void Destroy()
