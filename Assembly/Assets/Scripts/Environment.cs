@@ -7,6 +7,13 @@ public class Environment : MonoBehaviour {
 	public Renderer outerShell;
 	Color defaultShellColor;
 
+    public bool Visible{
+        set{
+            Renderer[] renderers = transform.GetComponentsInChildren<Renderer>();
+            foreach (Renderer r in renderers)
+                r.enabled = value;
+        }
+    }
 
 	void Awake(){
 		Inst = this;
