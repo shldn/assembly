@@ -237,10 +237,6 @@ public class Node {
 		velocity += thisFrameVelocity * velocityCoefficient;
 		velocity *= 0.98f;
 
-		// In-editor control
-        rotation *= Quaternion.Inverse(Rotation) * viewer.Rotation;
-        position += viewer.Position - Position;
-
 		delayPosition += velocity;
 		Position = delayPosition;
 		Rotation = delayRotation;
