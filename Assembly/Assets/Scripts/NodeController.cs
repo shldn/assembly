@@ -274,7 +274,7 @@ public class NodeController : MonoBehaviour {
 
 		// Leaderboard
 		leaderboardFadeIn = Mathf.MoveTowards(leaderboardFadeIn, (!NeuroScaleDemo.Inst || !NeuroScaleDemo.Inst.isActive || (NeuroScaleDemo.Inst.enviroScale > 0.8f)) ? 1f : 0f, Time.deltaTime * 0.25f);
-        if (PersistentGameManager.IsServer)
+        if (PersistentGameManager.IsServer && !ViewerManager.Inst.Hide)
         {
             if (showLeaderboard)
             {
@@ -527,7 +527,7 @@ public class NodeController : MonoBehaviour {
 		}
 
         // Leaderboard
-        if (PersistentGameManager.IsServer && showLeaderboard)
+        if (PersistentGameManager.IsServer && !ViewerManager.Inst.Hide && showLeaderboard)
         {
             GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
             ShowLeaderList("Leaderboard", leaderboard);

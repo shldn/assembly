@@ -62,10 +62,10 @@ public class PersistentGameManager : MonoBehaviour {
         if (!IsClient && qrCodeTexture == null)
             qrCodeTexture = Resources.Load("Textures/Capture_QR_Code") as Texture;
 
-        if (IsClient)
-            cursorLock = false;
-        else
-			cursorLock = true;
+        cursorLock = !IsClient;
+
+        if (IsServer)
+            HandleCommandLineArgs();
 	}
 
 
@@ -123,6 +123,22 @@ public class PersistentGameManager : MonoBehaviour {
         }
     } // End of EnviroImpulse().
 
+
+    private void HandleCommandLineArgs()
+    {
+        string[] cmdLnArgs = System.Environment.GetCommandLineArgs();
+        for (int i = 1; i < cmdLnArgs.Length; i++){ // skip exe name
+            switch (cmdLnArgs[i]){
+                case "-novisual":
+                case "-novisuals":
+                    ViewerManager.Inst.Hide = true;
+                    break;
+                default:
+                    Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);
+                    break;
+            }
+        }
+    }
 
     // Helper function to make sure singleton instance exists and is initialized
     public void Touch() { }

@@ -23,8 +23,8 @@ public class NodeViewer {
 
 
     // Accessors
-    public Vector3 Position { get { return cubeTransform.transform.position; } set{ cubeTransform.transform.position = value; } }
-    public Quaternion Rotation { get { return cubeTransform.transform.rotation; } set { cubeTransform.transform.rotation = value; } }
+    public Vector3 Position { private get { return cubeTransform.transform.position; } set { cubeTransform.transform.position = value; } }
+    public Quaternion Rotation { private get { return cubeTransform.transform.rotation; } set { cubeTransform.transform.rotation = value; } }
     public int Neighbors { get { return neighbors; } }
     public NodeProperties Properties
     {
@@ -35,10 +35,13 @@ public class NodeViewer {
     {
         get { return assemblyProperties; }
     }
-    public bool Visible { 
+    public bool Visible {
         get { return cubeTransform.renderer.enabled; }
         set
         {
+            if (ViewerManager.Inst.Hide && value)
+                return;
+
             if(cubeTransform != null)
                 cubeTransform.renderer.enabled = value;
             if (trail)
@@ -55,13 +58,14 @@ public class NodeViewer {
         cubeTransform.GetComponent<PhysNode>().nodeViewer = this;
         nodeProperties = properties;
         assemblyProperties = aProperties;
+        Visible = !ViewerManager.Inst.Hide;
     }
 
 
     // Member Functions
     public void SetNeighborCount(int count, bool createTrail)
     {
-        if (neighbors == count)
+        if (ViewerManager.Inst.Hide || neighbors == count)
             return;
 
         CleanupNodeEffects();
@@ -135,7 +139,8 @@ public class NodeViewer {
 
     public void Update()
     {
-
+        if (ViewerManager.Inst.Hide)
+            return;
         // Update mating color
         mateColorLerp = Mathf.MoveTowards(mateColorLerp, assemblyProperties.wantToMate ? 1f : 0f, Time.deltaTime);
         genderColorLerp = Mathf.MoveTowards(genderColorLerp, assemblyProperties.gender ? 1f : 0f, Time.deltaTime);
