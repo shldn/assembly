@@ -330,7 +330,8 @@ public class CaptureNet_Manager : MonoBehaviour {
         //newNetAmalgam.SendAssemblies();
 
         playerSync = (Network.Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity, 1) as GameObject).GetComponent<PlayerSync>();
-		myNetworkView.RPC("InitClient", RPCMode.Server, Network.player, playerSync.lassoClient? 0 : 1);
+		myNetworkView.RPC("InitClient", RPCMode.Server, Network.player, PlayerSync.LassoClientDefault? 0 : 1);
+		print("Sending init info...");
 
     } // End of OnConnectedToServer().
 
