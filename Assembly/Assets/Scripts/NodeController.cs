@@ -10,9 +10,6 @@ public class NodeController : MonoBehaviour {
 
 	public static NodeController Inst;
 
-	public Transform physNodePrefab = null;
-	public Transform physFoodPrefab = null;
-
 	public Vector3 worldSize = new Vector3(150f, 150f, 150f);
 	public float maxWorldSize = 300f;
 
@@ -274,7 +271,7 @@ public class NodeController : MonoBehaviour {
 
 		// Leaderboard
 		leaderboardFadeIn = Mathf.MoveTowards(leaderboardFadeIn, (!NeuroScaleDemo.Inst || !NeuroScaleDemo.Inst.isActive || (NeuroScaleDemo.Inst.enviroScale > 0.8f)) ? 1f : 0f, Time.deltaTime * 0.25f);
-        if (PersistentGameManager.IsServer && !ViewerManager.Inst.Hide)
+        if (PersistentGameManager.IsServer && !ViewerController.Inst.Hide)
         {
             if (showLeaderboard)
             {
@@ -527,7 +524,7 @@ public class NodeController : MonoBehaviour {
 		}
 
         // Leaderboard
-        if (PersistentGameManager.IsServer && !ViewerManager.Inst.Hide && showLeaderboard)
+        if (PersistentGameManager.IsServer && !ViewerController.Inst.Hide && showLeaderboard)
         {
             GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
             ShowLeaderList("Leaderboard", leaderboard);

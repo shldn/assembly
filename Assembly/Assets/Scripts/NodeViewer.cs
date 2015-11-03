@@ -39,7 +39,7 @@ public class NodeViewer {
         get { return cubeTransform.renderer.enabled; }
         set
         {
-            if (ViewerManager.Inst.Hide && value)
+            if (ViewerController.Inst.Hide && value)
                 return;
 
             if(cubeTransform != null)
@@ -54,18 +54,18 @@ public class NodeViewer {
     // Constructors
     public NodeViewer(Vector3 position, NodeProperties properties, AssemblyProperties aProperties)
     {
-        cubeTransform = MonoBehaviour.Instantiate(NodeController.Inst.physNodePrefab, position, Quaternion.identity) as Transform;
+        cubeTransform = MonoBehaviour.Instantiate(ViewerController.Inst.physNodePrefab, position, Quaternion.identity) as Transform;
         cubeTransform.GetComponent<PhysNode>().nodeViewer = this;
         nodeProperties = properties;
         assemblyProperties = aProperties;
-        Visible = !ViewerManager.Inst.Hide;
+        Visible = !ViewerController.Inst.Hide;
     }
 
 
     // Member Functions
     public void SetNeighborCount(int count, bool createTrail)
     {
-        if (ViewerManager.Inst.Hide || neighbors == count)
+        if (ViewerController.Inst.Hide || neighbors == count)
             return;
 
         CleanupNodeEffects();
@@ -139,7 +139,7 @@ public class NodeViewer {
 
     public void Update()
     {
-        if (ViewerManager.Inst.Hide)
+        if (ViewerController.Inst.Hide)
             return;
         // Update mating color
         mateColorLerp = Mathf.MoveTowards(mateColorLerp, assemblyProperties.wantToMate ? 1f : 0f, Time.deltaTime);

@@ -11,7 +11,7 @@ public class FoodPelletViewer {
         get { return visible; }
         set
         {
-            if (ViewerManager.Inst.Hide && value)
+            if (ViewerController.Inst.Hide && value)
                 return;
             visible = value;
             for (int i = 0; i < renderers.Length; i++)
@@ -32,9 +32,9 @@ public class FoodPelletViewer {
 
     public FoodPelletViewer(Vector3 worldPosition)
     {
-        transform = MonoBehaviour.Instantiate(NodeController.Inst.physFoodPrefab, worldPosition, Random.rotation) as Transform;
+        transform = MonoBehaviour.Instantiate(ViewerController.Inst.physFoodPrefab, worldPosition, Random.rotation) as Transform;
         renderers = transform.GetComponentsInChildren<Renderer>();
-        Visible = !ViewerManager.Inst.Hide;
+        Visible = !ViewerController.Inst.Hide;
     }
 
     public void Destroy()

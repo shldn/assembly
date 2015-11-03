@@ -131,7 +131,7 @@ public class PersistentGameManager : MonoBehaviour {
             switch (cmdLnArgs[i]){
                 case "-novisual":
                 case "-novisuals":
-                    ViewerManager.Inst.Hide = true;
+                    ViewerController.Inst.Hide = true;
                     break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);
