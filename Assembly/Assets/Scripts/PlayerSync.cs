@@ -31,7 +31,8 @@ public class PlayerSync : MonoBehaviour {
 	bool orbitModeInit = false;
     int levelWasLoadedFrame = 0;
 
-	public bool lassoClient = false;
+	public static bool LassoClientDefault { get { return true; } } // For client
+	public bool lassoClient = false; // For client/server, based on above.
 
 
     void Awake()
@@ -41,6 +42,9 @@ public class PlayerSync : MonoBehaviour {
         cursorLineMaxDist = Screen.width + Screen.height;
         DontDestroyOnLoad(this);
 		all.Add(this);
+
+		if(PersistentGameManager.IsClient)
+			lassoClient = LassoClientDefault;
     }
 
 	void Start(){
