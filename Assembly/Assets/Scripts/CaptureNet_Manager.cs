@@ -337,12 +337,14 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 	[RPC] // Inform server what type of client we are. Server will send data if needed.
 	void InitClient(NetworkPlayer player, int type){
+		print("Client connected, type " + type);
+
 		for(int i = 0; i < PlayerSync.all.Count; i++){
 			if(PlayerSync.all[i].networkView.owner == player)
 				PlayerSync.all[i].lassoClient = (type == 0)? true : false;
 		}
 
-		if(type == 0){
+		if(type == 1){
 			for(int i = 0; i < Assembly.getAll.Count; i++){
 				if(Assembly.getAll[i].ready)
 					blipRequests.Add(new AssemblyBlipRequest(Assembly.getAll[i], player));
