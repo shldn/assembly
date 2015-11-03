@@ -337,6 +337,8 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 	[RPC] // Inform server what type of client we are. Server will send data if needed.
 	void InitClient(NetworkPlayer player, int type){
+		print("Client connected, type " + type);
+
 		for(int i = 0; i < PlayerSync.all.Count; i++){
 			if(PlayerSync.all[i].networkView.owner == player)
 				PlayerSync.all[i].lassoClient = (type == 0)? true : false;

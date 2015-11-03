@@ -255,9 +255,6 @@ public class AssemblyRadar : MonoBehaviour {
 	
 	[RPC]
 	public void UpdatePos(int id, Vector3 pos, float influenceScore){
-		if(PlayerSync.local.lassoClient)
-			return;
-
 		for(int i = 0; i < blips.Count; i++){
 			if(blips[i].assemblyID == id){
 				blips[i].targetPosition = pos;
