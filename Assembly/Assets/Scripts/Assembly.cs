@@ -34,7 +34,9 @@ public class Assembly : CaptureObject{
 
 	Dictionary<Triplet, Node> nodeDict = new Dictionary<Triplet, Node>();
 	public Dictionary<Triplet, Node> NodeDict {get{return nodeDict;}}
-	Node[] myNodesIndexed = new Node[0];
+    List<Node> nodes = new List<Node>();
+    public List<Node> Nodes { get { return nodes; } }
+
 
 	public Vector3 spawnPosition = Vector3.zero;
 	public Quaternion spawnRotation = Quaternion.identity;
@@ -205,6 +207,7 @@ public class Assembly : CaptureObject{
     {
         physNode.PhysAssembly = this;
         nodeDict.Add(nodePos, physNode);
+        nodes.Add(physNode);
         AssignNodeNeighbors(nodePos, physNode);
         energy += 1f;
     }
@@ -225,7 +228,10 @@ public class Assembly : CaptureObject{
 
 	public void RemoveNode(Node nodeToRemove){
 		if(nodeDict.ContainsKey(nodeToRemove.localHexPos))
-			nodeDict.Remove(nodeToRemove.localHexPos);
+        {
+            nodeDict.Remove(nodeToRemove.localHexPos);
+            nodes.Remove(nodeToRemove);
+        }
 	} // End of AddNode().
 
 
@@ -240,10 +246,6 @@ public class Assembly : CaptureObject{
 
 		nametagFade -= Time.deltaTime;
 
-		if(myNodesIndexed.Length != nodeDict.Values.Count){
-			myNodesIndexed = new Node[nodeDict.Values.Count];
-			nodeDict.Values.CopyTo(myNodesIndexed, 0);
-		}
 
 		if(PersistentGameManager.IsServer){
 			if(energy < 0f)
@@ -280,11 +282,11 @@ public class Assembly : CaptureObject{
 		}
 
 		if(matingWith){
-			for(int i = 0; i < myNodesIndexed.Length; i++){
-				Node myNode = myNodesIndexed[i];
+			for(int i = 0; i < nodes.Count; i++){
+				Node myNode = nodes[i];
 				Node otherNode = null;
-				if(matingWith.myNodesIndexed.Length > i){
-					otherNode = matingWith.myNodesIndexed[i];
+                if (matingWith.nodes.Count > i) {
+					otherNode = matingWith.nodes[i];
 
 					if(myNode.Visible && otherNode.Visible)
 						GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
@@ -307,7 +309,7 @@ public class Assembly : CaptureObject{
                 newAssembly.UpdateFamilyTreeFromParent(matingWith);
 				newAssembly.amalgam = amalgam;
 
-				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length + 1);
+				int numNodes = Random.Range(nodes.Count, matingWith.nodes.Count + 1);
 				Triplet spawnHexPos = Triplet.zero;
 				while(numNodes > 0){
 					// Make sure no phys node is here currently.
