@@ -31,4 +31,23 @@ public class ViewerController : MonoBehaviour {
 
     }
 
+    void LateUpdate()
+    {
+
+#if INTEGRATED_VIEWER
+#else
+        for (int i = 0; i < ViewerData.Inst.assemblyCreations.Count; i++) {
+            new AssemblyViewer(ViewerData.Inst.assemblyCreations[i]);
+        }
+
+        for (int i = 0; i < ViewerData.Inst.assemblyUpdates.Count; i++) {
+            AssemblyTransformUpdate update = ViewerData.Inst.assemblyUpdates[i];
+            if (AssemblyViewer.All.ContainsKey(update.id))
+                AssemblyViewer.All[update.id].TransformUpdate(update.transforms);
+        }
+
+        ViewerData.Inst.Clear();
+#endif
+    }
+
 }

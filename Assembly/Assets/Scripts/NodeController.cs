@@ -135,6 +135,12 @@ public class NodeController : MonoBehaviour {
 		foreach(Node someNode in Node.getAll)
 			someNode.UpdateTransform();
 
+#if INTEGRATED_VIEWER
+#else
+		for(int i = 0; i < Assembly.getAll.Count; i++)
+			ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(Assembly.getAll[i]));
+#endif
+
 		
 		for(int i = 0; i < Assembly.getAll.Count; i++){
 			Assembly curAssem = Assembly.getAll[i];

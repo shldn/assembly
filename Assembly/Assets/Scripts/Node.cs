@@ -114,8 +114,9 @@ public class Node {
 		Position = physAssembly.spawnPosition + (physAssembly.spawnRotation * HexUtilities.HexToWorld(localHexPos));
         Rotation = physAssembly.spawnRotation;
 		delayPosition = Position;
-
+ 
         viewer = new NodeViewer(Position, nodeProperties, physAssembly.properties);
+        viewer.Visible = false;
 	} // End of Awake().
 
 
@@ -127,6 +128,7 @@ public class Node {
         // This constructor appears to create a temporary node, so likely doesn't need a viewer.
         // Will keep in case usage changes, could change code path to pass in Assembly pointer.
         viewer = new NodeViewer(Position, props, null);
+        viewer.Visible = false;
 	} // End of Awake().
 
     public void UpdateSenseVector(Quaternion newSenseVector)
@@ -193,10 +195,10 @@ public class Node {
 		
 		// Update node type?
 		if(neighbors.Count != lastNeighborCount){
-			lastNeighborCount = neighbors.Count;
 
-            if (viewer.Neighbors == 2)
+            if (lastNeighborCount == 1)
 				AllSenseNodeTree.Remove(this);
+            lastNeighborCount = neighbors.Count;
 
             bool createTrail = neighbors.Count == 2 && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
             viewer.SetNeighborCount(neighbors.Count, createTrail);
@@ -246,9 +248,12 @@ public class Node {
 				velocity += -delayPosition.normalized * NodeController.physicsStep;
 		}
 
+#if INTEGRATED_VIEWER
         viewer.Position = Position;
         viewer.Rotation = Rotation;
-
+#else
+        ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(physAssembly));
+#endif
 		foreach(PhysNeighbor someNeighbor in neighbors)
 			if(Random.Range(0f, 1f) < 0.2f)
 				someNeighbor.arrowDist = Random.Range(0.25f, 0.4f);
@@ -278,7 +283,9 @@ public class Node {
 				break;
 		}
 
+#if INTEGRATED_VIEWER
         viewer.Update();
+#endif
 
 		//GLDebug.DrawCube(Position, rotation, Vector3.one * velocity.magnitude * 10f);
 	} // End of UpdateTransform().
@@ -298,7 +305,9 @@ public class Node {
 	} // End of AttachNeighbor().
 
 	public void Destroy(){
+#if INTEGRATED_VIEWER
         viewer.Destroy();
+#endif
 		cull = true;
 	} // End of OnDestroy().
 
@@ -437,8 +446,8 @@ public class SenseActuateLink {
 public struct NodeProperties {
 
     // Sense
-    public Quaternion senseVector;
-    public float fieldOfView;
+    public Quaternion senseVector;  // viewer needs
+    public float fieldOfView;       // viewer needs
     public float senseRange;
     public float muscleStrength;
 

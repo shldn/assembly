@@ -100,7 +100,7 @@ public class Assembly : CaptureObject{
     }
 
 
-	public Assembly(Vector3 spawnPosition, Quaternion spawnRotation){
+	private Assembly(Vector3 spawnPosition, Quaternion spawnRotation){
 		this.spawnPosition = spawnPosition;
 		this.spawnRotation = spawnRotation;
 		properties.gender = Random.Range(0f, 1f) > 0.5f;
@@ -142,6 +142,11 @@ public class Assembly : CaptureObject{
 			someNode.ComputeEnergyNetwork();
 
 		PersistentGameManager.CaptureObjects.Add(this);
+
+#if INTEGRATED_VIEWER
+#else
+        ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(this));
+#endif
     } // End of constructor (from serialized).
 
 
@@ -178,7 +183,10 @@ public class Assembly : CaptureObject{
 
 		foreach(Node someNode in newAssembly.NodeDict.Values)
 			someNode.ComputeEnergyNetwork();
-
+#if INTEGRATED_VIEWER
+#else
+        ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(newAssembly));
+#endif
 		return newAssembly;
 	} // End of RandomAssembly().
 

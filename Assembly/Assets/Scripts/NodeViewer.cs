@@ -28,7 +28,7 @@ public class NodeViewer {
     public int Neighbors { get { return neighbors; } }
     public NodeProperties Properties
     {
-        get { return nodeProperties; }
+        private get { return nodeProperties; }
         set { nodeProperties = value; }
     }
     public AssemblyProperties AssemblyProperties
@@ -57,6 +57,16 @@ public class NodeViewer {
         cubeTransform = MonoBehaviour.Instantiate(ViewerController.Inst.physNodePrefab, position, Quaternion.identity) as Transform;
         cubeTransform.GetComponent<PhysNode>().nodeViewer = this;
         nodeProperties = properties;
+        assemblyProperties = aProperties;
+        Visible = !ViewerController.Inst.Hide;
+    }
+
+    public NodeViewer(Vector3 position, AssemblyProperties aProperties, int numNeighbors, SenseNodeCreationData senseData ) {
+        cubeTransform = MonoBehaviour.Instantiate(ViewerController.Inst.physNodePrefab, position, Quaternion.identity) as Transform;
+        cubeTransform.GetComponent<PhysNode>().nodeViewer = this;
+        neighbors = numNeighbors;
+        nodeProperties.senseVector = senseData.senseVector;
+        nodeProperties.fieldOfView = senseData.fov;
         assemblyProperties = aProperties;
         Visible = !ViewerController.Inst.Hide;
     }
