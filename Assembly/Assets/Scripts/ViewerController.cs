@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class ViewerController : MonoBehaviour {
 
@@ -31,6 +32,14 @@ public class ViewerController : MonoBehaviour {
 
     }
 
+    void Update() {
+        foreach(KeyValuePair<int,AssemblyViewer> a in AssemblyViewer.All){
+            for (int i = 0; i < a.Value.nodes.Count; ++i) {
+                a.Value.nodes[i].Update();
+            }
+        }
+    }
+
     void LateUpdate()
     {
 
@@ -46,7 +55,12 @@ public class ViewerController : MonoBehaviour {
                 AssemblyViewer.All[update.id].TransformUpdate(update.transforms);
         }
 
-        ViewerData.Inst.Clear();
+        for (int i = 0; i < ViewerData.Inst.assemblyDeletes.Count; ++i) {
+            if (AssemblyViewer.All.ContainsKey(ViewerData.Inst.assemblyDeletes[i]))
+                AssemblyViewer.All[ViewerData.Inst.assemblyDeletes[i]].Destroy();
+        }
+
+            ViewerData.Inst.Clear();
 #endif
     }
 

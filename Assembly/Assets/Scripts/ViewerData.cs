@@ -83,17 +83,21 @@ public struct AssemblyCreationData {
         id = a.Id;
         properties = a.properties;
         nodeNeighbors = new List<int>(a.Nodes.Count);
+        trailIndices = new List<int>();
         senseNodeData = new Dictionary<int, SenseNodeCreationData>();
         for (int i = 0; i < a.Nodes.Count; ++i) {
             nodeNeighbors.Add(a.Nodes[i].neighbors.Count);
             if (a.Nodes[i].IsSense)
                 senseNodeData.Add(i, new SenseNodeCreationData(a.Nodes[i].Properties));
+            if (a.Nodes[i].IsMuscle && (!a.Nodes[i].neighbors[0].physNode.IsMuscle || !a.Nodes[i].neighbors[1].physNode.IsMuscle))
+                trailIndices.Add(i);
         }
     }
 
     public int id;
     public AssemblyProperties properties;
     public List<int> nodeNeighbors;
+    public List<int> trailIndices;
     public Dictionary<int, SenseNodeCreationData> senseNodeData; // index into nodeNeighbors to sense node data.
 }
 
@@ -122,11 +126,13 @@ public class ViewerData {
 
     public List<AssemblyCreationData> assemblyCreations = new List<AssemblyCreationData>();
     public List<AssemblyTransformUpdate> assemblyUpdates = new List<AssemblyTransformUpdate>();
+    public List<int> assemblyDeletes = new List<int>();
 
 
     public void Clear()
     {
         assemblyUpdates.Clear();
         assemblyCreations.Clear();
+        assemblyDeletes.Clear();
     }
 }

@@ -15,6 +15,7 @@ public class Node {
 	Assembly physAssembly = null;
 	public Assembly PhysAssembly {get{return physAssembly;} set{physAssembly = value;}}
     public bool IsSense{ get{ return neighbors.Count == 1; } }
+    public bool IsMuscle { get { return neighbors.Count == 2; } }
 
     private NodeProperties nodeProperties = NodeProperties.random;
     public NodeProperties Properties { 

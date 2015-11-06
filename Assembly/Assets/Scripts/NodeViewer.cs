@@ -61,10 +61,10 @@ public class NodeViewer {
         Visible = !ViewerController.Inst.Hide;
     }
 
-    public NodeViewer(Vector3 position, AssemblyProperties aProperties, int numNeighbors, SenseNodeCreationData senseData ) {
+    public NodeViewer(Vector3 position, AssemblyProperties aProperties, int numNeighbors, bool createTrail, SenseNodeCreationData senseData ) {
         cubeTransform = MonoBehaviour.Instantiate(ViewerController.Inst.physNodePrefab, position, Quaternion.identity) as Transform;
         cubeTransform.GetComponent<PhysNode>().nodeViewer = this;
-        neighbors = numNeighbors;
+        SetNeighborCount(numNeighbors, createTrail);
         nodeProperties.senseVector = senseData.senseVector;
         nodeProperties.fieldOfView = senseData.fov;
         assemblyProperties = aProperties;
@@ -79,7 +79,6 @@ public class NodeViewer {
             return;
 
         CleanupNodeEffects();
-
         neighbors = count;
         switch (neighbors)
         {

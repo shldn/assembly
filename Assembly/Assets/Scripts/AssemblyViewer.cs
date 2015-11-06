@@ -13,7 +13,7 @@ public class AssemblyViewer {
         id = config.id;
         for (int i = 0; i < config.nodeNeighbors.Count; ++i) {
             SenseNodeCreationData senseData = (config.senseNodeData.ContainsKey(i)) ? config.senseNodeData[i] : SenseNodeCreationData.identity;
-            NodeViewer nv = new NodeViewer(Vector3.zero, config.properties, config.nodeNeighbors[i], senseData);
+            NodeViewer nv = new NodeViewer(Vector3.zero, config.properties, config.nodeNeighbors[i], config.trailIndices.Contains(i), senseData);
             nodes.Add(nv);
         }
         all.Add(id, this);

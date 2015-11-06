@@ -510,6 +510,7 @@ public class Assembly : CaptureObject{
 		if(amalgam)
 			amalgam.assemblies.Remove(this);
 		cull = true;
+        ViewerData.Inst.assemblyDeletes.Add(id);
 	} // End of Destroy().
 
 
