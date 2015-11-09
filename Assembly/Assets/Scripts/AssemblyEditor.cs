@@ -121,7 +121,7 @@ public class AssemblyEditor : MonoBehaviour {
 			if(!ClientTest.Inst){
 
 				GUI.skin.label.alignment = TextAnchor.UpperLeft;
-				GUI.Label(new Rect(10f, 10f, Screen.width, Screen.height), CultureInfo.CurrentCulture.TextInfo.ToTitleCase(capturedAssembly.name));
+				GUI.Label(new Rect(10f, 10f, Screen.width, Screen.height), CultureInfo.CurrentCulture.TextInfo.ToTitleCase(capturedAssembly.Name));
 
 				GUILayout.BeginArea(controlBarRect);
 

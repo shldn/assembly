@@ -431,8 +431,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
-        Assembly a = new Assembly(assemblyStr, null, assemblyNewPos);
-		a.nametagFade = 30f;
+        Assembly a = new Assembly(assemblyStr, null, assemblyNewPos, false, true);
 
 		// Assembly is "thrown" back into the environment.
 		foreach(Node someNode in a.NodeDict.Values)

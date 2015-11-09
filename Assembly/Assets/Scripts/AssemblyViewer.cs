@@ -8,6 +8,7 @@ public class AssemblyViewer {
 
     public int id = -1;
     public List<NodeViewer> nodes = new List<NodeViewer>();
+    public TimedLabel label = null;
 
     public AssemblyViewer(AssemblyCreationData config) {
         id = config.id;
@@ -16,6 +17,8 @@ public class AssemblyViewer {
             NodeViewer nv = new NodeViewer(Vector3.zero, config.properties, config.nodeNeighbors[i], config.trailIndices.Contains(i), senseData);
             nodes.Add(nv);
         }
+        if (config.userReleased)
+            CreateLabel(config.properties.name);
         all.Add(id, this);
     }
 
@@ -23,10 +26,14 @@ public class AssemblyViewer {
         if(updates.Count != nodes.Count){
             Debug.LogError("AssemblyViewer: Num updates != Num nodes");
         }
+        Vector3 posSum = Vector3.zero;
         for (int i = 0; i < nodes.Count; ++i){
             nodes[i].Position = updates[i].pos;
             nodes[i].Rotation = updates[i].rot;
+            posSum += updates[i].pos;
         }
+        if (label)
+            label.gameObject.transform.position = posSum / nodes.Count;
     }
 
     public void Destroy() {
@@ -36,4 +43,17 @@ public class AssemblyViewer {
         if(all.ContainsKey(id))
             all.Remove(id);
     }
+
+    private void CreateLabel(string text) {
+        label = new GameObject("AssemblyLabel").AddComponent<TimedLabel>();
+        label.label = text;
+        label.fadeTime = 30f;
+        label.FadeComplete += LabelDone;
+    }
+
+    private void LabelDone(object sender) {
+        GameObject.Destroy(label.gameObject);
+        label = null;
+    }
+
 }

@@ -25,7 +25,7 @@ public class IOHelper
         string ext = ".txt";
         Directory.CreateDirectory(folderPath);
         foreach (Assembly a in Assembly.getAll)
-            a.Save(GetValidFileName(folderPath, a.name, ext));
+            a.Save(GetValidFileName(folderPath, a.Name, ext));
     }
 
 
@@ -84,7 +84,7 @@ public class IOHelper
 
     private static void WriteAssemblyToStream(Assembly assembly, TextWriter stream){
         stream.WriteLine(assemblyFileFormatVersion);
-        stream.WriteLine(assembly.name);
+        stream.WriteLine(assembly.Name);
         stream.WriteLine(assembly.Id);
         stream.WriteLine(assembly.Position);
         foreach(Node someNode in assembly.NodeDict.Values)

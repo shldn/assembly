@@ -81,6 +81,7 @@ public struct SenseNodeCreationData{
 public struct AssemblyCreationData {
     public AssemblyCreationData(Assembly a) {
         id = a.Id;
+        userReleased = a.userReleased;
         properties = a.properties;
         nodeNeighbors = new List<int>(a.Nodes.Count);
         trailIndices = new List<int>();
@@ -95,6 +96,7 @@ public struct AssemblyCreationData {
     }
 
     public int id;
+    public bool userReleased;
     public AssemblyProperties properties;
     public List<int> nodeNeighbors;
     public List<int> trailIndices;

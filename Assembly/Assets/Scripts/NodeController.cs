@@ -508,27 +508,6 @@ public class NodeController : MonoBehaviour {
 		}
 		*/
 
-		// Show nametags for dropped-in Assemblies
-		if(!PersistentGameManager.IsClient){
-			foreach(Assembly someAssem in Assembly.getAll){
-
-				if(someAssem.nametagFade < 0f)
-					continue;
-
-				Vector3 screenPos = Camera.main.WorldToScreenPoint(someAssem.Position);
-				//screenPos.y = Screen.height - screenPos.y;
-				if(screenPos.z < 0f)
-					continue;
-
-				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-				GUI.skin.label.fontSize = Mathf.CeilToInt(Mathf.Clamp(20f / (screenPos.z * 0.01f), 0, 50) * Screen.height / 1000f);
-				
-				GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(someAssem.nametagFade * 0.3f));
-
-				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y - (Screen.height * 3f / screenPos.z), 1000f), CultureInfo.CurrentCulture.TextInfo.ToTitleCase(someAssem.name));
-			}
-		}
-
         // Leaderboard
         if (PersistentGameManager.IsServer && !ViewerController.Inst.Hide && showLeaderboard)
         {

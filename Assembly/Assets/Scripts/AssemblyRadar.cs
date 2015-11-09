@@ -224,7 +224,7 @@ public class AssemblyRadar : MonoBehaviour {
 		newBlip.position = pos;
 		newBlip.targetPosition = pos;
 		newBlip.assemblyID = newAssem.Id;
-		newBlip.name = newAssem.name;
+		newBlip.name = newAssem.Name;
 
 		newBlip.nodes = new BlipNode[newAssem.NodeDict.Values.Count];
 		Triplet nodePos = Triplet.zero;

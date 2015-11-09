@@ -15,7 +15,7 @@ public class Assembly : CaptureObject{
 	public HashSet<int> familyTree = new HashSet<int>();
     public Dictionary<int, int> familyGenerationRemoved = new Dictionary<int, int>(); // how many generations removed is an entity in familyTree (maps assemblyID to generationCount) - parents would have value of 1
     public AssemblyProperties properties = new AssemblyProperties();
-	public string name = "Some Unimportant Assembly";
+    public bool userReleased = false; // Did a user just drop this assembly into the world?
     private int id = -1;
     public int Id { 
         get { return id; } 
@@ -26,11 +26,13 @@ public class Assembly : CaptureObject{
             {
                 familyTree.Add(value);
                 familyGenerationRemoved.Add(value, 0);
-                NodeController.Inst.assemblyNameDictionary.Add(value, name);
+                NodeController.Inst.assemblyNameDictionary.Add(value, Name);
                 NodeController.assemblyScores.Add(value, 0);
             }
         } 
     }
+    public string Name { get { return properties.name; } set { properties.name = value; } }
+    
 
 	Dictionary<Triplet, Node> nodeDict = new Dictionary<Triplet, Node>();
 	public Dictionary<Triplet, Node> NodeDict {get{return nodeDict;}}
@@ -67,8 +69,6 @@ public class Assembly : CaptureObject{
 	public bool needAddToList = true;
     public bool hasBeenCaptured = false;
 	public float Health {get{return energy / nodeDict.Count;}}
-
-	public float nametagFade = 0f;
 
 	public Assembly matingWith = null;
 	float mateAttractDist = 100f;
@@ -113,19 +113,19 @@ public class Assembly : CaptureObject{
 		all.Add(this);
 		AllAssemblyTree.Insert(this);
 		PersistentGameManager.CaptureObjects.Add(this);
-		name = NodeController.Inst.GetRandomName();
+		Name = NodeController.Inst.GetRandomName();
 		
 	} // End of constructor.
 
 
 	// Load from string--file path, etc.
-	public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false){
+	public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false){
         List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         if(isFilePath)
-            IOHelper.LoadAssemblyFromFile(str, ref name, ref id, ref worldPos, ref newNodes);
+            IOHelper.LoadAssemblyFromFile(str, ref properties.name, ref id, ref worldPos, ref newNodes);
         else
-            IOHelper.LoadAssemblyFromString(str, ref name, ref id, ref worldPos, ref newNodes);
+            IOHelper.LoadAssemblyFromString(str, ref properties.name, ref id, ref worldPos, ref newNodes);
         hasBeenCaptured = !isFilePath && id != -1;
         if( hasBeenCaptured )
             captured.Add(Id);
@@ -148,7 +148,7 @@ public class Assembly : CaptureObject{
 			someNode.ComputeEnergyNetwork();
 
 		PersistentGameManager.CaptureObjects.Add(this);
-
+        userReleased = userReleased_;
 #if INTEGRATED_VIEWER
 #else
         ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(this));
@@ -255,11 +255,7 @@ public class Assembly : CaptureObject{
 
 
 	public void Update(){
-		//MonoBehaviour.print(energy - lastEnergy);
 		lastEnergy = energy;
-
-		nametagFade -= Time.deltaTime;
-
 
 		if(PersistentGameManager.IsServer){
 			if(energy < 0f)
@@ -318,7 +314,7 @@ public class Assembly : CaptureObject{
 			if(mateCompletion >= 1f){
 				// Spawn a new assembly between the two.
 				Assembly newAssembly = new Assembly((Position + matingWith.Position) / 2f, Random.rotation);
-				newAssembly.name = name.Substring(0, Mathf.RoundToInt(name.Length * 0.5f)) + matingWith.name.Substring(matingWith.name.Length - Mathf.RoundToInt(matingWith.name.Length * 0.5f), Mathf.RoundToInt(matingWith.name.Length * 0.5f));
+				newAssembly.Name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + matingWith.Name.Substring(matingWith.Name.Length - Mathf.RoundToInt(matingWith.Name.Length * 0.5f), Mathf.RoundToInt(matingWith.Name.Length * 0.5f));
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(matingWith);
 				newAssembly.amalgam = amalgam;
@@ -521,7 +517,7 @@ public class Assembly : CaptureObject{
 
 
 	public void Save(){
-        string path = "./data/" + name + ".txt";
+        string path = "./data/" + Name + ".txt";
         Save(path);
     } // End of Save().
 
