@@ -40,14 +40,20 @@ public class Assembly : CaptureObject{
 
 	public Vector3 spawnPosition = Vector3.zero;
 	public Quaternion spawnRotation = Quaternion.identity;
+    private Vector3 cachedPosition = Vector3.zero;
+    private int cachedFrame = -1;
 	public Vector3 Position {
 		get{
+            if (cachedFrame == Time.frameCount)
+                return cachedPosition;
 			Vector3 worldPos = Vector3.zero;
 			foreach(Node someNode in nodeDict.Values)
 				worldPos += someNode.Position;
 			if(nodeDict.Keys.Count > 0f)
 				worldPos /= nodeDict.Keys.Count;
 
+            cachedFrame = Time.frameCount;
+            cachedPosition = worldPos;
 			return worldPos;
 		}
 	}

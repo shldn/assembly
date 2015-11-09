@@ -89,6 +89,8 @@ public class NeuroScaleDemo : MonoBehaviour {
 
     void Cull()
     {
+        if (!isActive)
+            return;
         if (useOctree)
         {
 
