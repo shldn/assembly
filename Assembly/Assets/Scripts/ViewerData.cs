@@ -45,7 +45,6 @@ public struct AssemblyTransformUpdate {
         transforms = new List<PosRotPair>(a.Nodes.Count);
         foreach (Node n in a.Nodes)
             transforms.Add(new PosRotPair(n.Position, n.Rotation));
-
     }
     public int id;
     public List<PosRotPair> transforms;
@@ -128,6 +127,7 @@ public class ViewerData {
 
     public List<AssemblyCreationData> assemblyCreations = new List<AssemblyCreationData>();
     public List<AssemblyTransformUpdate> assemblyUpdates = new List<AssemblyTransformUpdate>();
+    public List<AssemblyProperties> assemblyPropertyUpdates = new List<AssemblyProperties>();
     public List<int> assemblyDeletes = new List<int>();
 
 
@@ -136,5 +136,6 @@ public class ViewerData {
         assemblyUpdates.Clear();
         assemblyCreations.Clear();
         assemblyDeletes.Clear();
+        assemblyPropertyUpdates.Clear();
     }
 }

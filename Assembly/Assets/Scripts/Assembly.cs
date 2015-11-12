@@ -15,6 +15,7 @@ public class Assembly : CaptureObject{
 	public HashSet<int> familyTree = new HashSet<int>();
     public Dictionary<int, int> familyGenerationRemoved = new Dictionary<int, int>(); // how many generations removed is an entity in familyTree (maps assemblyID to generationCount) - parents would have value of 1
     public AssemblyProperties properties = new AssemblyProperties();
+    bool propertiesDirty = false;
     public bool userReleased = false; // Did a user just drop this assembly into the world?
     private int id = -1;
     public int Id { 
@@ -70,7 +71,27 @@ public class Assembly : CaptureObject{
     public bool hasBeenCaptured = false;
 	public float Health {get{return energy / nodeDict.Count;}}
 
-	public Assembly matingWith = null;
+	private Assembly matingWith = null;
+    public Assembly MatingWith {
+        get { return matingWith; }
+        set {
+            int prevId = properties.matingWith;
+            properties.matingWith = (value != null) ? value.Id : -1;
+            if (matingWith != value) {
+                Debug.LogError("was: " + prevId + " now: " + properties.matingWith);
+                propertiesDirty = true;
+            }
+            matingWith = value;
+        }
+    }
+    public bool WantToMate {
+        get { return properties.wantToMate; }
+        set {
+            if (value != properties.wantToMate)
+                propertiesDirty = true;
+            properties.wantToMate = value;
+        }
+    }
 	float mateAttractDist = 100f;
 	float mateCompletion = 0f;
 
@@ -165,9 +186,7 @@ public class Assembly : CaptureObject{
 		// Try a node structure... if there are no sense nodes, re-roll.
 		bool containsSenseNode = false;
 		do{
-			foreach(Node someNode in newAssembly.NodeDict.Values)
-				someNode.Destroy();
-			newAssembly.NodeDict.Clear();
+            newAssembly.RemoveAllNodes();
 			Triplet spawnHexPos = Triplet.zero;
 			int nodesToMake = numNodes;
 			while(nodesToMake > 0){
@@ -267,39 +286,40 @@ public class Assembly : CaptureObject{
 			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
 		if(!PersistentGameManager.IsClient && (energy > (maxEnergy * 0.9f)))
-            properties.wantToMate = true;
+            WantToMate = true;
 		else if(energy < maxEnergy * 0.5f){
-            properties.wantToMate = false;
+            WantToMate = false;
 			mateCompletion = 0f;
 
-			if(matingWith){
-				matingWith.matingWith = null;
-                matingWith.properties.wantToMate = false;
-				matingWith.mateCompletion = 0f;
-				matingWith.energy *= 0.5f;
+			if(MatingWith){
 
-				matingWith = null;
-                properties.wantToMate = false;
+                MatingWith.WantToMate = false;
+				MatingWith.mateCompletion = 0f;
+				MatingWith.energy *= 0.5f;
+                MatingWith.MatingWith = null;
+
+                WantToMate = false;
 				mateCompletion = 0f;
 				energy *= 0.5f;
-			}
-		}
+                MatingWith = null;
+            }
+        }
 
 		// We won't want to mate if our population cap has been reached.
-        if (properties.wantToMate && !matingWith){
+        if (properties.wantToMate && !MatingWith){
 			Bounds mateAttractBoundary = new Bounds(Position, mateAttractDist * (new Vector3(1, 1, 1)));
 			allAssemblyTree.RunActionInRange(new System.Action<Assembly>(HandleFindMate), mateAttractBoundary);
 		}
 
-		if(matingWith){
+		if(MatingWith){
 			for(int i = 0; i < nodes.Count; i++){
 				Node myNode = nodes[i];
 				Node otherNode = null;
-                if (matingWith.nodes.Count > i) {
-					otherNode = matingWith.nodes[i];
+                if (MatingWith.nodes.Count > i) {
+					otherNode = MatingWith.nodes[i];
 
-					if(myNode.Visible && otherNode.Visible)
-						GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
+					//if(myNode.Visible && otherNode.Visible)
+					//	GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
 					Vector3 vectorToMate = myNode.Position - otherNode.Position;
 					float distance = vectorToMate.magnitude;
 			
@@ -313,13 +333,13 @@ public class Assembly : CaptureObject{
 			// Create offspring!
 			if(mateCompletion >= 1f){
 				// Spawn a new assembly between the two.
-				Assembly newAssembly = new Assembly((Position + matingWith.Position) / 2f, Random.rotation);
-				newAssembly.Name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + matingWith.Name.Substring(matingWith.Name.Length - Mathf.RoundToInt(matingWith.Name.Length * 0.5f), Mathf.RoundToInt(matingWith.Name.Length * 0.5f));
+				Assembly newAssembly = new Assembly((Position + MatingWith.Position) / 2f, Random.rotation);
+				newAssembly.Name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));
                 newAssembly.UpdateFamilyTreeFromParent(this);
-                newAssembly.UpdateFamilyTreeFromParent(matingWith);
+                newAssembly.UpdateFamilyTreeFromParent(MatingWith);
 				newAssembly.amalgam = amalgam;
 
-				int numNodes = Random.Range(nodes.Count, matingWith.nodes.Count + 1);
+				int numNodes = Random.Range(nodes.Count, MatingWith.nodes.Count + 1);
 				Triplet spawnHexPos = Triplet.zero;
 				while(numNodes > 0){
 					// Make sure no phys node is here currently.
@@ -333,15 +353,15 @@ public class Assembly : CaptureObject{
 				foreach(Node someNode in newAssembly.NodeDict.Values)
 					someNode.ComputeEnergyNetwork();
 
-				matingWith.matingWith = null;
-                matingWith.properties.wantToMate = false;
-				matingWith.mateCompletion = 0f;
-				matingWith.energy *= 0.5f;
+                MatingWith.WantToMate = false;
+				MatingWith.mateCompletion = 0f;
+				MatingWith.energy *= 0.5f;
+                MatingWith.MatingWith = null;
 
-				matingWith = null;
-                properties.wantToMate = false;
+                WantToMate = false;
 				mateCompletion = 0f;
 				energy *= 0.5f;
+                MatingWith = null;
 
                 if (RandomMelody.Inst)
     				RandomMelody.Inst.PlayNote();
@@ -370,8 +390,13 @@ public class Assembly : CaptureObject{
 			AssemblyRadar.Inst.networkView.RPC("CreateBlip", RPCMode.Others, IOHelper.AssemblyToString(this), Position);
 		}
 
+        if (propertiesDirty) {
+            ViewerData.Inst.assemblyPropertyUpdates.Add(new AssemblyProperties(properties));
+            propertiesDirty = false;
+        }
 
-		ready = true;
+
+        ready = true;
 
 	} // End of Update().
 
@@ -420,7 +445,7 @@ public class Assembly : CaptureObject{
 
 
 	public void HandleFindMate(Assembly someAssembly){
-		if((someAssembly == this) || (someAssembly.matingWith) || matingWith)
+		if((someAssembly == this) || (someAssembly.MatingWith) || MatingWith)
 			return;
 
 		Vector3 vectorToMate = someAssembly.Position - Position;
@@ -432,12 +457,12 @@ public class Assembly : CaptureObject{
         if (!someAssembly.properties.wantToMate)
 			return;
 
-		matingWith = someAssembly;
-		properties.gender = true;
+        properties.gender = true;
+        MatingWith = someAssembly;
 
-		someAssembly.matingWith = this;
         someAssembly.properties.gender = false;
-	} // End of HandleAttractMate().
+        someAssembly.MatingWith = this;
+    } // End of HandleAttractMate().
 
 
 	// Merges two assemblies together.
@@ -450,6 +475,7 @@ public class Assembly : CaptureObject{
 				someNode.localHexPos += HexUtilities.RandomAdjacent();
 			}
 			someNode.PhysAssembly.nodeDict.Add(someNode.localHexPos, someNode);
+            someNode.PhysAssembly.nodes.Add(someNode);
 
 			for(int dir = 0; dir < 12; dir++){
 				Triplet testPos = someNode.localHexPos + HexUtilities.Adjacent(dir);
@@ -458,7 +484,7 @@ public class Assembly : CaptureObject{
 			}
 		}
 
-		nodeDict.Clear();
+        RemoveAllNodes(false);
 		Destroy();
 	} // End of MergeWith().
 
@@ -488,6 +514,14 @@ public class Assembly : CaptureObject{
 		}
 	} // End of AddRandomNode().
 
+    public void RemoveAllNodes(bool destroy = true) {
+        if(destroy)
+            foreach (Node someNode in NodeDict.Values)
+                someNode.Destroy();
+
+        nodeDict.Clear();
+        nodes.Clear();
+    }
 
 	public void RemoveRandomNode(){
 

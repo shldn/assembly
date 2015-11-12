@@ -281,9 +281,9 @@ public class PlayerSync : MonoBehaviour {
 				}
 
 				// Clear mating data
-				if(a.matingWith){
-					a.matingWith.matingWith = null;
-					a.matingWith = null;
+				if(a.MatingWith){
+					a.MatingWith.MatingWith = null;
+					a.MatingWith = null;
 				}
             }
             else

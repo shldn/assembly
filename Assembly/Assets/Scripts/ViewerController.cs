@@ -55,12 +55,20 @@ public class ViewerController : MonoBehaviour {
                 AssemblyViewer.All[update.id].TransformUpdate(update.transforms);
         }
 
+        for (int i = 0; i < ViewerData.Inst.assemblyPropertyUpdates.Count; ++i) {
+            if (AssemblyViewer.All.ContainsKey(ViewerData.Inst.assemblyPropertyUpdates[i].id)) {
+                AssemblyViewer av = AssemblyViewer.All[ViewerData.Inst.assemblyPropertyUpdates[i].id];
+                av.Properties = ViewerData.Inst.assemblyPropertyUpdates[i];
+            }
+        }
+
         for (int i = 0; i < ViewerData.Inst.assemblyDeletes.Count; ++i) {
             if (AssemblyViewer.All.ContainsKey(ViewerData.Inst.assemblyDeletes[i]))
                 AssemblyViewer.All[ViewerData.Inst.assemblyDeletes[i]].Destroy();
         }
 
-            ViewerData.Inst.Clear();
+
+        ViewerData.Inst.Clear();
 #endif
     }
 

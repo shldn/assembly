@@ -23,7 +23,7 @@ public class NodeViewer {
 
 
     // Accessors
-    public Vector3 Position { private get { return cubeTransform.transform.position; } set { cubeTransform.transform.position = value; } }
+    public Vector3 Position { get { return cubeTransform.transform.position; } set { cubeTransform.transform.position = value; } }
     public Quaternion Rotation { private get { return cubeTransform.transform.rotation; } set { cubeTransform.transform.rotation = value; } }
     public int Neighbors { get { return neighbors; } }
     public NodeProperties Properties
@@ -34,6 +34,7 @@ public class NodeViewer {
     public AssemblyProperties AssemblyProperties
     {
         get { return assemblyProperties; }
+        set { assemblyProperties = value; }
     }
     public bool Visible {
         get { return cubeTransform.renderer.enabled; }
@@ -56,6 +57,7 @@ public class NodeViewer {
     {
         cubeTransform = MonoBehaviour.Instantiate(ViewerController.Inst.physNodePrefab, position, Quaternion.identity) as Transform;
         cubeTransform.GetComponent<PhysNode>().nodeViewer = this;
+        cubeTransform.name = "Node-" + aProperties.id;
         nodeProperties = properties;
         assemblyProperties = aProperties;
         Visible = !ViewerController.Inst.Hide;
@@ -64,6 +66,7 @@ public class NodeViewer {
     public NodeViewer(Vector3 position, AssemblyProperties aProperties, int numNeighbors, bool createTrail, SenseNodeCreationData senseData ) {
         cubeTransform = MonoBehaviour.Instantiate(ViewerController.Inst.physNodePrefab, position, Quaternion.identity) as Transform;
         cubeTransform.GetComponent<PhysNode>().nodeViewer = this;
+        cubeTransform.name = "Node-" + aProperties.id;
         SetNeighborCount(numNeighbors, createTrail);
         nodeProperties.senseVector = senseData.senseVector;
         nodeProperties.fieldOfView = senseData.fov;

@@ -264,7 +264,7 @@ public class CameraControl : MonoBehaviour {
 				// Try to find an assembly that is mating.
 				foreach(Assembly someAssem in Assembly.getAll){
 					float dist = Vector3.Distance(transform.position, someAssem.Position);
-					if((dist < 60f) && someAssem.matingWith){
+					if((dist < 60f) && someAssem.MatingWith){
 						assemblyOfInterest = someAssem;
 						break;
 					}
@@ -283,12 +283,12 @@ public class CameraControl : MonoBehaviour {
 			}
 			
 			if(assemblyOfInterest){
-				if(!assemblyOfInterest.matingWith)
+				if(!assemblyOfInterest.MatingWith)
 					assemblyOfInterestStaleness += Time.deltaTime;
 
 				targetRotation = Quaternion.LookRotation(assemblyOfInterest.Position - transform.position, Camera.main.transform.up);
 				float dist = Vector3.Distance(transform.position, assemblyOfInterest.Position);
-				if((dist > 80f) || (!assemblyOfInterest.matingWith && (assemblyOfInterestStaleness > 10f)))
+				if((dist > 80f) || (!assemblyOfInterest.MatingWith && (assemblyOfInterestStaleness > 10f)))
 					assemblyOfInterest = null;
 			}
 
