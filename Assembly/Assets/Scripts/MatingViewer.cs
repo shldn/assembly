@@ -53,7 +53,6 @@ public class MatingViewer : MonoBehaviour {
                 return;
         }
         if(AssemblyViewer.All.ContainsKey(id1) && AssemblyViewer.All.ContainsKey(id2)) {
-            Debug.LogError("Adding mates - " + id1 + " " + id2);
             mp = new MatingPair(AssemblyViewer.All[id1], AssemblyViewer.All[id2]);
             mates.Add(mp);
             idToPairMap.Add(id1, mp);
@@ -68,26 +67,8 @@ public class MatingViewer : MonoBehaviour {
         MatingPair mp;
         if(idToPairMap.TryGetValue(mateId, out mp)) {
             mates.Remove(mp);
-            Debug.LogError("Removing mates - " + mp.a1.Id + " " + mp.a2.Id);
             idToPairMap.Remove(mp.a1.Id);
             idToPairMap.Remove(mp.a2.Id);
-        }
-    }
-
-    void OnDrawGizmos() {
-        for (int m = 0; m < mates.Count; ++m) {
-            MatingPair mp = mates[m];
-            for (int i = 0; i < mp.a1.nodes.Count; i++) {
-                NodeViewer myNode = mp.a1.nodes[i];
-                if (mp.a2.nodes.Count > i) {
-                    NodeViewer otherNode = mp.a2.nodes[i];
-
-                    if (myNode.Visible && otherNode.Visible) {
-                        Gizmos.color = new Color(1f, 0f, 1f, 0.5f);
-                        Gizmos.DrawLine(myNode.Position, otherNode.Position);
-                    }
-                }
-            }
         }
     }
 }
