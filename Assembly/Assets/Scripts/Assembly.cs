@@ -78,7 +78,6 @@ public class Assembly : CaptureObject{
             int prevId = properties.matingWith;
             properties.matingWith = (value != null) ? value.Id : -1;
             if (matingWith != value) {
-                Debug.LogError("was: " + prevId + " now: " + properties.matingWith);
                 propertiesDirty = true;
             }
             matingWith = value;
@@ -127,26 +126,39 @@ public class Assembly : CaptureObject{
     }
 
 
-	private Assembly(Vector3 spawnPosition, Quaternion spawnRotation){
+	private Assembly(Vector3 spawnPosition, Quaternion spawnRotation, int numNodes, string name = ""){
 		this.spawnPosition = spawnPosition;
 		this.spawnRotation = spawnRotation;
 		properties.gender = Random.Range(0f, 1f) > 0.5f;
 		all.Add(this);
 		AllAssemblyTree.Insert(this);
 		PersistentGameManager.CaptureObjects.Add(this);
-		Name = NodeController.Inst.GetRandomName();
-		
-	} // End of constructor.
+		Name = (name == "" ? NodeController.Inst.GetRandomName() : name);
+        Id = NodeController.Inst.GetNewAssemblyID();
+        AddRandomNodes(numNodes);
+
+        foreach (Node someNode in NodeDict.Values)
+            someNode.ComputeEnergyNetwork();
+
+#if INTEGRATED_VIEWER
+#else
+        ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(this));
+        ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(this));
+#endif
+
+    } // End of constructor.
 
 
-	// Load from string--file path, etc.
-	public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false){
+    // Load from string--file path, etc.
+    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false){
         List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         if(isFilePath)
             IOHelper.LoadAssemblyFromFile(str, ref properties.name, ref id, ref worldPos, ref newNodes);
         else
             IOHelper.LoadAssemblyFromString(str, ref properties.name, ref id, ref worldPos, ref newNodes);
+        properties.id = id;
+
         hasBeenCaptured = !isFilePath && id != -1;
         if( hasBeenCaptured )
             captured.Add(Id);
@@ -173,48 +185,41 @@ public class Assembly : CaptureObject{
 #if INTEGRATED_VIEWER
 #else
         ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(this));
+        ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(this));
 #endif
     } // End of constructor (from serialized).
 
 
 	public static Assembly RandomAssembly(Vector3 spawnPos, Quaternion rotation, int numNodes){
-		Assembly newAssembly = new Assembly(spawnPos, rotation);
-		int newAssemID = NodeController.Inst.GetNewAssemblyID();
-        newAssembly.Id = newAssemID;
-        NodeController.UpdateBirthCount(newAssemID, 0);
-
-		// Try a node structure... if there are no sense nodes, re-roll.
-		bool containsSenseNode = false;
-		do{
-            newAssembly.RemoveAllNodes();
-			Triplet spawnHexPos = Triplet.zero;
-			int nodesToMake = numNodes;
-			while(nodesToMake > 0){
-				// Make sure no phys node is here currently.
-				if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
-					newAssembly.AddNode(spawnHexPos);
-					nodesToMake--;
-				}
-				spawnHexPos += HexUtilities.RandomAdjacent();
-			}
-
-			foreach(Node someNode in newAssembly.NodeDict.Values){
-				if(someNode.neighbors.Count == 1){
-					containsSenseNode = true;
-					break;
-				}
-			}
-		}while(!containsSenseNode);
-
-		foreach(Node someNode in newAssembly.NodeDict.Values)
-			someNode.ComputeEnergyNetwork();
-#if INTEGRATED_VIEWER
-#else
-        ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(newAssembly));
-#endif
+		Assembly newAssembly = new Assembly(spawnPos, rotation, numNodes);
+        NodeController.UpdateBirthCount(newAssembly.Id, 0);
 		return newAssembly;
 	} // End of RandomAssembly().
 
+    void AddRandomNodes(int numNodes, bool forceSenseNode = true) {
+        // Try a node structure... if there are no sense nodes, re-roll.
+        bool containsSenseNode = false;
+        do {
+            RemoveAllNodes();
+            Triplet spawnHexPos = Triplet.zero;
+            int nodesToMake = numNodes;
+            while (nodesToMake > 0) {
+                // Make sure no phys node is here currently.
+                if (!NodeDict.ContainsKey(spawnHexPos)) {
+                    AddNode(spawnHexPos);
+                    nodesToMake--;
+                }
+                spawnHexPos += HexUtilities.RandomAdjacent();
+            }
+
+            foreach (Node someNode in NodeDict.Values) {
+                if (someNode.neighbors.Count == 1) {
+                    containsSenseNode = true;
+                    break;
+                }
+            }
+        } while (forceSenseNode && !containsSenseNode);
+    }
 
 	public void AddNodes(List<Node> nodesList){
         foreach (Node someNode in nodesList)
@@ -333,26 +338,16 @@ public class Assembly : CaptureObject{
 			// Create offspring!
 			if(mateCompletion >= 1f){
 				// Spawn a new assembly between the two.
-				Assembly newAssembly = new Assembly((Position + MatingWith.Position) / 2f, Random.rotation);
-				newAssembly.Name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));
+				int numNodes = Random.Range(nodes.Count, MatingWith.nodes.Count + 1);
+                string name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));
+                Assembly newAssembly = new Assembly((Position + MatingWith.Position) / 2f, Random.rotation, numNodes, name);
+
+                // Update family trees
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(MatingWith);
 				newAssembly.amalgam = amalgam;
 
-				int numNodes = Random.Range(nodes.Count, MatingWith.nodes.Count + 1);
-				Triplet spawnHexPos = Triplet.zero;
-				while(numNodes > 0){
-					// Make sure no phys node is here currently.
-					if(!newAssembly.NodeDict.ContainsKey(spawnHexPos)){
-						newAssembly.AddNode(spawnHexPos);
-						numNodes--;
-					}
-					spawnHexPos += HexUtilities.RandomAdjacent();
-				}
-
-				foreach(Node someNode in newAssembly.NodeDict.Values)
-					someNode.ComputeEnergyNetwork();
-
+                // Mating is over :/
                 MatingWith.WantToMate = false;
 				MatingWith.mateCompletion = 0f;
 				MatingWith.energy *= 0.5f;
