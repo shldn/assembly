@@ -23,13 +23,19 @@ public class Node {
         set
         {
             nodeProperties = value;
-            viewer.Properties = value;
+            if (PersistentGameManager.EmbedViewer)
+                viewer.Properties = value;
         }
     }
     public bool Visible
     {
-        get { return viewer.Visible; }
-        set { viewer.Visible = value; }
+        get {
+            return (viewer != null) ? viewer.Visible : false;
+        }
+        set {
+            if(viewer != null)
+                viewer.Visible = value;
+        }
     }
 
 	// The offset from actionRotation determined by incoming signal.
@@ -115,33 +121,35 @@ public class Node {
 		Position = physAssembly.spawnPosition + (physAssembly.spawnRotation * HexUtilities.HexToWorld(localHexPos));
         Rotation = physAssembly.spawnRotation;
 		delayPosition = Position;
- 
-        viewer = new NodeViewer(Position, nodeProperties, physAssembly.properties);
-        viewer.Visible = false;
-	} // End of Awake().
+        if (PersistentGameManager.EmbedViewer)
+            viewer = new NodeViewer(Position, nodeProperties, physAssembly.properties);
+
+    } // End of Awake().
 
 
-	public Node(Triplet localHexPos, NodeProperties props){
+    public Node(Triplet localHexPos, NodeProperties props){
 		all.Add(this);
 		this.localHexPos = localHexPos;
 		this.nodeProperties = props;
 
         // This constructor appears to create a temporary node, so likely doesn't need a viewer.
         // Will keep in case usage changes, could change code path to pass in Assembly pointer.
-        viewer = new NodeViewer(Position, props, null);
-        viewer.Visible = false;
+        if (PersistentGameManager.EmbedViewer)
+            viewer = new NodeViewer(Position, props, null);
 	} // End of Awake().
 
     public void UpdateSenseVector(Quaternion newSenseVector)
     {
         nodeProperties.senseVector = newSenseVector;
-        viewer.Properties = nodeProperties;
+        if (PersistentGameManager.EmbedViewer)
+            viewer.Properties = nodeProperties;
     }
 
     public void UpdateActuateVector(Quaternion newActuateVector)
     {
         nodeProperties.actuateVector = newActuateVector;
-        viewer.Properties = nodeProperties;
+        if (PersistentGameManager.EmbedViewer)
+            viewer.Properties = nodeProperties;
     }
 
 	public void DoMath(){
@@ -202,7 +210,8 @@ public class Node {
             lastNeighborCount = neighbors.Count;
 
             bool createTrail = neighbors.Count == 2 && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
-            viewer.SetNeighborCount(neighbors.Count, createTrail);
+            if (PersistentGameManager.EmbedViewer)
+                viewer.SetNeighborCount(neighbors.Count, createTrail);
             if (neighbors.Count == 1)
                 AllSenseNodeTree.Insert(this);
 		}
@@ -249,12 +258,9 @@ public class Node {
 				velocity += -delayPosition.normalized * NodeController.physicsStep;
 		}
 
-#if INTEGRATED_VIEWER
-        viewer.Position = Position;
-        viewer.Rotation = Rotation;
-#else
-        ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(physAssembly));
-#endif
+        if (PersistentGameManager.EmbedViewer)
+            viewer.UpdateTransform(Position,Rotation);
+
 		foreach(PhysNeighbor someNeighbor in neighbors)
 			if(Random.Range(0f, 1f) < 0.2f)
 				someNeighbor.arrowDist = Random.Range(0.25f, 0.4f);
@@ -284,9 +290,8 @@ public class Node {
 				break;
 		}
 
-#if INTEGRATED_VIEWER
-        viewer.Update();
-#endif
+        if (PersistentGameManager.EmbedViewer)
+            viewer.Update();
 
 		//GLDebug.DrawCube(Position, rotation, Vector3.one * velocity.magnitude * 10f);
 	} // End of UpdateTransform().
@@ -306,9 +311,8 @@ public class Node {
 	} // End of AttachNeighbor().
 
 	public void Destroy(){
-#if INTEGRATED_VIEWER
-        viewer.Destroy();
-#endif
+        if (viewer != null)
+            viewer.Destroy();
 		cull = true;
 	} // End of OnDestroy().
 

@@ -23,8 +23,8 @@ public class NodeViewer {
 
 
     // Accessors
-    public Vector3 Position { get { return cubeTransform.transform.position; } set { cubeTransform.transform.position = value; } }
-    public Quaternion Rotation { private get { return cubeTransform.transform.rotation; } set { cubeTransform.transform.rotation = value; } }
+    public Vector3 Position { get { return cubeTransform.transform.position; } private set { cubeTransform.transform.position = value; } }
+    private Quaternion Rotation { get { return cubeTransform.transform.rotation; } set { cubeTransform.transform.rotation = value; } }
     public int Neighbors { get { return neighbors; } }
     public NodeProperties Properties
     {
@@ -57,9 +57,11 @@ public class NodeViewer {
     {
         cubeTransform = MonoBehaviour.Instantiate(ViewerController.Inst.physNodePrefab, position, Quaternion.identity) as Transform;
         cubeTransform.GetComponent<PhysNode>().nodeViewer = this;
-        cubeTransform.name = "Node-" + aProperties.id;
-        nodeProperties = properties;
-        assemblyProperties = aProperties;
+        if(aProperties != null) {
+            cubeTransform.name = "Node-" + aProperties.id;
+            nodeProperties = properties;
+            assemblyProperties = aProperties;
+        }
         Visible = !ViewerController.Inst.Hide;
     }
 
@@ -170,27 +172,36 @@ public class NodeViewer {
         {
             case 1:
                 Debug.DrawRay(Position, (Rotation * nodeProperties.senseVector * Vector3.forward) * 2f, Color.green);
-
-                //viewConeTrans.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
-                viewConeTrans.position = Position;
-                viewConeTrans.localScale = Vector3.one * viewConeSize;
-
-                // Billboard the arc with the main camera.
-                viewConeTrans.rotation = Rotation * nodeProperties.senseVector;
-                viewConeTrans.position = Position;
-                viewConeTrans.rotation *= Quaternion.AngleAxis(-90, Vector3.up);
-
-                Vector3 camRelativePos = viewConeTrans.InverseTransformPoint(Camera.main.transform.position);
-                float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
-                viewConeTrans.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
-                viewCone.fovAngle = nodeProperties.fieldOfView;
-
+                UpdateViewConeTransform();
                 break;
             case 2:
                 break;
             case 3:
                 break;
         }
+    }
+
+    public void UpdateTransform(Vector3 pos, Quaternion rot) {
+        Position = pos;
+        Rotation = rot;
+        if (viewConeTrans)
+            UpdateViewConeTransform();
+    }
+
+    void UpdateViewConeTransform() {
+        //viewConeTrans.position = Position + (nodeProperties.senseVector * (Rotation * Vector3.forward)) * viewConeSize;
+        viewConeTrans.position = Position;
+        viewConeTrans.localScale = Vector3.one * viewConeSize;
+
+        // Billboard the arc with the main camera.
+        viewConeTrans.rotation = Rotation * nodeProperties.senseVector;
+        viewConeTrans.position = Position;
+        viewConeTrans.rotation *= Quaternion.AngleAxis(-90, Vector3.up);
+
+        Vector3 camRelativePos = viewConeTrans.InverseTransformPoint(Camera.main.transform.position);
+        float arcBillboardAngle = Mathf.Atan2(camRelativePos.z, camRelativePos.y) * Mathf.Rad2Deg;
+        viewConeTrans.rotation *= Quaternion.AngleAxis(arcBillboardAngle + 90, Vector3.right);
+        viewCone.fovAngle = nodeProperties.fieldOfView;
     }
 
 

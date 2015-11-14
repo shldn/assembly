@@ -125,24 +125,21 @@ public class NodeController : MonoBehaviour {
 		if(targetWorldSize <= 150f){
 			worldAnim = WorldAnim.capsule;
 		}
-
 		
-
-
 		foreach(Node someNode in Node.getAll)
 			someNode.DoMath();
 
 		foreach(Node someNode in Node.getAll)
 			someNode.UpdateTransform();
 
-#if INTEGRATED_VIEWER
-#else
-		for(int i = 0; i < Assembly.getAll.Count; i++)
-			ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(Assembly.getAll[i]));
-#endif
 
-		
-		for(int i = 0; i < Assembly.getAll.Count; i++){
+        if (!PersistentGameManager.EmbedViewer) {
+            for (int i = 0; i < Assembly.getAll.Count; i++)
+                ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(Assembly.getAll[i]));
+        }
+
+
+        for (int i = 0; i < Assembly.getAll.Count; i++){
 			Assembly curAssem = Assembly.getAll[i];
 
 			if(curAssem.cull){

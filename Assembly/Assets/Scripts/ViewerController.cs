@@ -19,6 +19,9 @@ public class ViewerController : MonoBehaviour {
         set { 
             hide = value;
             Environment.Inst.Visible = false;
+#if UNITY_EDITOR
+            QualitySettings.vSyncCount = value ? 0 : 1;
+#endif
         } 
     }
 
@@ -29,7 +32,6 @@ public class ViewerController : MonoBehaviour {
 
     void Start()
     {
-
     }
 
     void Update() {
@@ -42,34 +44,33 @@ public class ViewerController : MonoBehaviour {
 
     void LateUpdate()
     {
+        if (!PersistentGameManager.EmbedViewer) {
 
-#if INTEGRATED_VIEWER
-#else
-        for (int i = 0; i < ViewerData.Inst.assemblyCreations.Count; i++) {
-            new AssemblyViewer(ViewerData.Inst.assemblyCreations[i]);
-        }
-
-        for (int i = 0; i < ViewerData.Inst.assemblyUpdates.Count; i++) {
-            AssemblyTransformUpdate update = ViewerData.Inst.assemblyUpdates[i];
-            if (AssemblyViewer.All.ContainsKey(update.id))
-                AssemblyViewer.All[update.id].TransformUpdate(update.transforms);
-        }
-
-        for (int i = 0; i < ViewerData.Inst.assemblyPropertyUpdates.Count; ++i) {
-            if (AssemblyViewer.All.ContainsKey(ViewerData.Inst.assemblyPropertyUpdates[i].id)) {
-                AssemblyViewer av = AssemblyViewer.All[ViewerData.Inst.assemblyPropertyUpdates[i].id];
-                av.Properties = ViewerData.Inst.assemblyPropertyUpdates[i];
+            for (int i = 0; i < ViewerData.Inst.assemblyCreations.Count; i++) {
+                new AssemblyViewer(ViewerData.Inst.assemblyCreations[i]);
             }
+
+            for (int i = 0; i < ViewerData.Inst.assemblyUpdates.Count; i++) {
+                AssemblyTransformUpdate update = ViewerData.Inst.assemblyUpdates[i];
+                if (AssemblyViewer.All.ContainsKey(update.id))
+                    AssemblyViewer.All[update.id].TransformUpdate(update.transforms);
+            }
+
+            for (int i = 0; i < ViewerData.Inst.assemblyPropertyUpdates.Count; ++i) {
+                if (AssemblyViewer.All.ContainsKey(ViewerData.Inst.assemblyPropertyUpdates[i].id)) {
+                    AssemblyViewer av = AssemblyViewer.All[ViewerData.Inst.assemblyPropertyUpdates[i].id];
+                    av.Properties = ViewerData.Inst.assemblyPropertyUpdates[i];
+                }
+            }
+
+            for (int i = 0; i < ViewerData.Inst.assemblyDeletes.Count; ++i) {
+                if (AssemblyViewer.All.ContainsKey(ViewerData.Inst.assemblyDeletes[i]))
+                    AssemblyViewer.All[ViewerData.Inst.assemblyDeletes[i]].Destroy();
+            }
+
+
+            ViewerData.Inst.Clear();
         }
-
-        for (int i = 0; i < ViewerData.Inst.assemblyDeletes.Count; ++i) {
-            if (AssemblyViewer.All.ContainsKey(ViewerData.Inst.assemblyDeletes[i]))
-                AssemblyViewer.All[ViewerData.Inst.assemblyDeletes[i]].Destroy();
-        }
-
-
-        ViewerData.Inst.Clear();
-#endif
     }
 
 }

@@ -50,8 +50,7 @@ public class AssemblyViewer {
         }
         Vector3 posSum = Vector3.zero;
         for (int i = 0; i < nodes.Count; ++i){
-            nodes[i].Position = updates[i].pos;
-            nodes[i].Rotation = updates[i].rot;
+            nodes[i].UpdateTransform(updates[i].pos, updates[i].rot);
             posSum += updates[i].pos;
         }
         if (label)

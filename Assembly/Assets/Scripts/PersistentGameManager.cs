@@ -20,6 +20,8 @@ public class PersistentGameManager : MonoBehaviour {
     public static bool IsClient { get { return Application.loadedLevelName == "CaptureClient"; } }
     public static bool IsServer { get { return !IsClient; } }
 
+    // Should Assembly/Node classes embed viewers (Genetic Tests should have them)
+    public static bool EmbedViewer { get { return IsClient; } }
 
     public static HashSet<CaptureObject> CaptureObjects = new HashSet<CaptureObject>();
 

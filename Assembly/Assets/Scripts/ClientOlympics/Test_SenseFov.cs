@@ -84,13 +84,15 @@ public class Test_SenseFov : ClientTest
         if (testNodeIdx < testNodes.Count)
         {
             //testNodes[testNodeIdx].ViewCone.gameObject.renderer.material.SetColor("_TintColor", highlightColor);
-            testNodes[testNodeIdx].viewer.viewConeSize *= 2f;
+            if(PersistentGameManager.EmbedViewer)
+                testNodes[testNodeIdx].viewer.viewConeSize *= 2f;
         }
 
         if (testNodeIdx > 0)
         {
             //testNodes[testNodeIdx-1].ViewCone.gameObject.renderer.material.SetColor("_TintColor", origColor);
-            testNodes[testNodeIdx-1].viewer.viewConeSize *= 0.5f;
+            if (PersistentGameManager.EmbedViewer)
+                testNodes[testNodeIdx-1].viewer.viewConeSize *= 0.5f;
         }
 
         if (testNodeIdx >= testNodes.Count){
