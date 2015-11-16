@@ -46,9 +46,9 @@ public class ViewerController : MonoBehaviour {
     {
         if (!PersistentGameManager.EmbedViewer) {
 
-            for (int i = 0; i < ViewerData.Inst.assemblyCreations.Count; i++) {
+            // Assembly Messages
+            for (int i = 0; i < ViewerData.Inst.assemblyCreations.Count; i++)
                 new AssemblyViewer(ViewerData.Inst.assemblyCreations[i]);
-            }
 
             for (int i = 0; i < ViewerData.Inst.assemblyUpdates.Count; i++) {
                 AssemblyTransformUpdate update = ViewerData.Inst.assemblyUpdates[i];
@@ -66,6 +66,16 @@ public class ViewerController : MonoBehaviour {
             for (int i = 0; i < ViewerData.Inst.assemblyDeletes.Count; ++i) {
                 if (AssemblyViewer.All.ContainsKey(ViewerData.Inst.assemblyDeletes[i]))
                     AssemblyViewer.All[ViewerData.Inst.assemblyDeletes[i]].Destroy();
+            }
+
+
+            // Food Messages
+            for (int i = 0; i < ViewerData.Inst.foodCreations.Count; i++)
+                new FoodPelletViewer(ViewerData.Inst.foodCreations[i].Position, ViewerData.Inst.foodCreations[i].id);
+
+            for (int i = 0; i< ViewerData.Inst.foodDeletes.Count; ++i) {
+                if (FoodPelletViewer.All.ContainsKey(ViewerData.Inst.foodDeletes[i]))
+                    FoodPelletViewer.All[ViewerData.Inst.foodDeletes[i]].Destroy();
             }
 
 

@@ -23,8 +23,9 @@ public class FoodPellet {
         }
     }
 
+    int id = -1;
 	float energy = 10f;
-    public float Energy { get { return energy; } set { energy = value; viewer.Scale = energy / maxEnergy; } }
+    public float Energy { get { return energy; } set { energy = value; if (viewer != null) { viewer.Scale = energy / maxEnergy; } } }
 	float maxEnergy = 10f;
 	public bool cull = false;
 
@@ -40,17 +41,28 @@ public class FoodPellet {
 
 	public FoodPellet(Vector3 position, Assembly owner_ = null){
 		worldPosition = position;
-        viewer = new FoodPelletViewer(worldPosition);
 
 		all.Add(this);
 		AllFoodTree.Insert(this);
 
 		maxEnergy = energy;
         owner = owner_;
-	} // constructor
 
+        if (PersistentGameManager.EmbedViewer)
+            viewer = new FoodPelletViewer(worldPosition);
+        else {
+            id = NextFoodID();
+            ViewerData.Inst.foodCreations.Add(new FoodCreationData(id, worldPosition));
+        }
 
-	public void Update(){
+    } // constructor
+
+    static int foodCount = 0;
+    static int NextFoodID() {
+        return foodCount++;
+    }
+
+    public void Update(){
 
 		if(energy < 0f){
 			NodeController.Inst.AdvanceWorldTick();
@@ -79,14 +91,21 @@ public class FoodPellet {
         }
 		if(amalgam)
 			amalgam.foodPellets.Remove(this);
-        viewer.Destroy();
+        if (viewer != null)
+            viewer.Destroy();
+        else
+            ViewerData.Inst.foodDeletes.Add(id);
     }
 
     public static void DestroyAll()
     {
         try {
-            foreach (FoodPellet food in all)
-                food.viewer.Destroy();
+            foreach (FoodPellet food in all) {
+                if (food.viewer != null)
+                    food.viewer.Destroy();
+                else
+                    ViewerData.Inst.foodDeletes.Add(food.id);
+            }
         }
         catch(System.Exception e) {
             Debug.LogError("Exception destroying food node: " + e.ToString());

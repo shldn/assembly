@@ -1,7 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class FoodPelletViewer {
 
+    private static Dictionary<int, FoodPelletViewer> all = new Dictionary<int, FoodPelletViewer>();
+    public static Dictionary<int, FoodPelletViewer> All { get { return all; } }
+
+    int id = -1;
     Transform transform = null;
     private bool visible = true;
     Renderer[] renderers;
@@ -30,15 +35,20 @@ public class FoodPelletViewer {
         }
     }
 
-    public FoodPelletViewer(Vector3 worldPosition)
+    public FoodPelletViewer(Vector3 worldPosition, int id_ = -1)
     {
         transform = MonoBehaviour.Instantiate(ViewerController.Inst.physFoodPrefab, worldPosition, Random.rotation) as Transform;
         renderers = transform.GetComponentsInChildren<Renderer>();
         Visible = !ViewerController.Inst.Hide;
+        id = id_;
+        if(id != -1)
+            all.Add(id, this);
     }
 
     public void Destroy()
     {
         GameObject.Destroy(gameObject);
+        if (all.ContainsKey(id))
+            all.Remove(id);
     }
 }

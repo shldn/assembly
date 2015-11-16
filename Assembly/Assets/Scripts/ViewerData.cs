@@ -102,6 +102,23 @@ public struct AssemblyCreationData {
     public Dictionary<int, SenseNodeCreationData> senseNodeData; // index into nodeNeighbors to sense node data.
 }
 
+[Serializable]
+public struct FoodCreationData
+{
+    public FoodCreationData(int id_, Vector3 pos) {
+        id = id_;
+        x = pos.x;
+        y = pos.y;
+        z = pos.z;
+    }
+
+    public Vector3 Position { get { return new Vector3(x, y, z); } }
+    public int id;
+    public float x;
+    public float y;
+    public float z;
+}
+
 public enum ViewerMessageType
 {
     ASSEMBLY_CREATE     = 1,
@@ -125,11 +142,15 @@ public class ViewerData {
         }
     }
 
+    // Assemblies
     public List<AssemblyCreationData> assemblyCreations = new List<AssemblyCreationData>();
     public List<AssemblyTransformUpdate> assemblyUpdates = new List<AssemblyTransformUpdate>();
     public List<AssemblyProperties> assemblyPropertyUpdates = new List<AssemblyProperties>();
     public List<int> assemblyDeletes = new List<int>();
 
+    // Food
+    public List<FoodCreationData> foodCreations = new List<FoodCreationData>();
+    public List<int> foodDeletes = new List<int>();
 
     public void Clear()
     {
@@ -137,5 +158,8 @@ public class ViewerData {
         assemblyCreations.Clear();
         assemblyDeletes.Clear();
         assemblyPropertyUpdates.Clear();
+
+        foodCreations.Clear();
+        foodDeletes.Clear();
     }
 }
