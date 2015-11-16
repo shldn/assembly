@@ -181,11 +181,10 @@ public class Assembly : CaptureObject{
 
 		PersistentGameManager.CaptureObjects.Add(this);
         userReleased = userReleased_;
-#if INTEGRATED_VIEWER
-#else
-        ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(this));
-        ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(this));
-#endif
+        if (!PersistentGameManager.EmbedViewer) {
+            ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(this));
+            ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(this));
+        }
     } // End of constructor (from serialized).
 
 
