@@ -613,6 +613,8 @@ public class NodeController : MonoBehaviour {
 
     private static void InsertLeaderBoardEntry(int assemblyID, List<int> leaderList)
     {
+        if (!ViewerController.Inst || ViewerController.Hide)
+            return;
         if (leaderList.Count < leaderboardMaxSize || assemblyScores[leaderList.Last<int>()] < assemblyScores[assemblyID])
         {
             // find insert point
