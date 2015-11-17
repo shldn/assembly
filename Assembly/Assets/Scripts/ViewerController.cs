@@ -14,10 +14,12 @@ public class ViewerController : MonoBehaviour {
     bool hide = false;
 
     // Accessors
-    public bool Hide { 
-        get { return hide; } 
-        set { 
-            hide = value;
+    public static bool Hide { 
+        get { return Inst != null && Inst.hide; } 
+        set {
+            if (!Inst)
+                return;
+            Inst.hide = value;
             Environment.Inst.Visible = false;
 #if UNITY_EDITOR
             QualitySettings.vSyncCount = value ? 0 : 1;
@@ -28,10 +30,6 @@ public class ViewerController : MonoBehaviour {
     void Awake()
     {
         Inst = this;
-    }
-
-    void Start()
-    {
     }
 
     void Update() {

@@ -17,8 +17,9 @@ public class PersistentGameManager : MonoBehaviour {
     }
 
     public static bool IsAdminClient { get { return true; } }
-    public static bool IsClient { get { return Application.loadedLevelName == "CaptureClient"; } }
+    public static bool IsClient { get { return isClient; } }
     public static bool IsServer { get { return !IsClient; } }
+    private static bool isClient = false;
 
     // Should Assembly/Node classes embed viewers (Genetic Tests should have them)
     public static bool EmbedViewer { get { return IsClient; } }
@@ -46,6 +47,7 @@ public class PersistentGameManager : MonoBehaviour {
 
 
 	void Awake () {
+        isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
         if( !captureMgr )
             captureMgr = gameObject.AddComponent<CaptureNet_Manager>();
@@ -133,7 +135,7 @@ public class PersistentGameManager : MonoBehaviour {
             switch (cmdLnArgs[i]){
                 case "-novisual":
                 case "-novisuals":
-                    ViewerController.Inst.Hide = true;
+                    ViewerController.Hide = true;
                     break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);

@@ -25,9 +25,11 @@ public class Environment : MonoBehaviour {
 	void Update () {
 		transform.localScale = NodeController.Inst.worldSize;
 
-		// Fade outer shell if camera gets close.
-		float camDistToShell = Mathf.Abs(1f - Mathf.Sqrt(Mathf.Pow(Camera.main.transform.position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Camera.main.transform.position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Camera.main.transform.position.z / NodeController.Inst.worldSize.z, 2f)));
-		float fadeAmount = Mathf.Clamp01((camDistToShell - 0.2f) * 2f);
-		outerShell.material.color = defaultShellColor.SetAlpha(fadeAmount);
-	}
+        // Fade outer shell if camera gets close.
+        if (Camera.main) {
+            float camDistToShell = Mathf.Abs(1f - Mathf.Sqrt(Mathf.Pow(Camera.main.transform.position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Camera.main.transform.position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Camera.main.transform.position.z / NodeController.Inst.worldSize.z, 2f)));
+            float fadeAmount = Mathf.Clamp01((camDistToShell - 0.2f) * 2f);
+            outerShell.material.color = defaultShellColor.SetAlpha(fadeAmount);
+        }
+    }
 }

@@ -126,7 +126,7 @@ public class Assembly : CaptureObject{
     }
 
 
-	private Assembly(Vector3 spawnPosition, Quaternion spawnRotation, int numNodes, string name = ""){
+	private Assembly(Vector3 spawnPosition, Quaternion spawnRotation, int numNodes, string name = "", bool isOffspring = false){
 		this.spawnPosition = spawnPosition;
 		this.spawnRotation = spawnRotation;
 		properties.gender = Random.Range(0f, 1f) > 0.5f;
@@ -144,6 +144,10 @@ public class Assembly : CaptureObject{
         if (!PersistentGameManager.EmbedViewer) {
             ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(this));
             ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(this));
+        }
+        else {
+            if (isOffspring && RandomMelody.Inst)
+                RandomMelody.Inst.PlayNote();
         }
     } // End of constructor.
 
@@ -338,7 +342,7 @@ public class Assembly : CaptureObject{
 				// Spawn a new assembly between the two.
 				int numNodes = Random.Range(nodes.Count, MatingWith.nodes.Count + 1);
                 string name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));
-                Assembly newAssembly = new Assembly((Position + MatingWith.Position) / 2f, Random.rotation, numNodes, name);
+                Assembly newAssembly = new Assembly((Position + MatingWith.Position) / 2f, Random.rotation, numNodes, name, true);
 
                 // Update family trees
                 newAssembly.UpdateFamilyTreeFromParent(this);
@@ -355,9 +359,6 @@ public class Assembly : CaptureObject{
 				mateCompletion = 0f;
 				energy *= 0.5f;
                 MatingWith = null;
-
-                if (RandomMelody.Inst)
-    				RandomMelody.Inst.PlayNote();
 			}
 		}
 

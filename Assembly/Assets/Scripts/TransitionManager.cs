@@ -63,7 +63,7 @@ public class TransitionManager : MonoBehaviour {
                 CameraControl.Inst.targetRadius = CameraControl.Inst.maxRadius;
             }
 
-            if(NodeController.Inst){
+            if(NodeController.Inst && CameraControl.Inst){
                 CameraControl.Inst.radius = 1000f;
 				CameraControl.Inst.targetRadius = 200f;
             }

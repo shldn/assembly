@@ -77,7 +77,7 @@ public class NodeController : MonoBehaviour {
 	} // End of Awake().
 
 
-	void Start(){
+    void Start(){
 		// Are we loading a saved world for a singleplayer run?
 		if(Application.loadedLevelName.Equals("SoupPhysics") && (PersistentGameManager.Inst.capturedWorldFilename != "")){
 			EnvironmentManager.Load(PersistentGameManager.Inst.capturedWorldFilename);
@@ -176,29 +176,32 @@ public class NodeController : MonoBehaviour {
 		int cycleDir = Mathf.FloorToInt((Time.time * 0.2f) % 12);
 
 		// Show details on selected assembly.
-		Assembly selectedAssem = CameraControl.Inst.selectedAssembly;
-		Assembly hoveredAssem = CameraControl.Inst.hoveredPhysAssembly;
-		if(selectedAssem){
+        if(CameraControl.Inst) {
+            Assembly selectedAssem = CameraControl.Inst.selectedAssembly;
+            Assembly hoveredAssem = CameraControl.Inst.hoveredPhysAssembly;
+            if (selectedAssem) {
 
-			// debug
-			if(KeyInput.GetKeyDown(KeyCode.N))
-				CameraControl.Inst.selectedAssembly.AddRandomNode();
+                // debug
+                if (KeyInput.GetKeyDown(KeyCode.N))
+                    CameraControl.Inst.selectedAssembly.AddRandomNode();
 
-			/*
-			foreach(KeyValuePair<Triplet, PhysNode> kvp in selectedAssem.NodeDict){
-				Triplet curPos = kvp.Key;
-				PhysNode curNode = kvp.Value;
-				// Render nodes
-				GLDebug.DrawCube(selectedAssem.spawnPosition + HexUtilities.HexToWorld(curPos), Quaternion.identity, Vector3.one * 0.5f, kvp.Value.cubeTransform.renderer.material.color + new Color(0.1f, 0.1f, 0.1f), 0f, false);
-				// Centerpoint
-				//GLDebug.DrawCube(selectedAssem.WorldPosition, Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
-			}*/
+                /*
+                foreach(KeyValuePair<Triplet, PhysNode> kvp in selectedAssem.NodeDict){
+                    Triplet curPos = kvp.Key;
+                    PhysNode curNode = kvp.Value;
+                    // Render nodes
+                    GLDebug.DrawCube(selectedAssem.spawnPosition + HexUtilities.HexToWorld(curPos), Quaternion.identity, Vector3.one * 0.5f, kvp.Value.cubeTransform.renderer.material.color + new Color(0.1f, 0.1f, 0.1f), 0f, false);
+                    // Centerpoint
+                    //GLDebug.DrawCube(selectedAssem.WorldPosition, Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
+                }*/
 
-			// Duplicate assembly using string IO methods
-			if(KeyInput.GetKey(KeyCode.D)){
-				new Assembly(IOHelper.AssemblyToString(selectedAssem), null, null, false);
-			}
-		}/*
+                // Duplicate assembly using string IO methods
+                if (KeyInput.GetKey(KeyCode.D)) {
+                    new Assembly(IOHelper.AssemblyToString(selectedAssem), null, null, false);
+                }
+            }
+        }
+		/*
 			// Determine closest fit with hovered assembly.
 			if(hoveredAssem){
 				Triplet[] testThisBuiltin = new Triplet[hoveredAssem.NodeDict.Keys.Count];
@@ -274,7 +277,7 @@ public class NodeController : MonoBehaviour {
 
 		// Leaderboard
 		leaderboardFadeIn = Mathf.MoveTowards(leaderboardFadeIn, (!NeuroScaleDemo.Inst || !NeuroScaleDemo.Inst.isActive || (NeuroScaleDemo.Inst.enviroScale > 0.8f)) ? 1f : 0f, Time.deltaTime * 0.25f);
-        if (PersistentGameManager.IsServer && !ViewerController.Inst.Hide)
+        if (PersistentGameManager.IsServer && ViewerController.Inst && !ViewerController.Hide)
         {
             if (showLeaderboard)
             {
@@ -294,9 +297,7 @@ public class NodeController : MonoBehaviour {
 
 
                 for (int i = 0; i < relativesToHighlight.Count - 1; i++)
-                {
                     GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount * leaderboardFadeIn));
-                }
             }
             else
                 currentLeaderIndex = -1;
@@ -506,7 +507,7 @@ public class NodeController : MonoBehaviour {
 		*/
 
         // Leaderboard
-        if (PersistentGameManager.IsServer && !ViewerController.Inst.Hide && showLeaderboard)
+        if (PersistentGameManager.IsServer && ViewerController.Inst && !ViewerController.Hide && showLeaderboard)
         {
             GUILayout.BeginArea(new Rect(10f, 10f, Screen.width, Screen.height));
             ShowLeaderList("Leaderboard", leaderboard);

@@ -218,7 +218,7 @@ public class Node {
 
 
 		// Metabolism --------------------------------- //
-		if(PhysAssembly != CameraControl.Inst.selectedAssembly)
+		if(CameraControl.Inst == null || PhysAssembly != CameraControl.Inst.selectedAssembly)
 			physAssembly.energy -= NodeController.physicsStep * 0.01f;
 
 

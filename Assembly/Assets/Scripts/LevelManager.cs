@@ -4,12 +4,18 @@ public class LevelManager {
 
     public static void LoadNextLevel()
     {
-        TransitionManager.Inst.NextLevel();
+        if(TransitionManager.Inst)
+            TransitionManager.Inst.NextLevel();
+        else
+            Application.LoadLevel((Application.loadedLevel + 1) % Application.levelCount);
     }
 
     public static void LoadPrevLevel()
     {
-        TransitionManager.Inst.PreviousLevel();
+        if (TransitionManager.Inst)
+            TransitionManager.Inst.PreviousLevel();
+        else
+            Application.LoadLevel((Application.loadedLevel - 1 + Application.levelCount) % Application.levelCount);
     }
 
     public static void LoadLevel(int i)

@@ -40,7 +40,7 @@ public class NodeViewer {
         get { return cubeTransform.renderer.enabled; }
         set
         {
-            if (ViewerController.Inst.Hide && value)
+            if (ViewerController.Hide && value)
                 return;
 
             if(cubeTransform != null)
@@ -62,7 +62,7 @@ public class NodeViewer {
             nodeProperties = properties;
             assemblyProperties = aProperties;
         }
-        Visible = !ViewerController.Inst.Hide;
+        Visible = !ViewerController.Hide;
     }
 
     public NodeViewer(Vector3 position, AssemblyProperties aProperties, int numNeighbors, bool createTrail, SenseNodeCreationData senseData ) {
@@ -73,14 +73,14 @@ public class NodeViewer {
         nodeProperties.senseVector = senseData.senseVector;
         nodeProperties.fieldOfView = senseData.fov;
         assemblyProperties = aProperties;
-        Visible = !ViewerController.Inst.Hide;
+        Visible = !ViewerController.Hide;
     }
 
 
     // Member Functions
     public void SetNeighborCount(int count, bool createTrail)
     {
-        if (ViewerController.Inst.Hide || neighbors == count)
+        if (ViewerController.Hide || neighbors == count)
             return;
 
         CleanupNodeEffects();
@@ -153,7 +153,7 @@ public class NodeViewer {
 
     public void Update()
     {
-        if (ViewerController.Inst.Hide)
+        if (ViewerController.Hide)
             return;
         // Update mating color
         mateColorLerp = Mathf.MoveTowards(mateColorLerp, assemblyProperties.wantToMate ? 1f : 0f, Time.deltaTime);
