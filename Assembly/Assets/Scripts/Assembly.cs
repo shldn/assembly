@@ -17,6 +17,7 @@ public class Assembly : CaptureObject{
     public AssemblyProperties properties = new AssemblyProperties();
     bool propertiesDirty = false;
     public bool userReleased = false; // Did a user just drop this assembly into the world?
+    public bool isOffspring = false;
     private int id = -1;
     public int Id { 
         get { return id; } 
@@ -126,7 +127,7 @@ public class Assembly : CaptureObject{
     }
 
 
-	private Assembly(Vector3 spawnPosition, Quaternion spawnRotation, int numNodes, string name = "", bool isOffspring = false){
+	private Assembly(Vector3 spawnPosition, Quaternion spawnRotation, int numNodes, string name = "", bool isOffspring_ = false){
 		this.spawnPosition = spawnPosition;
 		this.spawnRotation = spawnRotation;
 		properties.gender = Random.Range(0f, 1f) > 0.5f;
@@ -135,6 +136,7 @@ public class Assembly : CaptureObject{
 		PersistentGameManager.CaptureObjects.Add(this);
 		Name = (name == "" ? NodeController.Inst.GetRandomName() : name);
         Id = NodeController.Inst.GetNewAssemblyID();
+        isOffspring = isOffspring_;
         AddRandomNodes(numNodes);
 
         foreach (Node someNode in NodeDict.Values)

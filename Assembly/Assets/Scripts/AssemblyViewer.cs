@@ -41,6 +41,8 @@ public class AssemblyViewer {
         }
         if (config.userReleased)
             CreateLabel(config.properties.name);
+        if (config.offspring && RandomMelody.Inst)
+            RandomMelody.Inst.PlayNote();
         all.Add(Id, this);
     }
 

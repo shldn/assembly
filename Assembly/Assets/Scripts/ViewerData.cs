@@ -81,6 +81,7 @@ public struct AssemblyCreationData {
     public AssemblyCreationData(Assembly a) {
         id = a.Id;
         userReleased = a.userReleased;
+        offspring = a.isOffspring;
         properties = a.properties;
         nodeNeighbors = new List<int>(a.Nodes.Count);
         trailIndices = new List<int>();
@@ -96,6 +97,7 @@ public struct AssemblyCreationData {
 
     public int id;
     public bool userReleased;
+    public bool offspring;
     public AssemblyProperties properties;
     public List<int> nodeNeighbors;
     public List<int> trailIndices;
