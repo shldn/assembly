@@ -23,7 +23,7 @@ public class Node {
         set
         {
             nodeProperties = value;
-            if (PersistentGameManager.EmbedViewer)
+            if (viewer != null)
                 viewer.Properties = value;
         }
     }
@@ -141,14 +141,14 @@ public class Node {
     public void UpdateSenseVector(Quaternion newSenseVector)
     {
         nodeProperties.senseVector = newSenseVector;
-        if (PersistentGameManager.EmbedViewer)
+        if (viewer != null)
             viewer.Properties = nodeProperties;
     }
 
     public void UpdateActuateVector(Quaternion newActuateVector)
     {
         nodeProperties.actuateVector = newActuateVector;
-        if (PersistentGameManager.EmbedViewer)
+        if (viewer != null)
             viewer.Properties = nodeProperties;
     }
 
@@ -210,7 +210,7 @@ public class Node {
             lastNeighborCount = neighbors.Count;
 
             bool createTrail = neighbors.Count == 2 && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
-            if (PersistentGameManager.EmbedViewer)
+            if (viewer != null)
                 viewer.SetNeighborCount(neighbors.Count, createTrail);
             if (neighbors.Count == 1)
                 AllSenseNodeTree.Insert(this);
@@ -258,7 +258,7 @@ public class Node {
 				velocity += -delayPosition.normalized * NodeController.physicsStep;
 		}
 
-        if (PersistentGameManager.EmbedViewer)
+        if (viewer != null)
             viewer.UpdateTransform(Position,Rotation);
 
 		foreach(PhysNeighbor someNeighbor in neighbors)
@@ -290,7 +290,7 @@ public class Node {
 				break;
 		}
 
-        if (PersistentGameManager.EmbedViewer)
+        if (viewer != null)
             viewer.Update();
 
 		//GLDebug.DrawCube(Position, rotation, Vector3.one * velocity.magnitude * 10f);
