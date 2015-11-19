@@ -649,7 +649,7 @@ public class NodeController : MonoBehaviour {
         int idx = LeaderboardIndex(assemblyID, leaderList);
         if (idx != -1)
         {
-            if (!assemblyScores.ContainsKey(assemblyID) || assemblyScores[assemblyID] == 0)
+            if (!assemblyScores.ContainsKey(assemblyID) || assemblyScores[assemblyID] <= 0)
                 leaderList.RemoveAt(idx);
             else
             {
