@@ -25,7 +25,6 @@ public class NodeController : MonoBehaviour {
     bool showLeaderboard = true;
 
 	int nextAssemblyID = 0;
-    HashSet<int> assemblyCaptured = new HashSet<int>(); // contains assembly ids if the assembly has been captured by a user.
 	public Dictionary<int, string> assemblyNameDictionary = new Dictionary<int, string>();
 
 	string[] nameList;

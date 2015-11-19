@@ -83,6 +83,11 @@ public class DiagnosticHUD : MonoBehaviour {
         str += "Num Assemblies: " + Assembly.getAll.Count;
         str += "\n";
         str += "Game Objects: " + goCount;
+        str += "\n";
+        str += "Num Assembly Scores: " + NodeController.assemblyScores.Count;
+        str += "\n";
+        str += "Num Assembly Names: " + NodeController.Inst.assemblyNameDictionary.Count;
+
         if (NeuroScaleDemo.Inst != null)
         {
             str += "\n";
