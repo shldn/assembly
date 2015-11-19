@@ -319,7 +319,7 @@ public class NodeController : MonoBehaviour {
 			Application.LoadLevel("CaptureClient");
 		}
 
-
+        MVCBridge.SendDataToViewer();
 
         HandleReset();
 

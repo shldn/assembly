@@ -42,38 +42,40 @@ public class ViewerController : MonoBehaviour {
 
     void LateUpdate()
     {
-        if (!PersistentGameManager.EmbedViewer) {
+        if (!PersistentGameManager.EmbedViewer || PersistentGameManager.ViewerOnlyApp) {
 
+            ViewerData data = MVCBridge.GetDataFromController();
+            
             // Assembly Messages
-            for (int i = 0; i < ViewerData.Inst.assemblyCreations.Count; i++)
-                new AssemblyViewer(ViewerData.Inst.assemblyCreations[i]);
+            for (int i = 0; i < data.assemblyCreations.Count; i++)
+                new AssemblyViewer(data.assemblyCreations[i]);
 
-            for (int i = 0; i < ViewerData.Inst.assemblyUpdates.Count; i++) {
-                AssemblyTransformUpdate update = ViewerData.Inst.assemblyUpdates[i];
+            for (int i = 0; i < data.assemblyUpdates.Count; i++) {
+                AssemblyTransformUpdate update = data.assemblyUpdates[i];
                 if (AssemblyViewer.All.ContainsKey(update.id))
                     AssemblyViewer.All[update.id].TransformUpdate(update.transforms);
             }
 
-            for (int i = 0; i < ViewerData.Inst.assemblyPropertyUpdates.Count; ++i) {
-                if (AssemblyViewer.All.ContainsKey(ViewerData.Inst.assemblyPropertyUpdates[i].id)) {
-                    AssemblyViewer av = AssemblyViewer.All[ViewerData.Inst.assemblyPropertyUpdates[i].id];
-                    av.Properties = ViewerData.Inst.assemblyPropertyUpdates[i];
+            for (int i = 0; i < data.assemblyPropertyUpdates.Count; ++i) {
+                if (AssemblyViewer.All.ContainsKey(data.assemblyPropertyUpdates[i].id)) {
+                    AssemblyViewer av = AssemblyViewer.All[data.assemblyPropertyUpdates[i].id];
+                    av.Properties = data.assemblyPropertyUpdates[i];
                 }
             }
 
-            for (int i = 0; i < ViewerData.Inst.assemblyDeletes.Count; ++i) {
-                if (AssemblyViewer.All.ContainsKey(ViewerData.Inst.assemblyDeletes[i]))
-                    AssemblyViewer.All[ViewerData.Inst.assemblyDeletes[i]].Destroy();
+            for (int i = 0; i < data.assemblyDeletes.Count; ++i) {
+                if (AssemblyViewer.All.ContainsKey(data.assemblyDeletes[i]))
+                    AssemblyViewer.All[data.assemblyDeletes[i]].Destroy();
             }
 
 
             // Food Messages
-            for (int i = 0; i < ViewerData.Inst.foodCreations.Count; i++)
-                new FoodPelletViewer(ViewerData.Inst.foodCreations[i].Position, ViewerData.Inst.foodCreations[i].id);
+            for (int i = 0; i < data.foodCreations.Count; i++)
+                new FoodPelletViewer(data.foodCreations[i].Position, data.foodCreations[i].id);
 
-            for (int i = 0; i< ViewerData.Inst.foodDeletes.Count; ++i) {
-                if (FoodPelletViewer.All.ContainsKey(ViewerData.Inst.foodDeletes[i]))
-                    FoodPelletViewer.All[ViewerData.Inst.foodDeletes[i]].Destroy();
+            for (int i = 0; i< data.foodDeletes.Count; ++i) {
+                if (FoodPelletViewer.All.ContainsKey(data.foodDeletes[i]))
+                    FoodPelletViewer.All[data.foodDeletes[i]].Destroy();
             }
         }
         ViewerData.Inst.Clear();

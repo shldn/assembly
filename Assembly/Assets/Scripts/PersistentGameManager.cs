@@ -24,6 +24,9 @@ public class PersistentGameManager : MonoBehaviour {
     // Should Assembly/Node classes embed viewers (Genetic Tests should have them)
     public static bool EmbedViewer { get { return IsClient; } }
 
+    // This exe is only a viewer, it requires connection to a model/controller instance over the network.
+    public static bool ViewerOnlyApp { get { return false; } }
+
     public static HashSet<CaptureObject> CaptureObjects = new HashSet<CaptureObject>();
 
     public CaptureNet_Manager captureMgr;

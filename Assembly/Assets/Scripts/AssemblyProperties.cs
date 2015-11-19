@@ -1,4 +1,6 @@
-﻿
+﻿using System;
+
+[Serializable]
 public class AssemblyProperties {
 
     // Only used to make sure the Model and Viewer have different copies, once the split is made, this won't be neccessary.

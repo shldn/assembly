@@ -133,6 +133,7 @@ public enum ViewerMessageType
     FOOD_DELETE         = 8,
 }
 
+[Serializable]
 public class ViewerData {
 
     private static ViewerData inst = null;
