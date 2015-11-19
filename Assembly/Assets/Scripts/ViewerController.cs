@@ -75,10 +75,9 @@ public class ViewerController : MonoBehaviour {
                 if (FoodPelletViewer.All.ContainsKey(ViewerData.Inst.foodDeletes[i]))
                     FoodPelletViewer.All[ViewerData.Inst.foodDeletes[i]].Destroy();
             }
-
-
-            ViewerData.Inst.Clear();
         }
+        ViewerData.Inst.Clear();
+
     }
 
 }
