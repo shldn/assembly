@@ -41,6 +41,7 @@ public class FoodPellet {
 	public FoodPellet(Vector3 position, Assembly owner_ = null){
 		worldPosition = position;
         viewer = new FoodPelletViewer(worldPosition);
+        viewer.Scale = 1;
 
 		all.Add(this);
 		AllFoodTree.Insert(this);
