@@ -36,7 +36,7 @@ public class NodeViewer {
         get { return assemblyProperties; }
     }
     public bool Visible {
-        get { return cubeTransform.renderer.enabled; }
+        get { return cubeTransform != null && cubeTransform.renderer.enabled; }
         set
         {
             if (ViewerController.Inst.Hide && value)
