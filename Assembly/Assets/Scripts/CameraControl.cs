@@ -114,13 +114,13 @@ public class CameraControl : MonoBehaviour {
 			galleryCam = !galleryCam;
 
 		// If a player goes into orbit mode while in gallery mode, interrupt it.
-		if((CaptureNet_Manager.Inst.orbitPlayers.Count > 0) && galleryCam){
+		if(CaptureNet_Manager.Inst != null && (CaptureNet_Manager.Inst.orbitPlayers.Count > 0) && galleryCam){
 			galleryCam = false;
 			galleryCamInterrupted = true;
 		}
 
 		// When no players are orbiting anymore (and we previously interrupted the gallery cam), re-instate it.
-		if((CaptureNet_Manager.Inst.orbitPlayers.Count == 0) && galleryCamInterrupted){
+		if(CaptureNet_Manager.Inst != null && (CaptureNet_Manager.Inst.orbitPlayers.Count == 0) && galleryCamInterrupted){
 			galleryCam = true;
 			galleryCamInterrupted = false;
 		}
