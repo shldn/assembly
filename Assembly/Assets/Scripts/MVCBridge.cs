@@ -51,8 +51,11 @@ public class MVCBridge {
     }
 
     public static void SendDataToViewer() {
-        if (stream == null)
+        if (stream == null) {
+            ViewerData.Inst.Clear();
             return;
+        }
+
         IFormatter formatter = new BinaryFormatter();
         try {
             formatter.Serialize(stream, ViewerData.Inst);
