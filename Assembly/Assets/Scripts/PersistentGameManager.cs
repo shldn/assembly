@@ -25,7 +25,7 @@ public class PersistentGameManager : MonoBehaviour {
     public static bool EmbedViewer { get { return IsClient; } }
 
     // This exe is only a viewer, it requires connection to a model/controller instance over the network.
-    public static bool ViewerOnlyApp { get { return false; } }
+    public static bool ViewerOnlyApp { get { return NodeController.Inst == null || !NodeController.Inst.enabled; } }
 
     public static HashSet<CaptureObject> CaptureObjects = new HashSet<CaptureObject>();
 
@@ -139,6 +139,9 @@ public class PersistentGameManager : MonoBehaviour {
                 case "-novisual":
                 case "-novisuals":
                     ViewerController.Hide = true;
+                    break;
+                case "-projectpath":
+                    ++i;
                     break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);

@@ -32,6 +32,13 @@ public class ViewerController : MonoBehaviour {
         Inst = this;
     }
 
+    void Start() {
+        if(PersistentGameManager.ViewerOnlyApp) {
+            Debug.LogError("Initializing Viewer Networking");
+            MVCBridge.InitializeViewer();
+        }
+    }
+
     void Update() {
         foreach(KeyValuePair<int,AssemblyViewer> a in AssemblyViewer.All){
             for (int i = 0; i < a.Value.nodes.Count; ++i) {
@@ -45,6 +52,8 @@ public class ViewerController : MonoBehaviour {
         if (!PersistentGameManager.EmbedViewer || PersistentGameManager.ViewerOnlyApp) {
 
             ViewerData data = MVCBridge.GetDataFromController();
+            if (data == null)
+                return;
             
             // Assembly Messages
             for (int i = 0; i < data.assemblyCreations.Count; i++)
@@ -80,6 +89,10 @@ public class ViewerController : MonoBehaviour {
         }
         ViewerData.Inst.Clear();
 
+    }
+
+    void OnDestroy() {
+        MVCBridge.CloseViewerConnection();
     }
 
 }

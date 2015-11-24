@@ -82,7 +82,9 @@ public class NodeController : MonoBehaviour {
 			EnvironmentManager.Load(PersistentGameManager.Inst.capturedWorldFilename);
 			print("Loading singleplayer world...");
 		}
-	} // End of Start().
+        if(!PersistentGameManager.EmbedViewer)
+            MVCBridge.InitializeController();
+    } // End of Start().
 
 
 	public string GetRandomName(){
@@ -324,6 +326,19 @@ public class NodeController : MonoBehaviour {
         HandleReset();
 
 	} // End of Update().
+
+    public void SendWorldInitDataToViewer() {
+        Debug.LogError("Sending World Init Data");
+        ViewerData.Inst.Clear();
+        for (int i = 0; i < Assembly.getAll.Count; i++) {
+            Assembly curAssem = Assembly.getAll[i];
+            ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(curAssem));
+            ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(curAssem));
+        }
+
+        for (int i = 0; i < FoodPellet.all.Count; ++i)
+            ViewerData.Inst.foodCreations.Add(new FoodCreationData(FoodPellet.all[i].Id, FoodPellet.all[i].WorldPosition));
+    }
 
     int GetHighlightedAssemblyID(int idx)
     {

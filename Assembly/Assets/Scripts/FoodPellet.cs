@@ -24,6 +24,7 @@ public class FoodPellet {
     }
 
     int id = -1;
+    public int Id { get { return id; } }
 	float energy = 10f;
     public float Energy { get { return energy; } set { energy = value; if (viewer != null) { viewer.Scale = energy / maxEnergy; } } }
 	float maxEnergy = 10f;
