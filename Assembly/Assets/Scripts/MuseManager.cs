@@ -41,7 +41,8 @@ public class MuseManager : MonoBehaviour {
 	void Start () {
 #if UNITY_STANDALONE
 		OSCHandler.Instance.Init ();
-        OSCHandler.Instance.Servers["AssemblyOSC"].server.PacketReceivedEvent += Server_PacketReceivedEvent;
+        if (OSCHandler.Instance.Servers.ContainsKey("AssemblyOSC"))
+            OSCHandler.Instance.Servers["AssemblyOSC"].server.PacketReceivedEvent += Server_PacketReceivedEvent;
 #endif
     }
 
