@@ -17,7 +17,7 @@ public class MVCBridge {
 
     // Shared variables
     static int port = 12000;
-    static Stream stream = null;
+    static NetworkStream stream = null;
 
     // Controller Functions
     //--------------------------------------------------------------------
@@ -93,7 +93,7 @@ public class MVCBridge {
     }
 
     public static ViewerData GetDataFromController() {
-        if (stream == null)
+        if (stream == null || !stream.DataAvailable)
             return null;
         IFormatter formatter = new BinaryFormatter();
         ViewerData data = null;
