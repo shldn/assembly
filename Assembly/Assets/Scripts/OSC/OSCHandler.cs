@@ -106,7 +106,7 @@ public class OSCHandler : MonoBehaviour
 
         //Initialize OSC servers (listeners)
         //Example:
-        if(!Servers.ContainsKey("AssemblyOSC"))
+        if(!Servers.ContainsKey("AssemblyOSC") && PersistentGameManager.IsServer && PersistentGameManager.EmbedViewer)
 		    CreateServer("AssemblyOSC", 6000);
 	}
 	

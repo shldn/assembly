@@ -24,6 +24,9 @@ public class PersistentGameManager : MonoBehaviour {
     // Should Assembly/Node classes embed viewers (Genetic Tests should have them)
     public static bool EmbedViewer { get { return IsClient; } }
 
+    // This exe is only a viewer, it requires connection to a model/controller instance over the network.
+    public static bool ViewerOnlyApp { get { return NodeController.Inst == null || !NodeController.Inst.enabled; } }
+
     public static HashSet<CaptureObject> CaptureObjects = new HashSet<CaptureObject>();
 
     public CaptureNet_Manager captureMgr;
@@ -47,6 +50,8 @@ public class PersistentGameManager : MonoBehaviour {
 
 
 	void Awake () {
+        Debug.LogError("Persistent Game Manager");
+
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
         if( !captureMgr )
@@ -104,12 +109,13 @@ public class PersistentGameManager : MonoBehaviour {
 
 		Screen.lockCursor = cursorLock;
 
-		if(IsClient && (AssemblyEditor.Inst && (!ClientTest.Inst || !ClientTest.Inst.UnlockFrameRate)))
-			Application.targetFrameRate = 30;
-		else
-			Application.targetFrameRate = 99999;
-
-	}
+        if(!IsServer || !EmbedViewer) {
+            if (IsClient && (AssemblyEditor.Inst && (!ClientTest.Inst || !ClientTest.Inst.UnlockFrameRate)))
+                Application.targetFrameRate = 30;
+            else
+                Application.targetFrameRate = 99999;
+        }
+    }
 
 
     public void EnviroImpulse(Vector3 pos, float force){
@@ -136,6 +142,9 @@ public class PersistentGameManager : MonoBehaviour {
                 case "-novisual":
                 case "-novisuals":
                     ViewerController.Hide = true;
+                    break;
+                case "-projectpath":
+                    ++i;
                     break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);

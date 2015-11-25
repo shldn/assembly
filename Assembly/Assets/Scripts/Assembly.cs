@@ -351,6 +351,8 @@ public class Assembly : CaptureObject{
                 newAssembly.UpdateFamilyTreeFromParent(MatingWith);
 				newAssembly.amalgam = amalgam;
 
+                //Debug.LogError("Baby assembly born: family size: " + familyTree.Count);
+
                 // Mating is over :/
                 MatingWith.WantToMate = false;
 				MatingWith.mateCompletion = 0f;

@@ -82,7 +82,14 @@ public class NodeController : MonoBehaviour {
 			EnvironmentManager.Load(PersistentGameManager.Inst.capturedWorldFilename);
 			print("Loading singleplayer world...");
 		}
-	} // End of Start().
+        if (!PersistentGameManager.EmbedViewer && PersistentGameManager.IsServer) {
+            MVCBridge.InitializeController();
+
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 30;
+
+        }
+    } // End of Start().
 
 
 	public string GetRandomName(){
@@ -111,9 +118,8 @@ public class NodeController : MonoBehaviour {
 
 
 	void Update(){
-
-		// World grows as food nodes are consumed.
-		worldSize.z = Mathf.Lerp(worldSize.z, targetWorldSize, 0.1f * Time.deltaTime);
+        // World grows as food nodes are consumed.
+        worldSize.z = Mathf.Lerp(worldSize.z, targetWorldSize, 0.1f * Time.deltaTime);
 
 		// Once we get to a capsule, switch back to sphere.
 		if(targetWorldSize >= 385f){
@@ -306,7 +312,16 @@ public class NodeController : MonoBehaviour {
                 showLeaderboard = !showLeaderboard;
         }
 
-
+        // Light Soup Controller Options.
+        if(PersistentGameManager.IsServer && !PersistentGameManager.EmbedViewer) {
+            if (KeyInput.GetKeyDown(KeyCode.F)) {
+                DiagnosticHUD diagnosticHud = gameObject.GetComponent<DiagnosticHUD>();
+                if (diagnosticHud == null)
+                    diagnosticHud = gameObject.AddComponent<DiagnosticHUD>();
+                else
+                    diagnosticHud.enabled = !diagnosticHud.enabled;
+            }
+        }
 
 
 		// Server-local capture.
@@ -319,11 +334,24 @@ public class NodeController : MonoBehaviour {
 			Application.LoadLevel("CaptureClient");
 		}
 
-
+        MVCBridge.SendDataToViewer();
 
         HandleReset();
 
 	} // End of Update().
+
+    public void SendWorldInitDataToViewer() {
+        Debug.LogError("Sending World Init Data");
+        ViewerData.Inst.Clear();
+        for (int i = 0; i < Assembly.getAll.Count; i++) {
+            Assembly curAssem = Assembly.getAll[i];
+            ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(curAssem));
+            ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(curAssem));
+        }
+
+        for (int i = 0; i < FoodPellet.all.Count; ++i)
+            ViewerData.Inst.foodCreations.Add(new FoodCreationData(FoodPellet.all[i].Id, FoodPellet.all[i].WorldPosition));
+    }
 
     int GetHighlightedAssemblyID(int idx)
     {
