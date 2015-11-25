@@ -50,6 +50,8 @@ public class PersistentGameManager : MonoBehaviour {
 
 
 	void Awake () {
+        Debug.LogError("Persistent Game Manager");
+
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
         if( !captureMgr )
@@ -107,12 +109,13 @@ public class PersistentGameManager : MonoBehaviour {
 
 		Screen.lockCursor = cursorLock;
 
-		if(IsClient && (AssemblyEditor.Inst && (!ClientTest.Inst || !ClientTest.Inst.UnlockFrameRate)))
-			Application.targetFrameRate = 30;
-		else
-			Application.targetFrameRate = 99999;
-
-	}
+        if(!IsServer || !EmbedViewer) {
+            if (IsClient && (AssemblyEditor.Inst && (!ClientTest.Inst || !ClientTest.Inst.UnlockFrameRate)))
+                Application.targetFrameRate = 30;
+            else
+                Application.targetFrameRate = 99999;
+        }
+    }
 
 
     public void EnviroImpulse(Vector3 pos, float force){

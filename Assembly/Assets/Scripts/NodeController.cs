@@ -82,8 +82,13 @@ public class NodeController : MonoBehaviour {
 			EnvironmentManager.Load(PersistentGameManager.Inst.capturedWorldFilename);
 			print("Loading singleplayer world...");
 		}
-        if(!PersistentGameManager.EmbedViewer)
+        if (!PersistentGameManager.EmbedViewer && PersistentGameManager.IsServer) {
             MVCBridge.InitializeController();
+
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 30;
+
+        }
     } // End of Start().
 
 
@@ -113,9 +118,8 @@ public class NodeController : MonoBehaviour {
 
 
 	void Update(){
-
-		// World grows as food nodes are consumed.
-		worldSize.z = Mathf.Lerp(worldSize.z, targetWorldSize, 0.1f * Time.deltaTime);
+        // World grows as food nodes are consumed.
+        worldSize.z = Mathf.Lerp(worldSize.z, targetWorldSize, 0.1f * Time.deltaTime);
 
 		// Once we get to a capsule, switch back to sphere.
 		if(targetWorldSize >= 385f){
@@ -308,7 +312,16 @@ public class NodeController : MonoBehaviour {
                 showLeaderboard = !showLeaderboard;
         }
 
-
+        // Light Soup Controller Options.
+        if(PersistentGameManager.IsServer && !PersistentGameManager.EmbedViewer) {
+            if (KeyInput.GetKeyDown(KeyCode.F)) {
+                DiagnosticHUD diagnosticHud = gameObject.GetComponent<DiagnosticHUD>();
+                if (diagnosticHud == null)
+                    diagnosticHud = gameObject.AddComponent<DiagnosticHUD>();
+                else
+                    diagnosticHud.enabled = !diagnosticHud.enabled;
+            }
+        }
 
 
 		// Server-local capture.
