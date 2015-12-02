@@ -45,10 +45,10 @@ public class FoodPelletViewer {
             all.Add(id, this);
     }
 
-    public void Destroy()
+    public void Destroy(bool removeFromList = true)
     {
         GameObject.Destroy(gameObject);
-        if (all.ContainsKey(id))
+        if (removeFromList && all.ContainsKey(id))
             all.Remove(id);
     }
 }

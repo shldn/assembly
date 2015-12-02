@@ -59,13 +59,13 @@ public class AssemblyViewer {
             label.gameObject.transform.position = posSum / nodes.Count;
     }
 
-    public void Destroy() {
+    public void Destroy(bool removeFromList = true) {
         for (int i = 0; i < nodes.Count; ++i)
             nodes[i].Destroy();
 
         MatingViewer.Inst.RemoveMates(id);
 
-        if(all.ContainsKey(Id))
+        if(removeFromList && all.ContainsKey(Id))
             all.Remove(Id);
     }
 

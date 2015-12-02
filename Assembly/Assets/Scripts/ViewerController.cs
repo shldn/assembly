@@ -91,6 +91,20 @@ public class ViewerController : MonoBehaviour {
 
     }
 
+    // Clear all Viewer elements
+    public void Clear() {
+
+        foreach (KeyValuePair<int, AssemblyViewer> kvp in AssemblyViewer.All)
+            kvp.Value.Destroy(false);
+        AssemblyViewer.All.Clear();
+
+        foreach (KeyValuePair<int, FoodPelletViewer> kvp in FoodPelletViewer.All)
+            kvp.Value.Destroy(false);
+        FoodPelletViewer.All.Clear();
+
+        GameObject.Destroy(MatingViewer.Inst.gameObject);
+    }
+
     void OnDestroy() {
         MVCBridge.CloseViewerConnection();
     }
