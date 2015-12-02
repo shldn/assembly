@@ -1,5 +1,6 @@
 Assembly/Library/*
 Assembly/Temp/*
+Assembly/bin/*
 JellyfishGrotto/Library/*
 JellyfishGrotto/Temp/*
 bin/*
@@ -12,4 +13,5 @@ bin/*
 *.suo
 *.userprefs
 *.cache
+*.htm
 
