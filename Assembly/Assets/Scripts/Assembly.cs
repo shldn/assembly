@@ -306,6 +306,7 @@ public class Assembly : CaptureObject{
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(matingWith);
 				newAssembly.amalgam = amalgam;
+				newAssembly.amalgam.assemblies.Add(newAssembly);
 
 				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length + 1);
 				Triplet spawnHexPos = Triplet.zero;

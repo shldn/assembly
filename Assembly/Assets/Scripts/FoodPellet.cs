@@ -10,6 +10,8 @@ public class FoodPellet {
 	private Vector3 worldPosition = Vector3.zero;
     public Vector3 WorldPosition { get { return worldPosition; } set { worldPosition = value; if (viewer != null) { viewer.Position = value; }  } }
 
+	public Vector3 velocity = Vector3.zero;
+
 	private static Octree<FoodPellet> allFoodTree;
     public static Octree<FoodPellet> AllFoodTree{ 
         get{
@@ -62,6 +64,11 @@ public class FoodPellet {
         {
             cull = true;
         }
+
+		worldPosition += velocity * NodeController.physicsStep;
+		velocity = Vector3.MoveTowards(velocity, Vector3.zero, NodeController.physicsStep * 4f);
+		if(viewer != null)
+			viewer.Position = worldPosition;
 
 	} // End of Update().
 
