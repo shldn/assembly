@@ -94,14 +94,14 @@ public class UtopiaGameManager : MonoBehaviour {
     {
         yield return new WaitForSeconds(waitSeconds);
         CroquetBall ball = p.gameObject.GetComponentInChildren<CroquetBall>();
-        ball.renderer.enabled = false;
+        ball.GetComponent<Renderer>().enabled = false;
     }
     IEnumerator ShowBall(Player p, float waitSeconds)
     {
         yield return new WaitForSeconds(waitSeconds);
         CroquetBall ball = p.gameObject.GetComponentInChildren<CroquetBall>();
         if (ball != null)
-            ball.renderer.enabled = true;
+            ball.GetComponent<Renderer>().enabled = true;
     }
 
     void OnDestroy()

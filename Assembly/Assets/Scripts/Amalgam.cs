@@ -143,7 +143,7 @@ public class Amalgam : MonoBehaviour
 
 		//color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
 		color = new Color(11f / 255f, 62f / 255f, 110f / 255f);
-		renderer.material.SetColor("_RimColor", color);
+		GetComponent<Renderer>().material.SetColor("_RimColor", color);
 
 
 		handlePrefabInt = Resources.Load("AmalgamHandleInt");
@@ -216,7 +216,6 @@ public class Amalgam : MonoBehaviour
 			foodPellets[i].WorldPosition += positionChange;
 
 		currentVelocity = positionChange / NodeController.physicsStep;
-		print(currentVelocity);
 
 
 		for(int i = 0; i < activeVertices.Length; i++)

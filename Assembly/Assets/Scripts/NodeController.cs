@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Globalization;
+using UnityEngine.VR;
 
 
 public class NodeController : MonoBehaviour {
@@ -86,6 +87,8 @@ public class NodeController : MonoBehaviour {
 			EnvironmentManager.Load(PersistentGameManager.Inst.capturedWorldFilename);
 			print("Loading singleplayer world...");
 		}
+
+		UnityEngine.VR.VRSettings.showDeviceView = true;
 	} // End of Start().
 
 
@@ -116,6 +119,7 @@ public class NodeController : MonoBehaviour {
 
 	void Update(){
 
+
 		// World grows as food nodes are consumed.
 		worldSize.z = Mathf.Lerp(worldSize.z, targetWorldSize, 0.1f * Time.deltaTime);
 
@@ -144,7 +148,7 @@ public class NodeController : MonoBehaviour {
 
 			if(curAssem.cull){
 				if(Network.peerType == NetworkPeerType.Server)
-					AssemblyRadar.Inst.networkView.RPC("RemoveBlip", RPCMode.Others, curAssem.Id);
+					AssemblyRadar.Inst.GetComponent<NetworkView>().RPC("RemoveBlip", RPCMode.Others, curAssem.Id);
 				Assembly.getAll.RemoveAt(i);
 				i--;
 			}else

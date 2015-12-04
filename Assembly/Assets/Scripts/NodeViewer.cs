@@ -36,14 +36,14 @@ public class NodeViewer {
         get { return assemblyProperties; }
     }
     public bool Visible {
-        get { return cubeTransform.renderer.enabled; }
+        get { return cubeTransform.GetComponent<Renderer>().enabled; }
         set
         {
             if (ViewerManager.Inst.Hide && value)
                 return;
 
             if(cubeTransform != null)
-                cubeTransform.renderer.enabled = value;
+                cubeTransform.GetComponent<Renderer>().enabled = value;
             if (trail)
                 trail.render = value;
             if (viewCone)
@@ -148,9 +148,9 @@ public class NodeViewer {
         Color genderColor = Color.Lerp(Color.magenta, Color.cyan, genderColorLerp);
 
         if (mateColorLerp > 0f)
-            cubeTransform.renderer.material.color = Color.Lerp(nodeColor, genderColor, mateColorLerp * 0.7f);
+            cubeTransform.GetComponent<Renderer>().material.color = Color.Lerp(nodeColor, genderColor, mateColorLerp * 0.7f);
         else
-            cubeTransform.renderer.material.color = nodeColor;
+            cubeTransform.GetComponent<Renderer>().material.color = nodeColor;
 
 
         // Type-specific behaviours

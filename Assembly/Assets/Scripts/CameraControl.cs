@@ -232,7 +232,6 @@ public class CameraControl : MonoBehaviour {
 			targetOrbitQ *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * mouseSensitivity, Vector3.right);
         }
 
-		
             
 
         // Increment values, apply camera position/rotation.

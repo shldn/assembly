@@ -28,7 +28,7 @@ public class VariableAppearance : MonoBehaviour
 		float distance = Vector3.Distance (gameObject.transform.position, targetPos.position);
 
 		float myLerp = distance / (origDistance * 2);
-		renderer.material.Lerp(cyan, blue, myLerp);
+		GetComponent<Renderer>().material.Lerp(cyan, blue, myLerp);
 		transform.localScale = Vector3.Lerp (maxScale, origScale, myLerp);
 	}
 }

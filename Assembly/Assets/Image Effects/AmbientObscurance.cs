@@ -43,7 +43,7 @@ public class AmbientObscurance : PostEffectsBase {
 			return;
 	}
 
-		Matrix4x4 P = camera.projectionMatrix;
+		Matrix4x4 P = GetComponent<Camera>().projectionMatrix;
 		Matrix4x4 invP= P.inverse;
 		Vector4 projInfo = new Vector4
 			((-2.0f / (Screen.width * P[0])), 

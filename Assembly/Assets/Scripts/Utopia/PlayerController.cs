@@ -59,21 +59,21 @@ public class PlayerController : MonoBehaviour {
         set{
             switch(value){
                 case NavMode.locked:
-                    rigidbody.isKinematic = true;
-                    collider.enabled = false;
+                    GetComponent<Rigidbody>().isKinematic = true;
+                    GetComponent<Collider>().enabled = false;
                     if( navAgent != null )
                         navAgent.enabled = false;
                     break;
                 case NavMode.navmesh:
-                    rigidbody.isKinematic = false;
-                    collider.enabled = true;
+                    GetComponent<Rigidbody>().isKinematic = false;
+                    GetComponent<Collider>().enabled = true;
                     if (navAgent != null)
                         navAgent.enabled = true;
                     break;
                 case NavMode.physics:
                 case NavMode.physicsSticky:
-                    rigidbody.isKinematic = false;
-                    collider.enabled = true;
+                    GetComponent<Rigidbody>().isKinematic = false;
+                    GetComponent<Collider>().enabled = true;
                     if (navAgent != null)
                         navAgent.enabled = false;
                     break;
@@ -331,16 +331,16 @@ public class PlayerController : MonoBehaviour {
         // Propel the character.
         moveVector = (MathHelper.MoveAngleUnitVector(forwardAngle) * moveSpeed) + (MathHelper.MoveAngleUnitVector(forwardAngle + 90) * strafeSpeed);
         if(useNavMesh && navAgent && navAgent.enabled && (navAgent.pathStatus != NavMeshPathStatus.PathInvalid)){
-            rigidbody.useGravity = false;
-            rigidbody.isKinematic = true;
+            GetComponent<Rigidbody>().useGravity = false;
+            GetComponent<Rigidbody>().isKinematic = true;
             navAgent.enabled = true;
             //Camera.main.transform.parent = null;
 
             navAgent.Move(moveVector * Time.deltaTime);
         }
         else if(usePhysics){
-            rigidbody.useGravity = true;
-            rigidbody.isKinematic = false;
+            GetComponent<Rigidbody>().useGravity = true;
+            GetComponent<Rigidbody>().isKinematic = false;
             navAgent.enabled = false;
         }
 
@@ -481,24 +481,24 @@ public class PlayerController : MonoBehaviour {
 
     void FixedUpdate(){
         if(usePhysics && grounded)
-            rigidbody.AddForce(moveVector * 50f, ForceMode.Force);
+            GetComponent<Rigidbody>().AddForce(moveVector * 50f, ForceMode.Force);
     } // End of FixedUpdate().
 
 
     void OnCollisionStay(Collision collision){
         grounded = true;
-        rigidbody.drag = 25f;
+        GetComponent<Rigidbody>().drag = 25f;
     } // End of OnCollisionEnter().
 
     void OnCollisionExit(Collision collision){
         grounded = false;
-        rigidbody.drag = 0f;
+        GetComponent<Rigidbody>().drag = 0f;
     } // End of OnCollisionEnter().
 
 
     public void Jump(){
         if(grounded)
-            rigidbody.AddForce(Vector3.up * 8f, ForceMode.Impulse);
+            GetComponent<Rigidbody>().AddForce(Vector3.up * 8f, ForceMode.Impulse);
     } // End of Jump().
 
 
@@ -598,7 +598,7 @@ public class PlayerController : MonoBehaviour {
     public void StopFalling(){
         falling = false;
         fallVelocity = Vector3.zero;
-        rigidbody.velocity = Vector3.zero;
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
         navAgent.enabled = true;
         moveVector = Vector3.zero;
         forwardThrottle = 0f;

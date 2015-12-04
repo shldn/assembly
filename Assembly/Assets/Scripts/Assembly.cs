@@ -356,7 +356,7 @@ public class Assembly : CaptureObject{
 				int newAssemID = NodeController.Inst.GetNewAssemblyID();
 				Id = newAssemID;
 			}
-			AssemblyRadar.Inst.networkView.RPC("CreateBlip", RPCMode.Others, IOHelper.AssemblyToString(this), Position);
+			AssemblyRadar.Inst.GetComponent<NetworkView>().RPC("CreateBlip", RPCMode.Others, IOHelper.AssemblyToString(this), Position);
 		}
 
 

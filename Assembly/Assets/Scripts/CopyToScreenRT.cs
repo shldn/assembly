@@ -10,7 +10,7 @@ public class CopyToScreenRT : MonoBehaviour{
 	private RenderTexture activeRT; // hold the org. screen RT
 
 	private void OnPreRender(){
-		if (camera.actualRenderingPath == RenderingPath.DeferredLighting) {
+		if (GetComponent<Camera>().actualRenderingPath == RenderingPath.DeferredLighting) {
 			activeRT = RenderTexture.active;
 		}
 		else{
@@ -19,7 +19,7 @@ public class CopyToScreenRT : MonoBehaviour{
 	}
 
 	private void OnRenderImage(RenderTexture src, RenderTexture dest){
-		if (camera.actualRenderingPath == RenderingPath.DeferredLighting && activeRT) {
+		if (GetComponent<Camera>().actualRenderingPath == RenderingPath.DeferredLighting && activeRT) {
 			if (src.format == activeRT.format){
 				Graphics.Blit(src, activeRT);
 			}

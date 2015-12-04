@@ -84,7 +84,7 @@ class BloomEditor : Editor
 		EditorGUILayout.Separator ();		
 
 		// display info text when screen blend mode cannot be used
-		Camera cam = (target as Bloom).camera;
+		Camera cam = (target as Bloom).GetComponent<Camera>();
 		if(cam != null)
 		{
 			if(screenBlendMode.enumValueIndex==0 && ((cam.hdr && hdr.enumValueIndex==0) || (hdr.enumValueIndex==1)))
