@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.VR;
 
 
 public enum CameraMode {
@@ -86,7 +87,10 @@ public class CameraControl : MonoBehaviour {
 
 
 	void Start(){
-        // Set up camera rendering effects
+		UnityEngine.VR.VRSettings.renderScale = 1;
+		print(UnityEngine.VR.VRSettings.renderScale);
+
+		// Set up camera rendering effects
 		if(Application.loadedLevelName != "SoupPhysics"){
 			RenderSettings.fog = true;
 			RenderSettings.fogColor = Camera.main.backgroundColor;
@@ -105,6 +109,9 @@ public class CameraControl : MonoBehaviour {
 	
 
 	void LateUpdate(){
+		if(VRDevice.isPresent){
+			return;
+		}
 
 		// Blend between normal cam and neuroscale mode.
 		blendToNeuroscale = Mathf.SmoothDamp(blendToNeuroscale, (NeuroScaleDemo.Inst && NeuroScaleDemo.Inst.isActive && (CaptureNet_Manager.Inst.orbitPlayers.Count == 0))? 1f : 0f, ref blendToNeuroscaleVel, 1f);
@@ -285,7 +292,7 @@ public class CameraControl : MonoBehaviour {
 				if(!assemblyOfInterest.matingWith)
 					assemblyOfInterestStaleness += Time.deltaTime;
 
-				targetRotation = Quaternion.LookRotation(assemblyOfInterest.Position - transform.position, Camera.main.transform.up);
+				targetRotation = Quaternion.LookRotation(assemblyOfInterest.Position - transform.position, transform.up);
 				float dist = Vector3.Distance(transform.position, assemblyOfInterest.Position);
 				if((dist > 80f) || (!assemblyOfInterest.matingWith && (assemblyOfInterestStaleness > 10f)))
 					assemblyOfInterest = null;

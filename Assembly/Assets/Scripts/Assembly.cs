@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.VR;
 
 public class Assembly : CaptureObject{
 
@@ -286,7 +287,7 @@ public class Assembly : CaptureObject{
 				if(matingWith.myNodesIndexed.Length > i){
 					otherNode = matingWith.myNodesIndexed[i];
 
-					if(myNode.Visible && otherNode.Visible)
+					if((!VRDevice.isPresent) && myNode.Visible && otherNode.Visible)
 						GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
 					Vector3 vectorToMate = myNode.Position - otherNode.Position;
 					float distance = vectorToMate.magnitude;
@@ -306,7 +307,8 @@ public class Assembly : CaptureObject{
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(matingWith);
 				newAssembly.amalgam = amalgam;
-				newAssembly.amalgam.assemblies.Add(newAssembly);
+				if(newAssembly.amalgam)
+					newAssembly.amalgam.assemblies.Add(newAssembly);
 
 				int numNodes = Random.Range(myNodesIndexed.Length, matingWith.myNodesIndexed.Length + 1);
 				Triplet spawnHexPos = Triplet.zero;
