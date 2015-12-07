@@ -15,6 +15,7 @@ public class MVCBridge {
 
     // Controller variables
     static TcpListener controllerServer = null;
+    public static volatile bool controllerReadyToSend = true;
 
     // Shared variables
     static int port = 12000;
@@ -57,15 +58,30 @@ public class MVCBridge {
             return;
         }
 
+        StartSendDataToViewerThread(ViewerData.Inst);
+        ViewerData.Inst.Swap();
+        ViewerData.Inst.Clear();
+    }
+
+    private static void SendDataToViewerImpl(ViewerData data)
+    {
+        controllerReadyToSend = false;
         IFormatter formatter = new BinaryFormatter();
         try {
-            formatter.Serialize(stream, ViewerData.Inst);
+            formatter.Serialize(stream, data);
         }
         catch(Exception e) {
             Debug.LogError("SendDataToViewer failed: " + e.ToString() + "\nAssume the connection was lost");
             ConnectToNextViewer();
         }
-        ViewerData.Inst.Clear();
+        controllerReadyToSend = true;
+    }
+
+    private static Thread StartSendDataToViewerThread(ViewerData data)
+    {
+        Thread t = new Thread(() => SendDataToViewerImpl(data));
+        t.Start();
+        return t;
     }
     #endregion
 

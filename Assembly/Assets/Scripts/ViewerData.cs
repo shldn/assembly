@@ -141,9 +141,17 @@ public class ViewerData {
         get{
             if (inst == null)
                 inst = new ViewerData();
-            return inst;
+            if (inst2 == null)
+                inst2 = new ViewerData();
+            return swap ? inst2 : inst;
         }
     }
+
+    public static ViewerData inst2 = null;
+    private static bool swap = false;
+
+    // Swap between two buffers so one can be sending across the network while the other is gathering the next round of data.
+    public void Swap() { swap = !swap; }
 
     // Assemblies
     public List<AssemblyCreationData> assemblyCreations = new List<AssemblyCreationData>();

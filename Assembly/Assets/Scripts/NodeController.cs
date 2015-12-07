@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using System.Globalization;
 
 
@@ -46,6 +45,12 @@ public class NodeController : MonoBehaviour {
 
 	public bool populationControl = true;
 
+    // testing
+    public int fps = -1;
+
+    // Controller (Light Server) Variables
+    public float messageFPS = -1;
+    System.DateTime lastMessageSent = System.DateTime.Now;
 
     // Reset Variables
     float timeUntilReset = -1f; //1.0f * 60f * 60f; // seconds -- negative number will disable reset
@@ -84,10 +89,7 @@ public class NodeController : MonoBehaviour {
 		}
         if (!PersistentGameManager.EmbedViewer && PersistentGameManager.IsServer) {
             MVCBridge.InitializeController();
-
             QualitySettings.vSyncCount = 0;
-            Application.targetFrameRate = 30;
-
         }
     } // End of Start().
 
@@ -118,6 +120,10 @@ public class NodeController : MonoBehaviour {
 
 
 	void Update(){
+
+        if (fps != -1)
+            Application.targetFrameRate = fps;
+
         // World grows as food nodes are consumed.
         worldSize.z = Mathf.Lerp(worldSize.z, targetWorldSize, 0.1f * Time.deltaTime);
 
@@ -136,12 +142,6 @@ public class NodeController : MonoBehaviour {
 
 		foreach(Node someNode in Node.getAll)
 			someNode.UpdateTransform();
-
-
-        if (!PersistentGameManager.EmbedViewer) {
-            for (int i = 0; i < Assembly.getAll.Count; i++)
-                ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(Assembly.getAll[i]));
-        }
 
 
         for (int i = 0; i < Assembly.getAll.Count; i++){
@@ -334,7 +334,18 @@ public class NodeController : MonoBehaviour {
 			Application.LoadLevel("CaptureClient");
 		}
 
-        MVCBridge.SendDataToViewer();
+        float delayBetweenMessages = (messageFPS <= 0f) ? -1f : 1.0f / messageFPS;
+        if(delayBetweenMessages <= (System.DateTime.Now - lastMessageSent).TotalSeconds && MVCBridge.controllerReadyToSend)
+        {
+            if (!PersistentGameManager.EmbedViewer)
+            {
+                for (int i = 0; i < Assembly.getAll.Count; i++)
+                    ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(Assembly.getAll[i]));
+            }
+
+            MVCBridge.SendDataToViewer();
+            lastMessageSent = System.DateTime.Now;
+        }
 
         HandleReset();
 
