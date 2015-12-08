@@ -22,7 +22,7 @@ public class PersistentGameManager : MonoBehaviour {
     private static bool isClient = false;
 
     // Should Assembly/Node classes embed viewers (Genetic Tests should have them)
-    public static bool EmbedViewer { get { return !ViewerOnlyApp || IsClient; } }
+    public static bool EmbedViewer { get { return (ViewerController.Inst && !ViewerOnlyApp) || IsClient; } }
 
     // This exe is only a viewer, it requires connection to a model/controller instance over the network.
     public static bool ViewerOnlyApp { get { return NodeController.Inst == null || !NodeController.Inst.enabled; } }

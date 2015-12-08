@@ -322,7 +322,7 @@ public class CameraControl : MonoBehaviour {
                 PhysNode node = hitObject.GetComponent<PhysNode>();
                 if(node != null){
                     foreach (Assembly a in Assembly.getAll){
-                        if (a.Id == node.nodeViewer.AssemblyProperties.id){
+                        if (node.nodeViewer.AssemblyProperties != null && a.Id == node.nodeViewer.AssemblyProperties.id){
                             hoveredPhysAssembly = a;
                             if (Input.GetMouseButton(0))
                                 selectedAssembly = hoveredPhysAssembly;
