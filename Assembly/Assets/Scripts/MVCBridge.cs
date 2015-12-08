@@ -14,6 +14,7 @@ public class MVCBridge {
     static DateTime lastMessageTime = DateTime.Now;
     static Thread viewerReaderThread = null;
     static volatile bool viewerConnectionLost = false;
+    static volatile bool viewerReaderThreadStop = false;
     public static volatile bool viewerDataReadyToApply = false;
     public static ViewerData viewerData = null;
     public static bool ViewerConnectionLost { get { return viewerConnectionLost; } }
@@ -109,7 +110,7 @@ public class MVCBridge {
         new AsyncCallback(ViewerConnectCallback), viewerClient);
     }
     private static void ViewerConnectCallback(IAsyncResult ar) {
-        if (!viewerClient.Connected) {
+        if (!viewerClient.Connected || viewerClient.GetStream() == null) {
             // try again
             AttemptConnectionToController();
             return;
@@ -118,6 +119,8 @@ public class MVCBridge {
         stream = viewerClient.GetStream();
         viewerConnectionLost = false;
         lastMessageTime = DateTime.Now;
+        KillViewerReaderThread();
+        viewerDataReadyToApply = false;
         viewerReaderThread = new Thread(new ThreadStart(ViewerReceiveLoop));
         viewerReaderThread.Start();
 
@@ -154,7 +157,7 @@ public class MVCBridge {
 
     static void ViewerReceiveLoop()
     {
-        while (true)
+        while (!viewerReaderThreadStop)
         {
             if(!viewerDataReadyToApply)
             {
@@ -166,19 +169,27 @@ public class MVCBridge {
         }
     }
 
+    static void KillViewerReaderThread()
+    {
+        viewerReaderThreadStop = true;
+        if (viewerReaderThread != null)
+            viewerReaderThread.Join();
+        viewerReaderThread = null;
+        viewerReaderThreadStop = false;
+    }
+
     public static void HandleViewerConnectionLost() {
         viewerClient.Close();
         stream = null;
         ViewerController.Inst.Clear();
         InitializeViewer();
+        viewerConnectionLost = false;
     }
 
     public static void CloseViewerConnection() {
         if (viewerClient != null)
             viewerClient.Close();
-        if (viewerReaderThread != null)
-            viewerReaderThread.Abort();
-        viewerReaderThread = null;
+        KillViewerReaderThread();        
     }
 
 #endregion
