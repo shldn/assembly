@@ -59,7 +59,7 @@ public class AssemblyRadar : MonoBehaviour {
 					float score = 0f;
 					if(NodeController.assemblyScores.ContainsKey(broadcastAssem.Id))
 						score = NodeController.assemblyScores[broadcastAssem.Id];
-					networkView.RPC("UpdatePos", RPCMode.Others, broadcastAssem.Id, broadcastAssem.Position, score);
+					GetComponent<NetworkView>().RPC("UpdatePos", RPCMode.Others, broadcastAssem.Id, broadcastAssem.Position, score);
 				}
 			}
 
@@ -165,7 +165,7 @@ public class AssemblyRadar : MonoBehaviour {
 				buttonHovered = true;
 			if(selectedBlip != null){
 				if(GUI.Button(captureButtonRect, "Capture")){
-					networkView.RPC("CaptureRequest", RPCMode.Server, Network.player, selectedBlip.assemblyID);
+					GetComponent<NetworkView>().RPC("CaptureRequest", RPCMode.Server, Network.player, selectedBlip.assemblyID);
 					print("Requesting assembly capture...");
 					
 					// Check for stored assembly...
@@ -270,7 +270,7 @@ public class AssemblyRadar : MonoBehaviour {
 		print("Assembly capture request received!");
 		// Find the requesting player's PlayerSync.
 		for(int i = 0; i < PlayerSync.all.Count; i++){
-			if(PlayerSync.all[i].networkView.owner == requestingPlayer){
+			if(PlayerSync.all[i].GetComponent<NetworkView>().owner == requestingPlayer){
 				print("Requesting playerSync found!");
 				// Find the target assembly.
 				for(int j = 0; j < Assembly.getAll.Count; j++){
@@ -326,7 +326,7 @@ public class AssemblyRadarBlip {
 		rotation *= Quaternion.AngleAxis(Time.deltaTime * rotSpeed, rotationAxis);
 		for(int i = 0; i < nodes.Length; i++){
 			nodes[i].worldObject.position = position + (rotation * nodes[i].localPos.ToVector3() - (rotation * centerOfMass));
-			nodes[i].worldObject.renderer.enabled = CaptureEditorManager.capturedObj == null;
+			nodes[i].worldObject.GetComponent<Renderer>().enabled = CaptureEditorManager.capturedObj == null;
 		}
 
 		smoothedInfluenceScore = Mathf.Lerp(smoothedInfluenceScore, influenceScore, Time.deltaTime);
@@ -376,7 +376,7 @@ public class BlipNode {
 				tex = AssemblyRadar.Inst.boneTexture;
 				break;
 		}
-		worldObject.renderer.material.mainTexture = tex;
+		worldObject.GetComponent<Renderer>().material.mainTexture = tex;
 
 	} // End of BlipNode().
 

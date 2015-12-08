@@ -24,7 +24,7 @@ public class Jellyfish : MonoBehaviour, CaptureObject {
         }
 
         if(PersistentGameManager.IsClient)
-            rigidbody.isKinematic = true;
+            GetComponent<Rigidbody>().isKinematic = true;
     } // End of Update().
 
 

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.VR;
 
 public class Assembly : CaptureObject{
 
@@ -327,7 +328,7 @@ public class Assembly : CaptureObject{
                 if (MatingWith.nodes.Count > i) {
 					otherNode = MatingWith.nodes[i];
 
-					//if(myNode.Visible && otherNode.Visible)
+					//if((!VRDevice.isPresent) && myNode.Visible && otherNode.Visible)
 					//	GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
 					Vector3 vectorToMate = myNode.Position - otherNode.Position;
 					float distance = vectorToMate.magnitude;
@@ -350,6 +351,8 @@ public class Assembly : CaptureObject{
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(MatingWith);
 				newAssembly.amalgam = amalgam;
+				if(newAssembly.amalgam)
+					newAssembly.amalgam.assemblies.Add(newAssembly);
 
                 //Debug.LogError("Baby assembly born: family size: " + familyTree.Count);
 
@@ -385,7 +388,7 @@ public class Assembly : CaptureObject{
 				int newAssemID = NodeController.Inst.GetNewAssemblyID();
 				Id = newAssemID;
 			}
-			AssemblyRadar.Inst.networkView.RPC("CreateBlip", RPCMode.Others, IOHelper.AssemblyToString(this), Position);
+			AssemblyRadar.Inst.GetComponent<NetworkView>().RPC("CreateBlip", RPCMode.Others, IOHelper.AssemblyToString(this), Position);
 		}
 
         if (propertiesDirty) {

@@ -53,9 +53,9 @@ public class EdgeDetectEffectNormals : PostEffectsBase
 	void  SetCameraFlag ()
 	{
 		if (mode > EdgeDetectMode.RobertsCrossDepthNormals)
-			camera.depthTextureMode |= DepthTextureMode.Depth;		
+			GetComponent<Camera>().depthTextureMode |= DepthTextureMode.Depth;		
 		else
-			camera.depthTextureMode |= DepthTextureMode.DepthNormals;		
+			GetComponent<Camera>().depthTextureMode |= DepthTextureMode.DepthNormals;		
 	}
 
 	void  OnEnable ()

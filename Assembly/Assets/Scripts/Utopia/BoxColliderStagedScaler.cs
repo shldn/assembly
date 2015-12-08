@@ -67,8 +67,8 @@ public class BoxColliderStagedScaler : MonoBehaviour
         SetupTargets();
 
         stage = 0;
-        if (playAnimation && animation != null)
-            animation.Play();
+        if (playAnimation && GetComponent<Animation>() != null)
+            GetComponent<Animation>().Play();
         if (repeatDelay > 0)
             Invoke("Scale", repeatDelay);
         else

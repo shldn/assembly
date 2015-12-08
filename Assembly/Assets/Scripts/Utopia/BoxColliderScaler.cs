@@ -63,8 +63,8 @@ public class BoxColliderScaler : MonoBehaviour {
     {
         scaleTarget = originalScale + magnitude * dir.normalized;
         isAnimatingForward = true;
-        if (playAnimation && animation != null)
-            animation.Play();
+        if (playAnimation && GetComponent<Animation>() != null)
+            GetComponent<Animation>().Play();
         if (repeatDelay > 0)
             Invoke("Scale", repeatDelay);
         else

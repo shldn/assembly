@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Globalization;
+using UnityEngine.VR;
 
 
 public class NodeController : MonoBehaviour {
@@ -149,7 +150,7 @@ public class NodeController : MonoBehaviour {
 
 			if(curAssem.cull){
 				if(Network.peerType == NetworkPeerType.Server)
-					AssemblyRadar.Inst.networkView.RPC("RemoveBlip", RPCMode.Others, curAssem.Id);
+					AssemblyRadar.Inst.GetComponent<NetworkView>().RPC("RemoveBlip", RPCMode.Others, curAssem.Id);
 				Assembly.getAll.RemoveAt(i);
 				i--;
 			}else
@@ -301,8 +302,10 @@ public class NodeController : MonoBehaviour {
                 }
 
 
-                for (int i = 0; i < relativesToHighlight.Count - 1; i++)
-                    GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount * leaderboardFadeIn));
+
+                if(!VRDevice.isPresent){
+					for (int i = 0; i < relativesToHighlight.Count - 1; i++)
+						GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount * leaderboardFadeIn));
             }
             else
                 currentLeaderIndex = -1;

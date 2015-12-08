@@ -62,7 +62,7 @@ public class CaptureNet_Manager : MonoBehaviour {
             NetworkView nv = gameObject.AddComponent<NetworkView>();
             nv.stateSynchronization = NetworkStateSynchronization.Off;
         }
-	    myNetworkView = networkView;
+	    myNetworkView = GetComponent<NetworkView>();
 	    Network.minimumAllocatableViewIDs = 500;
         DontDestroyOnLoad(this);
 
@@ -341,11 +341,11 @@ public class CaptureNet_Manager : MonoBehaviour {
 		print("Client connected, type " + type);
 
 		for(int i = 0; i < PlayerSync.all.Count; i++){
-			if(PlayerSync.all[i].networkView.owner == player)
+			if(PlayerSync.all[i].GetComponent<NetworkView>().owner == player)
 				PlayerSync.all[i].lassoClient = (type == 0)? true : false;
 		}
 
-		if(type == 0){
+		if(type == 1){
 			for(int i = 0; i < Assembly.getAll.Count; i++){
 				if(Assembly.getAll[i].ready)
 					blipRequests.Add(new AssemblyBlipRequest(Assembly.getAll[i], player));
@@ -442,7 +442,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     // Client calls this to send request to server
     public void RequestNextScene()
     {
-        networkView.RPC("GoToNextScene", RPCMode.Server);
+        GetComponent<NetworkView>().RPC("GoToNextScene", RPCMode.Server);
     }
 
     [RPC] // Server receives this request from client
@@ -454,7 +454,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     // Client calls this to send request to server
     public void RequestToggleQRCodeVisibility()
     {
-        networkView.RPC("ToggleQRCode", RPCMode.Server);
+        GetComponent<NetworkView>().RPC("ToggleQRCode", RPCMode.Server);
     }
 
     [RPC] // Server receives this request from client

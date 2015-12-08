@@ -1,3 +1,5 @@
+// Upgrade NOTE: commented out 'float4 unity_LightmapST', a built-in variable
+
 // Upgrade NOTE: commented out 'sampler2D unity_Lightmap', a built-in variable
 // Upgrade NOTE: commented out 'sampler2D unity_LightmapInd', a built-in variable
 // Upgrade NOTE: replaced tex2D unity_Lightmap with UNITY_SAMPLE_TEX2D
@@ -39,7 +41,7 @@ Shader "Shader Forge/Examples/Animated Vegetation" {
             #pragma target 3.0
             uniform float4 _TimeEditor;
             #ifndef LIGHTMAP_OFF
-                float4 unity_LightmapST;
+                // float4 unity_LightmapST;
                 // sampler2D unity_Lightmap;
                 #ifndef DIRLIGHTMAP_OFF
                     // sampler2D unity_LightmapInd;

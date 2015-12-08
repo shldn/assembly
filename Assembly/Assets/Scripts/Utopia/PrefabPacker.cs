@@ -36,8 +36,8 @@ public class PrefabPacker : MonoBehaviour {
             if( alignWithFaces )
                 go.transform.Rotate(Vector3.right, 90.0f, Space.Self);
 
-            if( go.rigidbody)
-                go.rigidbody.isKinematic = true;
+            if( go.GetComponent<Rigidbody>())
+                go.GetComponent<Rigidbody>().isKinematic = true;
             go.transform.parent = this.transform;
         }
     }
@@ -55,8 +55,8 @@ public class PrefabPacker : MonoBehaviour {
     {
         for (int i = 0; i < gameObject.transform.childCount; ++i)
         {
-            gameObject.transform.GetChild(i).rigidbody.isKinematic = false;
-            gameObject.transform.GetChild(i).rigidbody.WakeUp();
+            gameObject.transform.GetChild(i).GetComponent<Rigidbody>().isKinematic = false;
+            gameObject.transform.GetChild(i).GetComponent<Rigidbody>().WakeUp();
         }
     }
 

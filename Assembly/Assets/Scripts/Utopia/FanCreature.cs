@@ -73,7 +73,7 @@ public class FanCreature : MonoBehaviour, CaptureObject {
         BoxCollider[] childColliders = GetComponentsInChildren<BoxCollider>();
         for (int i = 0; i < childColliders.Length; ++i)
         {
-            if (gameObject != childColliders[i].gameObject && go != childColliders[i].gameObject && go.collider.bounds.Intersects(childColliders[i].bounds))
+            if (gameObject != childColliders[i].gameObject && go != childColliders[i].gameObject && go.GetComponent<Collider>().bounds.Intersects(childColliders[i].bounds))
                 return true;
         }
         return false;

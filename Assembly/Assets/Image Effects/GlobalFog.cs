@@ -52,10 +52,10 @@ public class GlobalFog : PostEffectsBase
 			return;
 		}
 			
-		CAMERA_NEAR = camera.nearClipPlane;
-		CAMERA_FAR = camera.farClipPlane;
-		CAMERA_FOV = camera.fieldOfView;
-		CAMERA_ASPECT_RATIO = camera.aspect;
+		CAMERA_NEAR = GetComponent<Camera>().nearClipPlane;
+		CAMERA_FAR = GetComponent<Camera>().farClipPlane;
+		CAMERA_FOV = GetComponent<Camera>().fieldOfView;
+		CAMERA_ASPECT_RATIO = GetComponent<Camera>().aspect;
 	
 		Matrix4x4 frustumCorners = Matrix4x4.identity;		
 		Vector4 vec;
@@ -63,24 +63,24 @@ public class GlobalFog : PostEffectsBase
 	
 		float fovWHalf = CAMERA_FOV * 0.5f;
 		
-		Vector3 toRight = camera.transform.right * CAMERA_NEAR * Mathf.Tan (fovWHalf * Mathf.Deg2Rad) * CAMERA_ASPECT_RATIO;
-		Vector3 toTop = camera.transform.up * CAMERA_NEAR * Mathf.Tan (fovWHalf * Mathf.Deg2Rad);
+		Vector3 toRight = GetComponent<Camera>().transform.right * CAMERA_NEAR * Mathf.Tan (fovWHalf * Mathf.Deg2Rad) * CAMERA_ASPECT_RATIO;
+		Vector3 toTop = GetComponent<Camera>().transform.up * CAMERA_NEAR * Mathf.Tan (fovWHalf * Mathf.Deg2Rad);
 	
-		Vector3 topLeft = (camera.transform.forward * CAMERA_NEAR - toRight + toTop);
+		Vector3 topLeft = (GetComponent<Camera>().transform.forward * CAMERA_NEAR - toRight + toTop);
 		float CAMERA_SCALE = topLeft.magnitude * CAMERA_FAR/CAMERA_NEAR;	
 			
 		topLeft.Normalize();
 		topLeft *= CAMERA_SCALE;
 	
-		Vector3 topRight = (camera.transform.forward * CAMERA_NEAR + toRight + toTop);
+		Vector3 topRight = (GetComponent<Camera>().transform.forward * CAMERA_NEAR + toRight + toTop);
 		topRight.Normalize();
 		topRight *= CAMERA_SCALE;
 		
-		Vector3 bottomRight = (camera.transform.forward * CAMERA_NEAR + toRight - toTop);
+		Vector3 bottomRight = (GetComponent<Camera>().transform.forward * CAMERA_NEAR + toRight - toTop);
 		bottomRight.Normalize();
 		bottomRight *= CAMERA_SCALE;
 		
-		Vector3 bottomLeft = (camera.transform.forward * CAMERA_NEAR - toRight - toTop);
+		Vector3 bottomLeft = (GetComponent<Camera>().transform.forward * CAMERA_NEAR - toRight - toTop);
 		bottomLeft.Normalize();
 		bottomLeft *= CAMERA_SCALE;
 				
@@ -90,7 +90,7 @@ public class GlobalFog : PostEffectsBase
 		frustumCorners.SetRow (3, bottomLeft);		
 								
 		fogMaterial.SetMatrix ("_FrustumCornersWS", frustumCorners);
-		fogMaterial.SetVector ("_CameraWS", camera.transform.position);
+		fogMaterial.SetVector ("_CameraWS", GetComponent<Camera>().transform.position);
 		fogMaterial.SetVector ("_StartDistance", new Vector4 (1.0f / startDistance, (CAMERA_SCALE-startDistance)));
 		fogMaterial.SetVector ("_Y", new Vector4 (height, 1.0f / heightScale));
 		

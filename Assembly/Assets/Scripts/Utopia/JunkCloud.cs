@@ -77,7 +77,7 @@ public class JunkCloud : MonoBehaviour {
         LinkedListNode<GameObject> current = allJunkObjects.First;
         while (current != null)
         {
-            if (!GeometryUtility.TestPlanesAABB(cameraPlanes, current.Value.renderer.bounds))
+            if (!GeometryUtility.TestPlanesAABB(cameraPlanes, current.Value.GetComponent<Renderer>().bounds))
             {
                 allJunkObjects.Remove(current);
                 Destroy(current.Value);

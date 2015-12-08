@@ -48,7 +48,7 @@ public class PlayerSync : MonoBehaviour {
     }
 
 	void Start(){
-		if(networkView.isMine) {
+		if(GetComponent<NetworkView>().isMine) {
 			local = this;
 		}
 	} // End of Start().
@@ -67,10 +67,10 @@ public class PlayerSync : MonoBehaviour {
             cursorObject.gameObject.SetActive((!editing || PersistentGameManager.Inst.singlePlayer) && lassoClient);
         }
 
-        if(cursorObject && (PersistentGameManager.IsClient) && !networkView.isMine)
+        if(cursorObject && (PersistentGameManager.IsClient) && !GetComponent<NetworkView>().isMine)
             Destroy(cursorObject.gameObject);
 
-		if(CaptureNet_Manager.Inst.orbitPlayers.Contains(networkView.owner))
+		if(CaptureNet_Manager.Inst.orbitPlayers.Contains(GetComponent<NetworkView>().owner))
         {
             // handle camera orbiting for these players screenPos movements here
 			if(orbitModeInit){
@@ -91,7 +91,7 @@ public class PlayerSync : MonoBehaviour {
 			screenPos = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
 			orbitModeInit = true;
         }
-        else if (!CaptureEditorManager.IsEditing && ((Network.peerType == NetworkPeerType.Server) || networkView.isMine))
+        else if (!CaptureEditorManager.IsEditing && ((Network.peerType == NetworkPeerType.Server) || GetComponent<NetworkView>().isMine))
         {
 			orbitModeInit = false;
 
@@ -122,7 +122,7 @@ public class PlayerSync : MonoBehaviour {
 				}
 			}
 
-            if(networkView.isMine){
+            if(GetComponent<NetworkView>().isMine){
 #if UNITY_ANDROID || UNITY_IOS
                 if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && ((Input.touchCount == 1) || (Application.platform == RuntimePlatform.WindowsEditor)))
 #else
@@ -141,15 +141,15 @@ public class PlayerSync : MonoBehaviour {
                 Network.SetSendingEnabled(0, true);
 
 
-            if(lassoClient && networkView.isMine && Input.GetMouseButton(0) && !selecting){
+            if(lassoClient && GetComponent<NetworkView>().isMine && Input.GetMouseButton(0) && !selecting){
                 selecting = true;
                 Network.SetSendingEnabled(0, selecting);
-                networkView.RPC("StartSelect", RPCMode.Server);
+                GetComponent<NetworkView>().RPC("StartSelect", RPCMode.Server);
             }
 
-            if(networkView.isMine && !Input.GetMouseButton(0) && selecting){
+            if(GetComponent<NetworkView>().isMine && !Input.GetMouseButton(0) && selecting){
                 selecting = false;
-                networkView.RPC("StopSelect", RPCMode.Server);
+                GetComponent<NetworkView>().RPC("StopSelect", RPCMode.Server);
 
                 // don't send packets while the client is not selecting anything
                 Network.SetSendingEnabled(0, selecting);
@@ -261,7 +261,7 @@ public class PlayerSync : MonoBehaviour {
         
         Jellyfish j = capturedObj as Jellyfish;
         if (j != null){
-            networkView.RPC("CaptureJelly", networkView.owner, j.creator.headNum, j.creator.tailNum, j.creator.boballNum, j.creator.wingNum);
+            GetComponent<NetworkView>().RPC("CaptureJelly", GetComponent<NetworkView>().owner, j.creator.headNum, j.creator.tailNum, j.creator.boballNum, j.creator.wingNum);
         }
         else{
 			Assembly a = capturedObj as Assembly;
@@ -269,7 +269,7 @@ public class PlayerSync : MonoBehaviour {
             if( a != null )
             {
                 a.SaveFamilyTree();
-                networkView.RPC("CaptureAssembly", networkView.owner, (a).ToFileString());
+                GetComponent<NetworkView>().RPC("CaptureAssembly", GetComponent<NetworkView>().owner, (a).ToFileString());
 
 				// Single-player
 				if(PersistentGameManager.Inst.singlePlayer){
@@ -287,7 +287,7 @@ public class PlayerSync : MonoBehaviour {
 				}
             }
             else
-                networkView.RPC("CaptureUCreature", networkView.owner);
+                GetComponent<NetworkView>().RPC("CaptureUCreature", GetComponent<NetworkView>().owner);
         }
 
         Instantiate(PersistentGameManager.Inst.pingBurstObj, capturedObj.Position, Quaternion.identity);
@@ -357,7 +357,7 @@ public class PlayerSync : MonoBehaviour {
     public void RequestToggleOrbitMode()
     {
 		print("RequestToggleOrbitMode()");
-        networkView.RPC("ToggleOrbitMode", RPCMode.Server, networkView.owner);
+        GetComponent<NetworkView>().RPC("ToggleOrbitMode", RPCMode.Server, GetComponent<NetworkView>().owner);
     }
 
     [RPC] // Server receives this request from client

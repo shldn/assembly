@@ -76,7 +76,7 @@ public class TimedTrailRenderer : MonoBehaviour
        o.transform.localScale = Vector3.one;
        o.AddComponent(typeof(MeshFilter));
        o.AddComponent(typeof(MeshRenderer));
-       o.renderer.material = material;
+       o.GetComponent<Renderer>().material = material;
 
        meshBounds.center = transform.position;
        meshBounds.size = Vector3.one;
@@ -94,7 +94,7 @@ public class TimedTrailRenderer : MonoBehaviour
  
    void Update ()
    {
-	   o.renderer.enabled = render;
+	   o.GetComponent<Renderer>().enabled = render;
 
       if(emit && emitTime != 0)
       {

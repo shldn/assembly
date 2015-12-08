@@ -89,6 +89,9 @@ public class Node {
 		}
 	}
 
+	// This movement will be applied after velocity calculations.
+	public Vector3 staticMove = Vector3.zero;
+
 	// If true, node will be destroyed.
 	public bool cull = false;
 
@@ -250,6 +253,8 @@ public class Node {
 		velocity *= 0.98f;
 
 		delayPosition += velocity;
+		delayPosition += staticMove;
+		staticMove = Vector3.zero;
 		Position = delayPosition;
 		Rotation = delayRotation;
 

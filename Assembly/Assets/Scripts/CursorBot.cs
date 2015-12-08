@@ -26,7 +26,7 @@ public class CursorBot : MonoBehaviour {
         if(CursorBotManager.Inst.useRandomColors)
         {
             Color newColor = new Color(Random.value, Random.value, Random.value);
-            cursorLine.renderer.material.SetColor("_TintColor", newColor);
+            cursorLine.GetComponent<Renderer>().material.SetColor("_TintColor", newColor);
             cursorObject.GetComponentInChildren<MeshRenderer>().material.SetColor("_TintColor", newColor);
         }
 	}

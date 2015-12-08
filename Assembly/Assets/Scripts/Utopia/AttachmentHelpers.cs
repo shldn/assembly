@@ -41,7 +41,7 @@ public class AttachmentHelpers{
         if( child.GetComponent<Rigidbody>() )
         {
             FixedJoint joint = parent.AddComponent<FixedJoint>();
-            joint.connectedBody = child.rigidbody;
+            joint.connectedBody = child.GetComponent<Rigidbody>();
         }
 
         return child;
