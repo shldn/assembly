@@ -12,6 +12,12 @@ public class MVCBridge {
     // Viewer variables
     static TcpClient viewerClient = null;
     static DateTime lastMessageTime = DateTime.Now;
+    static Thread viewerReaderThread = null;
+    static volatile bool viewerConnectionLost = false;
+    public static volatile bool viewerDataReadyToApply = false;
+    public static ViewerData viewerData = null;
+    public static bool ViewerConnectionLost { get { return viewerConnectionLost; } }
+
 
     // Controller variables
     static TcpListener controllerServer = null;
@@ -20,6 +26,8 @@ public class MVCBridge {
     // Shared variables
     static int port = 12000;
     static NetworkStream stream = null;
+
+
 
     // Controller Functions
     //--------------------------------------------------------------------
@@ -86,6 +94,7 @@ public class MVCBridge {
     #endregion
 
 
+
     // Viewer Functions
     //--------------------------------------------------------------------
     #region ViewerFunctions
@@ -107,15 +116,25 @@ public class MVCBridge {
         }
         viewerClient.EndConnect(ar);
         stream = viewerClient.GetStream();
+        viewerConnectionLost = false;
         lastMessageTime = DateTime.Now;
+        viewerReaderThread = new Thread(new ThreadStart(ViewerReceiveLoop));
+        viewerReaderThread.Start();
+
     }
 
     public static ViewerData GetDataFromController() {
-        if (stream == null)
+        return GetDataFromControllerImpl();
+    }
+
+    static ViewerData GetDataFromControllerImpl()
+    {
+        if (stream == null) 
             return null;
-        if ((DateTime.Now - lastMessageTime).TotalSeconds > 2) {
+        if ((DateTime.Now - lastMessageTime).TotalSeconds > 2)
+        {
             Debug.LogError("Haven\'t heard from server for over 2 seconds, looks like server is down, disconnecting.");
-            HandleViewerConnectionLost();
+            viewerConnectionLost = true;
             return null;
         }
         if (!stream.DataAvailable)
@@ -127,13 +146,27 @@ public class MVCBridge {
             data = (ViewerData)formatter.Deserialize(stream);
         }
         catch(EndOfStreamException e) {
+            viewerConnectionLost = true;
             Debug.LogError("Error reading data from controller, assume connection lost " + e.ToString());
-            HandleViewerConnectionLost();
         }
         return data;
     }
 
-    static void HandleViewerConnectionLost() {
+    static void ViewerReceiveLoop()
+    {
+        while (true)
+        {
+            if(!viewerDataReadyToApply)
+            {
+                viewerData = GetDataFromControllerImpl();
+                if (viewerData != null)
+                    viewerDataReadyToApply = true;
+            }
+            Thread.Sleep(10);
+        }
+    }
+
+    public static void HandleViewerConnectionLost() {
         viewerClient.Close();
         stream = null;
         ViewerController.Inst.Clear();
@@ -143,6 +176,9 @@ public class MVCBridge {
     public static void CloseViewerConnection() {
         if (viewerClient != null)
             viewerClient.Close();
+        if (viewerReaderThread != null)
+            viewerReaderThread.Abort();
+        viewerReaderThread = null;
     }
 
 #endregion

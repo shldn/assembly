@@ -45,15 +45,23 @@ public class ViewerController : MonoBehaviour {
                 a.Value.nodes[i].Update();
             }
         }
+
     }
 
     void LateUpdate()
     {
         if (!PersistentGameManager.EmbedViewer || PersistentGameManager.ViewerOnlyApp) {
 
-            ViewerData data = MVCBridge.GetDataFromController();
-            if (data == null)
+            if (MVCBridge.ViewerConnectionLost)
+            {
+                MVCBridge.HandleViewerConnectionLost();
                 return;
+            }
+
+            if (!MVCBridge.viewerDataReadyToApply)
+                return;
+
+            ViewerData data = MVCBridge.viewerData;
             
             // Assembly Messages
             for (int i = 0; i < data.assemblyCreations.Count; i++)
@@ -88,7 +96,7 @@ public class ViewerController : MonoBehaviour {
             }
         }
         ViewerData.Inst.Clear();
-
+        MVCBridge.viewerDataReadyToApply = false;
     }
 
     // Clear all Viewer elements
