@@ -303,7 +303,7 @@ public class NodeController : MonoBehaviour {
 
 
 
-                if(!VRDevice.isPresent){
+                if(!VRDevice.isPresent)
 					for (int i = 0; i < relativesToHighlight.Count - 1; i++)
 						GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount * leaderboardFadeIn));
             }
