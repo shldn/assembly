@@ -50,7 +50,6 @@ public class PersistentGameManager : MonoBehaviour {
 
 
 	void Awake () {
-        Debug.LogError("Persistent Game Manager");
 
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);

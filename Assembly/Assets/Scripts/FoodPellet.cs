@@ -42,7 +42,6 @@ public class FoodPellet {
 
 	public FoodPellet(Vector3 position, Assembly owner_ = null){
 		worldPosition = position;
-        viewer.Scale = 1;
 
 		all.Add(this);
 		AllFoodTree.Insert(this);
@@ -50,8 +49,10 @@ public class FoodPellet {
 		maxEnergy = energy;
         owner = owner_;
 
-        if (PersistentGameManager.EmbedViewer)
+        if (PersistentGameManager.EmbedViewer) {
             viewer = new FoodPelletViewer(worldPosition);
+            viewer.Scale = 1;
+        }
         else {
             id = NextFoodID();
             ViewerData.Inst.foodCreations.Add(new FoodCreationData(id, worldPosition));
