@@ -232,11 +232,12 @@ public class NodeController : MonoBehaviour {
 		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
 			if(PersistentGameManager.IsServer){
 				// Populate world if less than 50% max pop.
-				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.75f)){
+				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.7f)){
 					Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, worldSize);
 					Assembly newAssembly = Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
 				}
 
+                /*
 				// Cull the herd if too many assemblies.
 				if(populationControl && (Node.getAll.Count > worldNodeThreshold)){
 					float highestHealth = 9999f;
@@ -250,6 +251,7 @@ public class NodeController : MonoBehaviour {
 					if(worstAssembly)
 						worstAssembly.Destroy();
 				}
+                */
 
 				// Keep food at full amount.
 				if(populationControl && (FoodPellet.all.Count < foodPellets)){
