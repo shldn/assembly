@@ -10,6 +10,7 @@ public class AssemblyViewer {
     private int id = -1;
     public List<NodeViewer> nodes = new List<NodeViewer>();
     public TimedLabel label = null;
+	public AssemblyEffects effects = null;
 
     public int Id { get { return properties.id; } }
 
@@ -43,6 +44,7 @@ public class AssemblyViewer {
             CreateLabel(config.properties.name);
         if (config.offspring && RandomMelody.Inst)
             RandomMelody.Inst.PlayNote();
+		CreateEffects();
         all.Add(Id, this);
     }
 
@@ -52,11 +54,14 @@ public class AssemblyViewer {
         }
         Vector3 posSum = Vector3.zero;
         for (int i = 0; i < nodes.Count; ++i){
-            nodes[i].UpdateTransform(updates[i].pos, updates[i].rot);
+            nodes[i].UpdateTransform(updates[i].pos, updates[i].rot, true);
             posSum += updates[i].pos;
         }
+		Vector3 center = posSum / nodes.Count;
         if (label)
-            label.gameObject.transform.position = posSum / nodes.Count;
+            label.gameObject.transform.position = center;
+		if (effects)
+			effects.gameObject.transform.position = center;
     }
 
     public void Destroy(bool removeFromList = true) {
@@ -64,6 +69,18 @@ public class AssemblyViewer {
             nodes[i].Destroy();
 
         MatingViewer.Inst.RemoveMates(id);
+
+		/*
+		if(label) {
+			Destroy(label.gameObject);
+			label = null;
+		}
+		*/
+
+		if(effects) {
+			GameObject.Destroy(effects.gameObject);
+			effects = null;
+		}
 
         if(removeFromList && all.ContainsKey(Id))
             all.Remove(Id);
@@ -75,6 +92,10 @@ public class AssemblyViewer {
         label.fadeTime = 30f;
         label.FadeComplete += LabelDone;
     }
+
+	private void CreateEffects() {
+        effects = new GameObject("AssemblyEffects").AddComponent<AssemblyEffects>();
+	}
 
     private void LabelDone(object sender) {
         GameObject.Destroy(label.gameObject);
