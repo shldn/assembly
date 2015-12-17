@@ -244,12 +244,11 @@ public class NodeController : MonoBehaviour {
 		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
 			if(PersistentGameManager.IsServer){
 				// Populate world if less than 50% max pop.
-				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.7f)){
+				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.75f)){
 					Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, worldSize);
 					Assembly newAssembly = Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
 				}
 
-                /*
 				// Cull the herd if too many assemblies.
 				if(populationControl && (Node.getAll.Count > worldNodeThreshold)){
 					float highestHealth = 9999f;
@@ -263,7 +262,6 @@ public class NodeController : MonoBehaviour {
 					if(worstAssembly)
 						worstAssembly.Destroy();
 				}
-                */
 
 				// Keep food at full amount.
 				if(populationControl && (FoodPellet.all.Count < foodPellets)){
@@ -304,10 +302,9 @@ public class NodeController : MonoBehaviour {
                 }
 
 
-
-                if(!VRDevice.isPresent)
-					for (int i = 0; i < relativesToHighlight.Count - 1; i++)
-						GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount * leaderboardFadeIn));
+                //if(!VRDevice.isPresent)
+					//for (int i = 0; i < relativesToHighlight.Count - 1; i++)
+						//GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount * leaderboardFadeIn));
             }
             else
                 currentLeaderIndex = -1;
