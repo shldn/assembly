@@ -431,11 +431,15 @@ public class CaptureNet_Manager : MonoBehaviour {
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
-        Assembly a = new Assembly(assemblyStr, null, assemblyNewPos, false, true);
+        if (PersistentGameManager.EmbedViewer) {
+            Assembly a = new Assembly(assemblyStr, null, assemblyNewPos, false, true);
 
-		// Assembly is "thrown" back into the environment.
-		foreach(Node someNode in a.NodeDict.Values)
-			someNode.velocity = (Camera.main.transform.forward * 3f) + Random.insideUnitSphere * 1.5f;
+            // Assembly is "thrown" back into the environment.
+            foreach (Node someNode in a.NodeDict.Values)
+                someNode.velocity = (Camera.main.transform.forward * 3f) + Random.insideUnitSphere * 1.5f;
+        }
+        else
+            ControllerData.Inst.Add(new AssemblyReleased(assemblyStr, assemblyNewPos, Camera.main.transform.forward));
 
     } // End of PushAssembly().
 

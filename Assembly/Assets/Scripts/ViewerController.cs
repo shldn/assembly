@@ -46,6 +46,8 @@ public class ViewerController : MonoBehaviour {
             }
         }
 
+        if(MVCBridge.viewerReadyToSend)
+            MVCBridge.SendDataToController();
     }
 
     void LateUpdate()
@@ -89,13 +91,17 @@ public class ViewerController : MonoBehaviour {
 
 
                 // Food Messages
-                for (int i = 0; i < data.foodCreations.Count; i++)
+                for (int i = 0; i < data.foodCreations.Count; ++i)
                     new FoodPelletViewer(data.foodCreations[i].Position, data.foodCreations[i].id);
 
                 for (int i = 0; i < data.foodDeletes.Count; ++i) {
                     if (FoodPelletViewer.All.ContainsKey(data.foodDeletes[i]))
                         FoodPelletViewer.All[data.foodDeletes[i]].Destroy();
                 }
+
+                // Generic Messages
+                for (int i = 0; i < data.messages.Count; ++i)
+                    HandleGenericMessage(data.messages[i]);
             }
             catch(System.Exception e) {
                 Debug.LogError("Exception in Message Application: " + e.ToString() + "\n" + e.StackTrace);
@@ -106,11 +112,24 @@ public class ViewerController : MonoBehaviour {
         ViewerData.Inst.Clear();
     }
 
+    public void HandleGenericMessage(object message) {
+        System.Type type = message.GetType();
+        if(type.Equals(typeof(CaptureData))) {
+            CaptureData capturedata = message as CaptureData;
+            if (PlayerSync.capturedToPlayerSync.ContainsKey(capturedata.id)) {
+                PlayerSync.capturedToPlayerSync[capturedata.id].SendCaptureAssemblyRPC(capturedata.definition);
+                PlayerSync.capturedToPlayerSync.Remove(capturedata.id);
+            }            
+        }
+        else
+            Debug.LogError("HandleGenericMessage: unknown message type: " + type);
+    }
+
     // Clear all Viewer elements
     public void Clear() {
 
         foreach (KeyValuePair<int, AssemblyViewer> kvp in AssemblyViewer.All)
-            kvp.Value.Destroy(false);
+            kvp.Value.DestroyKeepInList();
         AssemblyViewer.All.Clear();
 
         foreach (KeyValuePair<int, FoodPelletViewer> kvp in FoodPelletViewer.All)

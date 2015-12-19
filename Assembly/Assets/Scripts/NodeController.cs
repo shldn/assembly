@@ -737,4 +737,25 @@ public class NodeController : MonoBehaviour {
 
     } // End HandleReset().
 
+    public void HandleCapturedAssembly(object message) {
+        AssemblyCaptured capture = message as AssemblyCaptured;
+        Assembly a = Assembly.Get(capture.id);
+        if (a == null)
+            Debug.LogError("Could not find assembly " + capture.id);
+        else {
+            a.SaveFamilyTree();
+            ViewerData.Inst.messages.Add(new CaptureData(capture.id, (a).ToFileString()));
+            a.Destroy();
+        }
+    }
+
+    public void HandleReleasedAssembly(object message) {
+        AssemblyReleased release = message as AssemblyReleased;
+        Assembly a = new Assembly(release.definition, null, release.Position, false, true);
+
+        // Assembly is "thrown" back into the environment.
+        foreach (Node someNode in a.NodeDict.Values)
+            someNode.velocity = (release.CamDir * 3f) + Random.insideUnitSphere * 1.5f;
+    }
+
 } // End of NodeController.
