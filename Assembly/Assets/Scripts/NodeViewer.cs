@@ -25,6 +25,12 @@ public class NodeViewer {
     // Accessors
     public Vector3 Position { get { return cubeTransform.transform.position; } private set { cubeTransform.transform.position = value; } }
     private Quaternion Rotation { get { return cubeTransform.transform.rotation; } set { cubeTransform.transform.rotation = value; } }
+
+	private bool smoothMotion = false;
+	private Vector3 positionTarget = Vector3.zero;
+	private Vector3 positionVel = Vector3.zero;
+    private Quaternion rotationTarget = Quaternion.identity;
+
     public int Neighbors { get { return neighbors; } }
     public NodeProperties Properties
     {
@@ -179,11 +185,25 @@ public class NodeViewer {
             case 3:
                 break;
         }
+
+		if(smoothMotion){
+			Position = Vector3.SmoothDamp(Position, positionTarget, ref positionVel, 0.25f);
+			Rotation = Quaternion.Lerp(Rotation, rotationTarget, Time.deltaTime * 2f);
+			if (viewConeTrans)
+				UpdateViewConeTransform();
+		}
     }
 
-    public void UpdateTransform(Vector3 pos, Quaternion rot) {
-        Position = pos;
-        Rotation = rot;
+    public void UpdateTransform(Vector3 pos, Quaternion rot, bool smoothed = false) {
+		smoothMotion = smoothed;
+		if(smoothed) {
+			positionTarget = pos;
+			rotationTarget = rot;
+		} else {
+			Position = pos;
+			Rotation = rot;
+		}
+
         if (viewConeTrans)
             UpdateViewConeTransform();
     }

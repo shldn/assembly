@@ -11,6 +11,7 @@ public class AssemblyViewer : CaptureObject{
     private Vector3 position = Vector3.zero;
     public List<NodeViewer> nodes = new List<NodeViewer>();
     public TimedLabel label = null;
+	public AssemblyEffects effects = null;
 
     public int Id { get { return properties.id; } }
     public Vector3 Position { get { return position; } private set { position = value; } }
@@ -45,6 +46,7 @@ public class AssemblyViewer : CaptureObject{
             CreateLabel(config.properties.name);
         if (config.offspring && RandomMelody.Inst)
             RandomMelody.Inst.PlayNote();
+		CreateEffects();
         all.Add(Id, this);
         PersistentGameManager.CaptureObjects.Add(this);
     }
@@ -55,12 +57,14 @@ public class AssemblyViewer : CaptureObject{
         }
         Vector3 posSum = Vector3.zero;
         for (int i = 0; i < nodes.Count; ++i){
-            nodes[i].UpdateTransform(updates[i].pos, updates[i].rot);
+            nodes[i].UpdateTransform(updates[i].pos, updates[i].rot, true);
             posSum += updates[i].pos;
         }
         Position = posSum / nodes.Count;
         if (label)
             label.gameObject.transform.position = Position;
+		if (effects)
+			effects.gameObject.transform.position = Position;
     }
 
     public void DestroyKeepInList() {
@@ -77,6 +81,18 @@ public class AssemblyViewer : CaptureObject{
         MatingViewer.Inst.RemoveMates(id);
         PersistentGameManager.CaptureObjects.Remove(this);
 
+		/*
+		if(label) {
+			Destroy(label.gameObject);
+			label = null;
+		}
+		*/
+
+		if(effects) {
+			GameObject.Destroy(effects.gameObject);
+			effects = null;
+		}
+
         if(removeFromList && all.ContainsKey(Id))
             all.Remove(Id);
     }
@@ -87,6 +103,10 @@ public class AssemblyViewer : CaptureObject{
         label.fadeTime = 30f;
         label.FadeComplete += LabelDone;
     }
+
+	private void CreateEffects() {
+        effects = new GameObject("AssemblyEffects").AddComponent<AssemblyEffects>();
+	}
 
     private void LabelDone(object sender) {
         GameObject.Destroy(label.gameObject);
