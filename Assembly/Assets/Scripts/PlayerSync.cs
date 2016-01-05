@@ -6,6 +6,7 @@ public class PlayerSync : MonoBehaviour {
 
 	public static List<PlayerSync> all = new List<PlayerSync>();
 	public static PlayerSync local;
+    public static Dictionary<int, PlayerSync> capturedToPlayerSync = new Dictionary<int, PlayerSync>();
 	public bool isLocal { get { return local == this; } }
 
     Vector3 screenPos = Vector3.zero;
@@ -265,11 +266,12 @@ public class PlayerSync : MonoBehaviour {
         }
         else{
 			Assembly a = capturedObj as Assembly;
+			AssemblyViewer av = capturedObj as AssemblyViewer;
 
             if( a != null )
             {
                 a.SaveFamilyTree();
-                GetComponent<NetworkView>().RPC("CaptureAssembly", GetComponent<NetworkView>().owner, (a).ToFileString());
+                SendCaptureAssemblyRPC(a.ToFileString());
 
 				// Single-player
 				if(PersistentGameManager.Inst.singlePlayer){
@@ -286,6 +288,10 @@ public class PlayerSync : MonoBehaviour {
 					a.MatingWith = null;
 				}
             }
+            else if(av != null) {
+                capturedToPlayerSync.Add(av.Id, this);
+                ControllerData.Inst.Add(new AssemblyCaptured(av));
+            }
             else
                 GetComponent<NetworkView>().RPC("CaptureUCreature", GetComponent<NetworkView>().owner);
         }
@@ -295,6 +301,10 @@ public class PlayerSync : MonoBehaviour {
         editing = true;
         //capturedObj.Destroy();
         capturedObj.Destroy();
+    }
+
+    public void SendCaptureAssemblyRPC(string assemblyStr) {
+        GetComponent<NetworkView>().RPC("CaptureAssembly", GetComponent<NetworkView>().owner, assemblyStr);
     }
 
     [RPC] // Server receives this message

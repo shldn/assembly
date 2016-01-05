@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 //--------------------------------------------------------------------------
 // ViewerData
 //
-// Defines Data model that needs to be communicated between the Model/Controller Server and the Viewer
+// Defines Data model that needs to be communicated from the Model/Controller Server to the Viewer
 //
 //--------------------------------------------------------------------------
 
@@ -134,6 +134,14 @@ public enum ViewerMessageType
 }
 
 [Serializable]
+public class CaptureData
+{
+    public CaptureData(int id_, string def_) { id = id_;  definition = def_; }
+    public int id;
+    public string definition;
+}
+
+[Serializable]
 public class ViewerData {
 
     private static ViewerData inst = null;
@@ -163,6 +171,9 @@ public class ViewerData {
     public List<FoodCreationData> foodCreations = new List<FoodCreationData>();
     public List<int> foodDeletes = new List<int>();
 
+    // Generic Messages
+    public List<object> messages = new List<object>();
+
     public void Clear()
     {
         assemblyUpdates.Clear();
@@ -172,5 +183,7 @@ public class ViewerData {
 
         foodCreations.Clear();
         foodDeletes.Clear();
+
+        messages.Clear();
     }
 }

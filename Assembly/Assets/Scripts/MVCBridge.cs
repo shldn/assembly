@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -15,6 +16,7 @@ public class MVCBridge {
     static Thread viewerReaderThread = null;
     static volatile bool viewerConnectionLost = false;
     static volatile bool viewerReaderThreadStop = false;
+    public static volatile bool viewerReadyToSend = true;
     public static volatile bool viewerDataReadyToApply = false;
     public static ViewerData viewerData = null;
     public static bool ViewerConnectionLost { get { return viewerConnectionLost; } }
@@ -65,6 +67,21 @@ public class MVCBridge {
         if (stream == null) {
             ViewerData.Inst.Clear();
             return;
+        }
+
+        // check for messages first -- optimize me!
+        if (stream.DataAvailable) {
+            List<object> messages = new List<object>();
+            IFormatter formatter = new BinaryFormatter();
+            try {
+                messages = (List<object>)formatter.Deserialize(stream);
+            }
+            catch (EndOfStreamException e) {
+                Debug.LogError("Error reading data from viewer " + e.ToString());
+            }
+            finally {
+                ControllerData.Inst.HandleMessages(messages);
+            }
         }
 
         StartSendDataToViewerThread(ViewerData.Inst);
@@ -177,6 +194,44 @@ public class MVCBridge {
         viewerReaderThread = null;
         viewerReaderThreadStop = false;
     }
+
+    public static void SendDataToController() {
+
+        if (!ControllerData.Inst.HasData || stream == null) {
+            ControllerData.Inst.Clear();
+            return;
+        }
+
+        StartSendDataToControllerThread(ControllerData.Inst);
+        ControllerData.Inst.Swap();
+        ControllerData.Inst.Clear();
+    }
+
+
+    private static void SendDataToControllerImpl(ControllerData data) {
+        viewerReadyToSend = false;
+        IFormatter formatter = new BinaryFormatter();
+        try {
+            formatter.Serialize(stream, data.Messages);
+        }
+        catch (Exception e) {
+            Debug.LogError("SendDataToViewer failed: " + e.ToString() + "\nAssume the connection was lost");
+        }
+        viewerReadyToSend = true;
+    }
+
+    private static Thread StartSendDataToControllerThread(ControllerData data) {
+        Thread t = new Thread(() => SendDataToControllerImpl(data));
+        t.Start();
+        return t;
+    }
+
+
+
+
+
+
+
 
     public static void HandleViewerConnectionLost() {
         viewerClient.Close();

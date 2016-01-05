@@ -127,6 +127,13 @@ public class Assembly : CaptureObject{
         allAssemblyTree = null;
     }
 
+    public static Assembly Get(int id) {
+        for (int i = 0; i < getAll.Count; ++i)
+            if (getAll[i].id == id)
+                return getAll[i];
+        return null;
+    }
+
 
 	private Assembly(Vector3 spawnPosition, Quaternion spawnRotation, int numNodes, string name = "", bool isOffspring_ = false){
 		this.spawnPosition = spawnPosition;
@@ -134,7 +141,6 @@ public class Assembly : CaptureObject{
 		properties.gender = Random.Range(0f, 1f) > 0.5f;
 		all.Add(this);
 		AllAssemblyTree.Insert(this);
-		PersistentGameManager.CaptureObjects.Add(this);
 		Name = (name == "" ? NodeController.Inst.GetRandomName() : name);
         Id = NodeController.Inst.GetNewAssemblyID();
         isOffspring = isOffspring_;
@@ -149,6 +155,7 @@ public class Assembly : CaptureObject{
             ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(this));
         }
         else {
+            PersistentGameManager.CaptureObjects.Add(this);
             if (isOffspring && RandomMelody.Inst)
                 RandomMelody.Inst.PlayNote();
         }

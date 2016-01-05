@@ -1,18 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class AssemblyViewer {
+public class AssemblyViewer : CaptureObject{
 
     private static Dictionary<int, AssemblyViewer> all = new Dictionary<int, AssemblyViewer>();
     public static Dictionary<int, AssemblyViewer> All { get { return all; } }
 
     private AssemblyProperties properties;
     private int id = -1;
+    private Vector3 position = Vector3.zero;
     public List<NodeViewer> nodes = new List<NodeViewer>();
     public TimedLabel label = null;
 	public AssemblyEffects effects = null;
 
     public int Id { get { return properties.id; } }
+    public Vector3 Position { get { return position; } private set { position = value; } }
 
     public AssemblyProperties Properties {
         get {
@@ -46,6 +48,7 @@ public class AssemblyViewer {
             RandomMelody.Inst.PlayNote();
 		CreateEffects();
         all.Add(Id, this);
+        PersistentGameManager.CaptureObjects.Add(this);
     }
 
     public void TransformUpdate(List<PosRotPair> updates){
@@ -57,18 +60,26 @@ public class AssemblyViewer {
             nodes[i].UpdateTransform(updates[i].pos, updates[i].rot, true);
             posSum += updates[i].pos;
         }
-		Vector3 center = posSum / nodes.Count;
+        Position = posSum / nodes.Count;
         if (label)
-            label.gameObject.transform.position = center;
+            label.gameObject.transform.position = Position;
 		if (effects)
-			effects.gameObject.transform.position = center;
+			effects.gameObject.transform.position = Position;
     }
 
-    public void Destroy(bool removeFromList = true) {
+    public void DestroyKeepInList() {
+        DestroyImpl(false);
+    }
+
+    public void Destroy() {
+        DestroyImpl(true);
+    }
+    private void DestroyImpl(bool removeFromList) {
         for (int i = 0; i < nodes.Count; ++i)
             nodes[i].Destroy();
 
         MatingViewer.Inst.RemoveMates(id);
+        PersistentGameManager.CaptureObjects.Remove(this);
 
 		/*
 		if(label) {
