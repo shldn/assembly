@@ -266,10 +266,11 @@ public class Node {
         if (viewer != null)
             viewer.UpdateTransform(Position,Rotation);
 
-		foreach(PhysNeighbor someNeighbor in neighbors)
+#if SHOW_LINE_ARROWS
+        foreach(PhysNeighbor someNeighbor in neighbors)
 			if(Random.Range(0f, 1f) < 0.2f)
 				someNeighbor.arrowDist = Random.Range(0.25f, 0.4f);
-
+#endif
 
 		// Type-specific behaviours
 		switch(neighbors.Count){
@@ -347,8 +348,10 @@ public class Node {
 				linksToReturn.AddRange(curNeighbor.ComputeCircuitry(new HashSet<Node>(checkedNodes), sig * 0.95f));
 
 				// Trace effect
-				//if(Input.GetKey(KeyCode.T))
-					//GLDebug.DrawLineArrow(Position, Vector3.Lerp(Position, curNeighbor.Position, neighbors[i].arrowDist), 0.1f, 20f, new Color(1f, 1f, 0f, signalStrength), 0f, false);
+#if SHOW_LINE_ARROWS
+				if(Input.GetKey(KeyCode.T))
+					GLDebug.DrawLineArrow(Position, Vector3.Lerp(Position, curNeighbor.Position, neighbors[i].arrowDist), 0.1f, 20f, new Color(1f, 1f, 0f, signalStrength), 0f, false);
+#endif
 			}
 		}
 		return linksToReturn;
