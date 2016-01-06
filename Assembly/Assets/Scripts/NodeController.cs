@@ -10,7 +10,8 @@ public class NodeController : MonoBehaviour {
 
 	public static NodeController Inst;
 
-	public Vector3 worldSize = new Vector3(150f, 150f, 150f);
+    [SerializeField]
+	Vector3 worldSize = new Vector3(150f, 150f, 150f);
 	public float maxWorldSize = 300f;
 
 	public static float physicsStep = 0.05f;
@@ -250,7 +251,7 @@ public class NodeController : MonoBehaviour {
 					}else
 						foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
 
-                    if(FoodPellet.WithinBoundary(foodPosition))
+                    if(WorldSizeController.Inst.WithinBoundary(foodPosition))
     					new FoodPellet(foodPosition);
 				}else
 					foodInitialized = true;

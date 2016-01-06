@@ -43,7 +43,7 @@ public class WorldSizeController : MonoBehaviour {
         }
 
         // Update Environment
-        if (PersistentGameManager.EmbedViewer || PersistentGameManager.ViewerOnlyApp)
+        if (Environment.Inst != null)
             Environment.Inst.WorldSize = worldSize;
     }
 
@@ -60,4 +60,12 @@ public class WorldSizeController : MonoBehaviour {
         if (PersistentGameManager.IsServer && !PersistentGameManager.EmbedViewer)
             ViewerData.Inst.messages.Add(new TargetWorldSizeData(targetWorldSize));
     } // End of AdvanceWorldTick().
+
+    public bool WithinBoundary(Vector3 worldPosition) {
+        return !(Mathf.Sqrt(Mathf.Pow(worldPosition.x / worldSize.x, 2f) + Mathf.Pow(worldPosition.y / worldSize.y, 2f) + Mathf.Pow(worldPosition.z / worldSize.z, 2f)) > 1f);
+    }
+
+    public float DistToBoundary(Vector3 position) {
+        return Mathf.Abs(1f - Mathf.Sqrt(Mathf.Pow(position.x / worldSize.x, 2f) + Mathf.Pow(position.y / worldSize.y, 2f) + Mathf.Pow(position.z / worldSize.z, 2f)));
+    }
 }

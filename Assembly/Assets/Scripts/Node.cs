@@ -225,8 +225,8 @@ public class Node {
 			physAssembly.energy -= NodeController.physicsStep * 0.01f;
 
 
-		// Reel in to amalgam
-		//if(Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f){
+        // Reel in to amalgam
+        //if(!WorldSizeController.Inst.WithinBoundary){
 		if(physAssembly.amalgam && (Vector3.Distance(Position, physAssembly.amalgam.transform.position) > physAssembly.amalgam.radius)){
 			Position -= (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
 		}
@@ -259,7 +259,7 @@ public class Node {
 		Rotation = delayRotation;
 
 		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
-			if((Mathf.Abs(delayPosition.x) > NodeController.Inst.worldSize.x) || (Mathf.Abs(delayPosition.y) > NodeController.Inst.worldSize.y) || (Mathf.Abs(delayPosition.z) > NodeController.Inst.worldSize.z))
+			if((Mathf.Abs(delayPosition.x) > WorldSizeController.Inst.WorldSize.x) || (Mathf.Abs(delayPosition.y) > WorldSizeController.Inst.WorldSize.y) || (Mathf.Abs(delayPosition.z) > WorldSizeController.Inst.WorldSize.z))
 				velocity += -delayPosition.normalized * NodeController.physicsStep;
 		}
 

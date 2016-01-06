@@ -75,7 +75,7 @@ public class FoodPellet {
 		}
 
         // Destroy nodes outside of worlds
-        if (!WithinBoundary(worldPosition) && Environment.Inst)
+        if (!WorldSizeController.Inst.WithinBoundary(worldPosition) && Environment.Inst)
         {
             cull = true;
         }
@@ -86,11 +86,6 @@ public class FoodPellet {
 			viewer.Position = worldPosition;
 
 	} // End of Update().
-
-    public static bool WithinBoundary(Vector3 worldPosition)
-    {
-        return !(Mathf.Sqrt(Mathf.Pow(worldPosition.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(worldPosition.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(worldPosition.z / NodeController.Inst.worldSize.z, 2f)) > 1f);
-    }
 
 
 	public void Destroy(){
