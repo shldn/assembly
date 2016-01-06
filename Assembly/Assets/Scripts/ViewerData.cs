@@ -142,6 +142,21 @@ public class CaptureData
 }
 
 [Serializable]
+public class WorldSizeData
+{
+    public WorldSizeData(Vector3 size_) { size = size_; }
+    public SVector3 size;
+    public Vector3 Size { get { return size.Value;} }
+}
+
+[Serializable]
+public class TargetWorldSizeData
+{
+    public TargetWorldSizeData(float size_) { size = size_; }
+    public float size;
+}
+
+[Serializable]
 public class ViewerData {
 
     private static ViewerData inst = null;

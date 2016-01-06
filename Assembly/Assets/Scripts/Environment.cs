@@ -15,6 +15,8 @@ public class Environment : MonoBehaviour {
         }
     }
 
+    public Vector3 WorldSize { set { transform.localScale = value; } }
+
 	void Awake(){
 		Inst = this;
 		defaultShellColor = outerShell.material.color;
@@ -23,7 +25,6 @@ public class Environment : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		transform.localScale = NodeController.Inst.worldSize;
 
         // Fade outer shell if camera gets close.
         if (Camera.main) {

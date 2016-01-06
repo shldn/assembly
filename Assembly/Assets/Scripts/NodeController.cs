@@ -65,20 +65,16 @@ public class NodeController : MonoBehaviour {
     // Debug
     public int NumAssembliesAllocated { get { return nextAssemblyID; } }
 
-	enum WorldAnim{
-		capsule,
-		sphere
-	}
-	WorldAnim worldAnim = WorldAnim.capsule;
-	float targetWorldSize = 150f;
-
-
 	void Awake(){
 		Inst = this;
 		bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
         string lineEnding = isWindows ? "\r\n" : "\n";
         TextAsset maleNamesText = Resources.Load("Text/randomwords.txt") as TextAsset;
         nameList = maleNamesText.text.Split(new string[] { lineEnding }, System.StringSplitOptions.RemoveEmptyEntries);
+
+        if (WorldSizeController.Inst == null)
+            gameObject.AddComponent<WorldSizeController>();
+        WorldSizeController.Inst.WorldSize = worldSize;
 	} // End of Awake().
 
 
@@ -99,16 +95,6 @@ public class NodeController : MonoBehaviour {
 		return nameList[Random.Range(0, nameList.Length)];
 	} // End of GetRandomName().
 
-
-	// Moves the world animation forward in the animation cycle (called when a food node is depleted, etc.)
-	public void AdvanceWorldTick(){
-		if(worldAnim == WorldAnim.capsule)
-			targetWorldSize = Mathf.MoveTowards(targetWorldSize, 385f, 1f);
-		else if(worldAnim == WorldAnim.sphere)
-			targetWorldSize = Mathf.MoveTowards(targetWorldSize, 150f, 1f);
-	} // End of AdvanceWorldTick().
-
-
 	public void ClearAll(){
 		foreach(Assembly someAssembly in Assembly.getAll){
 			someAssembly.Destroy();
@@ -125,20 +111,8 @@ public class NodeController : MonoBehaviour {
         if (fps != -1)
             Application.targetFrameRate = fps;
 
-        // World grows as food nodes are consumed.
-        worldSize.z = Mathf.Lerp(worldSize.z, targetWorldSize, 0.1f * Time.deltaTime);
 
-		// Once we get to a capsule, switch back to sphere.
-		if(targetWorldSize >= 385f){
-			worldAnim = WorldAnim.sphere;
-		}
-
-		// Once we get to sphere, switch back to capsule.
-		if(targetWorldSize <= 150f){
-			worldAnim = WorldAnim.capsule;
-		}
-		
-		foreach(Node someNode in Node.getAll)
+        foreach (Node someNode in Node.getAll)
 			someNode.DoMath();
 
 		foreach(Node someNode in Node.getAll)
@@ -268,7 +242,7 @@ public class NodeController : MonoBehaviour {
 				// Keep food at full amount.
 				if(populationControl && (FoodPellet.all.Count < foodPellets)){
 					Vector3 foodPosition = Vector3.zero;
-					if(foodInitialized && (worldAnim == WorldAnim.capsule)){
+					if(foodInitialized && (WorldSizeController.Inst.WorldAnim == WorldAnimType.capsule)){
 						float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
 						float radius = worldSize.x * 0.5f;
 						float spiralIntensity = 0.2f;
@@ -367,6 +341,9 @@ public class NodeController : MonoBehaviour {
 
         for (int i = 0; i < FoodPellet.all.Count; ++i)
             ViewerData.Inst.foodCreations.Add(new FoodCreationData(FoodPellet.all[i].Id, FoodPellet.all[i].WorldPosition));
+
+        if(WorldSizeController.Inst != null)
+            ViewerData.Inst.messages.Add(new WorldSizeData(WorldSizeController.Inst.WorldSize));
     }
 
     int GetHighlightedAssemblyID(int idx)

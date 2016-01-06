@@ -70,7 +70,7 @@ public class FoodPellet {
     public void Update(){
 
 		if(energy < 0f){
-			NodeController.Inst.AdvanceWorldTick();
+			WorldSizeController.Inst.AdvanceWorldTick();
 			cull = true;
 		}
 

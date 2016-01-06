@@ -30,6 +30,8 @@ public class ViewerController : MonoBehaviour {
     void Awake()
     {
         Inst = this;
+        if (WorldSizeController.Inst == null)
+            gameObject.AddComponent<WorldSizeController>();
     }
 
     void Start() {
@@ -120,6 +122,14 @@ public class ViewerController : MonoBehaviour {
                 PlayerSync.capturedToPlayerSync[capturedata.id].SendCaptureAssemblyRPC(capturedata.definition);
                 PlayerSync.capturedToPlayerSync.Remove(capturedata.id);
             }            
+        }
+        else if (type.Equals(typeof(TargetWorldSizeData))) {
+            TargetWorldSizeData data = message as TargetWorldSizeData;
+            WorldSizeController.Inst.TargetWorldSize = data.size;
+        }
+        else if (type.Equals(typeof(WorldSizeData))) {
+            WorldSizeData data = message as WorldSizeData;
+            WorldSizeController.Inst.WorldSize = data.Size;
         }
         else
             Debug.LogError("HandleGenericMessage: unknown message type: " + type);
