@@ -10,8 +10,8 @@ public class ViewerController : MonoBehaviour {
     public Transform physNodePrefab = null;
     public Transform physFoodPrefab = null;
 
-    // Bridge to Controller
-    MVCBridge mvcBridge = new MVCBridge();
+    // Bridges to Controller
+    List<MVCBridge> mvcBridges = new List<MVCBridge>();
 
     // Internal Variables
     bool hide = false;
@@ -41,7 +41,9 @@ public class ViewerController : MonoBehaviour {
     void Start() {
         if(PersistentGameManager.ViewerOnlyApp) {
             Debug.LogError("Initializing Viewer Networking");
-            mvcBridge.InitializeViewer();
+            mvcBridges.Add(new MVCBridge());
+            for(int i = 0; i < mvcBridges.Count; ++i)
+                mvcBridges[i].InitializeViewer();
         }
     }
 
@@ -52,70 +54,75 @@ public class ViewerController : MonoBehaviour {
             }
         }
 
-        if(mvcBridge.viewerReadyToSend)
-            mvcBridge.SendDataToController();
+        for (int i = 0; i < mvcBridges.Count; ++i)
+            if (mvcBridges[i].viewerReadyToSend)
+                mvcBridges[i].SendDataToController();
+
     }
 
     void LateUpdate()
     {
         if (!PersistentGameManager.EmbedViewer || PersistentGameManager.ViewerOnlyApp) {
 
-            if (mvcBridge.ViewerConnectionLost)
-            {
-                mvcBridge.HandleViewerConnectionLost();
-                return;
+            for (int i = 0; i < mvcBridges.Count; ++i) {
+                if (mvcBridges[i].ViewerConnectionLost) {
+                    mvcBridges[i].HandleViewerConnectionLost();
+                    continue;
+                }
+
+                if (!mvcBridges[i].viewerDataReadyToApply)
+                    continue;
+
+                HandleViewerMessages(mvcBridges[i].viewerData);
+                mvcBridges[i].viewerDataReadyToApply = false;
             }
-
-            if (!mvcBridge.viewerDataReadyToApply)
-                return;
-
-            ViewerData data = mvcBridge.viewerData;
-
-            try {
-
-                // Assembly Messages
-                for (int i = 0; i < data.assemblyCreations.Count; i++)
-                    new AssemblyViewer(data.assemblyCreations[i]);
-
-                for (int i = 0; i < data.assemblyUpdates.Count; i++) {
-                    AssemblyTransformUpdate update = data.assemblyUpdates[i];
-                    if (AssemblyViewer.All.ContainsKey(update.id))
-                        AssemblyViewer.All[update.id].TransformUpdate(update.transforms);
-                }
-
-                for (int i = 0; i < data.assemblyPropertyUpdates.Count; ++i) {
-                    if (AssemblyViewer.All.ContainsKey(data.assemblyPropertyUpdates[i].id)) {
-                        AssemblyViewer av = AssemblyViewer.All[data.assemblyPropertyUpdates[i].id];
-                        av.Properties = data.assemblyPropertyUpdates[i];
-                    }
-                }
-
-                for (int i = 0; i < data.assemblyDeletes.Count; ++i) {
-                    if (AssemblyViewer.All.ContainsKey(data.assemblyDeletes[i]))
-                        AssemblyViewer.All[data.assemblyDeletes[i]].Destroy();
-                }
-
-
-                // Food Messages
-                for (int i = 0; i < data.foodCreations.Count; ++i)
-                    new FoodPelletViewer(data.foodCreations[i].Position, data.foodCreations[i].id);
-
-                for (int i = 0; i < data.foodDeletes.Count; ++i) {
-                    if (FoodPelletViewer.All.ContainsKey(data.foodDeletes[i]))
-                        FoodPelletViewer.All[data.foodDeletes[i]].Destroy();
-                }
-
-                // Generic Messages
-                for (int i = 0; i < data.messages.Count; ++i)
-                    HandleGenericMessage(data.messages[i]);
-            }
-            catch(System.Exception e) {
-                Debug.LogError("Exception in Message Application: " + e.ToString() + "\n" + e.StackTrace);
-            }
-            mvcBridge.viewerDataReadyToApply = false;
-
         }
         ViewerData.Inst.Clear();
+    }
+
+    private void HandleViewerMessages(ViewerData data) {
+
+        try {
+
+            // Assembly Messages
+            for (int i = 0; i < data.assemblyCreations.Count; i++)
+                new AssemblyViewer(data.assemblyCreations[i]);
+
+            for (int i = 0; i < data.assemblyUpdates.Count; i++) {
+                AssemblyTransformUpdate update = data.assemblyUpdates[i];
+                if (AssemblyViewer.All.ContainsKey(update.id))
+                    AssemblyViewer.All[update.id].TransformUpdate(update.transforms);
+            }
+
+            for (int i = 0; i < data.assemblyPropertyUpdates.Count; ++i) {
+                if (AssemblyViewer.All.ContainsKey(data.assemblyPropertyUpdates[i].id)) {
+                    AssemblyViewer av = AssemblyViewer.All[data.assemblyPropertyUpdates[i].id];
+                    av.Properties = data.assemblyPropertyUpdates[i];
+                }
+            }
+
+            for (int i = 0; i < data.assemblyDeletes.Count; ++i) {
+                if (AssemblyViewer.All.ContainsKey(data.assemblyDeletes[i]))
+                    AssemblyViewer.All[data.assemblyDeletes[i]].Destroy();
+            }
+
+
+            // Food Messages
+            for (int i = 0; i < data.foodCreations.Count; ++i)
+                new FoodPelletViewer(data.foodCreations[i].Position, data.foodCreations[i].id);
+
+            for (int i = 0; i < data.foodDeletes.Count; ++i) {
+                if (FoodPelletViewer.All.ContainsKey(data.foodDeletes[i]))
+                    FoodPelletViewer.All[data.foodDeletes[i]].Destroy();
+            }
+
+            // Generic Messages
+            for (int i = 0; i < data.messages.Count; ++i)
+                HandleGenericMessage(data.messages[i]);
+        }
+        catch (System.Exception e) {
+            Debug.LogError("Exception in Message Application: " + e.ToString() + "\n" + e.StackTrace);
+        }
     }
 
     public void HandleGenericMessage(object message) {
@@ -154,7 +161,8 @@ public class ViewerController : MonoBehaviour {
     }
 
     void OnDestroy() {
-        mvcBridge.CloseViewerConnection();
+        for (int i = 0; i < mvcBridges.Count; ++i)
+            mvcBridges[0].CloseViewerConnection();
     }
 
 }

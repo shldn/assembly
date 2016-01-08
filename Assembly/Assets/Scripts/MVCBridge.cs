@@ -27,7 +27,7 @@ public class MVCBridge {
     public volatile bool controllerReadyToSend = true;
 
     // Shared variables
-    int port = 12000;
+    public int port = 12000;
     NetworkStream stream = null;
 
 

@@ -69,7 +69,8 @@ public class NodeController : MonoBehaviour {
 
 	void Awake(){
 		Inst = this;
-		bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
+        HandleCommandLineArgs();
+        bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
         string lineEnding = isWindows ? "\r\n" : "\n";
         TextAsset maleNamesText = Resources.Load("Text/randomwords.txt") as TextAsset;
         nameList = maleNamesText.text.Split(new string[] { lineEnding }, System.StringSplitOptions.RemoveEmptyEntries);
@@ -737,4 +738,21 @@ public class NodeController : MonoBehaviour {
             someNode.velocity = (release.CamDir * 3f) + Random.insideUnitSphere * 1.5f;
     }
 
+    private void HandleCommandLineArgs() {
+        string[] cmdLnArgs = System.Environment.GetCommandLineArgs();
+        for (int i = 1; i < cmdLnArgs.Length; i++) { // skip exe name
+            switch (cmdLnArgs[i]) {
+                case "-port":
+                    int port = 12000;
+                    if ((i + 1) < cmdLnArgs.Length && int.TryParse(cmdLnArgs[i + 1], out port))
+                        SetMVCBridgePort(port);
+                    ++i;
+                    break;
+            }
+        }
+    }
+
+    private void SetMVCBridgePort(int port) {
+        mvcBridge.port = port;
+    }
 } // End of NodeController.

@@ -145,6 +145,10 @@ public class PersistentGameManager : MonoBehaviour {
                 case "-projectpath":
                     ++i;
                     break;
+                case "-port":
+                    // Handled in NodeController.
+                    ++i;
+                    break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);
                     break;
