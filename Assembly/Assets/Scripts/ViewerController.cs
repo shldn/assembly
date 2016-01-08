@@ -10,6 +10,9 @@ public class ViewerController : MonoBehaviour {
     public Transform physNodePrefab = null;
     public Transform physFoodPrefab = null;
 
+    // Bridge to Controller
+    MVCBridge mvcBridge = new MVCBridge();
+
     // Internal Variables
     bool hide = false;
 
@@ -32,12 +35,13 @@ public class ViewerController : MonoBehaviour {
         Inst = this;
         if (WorldSizeController.Inst == null)
             gameObject.AddComponent<WorldSizeController>();
+
     }
 
     void Start() {
         if(PersistentGameManager.ViewerOnlyApp) {
             Debug.LogError("Initializing Viewer Networking");
-            MVCBridge.InitializeViewer();
+            mvcBridge.InitializeViewer();
         }
     }
 
@@ -48,24 +52,24 @@ public class ViewerController : MonoBehaviour {
             }
         }
 
-        if(MVCBridge.viewerReadyToSend)
-            MVCBridge.SendDataToController();
+        if(mvcBridge.viewerReadyToSend)
+            mvcBridge.SendDataToController();
     }
 
     void LateUpdate()
     {
         if (!PersistentGameManager.EmbedViewer || PersistentGameManager.ViewerOnlyApp) {
 
-            if (MVCBridge.ViewerConnectionLost)
+            if (mvcBridge.ViewerConnectionLost)
             {
-                MVCBridge.HandleViewerConnectionLost();
+                mvcBridge.HandleViewerConnectionLost();
                 return;
             }
 
-            if (!MVCBridge.viewerDataReadyToApply)
+            if (!mvcBridge.viewerDataReadyToApply)
                 return;
 
-            ViewerData data = MVCBridge.viewerData;
+            ViewerData data = mvcBridge.viewerData;
 
             try {
 
@@ -108,7 +112,7 @@ public class ViewerController : MonoBehaviour {
             catch(System.Exception e) {
                 Debug.LogError("Exception in Message Application: " + e.ToString() + "\n" + e.StackTrace);
             }
-            MVCBridge.viewerDataReadyToApply = false;
+            mvcBridge.viewerDataReadyToApply = false;
 
         }
         ViewerData.Inst.Clear();
@@ -150,7 +154,7 @@ public class ViewerController : MonoBehaviour {
     }
 
     void OnDestroy() {
-        MVCBridge.CloseViewerConnection();
+        mvcBridge.CloseViewerConnection();
     }
 
 }

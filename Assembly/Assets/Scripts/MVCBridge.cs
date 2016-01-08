@@ -11,31 +11,31 @@ using UnityEngine;
 public class MVCBridge {
 
     // Viewer variables
-    static TcpClient viewerClient = null;
-    static DateTime lastMessageTime = DateTime.Now;
-    static Thread viewerReaderThread = null;
-    static volatile bool viewerConnectionLost = false;
-    static volatile bool viewerReaderThreadStop = false;
-    public static volatile bool viewerReadyToSend = true;
-    public static volatile bool viewerDataReadyToApply = false;
-    public static ViewerData viewerData = null;
-    public static bool ViewerConnectionLost { get { return viewerConnectionLost; } }
+    TcpClient viewerClient = null;
+    DateTime lastMessageTime = DateTime.Now;
+    Thread viewerReaderThread = null;
+    volatile bool viewerConnectionLost = false;
+    volatile bool viewerReaderThreadStop = false;
+    public volatile bool viewerReadyToSend = true;
+    public volatile bool viewerDataReadyToApply = false;
+    public ViewerData viewerData = null;
+    public bool ViewerConnectionLost { get { return viewerConnectionLost; } }
 
 
     // Controller variables
-    static TcpListener controllerServer = null;
-    public static volatile bool controllerReadyToSend = true;
+    TcpListener controllerServer = null;
+    public volatile bool controllerReadyToSend = true;
 
     // Shared variables
-    static int port = 12000;
-    static NetworkStream stream = null;
+    int port = 12000;
+    NetworkStream stream = null;
 
 
 
     // Controller Functions
     //--------------------------------------------------------------------
 #region ControllerFunctions
-    public static void InitializeController() {
+    public void InitializeController() {
 
         IPAddress localAddr = IPAddress.Parse("127.0.0.1");
 
@@ -47,12 +47,12 @@ public class MVCBridge {
         ConnectToNextViewer();
     }
 
-    private static void ConnectToNextViewer() {
+    private void ConnectToNextViewer() {
         stream = null;
         controllerServer.BeginAcceptTcpClient(new AsyncCallback(AcceptConnectionFromViewer), controllerServer);
     }
 
-    private static void AcceptConnectionFromViewer(IAsyncResult ar) {
+    private void AcceptConnectionFromViewer(IAsyncResult ar) {
 
         TcpListener listener = (TcpListener)ar.AsyncState;
         TcpClient client = controllerServer.EndAcceptTcpClient(ar);
@@ -63,7 +63,7 @@ public class MVCBridge {
         NodeController.Inst.SendWorldInitDataToViewer();
     }
 
-    public static void SendDataToViewer() {
+    public void SendDataToViewer() {
         if (stream == null) {
             ViewerData.Inst.Clear();
             return;
@@ -89,7 +89,7 @@ public class MVCBridge {
         ViewerData.Inst.Clear();
     }
 
-    private static void SendDataToViewerImpl(ViewerData data)
+    private void SendDataToViewerImpl(ViewerData data)
     {
         controllerReadyToSend = false;
         IFormatter formatter = new BinaryFormatter();
@@ -103,7 +103,7 @@ public class MVCBridge {
         controllerReadyToSend = true;
     }
 
-    private static Thread StartSendDataToViewerThread(ViewerData data)
+    private Thread StartSendDataToViewerThread(ViewerData data)
     {
         Thread t = new Thread(() => SendDataToViewerImpl(data));
         t.Start();
@@ -116,17 +116,17 @@ public class MVCBridge {
     // Viewer Functions
     //--------------------------------------------------------------------
     #region ViewerFunctions
-    public static void InitializeViewer() {
+    public void InitializeViewer() {
 
         viewerClient = new TcpClient();
         AttemptConnectionToController();
     }
 
-    private static void AttemptConnectionToController() {
+    private void AttemptConnectionToController() {
         viewerClient.BeginConnect(IPAddress.Parse("127.0.0.1"), port,
         new AsyncCallback(ViewerConnectCallback), viewerClient);
     }
-    private static void ViewerConnectCallback(IAsyncResult ar) {
+    private void ViewerConnectCallback(IAsyncResult ar) {
         if (!viewerClient.Connected || viewerClient.GetStream() == null) {
             // try again
             AttemptConnectionToController();
@@ -143,11 +143,11 @@ public class MVCBridge {
 
     }
 
-    public static ViewerData GetDataFromController() {
+    public ViewerData GetDataFromController() {
         return GetDataFromControllerImpl();
     }
 
-    static ViewerData GetDataFromControllerImpl()
+    ViewerData GetDataFromControllerImpl()
     {
         if (stream == null) 
             return null;
@@ -172,7 +172,7 @@ public class MVCBridge {
         return data;
     }
 
-    static void ViewerReceiveLoop()
+    void ViewerReceiveLoop()
     {
         while (!viewerReaderThreadStop)
         {
@@ -186,7 +186,7 @@ public class MVCBridge {
         }
     }
 
-    static void KillViewerReaderThread()
+    void KillViewerReaderThread()
     {
         viewerReaderThreadStop = true;
         if (viewerReaderThread != null)
@@ -195,7 +195,7 @@ public class MVCBridge {
         viewerReaderThreadStop = false;
     }
 
-    public static void SendDataToController() {
+    public void SendDataToController() {
 
         if (!ControllerData.Inst.HasData || stream == null) {
             ControllerData.Inst.Clear();
@@ -208,7 +208,7 @@ public class MVCBridge {
     }
 
 
-    private static void SendDataToControllerImpl(ControllerData data) {
+    private void SendDataToControllerImpl(ControllerData data) {
         viewerReadyToSend = false;
         IFormatter formatter = new BinaryFormatter();
         try {
@@ -220,7 +220,7 @@ public class MVCBridge {
         viewerReadyToSend = true;
     }
 
-    private static Thread StartSendDataToControllerThread(ControllerData data) {
+    private Thread StartSendDataToControllerThread(ControllerData data) {
         Thread t = new Thread(() => SendDataToControllerImpl(data));
         t.Start();
         return t;
@@ -233,7 +233,7 @@ public class MVCBridge {
 
 
 
-    public static void HandleViewerConnectionLost() {
+    public void HandleViewerConnectionLost() {
         viewerClient.Close();
         stream = null;
         ViewerController.Inst.Clear();
@@ -241,7 +241,7 @@ public class MVCBridge {
         viewerConnectionLost = false;
     }
 
-    public static void CloseViewerConnection() {
+    public void CloseViewerConnection() {
         if (viewerClient != null)
             viewerClient.Close();
         KillViewerReaderThread();        

@@ -51,6 +51,7 @@ public class NodeController : MonoBehaviour {
     public int fps = -1;
 
     // Controller (Light Server) Variables
+    MVCBridge mvcBridge = new MVCBridge();
     public float messageFPS = -1;
     System.DateTime lastMessageSent = System.DateTime.Now;
 
@@ -86,7 +87,7 @@ public class NodeController : MonoBehaviour {
 			print("Loading singleplayer world...");
 		}
         if (!PersistentGameManager.EmbedViewer && PersistentGameManager.IsServer) {
-            MVCBridge.InitializeController();
+            mvcBridge.InitializeController();
             QualitySettings.vSyncCount = 0;
         }
     } // End of Start().
@@ -315,7 +316,7 @@ public class NodeController : MonoBehaviour {
 		}
 
         float delayBetweenMessages = (messageFPS <= 0f) ? -1f : 1.0f / messageFPS;
-        if(delayBetweenMessages <= (System.DateTime.Now - lastMessageSent).TotalSeconds && MVCBridge.controllerReadyToSend)
+        if(delayBetweenMessages <= (System.DateTime.Now - lastMessageSent).TotalSeconds && mvcBridge.controllerReadyToSend)
         {
             if (!PersistentGameManager.EmbedViewer)
             {
@@ -323,7 +324,7 @@ public class NodeController : MonoBehaviour {
                     ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(Assembly.getAll[i]));
             }
 
-            MVCBridge.SendDataToViewer();
+            mvcBridge.SendDataToViewer();
             lastMessageSent = System.DateTime.Now;
         }
 
