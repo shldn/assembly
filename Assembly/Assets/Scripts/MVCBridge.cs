@@ -11,6 +11,7 @@ using UnityEngine;
 public class MVCBridge {
 
     // Viewer variables
+    string ipAddress = "127.0.0.1";
     TcpClient viewerClient = null;
     DateTime lastMessageTime = DateTime.Now;
     Thread viewerReaderThread = null;
@@ -116,14 +117,15 @@ public class MVCBridge {
     // Viewer Functions
     //--------------------------------------------------------------------
     #region ViewerFunctions
-    public void InitializeViewer() {
-
+    public void InitializeViewer(string ipAddress_ = "127.0.0.1", int port_ = 12000) {
+        ipAddress = ipAddress_;
+        port = port_;
         viewerClient = new TcpClient();
         AttemptConnectionToController();
     }
 
     private void AttemptConnectionToController() {
-        viewerClient.BeginConnect(IPAddress.Parse("127.0.0.1"), port,
+        viewerClient.BeginConnect(IPAddress.Parse(ipAddress), port,
         new AsyncCallback(ViewerConnectCallback), viewerClient);
     }
     private void ViewerConnectCallback(IAsyncResult ar) {
@@ -236,7 +238,7 @@ public class MVCBridge {
     public void HandleViewerConnectionLost() {
         viewerClient.Close();
         stream = null;
-        ViewerController.Inst.Clear();
+        ViewerController.Inst.Clear(this);
         InitializeViewer();
         viewerConnectionLost = false;
     }

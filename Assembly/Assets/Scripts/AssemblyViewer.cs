@@ -3,11 +3,14 @@ using System.Collections.Generic;
 
 public class AssemblyViewer : CaptureObject{
 
-    private static Dictionary<int, AssemblyViewer> all = new Dictionary<int, AssemblyViewer>();
-    public static Dictionary<int, AssemblyViewer> All { get { return all; } }
+    private static List<AssemblyViewer> all = new List<AssemblyViewer>();
+    public static List<AssemblyViewer> All { get { return all; } }
+
+    private static Dictionary<int, Dictionary<int, AssemblyViewer>> amalgamAssemblies = new Dictionary<int, Dictionary<int, AssemblyViewer>>(); // map from amalgam id -> (assembly id, assembly)
 
     private AssemblyProperties properties;
     private int id = -1;
+    private int amalgamId = -1;
     private Vector3 position = Vector3.zero;
     public List<NodeViewer> nodes = new List<NodeViewer>();
     public TimedLabel label = null;
@@ -15,6 +18,9 @@ public class AssemblyViewer : CaptureObject{
 
     public int Id { get { return properties.id; } }
     public Vector3 Position { get { return position; } private set { position = value; } }
+
+    // internal helpers
+    int creationFrame = -1;
 
     public AssemblyProperties Properties {
         get {
@@ -24,18 +30,25 @@ public class AssemblyViewer : CaptureObject{
             for (int i = 0; i < nodes.Count; ++i)
                 nodes[i].AssemblyProperties = value;
             if(value.matingWith != -1 && properties.matingWith != -1 && value.matingWith != properties.matingWith) {
-                MatingViewer.Inst.RemoveMates(Id);
-                MatingViewer.Inst.AddMates(Id, value.matingWith);
+                MatingViewer.Inst.RemoveMates(amalgamId, Id);
+                MatingViewer.Inst.AddMates(amalgamId, Id, value.matingWith);
             }
             if (value.matingWith != -1 && properties.matingWith == -1)
-                MatingViewer.Inst.AddMates(Id, value.matingWith);
+                MatingViewer.Inst.AddMates(amalgamId, Id, value.matingWith);
             if (value.matingWith == -1 && properties.matingWith != -1)
-                MatingViewer.Inst.RemoveMates(Id);
+                MatingViewer.Inst.RemoveMates(amalgamId, Id);
             properties = value;
         }
     }
 
-    public AssemblyViewer(AssemblyCreationData config) {
+    public static Dictionary<int, AssemblyViewer> GetAssemblyViewers(int amalgamId) {
+        if (amalgamId == -1)
+            return new Dictionary<int, AssemblyViewer>();
+        return amalgamAssemblies[amalgamId];
+    }
+
+    public AssemblyViewer(int amalgamId_, AssemblyCreationData config) {
+        amalgamId = amalgamId_;
         properties = new AssemblyProperties(config.properties); // make sure it is a fresh copy, not sharing with Model/Controller side.
         for (int i = 0; i < config.nodeNeighbors.Count; ++i) {
             SenseNodeCreationData senseData = (config.senseNodeData.ContainsKey(i)) ? config.senseNodeData[i] : SenseNodeCreationData.identity;
@@ -47,8 +60,14 @@ public class AssemblyViewer : CaptureObject{
         if (config.offspring && RandomMelody.Inst)
             RandomMelody.Inst.PlayNote();
 		CreateEffects();
-        all.Add(Id, this);
+        all.Add(this);
+
+        if (!amalgamAssemblies.ContainsKey(amalgamId))
+            amalgamAssemblies[amalgamId] = new Dictionary<int, AssemblyViewer>();
+        amalgamAssemblies[amalgamId].Add(Id, this);
         PersistentGameManager.CaptureObjects.Add(this);
+
+        creationFrame = Time.frameCount;
     }
 
     public void TransformUpdate(List<PosRotPair> updates){
@@ -56,8 +75,9 @@ public class AssemblyViewer : CaptureObject{
             Debug.LogError("AssemblyViewer: Num updates != Num nodes");
         }
         Vector3 posSum = Vector3.zero;
+        bool smoothTransform = creationFrame != Time.frameCount;
         for (int i = 0; i < nodes.Count; ++i){
-            nodes[i].UpdateTransform(updates[i].pos, updates[i].rot, true);
+            nodes[i].UpdateTransform(updates[i].pos, updates[i].rot, smoothTransform);
             posSum += updates[i].pos;
         }
         Position = posSum / nodes.Count;
@@ -78,7 +98,7 @@ public class AssemblyViewer : CaptureObject{
         for (int i = 0; i < nodes.Count; ++i)
             nodes[i].Destroy();
 
-        MatingViewer.Inst.RemoveMates(id);
+        MatingViewer.Inst.RemoveMates(amalgamId, id);
         PersistentGameManager.CaptureObjects.Remove(this);
 
 		/*
@@ -93,8 +113,11 @@ public class AssemblyViewer : CaptureObject{
 			effects = null;
 		}
 
-        if(removeFromList && all.ContainsKey(Id))
-            all.Remove(Id);
+        if(removeFromList) {
+            all.Remove(this);
+            if(amalgamId >= 0)
+                amalgamAssemblies[amalgamId].Remove(Id);
+        }
     }
 
     private void CreateLabel(string text) {

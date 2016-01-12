@@ -258,10 +258,13 @@ public class Node {
 		Position = delayPosition;
 		Rotation = delayRotation;
 
-		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
-			if((Mathf.Abs(delayPosition.x) > WorldSizeController.Inst.WorldSize.x) || (Mathf.Abs(delayPosition.y) > WorldSizeController.Inst.WorldSize.y) || (Mathf.Abs(delayPosition.z) > WorldSizeController.Inst.WorldSize.z))
-				velocity += -delayPosition.normalized * NodeController.physicsStep;
-		}
+        //// This appears to be a duplicate of code in Assembly.cs
+        //if (Environment.Inst && Environment.Inst.isActiveAndEnabled) {
+        //    if ((Mathf.Abs(delayPosition.x) > WorldSizeController.Inst.WorldSize.x) || (Mathf.Abs(delayPosition.y) > WorldSizeController.Inst.WorldSize.y) || (Mathf.Abs(delayPosition.z) > WorldSizeController.Inst.WorldSize.z)) {
+        //        Vector3 dir = (WorldSizeController.Inst.WorldOrigin - delayPosition).normalized;
+        //        velocity += dir * NodeController.physicsStep;
+        //    }
+        //}
 
         if (viewer != null)
             viewer.UpdateTransform(Position,Rotation);

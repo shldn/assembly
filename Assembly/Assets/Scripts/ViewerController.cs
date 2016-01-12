@@ -10,7 +10,7 @@ public class ViewerController : MonoBehaviour {
     public Transform physNodePrefab = null;
     public Transform physFoodPrefab = null;
 
-    // Bridges to Controller
+    // Bridges to Controllers
     List<MVCBridge> mvcBridges = new List<MVCBridge>();
 
     // Internal Variables
@@ -41,16 +41,18 @@ public class ViewerController : MonoBehaviour {
     void Start() {
         if(PersistentGameManager.ViewerOnlyApp) {
             Debug.LogError("Initializing Viewer Networking");
-            mvcBridges.Add(new MVCBridge());
+            int numServers = 10;
+            for(int i=0; i < numServers; ++i)
+                mvcBridges.Add(new MVCBridge());
             for(int i = 0; i < mvcBridges.Count; ++i)
-                mvcBridges[i].InitializeViewer();
+                mvcBridges[i].InitializeViewer("127.0.0.1", 12000 + i);
         }
     }
 
     void Update() {
-        foreach(KeyValuePair<int,AssemblyViewer> a in AssemblyViewer.All){
-            for (int i = 0; i < a.Value.nodes.Count; ++i) {
-                a.Value.nodes[i].Update();
+        foreach( AssemblyViewer a in AssemblyViewer.All){
+            for (int i = 0; i < a.nodes.Count; ++i) {
+                a.nodes[i].Update();
             }
         }
 
@@ -73,59 +75,61 @@ public class ViewerController : MonoBehaviour {
                 if (!mvcBridges[i].viewerDataReadyToApply)
                     continue;
 
-                HandleViewerMessages(mvcBridges[i].viewerData);
+                HandleViewerMessages(i, mvcBridges[i].viewerData);
                 mvcBridges[i].viewerDataReadyToApply = false;
             }
         }
         ViewerData.Inst.Clear();
     }
 
-    private void HandleViewerMessages(ViewerData data) {
+    private void HandleViewerMessages(int amalgamId, ViewerData data) {
 
         try {
 
             // Assembly Messages
             for (int i = 0; i < data.assemblyCreations.Count; i++)
-                new AssemblyViewer(data.assemblyCreations[i]);
+                new AssemblyViewer(amalgamId, data.assemblyCreations[i]);
 
+            Dictionary<int, AssemblyViewer> viewers = AssemblyViewer.GetAssemblyViewers(amalgamId);
             for (int i = 0; i < data.assemblyUpdates.Count; i++) {
                 AssemblyTransformUpdate update = data.assemblyUpdates[i];
-                if (AssemblyViewer.All.ContainsKey(update.id))
-                    AssemblyViewer.All[update.id].TransformUpdate(update.transforms);
+                if (viewers.ContainsKey(update.id))
+                    viewers[update.id].TransformUpdate(update.transforms);
             }
 
             for (int i = 0; i < data.assemblyPropertyUpdates.Count; ++i) {
-                if (AssemblyViewer.All.ContainsKey(data.assemblyPropertyUpdates[i].id)) {
-                    AssemblyViewer av = AssemblyViewer.All[data.assemblyPropertyUpdates[i].id];
+                if (viewers.ContainsKey(data.assemblyPropertyUpdates[i].id)) {
+                    AssemblyViewer av = viewers[data.assemblyPropertyUpdates[i].id];
                     av.Properties = data.assemblyPropertyUpdates[i];
                 }
             }
 
             for (int i = 0; i < data.assemblyDeletes.Count; ++i) {
-                if (AssemblyViewer.All.ContainsKey(data.assemblyDeletes[i]))
-                    AssemblyViewer.All[data.assemblyDeletes[i]].Destroy();
+                if (viewers.ContainsKey(data.assemblyDeletes[i]))
+                    viewers[data.assemblyDeletes[i]].Destroy();
             }
 
 
             // Food Messages
             for (int i = 0; i < data.foodCreations.Count; ++i)
-                new FoodPelletViewer(data.foodCreations[i].Position, data.foodCreations[i].id);
+                new FoodPelletViewer(amalgamId, data.foodCreations[i].Position, data.foodCreations[i].id);
 
+            Dictionary<int, FoodPelletViewer> fViewers = FoodPelletViewer.GetFoodViewers(amalgamId);
             for (int i = 0; i < data.foodDeletes.Count; ++i) {
-                if (FoodPelletViewer.All.ContainsKey(data.foodDeletes[i]))
-                    FoodPelletViewer.All[data.foodDeletes[i]].Destroy();
+                if (fViewers.ContainsKey(data.foodDeletes[i]))
+                    fViewers[data.foodDeletes[i]].Destroy();
             }
 
             // Generic Messages
             for (int i = 0; i < data.messages.Count; ++i)
-                HandleGenericMessage(data.messages[i]);
+                HandleGenericMessage(amalgamId, data.messages[i]);
         }
         catch (System.Exception e) {
             Debug.LogError("Exception in Message Application: " + e.ToString() + "\n" + e.StackTrace);
         }
     }
 
-    public void HandleGenericMessage(object message) {
+    public void HandleGenericMessage(int amalgamId, object message) {
         System.Type type = message.GetType();
         if(type.Equals(typeof(CaptureData))) {
             CaptureData capturedata = message as CaptureData;
@@ -147,22 +151,35 @@ public class ViewerController : MonoBehaviour {
     }
 
     // Clear all Viewer elements
-    public void Clear() {
+    public void Clear(MVCBridge caller = null) {
 
-        foreach (KeyValuePair<int, AssemblyViewer> kvp in AssemblyViewer.All)
-            kvp.Value.DestroyKeepInList();
-        AssemblyViewer.All.Clear();
+        int amalgamId = -1;
+        if (caller != null)
+            for (int i = 0; i < mvcBridges.Count; ++i)
+                if (caller == mvcBridges[i])
+                    amalgamId = i;
 
-        foreach (KeyValuePair<int, FoodPelletViewer> kvp in FoodPelletViewer.All)
-            kvp.Value.Destroy(false);
-        FoodPelletViewer.All.Clear();
+        if(amalgamId == -1) {
+            Debug.LogError("Trying to clear amalgam: " + amalgamId);
+        }
+        else {
+            Dictionary<int, AssemblyViewer> aViewers = AssemblyViewer.GetAssemblyViewers(amalgamId);
+            foreach (KeyValuePair<int, AssemblyViewer> kvp in aViewers)
+                kvp.Value.DestroyKeepInList();
+            aViewers.Clear();
 
-        GameObject.Destroy(MatingViewer.Inst.gameObject);
+            Dictionary<int, FoodPelletViewer> fViewers = FoodPelletViewer.GetFoodViewers(amalgamId);
+            foreach (KeyValuePair<int, FoodPelletViewer> kvp in fViewers)
+                kvp.Value.Destroy(false);
+            fViewers.Clear();
+
+            MatingViewer.Inst.RemoveAmalgamMates(amalgamId);
+        }
     }
 
     void OnDestroy() {
         for (int i = 0; i < mvcBridges.Count; ++i)
-            mvcBridges[0].CloseViewerConnection();
+            mvcBridges[i].CloseViewerConnection();
     }
 
 }

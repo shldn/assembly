@@ -382,10 +382,11 @@ public class Assembly : CaptureObject{
         lastPosition = newPosition;
 
         // Keeps assemblies in Capsule
-        if(Environment.Inst && !PersistentGameManager.IsClient && !WorldSizeController.Inst.WithinBoundary(Position))
-        {
-            foreach (Node someNode in nodeDict.Values)
-                someNode.velocity += -Position.normalized * NodeController.physicsStep;
+        if (Environment.Inst && !PersistentGameManager.IsClient && !WorldSizeController.Inst.WithinBoundary(Position)) {
+            foreach (Node someNode in nodeDict.Values) {
+                Vector3 dir = (WorldSizeController.Inst.WorldOrigin - Position).normalized;
+                someNode.velocity += dir * NodeController.physicsStep;
+            }
         }
 
 		// Send new assembly to clients.

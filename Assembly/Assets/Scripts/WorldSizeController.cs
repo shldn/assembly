@@ -15,6 +15,7 @@ public class WorldSizeController : MonoBehaviour {
     float targetWorldSize = 150f;
 
     public Vector3 WorldSize { get { return worldSize; } set { worldSize = value; } }
+    public Vector3 WorldOrigin { get; set; }
     public float TargetWorldSize { set { targetWorldSize = value; } }
     public WorldAnimType WorldAnim { get { return worldAnim; } }
 
@@ -62,7 +63,7 @@ public class WorldSizeController : MonoBehaviour {
     } // End of AdvanceWorldTick().
 
     public bool WithinBoundary(Vector3 worldPosition) {
-        return !(Mathf.Sqrt(Mathf.Pow(worldPosition.x / worldSize.x, 2f) + Mathf.Pow(worldPosition.y / worldSize.y, 2f) + Mathf.Pow(worldPosition.z / worldSize.z, 2f)) > 1f);
+        return !(Mathf.Sqrt(Mathf.Pow((worldPosition.x - WorldOrigin.x) / worldSize.x, 2f) + Mathf.Pow((worldPosition.y - WorldOrigin.y) / worldSize.y, 2f) + Mathf.Pow((worldPosition.z - WorldOrigin.z) / worldSize.z, 2f)) > 1f);
     }
 
     public float DistToBoundary(Vector3 position) {

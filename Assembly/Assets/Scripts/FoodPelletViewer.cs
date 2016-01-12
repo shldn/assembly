@@ -3,10 +3,10 @@ using UnityEngine;
 
 public class FoodPelletViewer {
 
-    private static Dictionary<int, FoodPelletViewer> all = new Dictionary<int, FoodPelletViewer>();
-    public static Dictionary<int, FoodPelletViewer> All { get { return all; } }
+    private static Dictionary<int, Dictionary<int, FoodPelletViewer>> amalgamFood = new Dictionary<int, Dictionary<int, FoodPelletViewer>>(); // map from amalgam id -> (food id, food)
 
     int id = -1;
+    int amalgamId = -1;
     Transform transform = null;
     private bool visible = true;
     Renderer[] renderers;
@@ -35,20 +35,27 @@ public class FoodPelletViewer {
         }
     }
 
-    public FoodPelletViewer(Vector3 worldPosition, int id_ = -1)
+    public static Dictionary<int, FoodPelletViewer> GetFoodViewers(int amalgamId) {
+        return amalgamFood[amalgamId];
+    }
+
+
+    public FoodPelletViewer(int amalgamId_, Vector3 worldPosition, int id_ = -1)
     {
         transform = MonoBehaviour.Instantiate(ViewerController.Inst.physFoodPrefab, worldPosition, Random.rotation) as Transform;
         renderers = transform.GetComponentsInChildren<Renderer>();
         Visible = !ViewerController.Hide;
+        amalgamId = amalgamId_;
         id = id_;
-        if(id != -1)
-            all.Add(id, this);
+        if (!amalgamFood.ContainsKey(amalgamId))
+            amalgamFood[amalgamId] = new Dictionary<int, FoodPelletViewer>();
+        amalgamFood[amalgamId].Add(id, this);
     }
 
     public void Destroy(bool removeFromList = true)
     {
         GameObject.Destroy(gameObject);
-        if (removeFromList && all.ContainsKey(id))
-            all.Remove(id);
+        if (removeFromList && amalgamId >= 0)
+            amalgamFood[amalgamId].Remove(id);
     }
 }

@@ -12,6 +12,7 @@ public class NodeController : MonoBehaviour {
 
     [SerializeField]
 	Vector3 worldSize = new Vector3(150f, 150f, 150f);
+    Vector3 worldOffset = Vector3.zero;
 	public float maxWorldSize = 300f;
 
 	public static float physicsStep = 0.05f;
@@ -64,12 +65,19 @@ public class NodeController : MonoBehaviour {
 
 	float leaderboardFadeIn = 0f;
 
+    // Accessors
+    public Vector3 WorldOffset { get { return worldOffset; }
+        private set {
+            worldOffset = value;
+            WorldSizeController.Inst.WorldOrigin = value;
+        }
+    }
+
     // Debug
     public int NumAssembliesAllocated { get { return nextAssemblyID; } }
 
 	void Awake(){
 		Inst = this;
-        HandleCommandLineArgs();
         bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
         string lineEnding = isWindows ? "\r\n" : "\n";
         TextAsset maleNamesText = Resources.Load("Text/randomwords.txt") as TextAsset;
@@ -78,6 +86,8 @@ public class NodeController : MonoBehaviour {
         if (WorldSizeController.Inst == null)
             gameObject.AddComponent<WorldSizeController>();
         WorldSizeController.Inst.WorldSize = worldSize;
+        HandleCommandLineArgs();
+
 	} // End of Awake().
 
 
@@ -222,7 +232,7 @@ public class NodeController : MonoBehaviour {
 			if(PersistentGameManager.IsServer){
 				// Populate world if less than 50% max pop.
 				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.7f)){
-					Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, worldSize);
+					Vector3 assemblySpawnPos = WorldOffset + Vector3.Scale(Random.insideUnitSphere, worldSize);
 					Assembly newAssembly = Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
 				}
 
@@ -249,9 +259,9 @@ public class NodeController : MonoBehaviour {
 						float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
 						float radius = worldSize.x * 0.5f;
 						float spiralIntensity = 0.2f;
-						foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
+						foodPosition = WorldSizeController.Inst.WorldOrigin + new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
 					}else
-						foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
+						foodPosition = WorldSizeController.Inst.WorldOrigin + Vector3.Scale(Random.insideUnitSphere, worldSize);
 
                     if(WorldSizeController.Inst.WithinBoundary(foodPosition))
     					new FoodPellet(foodPosition);
@@ -744,9 +754,18 @@ public class NodeController : MonoBehaviour {
             switch (cmdLnArgs[i]) {
                 case "-port":
                     int port = 12000;
-                    if ((i + 1) < cmdLnArgs.Length && int.TryParse(cmdLnArgs[i + 1], out port))
+                    if ((i + 1) < cmdLnArgs.Length && int.TryParse(cmdLnArgs[i + 1], out port)) {
                         SetMVCBridgePort(port);
-                    ++i;
+                        ++i;
+                    }
+                    break;
+                case "-offset":
+                    Vector3 worldOffset_ = Vector3.zero;
+                    if ((i + 3) < cmdLnArgs.Length && float.TryParse(cmdLnArgs[i + 1], out worldOffset_.x) && float.TryParse(cmdLnArgs[i + 2], out worldOffset_.y) && float.TryParse(cmdLnArgs[i + 3], out worldOffset_.z)) {
+                        WorldOffset = worldOffset_;
+                        i += 3;
+                    }
+                    Debug.LogError("World Offset: " + worldOffset);
                     break;
             }
         }

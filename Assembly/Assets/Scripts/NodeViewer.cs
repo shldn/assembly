@@ -153,13 +153,15 @@ public class NodeViewer {
             trail.transform.parent = null;
         CleanupNodeEffects();
 
-        if (cubeTransform)
+        if (cubeTransform) {
             MonoBehaviour.Destroy(cubeTransform.gameObject);
+            cubeTransform = null;
+        }
     }
 
     public void Update()
     {
-        if (ViewerController.Hide)
+        if (ViewerController.Hide || cubeTransform == null)
             return;
         // Update mating color
         mateColorLerp = Mathf.MoveTowards(mateColorLerp, assemblyProperties.wantToMate ? 1f : 0f, Time.deltaTime);

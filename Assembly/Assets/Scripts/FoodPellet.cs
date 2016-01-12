@@ -52,7 +52,7 @@ public class FoodPellet {
         owner = owner_;
 
         if (PersistentGameManager.EmbedViewer) {
-            viewer = new FoodPelletViewer(worldPosition);
+            viewer = new FoodPelletViewer(-1, worldPosition);
             viewer.Scale = 1;
         }
         else {
