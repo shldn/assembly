@@ -34,7 +34,6 @@ public class ClientTest : MonoBehaviour {
     {
         DestroyAllButWinner();
         CameraControl.Inst.KeepAssembliesInView();
-        CameraControl.Inst.selectedAssembly = winner;
         Destroy(gameObject);
     } // End of EndTest().
 

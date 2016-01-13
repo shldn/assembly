@@ -158,8 +158,8 @@ public class Node {
 	public void DoMath(){
 		if(cull || !physAssembly)
 			return;
-
-		power = 1f;
+		
+		//power = 1f;
 
 		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / nodeProperties.oscillateFrequency)) * smoothedPower;
 		waveformRunner += NodeController.physicsStep * power;
@@ -213,6 +213,7 @@ public class Node {
             lastNeighborCount = neighbors.Count;
 
             bool createTrail = neighbors.Count == 2 && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
+			createTrail = false;
             if (viewer != null)
                 viewer.SetNeighborCount(neighbors.Count, createTrail);
             if (neighbors.Count == 1)
@@ -221,7 +222,7 @@ public class Node {
 
 
 		// Metabolism --------------------------------- //
-		if(CameraControl.Inst == null || PhysAssembly != CameraControl.Inst.selectedAssembly)
+		if((CameraControl.Inst == null) || (PhysAssembly != CameraControl.Inst.selectedCaptureObj))
 			physAssembly.energy -= NodeController.physicsStep * 0.01f;
 
 
@@ -241,12 +242,25 @@ public class Node {
 		// "Residual" power
 		else if(neighbors.Count == 2)
 			power = 0f;
+		
 	} // End of DoMath().
 
 
 	public void UpdateTransform(){
 		if(cull || !physAssembly)
 			return;
+
+		if(viewer != null)
+			viewer.cubeTransform.GetComponent<Rigidbody>().isKinematic = !viewer.cubeTransform.GetComponent<GrabbableObject>().IsGrabbed();
+
+		if(viewer.cubeTransform.GetComponent<GrabbableObject>().IsGrabbed()) {
+			delayPosition = viewer.cubeTransform.position;
+			delayRotation = viewer.cubeTransform.rotation;
+			position = delayPosition;
+			rotation = delayRotation;
+			velocity = viewer.cubeTransform.GetComponent<Rigidbody>().velocity * 0.25f;
+			return;
+		}
 
 		Vector3 thisFrameVelocity = delayPosition - Position;
 		velocity += thisFrameVelocity * velocityCoefficient;

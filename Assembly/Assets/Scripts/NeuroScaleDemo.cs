@@ -5,9 +5,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 	public static NeuroScaleDemo Inst;
 
-
 	public bool isActive = true;
-
 
 	// How much information is shown to the user, from 0f (very little) to 1f (everything)
 	public float enviroScale = 0f;
@@ -38,7 +36,6 @@ public class NeuroScaleDemo : MonoBehaviour {
 	public Node TargetNode {get{return targetNode;}}
 
 
-
 	void Awake(){
 		Inst = this;
 	} // End of Awake().
@@ -50,6 +47,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 		RenderSettings.fogColor = Color.black;
 	} // End of Start().
 	
+
 	void Update(){
 
 		isActive = MuseManager.Inst.TouchingForehead;
@@ -78,7 +76,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 
 		// Keep targetted assembly from getting too far from the origin.
-		if(targetNode && !PersistentGameManager.IsClient){
+		if(targetNode && !PersistentGameManager.IsClient && MuseManager.Inst.TouchingForehead){
 			foreach(KeyValuePair<Triplet, Node> kvp in targetNode.PhysAssembly.NodeDict){
 				kvp.Value.Position += targetNode.PhysAssembly.Position * NodeController.physicsStep * 0.1f;
 			}
@@ -95,7 +93,6 @@ public class NeuroScaleDemo : MonoBehaviour {
         {
 
             // Nodes
-
             if (!targetNode)
                 return;
 

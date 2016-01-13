@@ -14,6 +14,7 @@ public class PrefabManager : MonoBehaviour {
 	public GameObject newPelletBurst = null;
     public GameObject mainTrail = null;
     public GameObject extendedTrail = null;
+	public GameObject birthEffect = null;
 
 	public Transform motorNodeTrail = null;
 	public Transform viewCone = null;

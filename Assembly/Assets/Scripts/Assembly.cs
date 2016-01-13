@@ -27,10 +27,10 @@ public class Assembly : CaptureObject{
             properties.id = id;
             if( id != -1 )
             {
-                familyTree.Add(value);
-                familyGenerationRemoved.Add(value, 0);
-                NodeController.Inst.assemblyNameDictionary.Add(value, Name);
-                NodeController.assemblyScores.Add(value, 0);
+                //familyTree.Add(value);
+                //familyGenerationRemoved.Add(value, 0);
+                //NodeController.Inst.assemblyNameDictionary.Add(value, Name);
+                //NodeController.assemblyScores.Add(value, 0);
             }
         } 
     }
@@ -95,6 +95,7 @@ public class Assembly : CaptureObject{
     }
 	float mateAttractDist = 100f;
 	float mateCompletion = 0f;
+	float mateCooldown = 30f;
 
 	public float distanceCovered = 0f;
 	Vector3 lastPosition = Vector3.zero;
@@ -302,7 +303,9 @@ public class Assembly : CaptureObject{
 		if(!PersistentGameManager.IsClient)
 			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
-		if(!PersistentGameManager.IsClient && (energy > (maxEnergy * 0.9f)))
+		mateCooldown -= NodeController.physicsStep;
+
+		if(!PersistentGameManager.IsClient && (energy > (maxEnergy * 0.9f)) && (mateCooldown < 0f))
             WantToMate = true;
 		else if(energy < maxEnergy * 0.5f){
             WantToMate = false;
@@ -335,8 +338,8 @@ public class Assembly : CaptureObject{
                 if (MatingWith.nodes.Count > i) {
 					otherNode = MatingWith.nodes[i];
 
-					//if((!VRDevice.isPresent) && myNode.Visible && otherNode.Visible)
-					//	GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
+					if((!VRDevice.isPresent) && myNode.Visible && otherNode.Visible)
+						GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
 					Vector3 vectorToMate = myNode.Position - otherNode.Position;
 					float distance = vectorToMate.magnitude;
 			
@@ -352,9 +355,21 @@ public class Assembly : CaptureObject{
 				// Spawn a new assembly between the two.
 				int numNodes = Random.Range(nodes.Count, MatingWith.nodes.Count + 1);
                 string name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));
-                Assembly newAssembly = new Assembly((Position + MatingWith.Position) / 2f, Random.rotation, numNodes, name, true);
+
+				bool randomParent = Random.Range(0f, 1f) > 0.5f;
+				Assembly newAssembly = null;
+
+				if(randomParent)
+	                newAssembly = new Assembly(IOHelper.AssemblyToString(this), Random.rotation, Position);
+				else
+					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position);
+
+				newAssembly.Mutate(0.1f);
 
                 // Update family trees
+				foreach(KeyValuePair<Triplet, Node> kvp in newAssembly.nodeDict)
+					kvp.Value.Position = Position;
+
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(MatingWith);
 				newAssembly.amalgam = amalgam;
@@ -373,6 +388,10 @@ public class Assembly : CaptureObject{
 				mateCompletion = 0f;
 				energy *= 0.5f;
                 MatingWith = null;
+				mateCooldown = 30f;
+
+				RandomMelody.Inst.PlayNote();
+				MonoBehaviour.Instantiate(PrefabManager.Inst.birthEffect, Position, Random.rotation);
 			}
 		}
 
@@ -412,6 +431,8 @@ public class Assembly : CaptureObject{
 
     private void UpdateFamilyTreeFromParent(Assembly parent)
     {
+		return;
+
         foreach (int someInt in parent.familyTree)
         {
             familyTree.Add(someInt);
@@ -426,6 +447,8 @@ public class Assembly : CaptureObject{
     // Captured assembly is released back into the world, retrieve its cached family tree
     private void RebuildFamilyTree()
     {
+		return;
+
         if( id == -1 && Debug.isDebugBuild )
         {
             Debug.LogError("Attempting to rebuild family tree for an invalid index");

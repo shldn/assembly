@@ -57,7 +57,7 @@ public class TransitionManager : MonoBehaviour {
             
             if(JellyfishGameManager.Inst){
                 zoomJelly = Jellyfish.all[Random.Range(0, Jellyfish.all.Count)];
-                CameraControl.Inst.selectedJellyfish = zoomJelly;
+                CameraControl.Inst.selectedCaptureObj = zoomJelly;
 
                 CameraControl.Inst.radius = 0f;
                 CameraControl.Inst.targetRadius = CameraControl.Inst.maxRadius;
@@ -67,7 +67,6 @@ public class TransitionManager : MonoBehaviour {
                 CameraControl.Inst.radius = 1000f;
 				CameraControl.Inst.targetRadius = 200f;
             }
-
 
             transitionType = TransitionType.fadeIn;
         }
@@ -90,9 +89,9 @@ public class TransitionManager : MonoBehaviour {
         // Scene setup. All dark, all quiet--wait until scene is ready to go.
         if(transitionType == TransitionType.normal){
 
-            if(CameraControl.Inst.selectedJellyfish){
+            if(CameraControl.Inst.selectedCaptureObj != null){
                 CameraControl.Inst.centerOffset = CameraControl.Inst.center - Vector3.zero;
-                CameraControl.Inst.selectedJellyfish = null;
+                CameraControl.Inst.selectedCaptureObj = null;
                 zoomJelly = null;
             }
 
@@ -109,7 +108,7 @@ public class TransitionManager : MonoBehaviour {
             if(JellyfishGameManager.Inst){
                 if(!zoomJelly){
                     zoomJelly = Jellyfish.all[Random.Range(0, Jellyfish.all.Count)];
-                    CameraControl.Inst.selectedJellyfish = zoomJelly;
+                    CameraControl.Inst.selectedCaptureObj = zoomJelly;
                     CameraControl.Inst.centerOffset = CameraControl.Inst.center - zoomJelly.transform.position;
 
                 }
@@ -145,7 +144,5 @@ public class TransitionManager : MonoBehaviour {
 
     } // End of OnGUI().
 
-
-    
-
+	
 } // End of Transitionmanager.

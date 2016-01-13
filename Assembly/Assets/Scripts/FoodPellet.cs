@@ -80,8 +80,16 @@ public class FoodPellet {
             cull = true;
         }
 
-		worldPosition += velocity * NodeController.physicsStep;
-		velocity = Vector3.MoveTowards(velocity, Vector3.zero, NodeController.physicsStep * 4f);
+		viewer.gameObject.GetComponent<Rigidbody>().isKinematic = !viewer.gameObject.GetComponent<GrabbableObject>().IsGrabbed();
+		if(viewer.gameObject.GetComponent<GrabbableObject>().IsGrabbed()) {
+			WorldPosition = viewer.gameObject.transform.position;
+			velocity = viewer.gameObject.GetComponent<Rigidbody>().velocity;
+		}
+		else {
+			worldPosition += velocity * NodeController.physicsStep;
+			velocity = Vector3.MoveTowards(velocity, Vector3.zero, NodeController.physicsStep * 4f);
+		}
+
 		if(viewer != null)
 			viewer.Position = worldPosition;
 

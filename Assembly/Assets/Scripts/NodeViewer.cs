@@ -192,9 +192,16 @@ public class NodeViewer {
 			if (viewConeTrans)
 				UpdateViewConeTransform();
 		}
+
     }
 
     public void UpdateTransform(Vector3 pos, Quaternion rot, bool smoothed = false) {
+		if(cubeTransform.GetComponent<GrabbableObject>().IsGrabbed()) {
+			if (viewConeTrans)
+				UpdateViewConeTransform();
+			return;
+		}
+
 		smoothMotion = smoothed;
 		if(smoothed) {
 			positionTarget = pos;

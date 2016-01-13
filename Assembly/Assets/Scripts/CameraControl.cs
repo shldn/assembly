@@ -52,13 +52,7 @@ public class CameraControl : MonoBehaviour {
     bool pinchRelease = true;
 
     // Object selections
-	public Transform selectedTransform = null;
-
-    public Jellyfish selectedJellyfish = null;
-    public Node selectedNode = null;
-
-    public Assembly selectedAssembly = null;
-	public Assembly hoveredPhysAssembly = null;
+	public CaptureObject selectedCaptureObj = null;
 
 	public Assembly assemblyOfInterest = null;
 	float assemblyOfInterestStaleness = 0f;
@@ -121,6 +115,14 @@ public class CameraControl : MonoBehaviour {
 
 		if(Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient)
 			camType = CameraType.GALLERY_AUTO;
+
+		if(VRDevice.isPresent){
+			Rigidbody camRB = Camera.main.gameObject.AddComponent<Rigidbody>();
+			camRB.interpolation = RigidbodyInterpolation.Interpolate;
+			camRB.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+			camRB.useGravity = false;
+			camRB.isKinematic = true;
+		}
 	} // End of Start().
 	
 
@@ -183,23 +185,12 @@ public class CameraControl : MonoBehaviour {
         // Determine orbit target, if any.
         // Jellyfish grotto
         if(originType == OriginType.JELLYFISH_CENTER){
-            selectedJellyfish = Jellyfish.all[0];
+            selectedCaptureObj = Jellyfish.all[0];
             center = Jellyfish.all[0].transform.position;
         }
         else if(originType == OriginType.ASSEMBLIES_SSBVIEW)
             KeepAssembliesInView();
-
-		/*
-        // Jellyfish grotto client
-        else if(selectedJellyfish)
-            center = selectedJellyfish.transform.position;
-        // Assembly soup
-        else if(selectedNode)
-            center = selectedNode.Position;
-        else if(selectedAssembly)
-			center = selectedAssembly.Position;
-		*/
-		
+				
         else if(originType == OriginType.ASSEMBLIES_CENTER){
 			lazyCenter = Vector3.zero;
 
@@ -257,7 +248,7 @@ public class CameraControl : MonoBehaviour {
 				targetRadius += targetRadius * Time.deltaTime * radiusSensitivity ;
 
 			// Mouse/touch orbit.
-			if(((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) && !NodeEngineering.Inst.uiLockout) || (Cursor.lockState == CursorLockMode.Locked) || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease))){
+			if((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) || (Cursor.lockState == CursorLockMode.Locked) || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease))){
 				mouseOrbitStack.x += Input.GetAxis("Mouse X") * mouseSensitivity;
 				mouseOrbitStack.y += Input.GetAxis("Mouse Y") * mouseSensitivity;
 

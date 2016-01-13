@@ -29,6 +29,8 @@ using Leap;
 */
 public class HandController : MonoBehaviour {
 
+  public static HandController Inst;
+
   // Reference distance from thumb base to pinky base in mm.
   protected const float GIZMO_SCALE = 5.0f;
   /** Conversion factor for millimeters to meters. */
@@ -134,6 +136,7 @@ public class HandController : MonoBehaviour {
   void Awake() {
     leap_controller_ = new Controller();
     recorder_ = new LeapRecorder();
+	Inst = this;
   }
 
   /** Initalizes the hand and tool lists and recording, if enabled.*/

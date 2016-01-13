@@ -18,8 +18,8 @@ public class NodeController : MonoBehaviour {
 	int foodPellets = 150;
 	public static int assemStage1Size = 20;
 
-	int minNodes = 3;
-	int maxNodes = 15;
+	int minNodes = 8;
+	int maxNodes = 20;
 
 	public int worldNodeThreshold = 1000;
     bool showLeaderboard = true;
@@ -180,65 +180,7 @@ public class NodeController : MonoBehaviour {
 		Assembly.AllAssemblyTree.Maintain();
 
 		int cycleDir = Mathf.FloorToInt((Time.time * 0.2f) % 12);
-
-		// Show details on selected assembly.
-        if(CameraControl.Inst) {
-            Assembly selectedAssem = CameraControl.Inst.selectedAssembly;
-            Assembly hoveredAssem = CameraControl.Inst.hoveredPhysAssembly;
-            if (selectedAssem) {
-
-                // debug
-                if (KeyInput.GetKeyDown(KeyCode.N))
-                    CameraControl.Inst.selectedAssembly.AddRandomNode();
-
-                /*
-                foreach(KeyValuePair<Triplet, PhysNode> kvp in selectedAssem.NodeDict){
-                    Triplet curPos = kvp.Key;
-                    PhysNode curNode = kvp.Value;
-                    // Render nodes
-                    GLDebug.DrawCube(selectedAssem.spawnPosition + HexUtilities.HexToWorld(curPos), Quaternion.identity, Vector3.one * 0.5f, kvp.Value.cubeTransform.renderer.material.color + new Color(0.1f, 0.1f, 0.1f), 0f, false);
-                    // Centerpoint
-                    //GLDebug.DrawCube(selectedAssem.WorldPosition, Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
-                }*/
-
-                // Duplicate assembly using string IO methods
-                if (KeyInput.GetKey(KeyCode.D)) {
-                    new Assembly(IOHelper.AssemblyToString(selectedAssem), null, null, false);
-                }
-            }
-        }
-		/*
-			// Determine closest fit with hovered assembly.
-			if(hoveredAssem){
-				Triplet[] testThisBuiltin = new Triplet[hoveredAssem.NodeDict.Keys.Count];
-				Triplet[] againstThisBuiltin = new Triplet[selectedAssem.NodeDict.Keys.Count];
-				hoveredAssem.NodeDict.Keys.CopyTo(testThisBuiltin, 0);
-				selectedAssem.NodeDict.Keys.CopyTo(againstThisBuiltin, 0);
-
-				int bestRotation;
-				Triplet bestTranslation;
-				SnugFit(testThisBuiltin, againstThisBuiltin, out bestRotation, out bestTranslation);
-				foreach(KeyValuePair<Triplet, PhysNode> kvp in hoveredAssem.NodeDict){
-					Triplet curPos = kvp.Key;
-					PhysNode curNode = kvp.Value;
-					// Render nodes
-					GLDebug.DrawCube(selectedAssem.WorldPosition + HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(curPos, bestRotation) + bestTranslation), Quaternion.identity, Vector3.one, Color.cyan, 0f, false);
-					// Center point
-					GLDebug.DrawCube(selectedAssem.WorldPosition + HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(Triplet.zero, bestRotation) + bestTranslation), Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
-					GLDebug.DrawLine(selectedAssem.WorldPosition, selectedAssem.WorldPosition + HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(Triplet.zero, bestRotation) + bestTranslation), Color.white, 0f, false);
-				}
-			}
-		}
-
-		GLDebug.DrawLine(Vector3.zero, Vector3.forward, Color.blue);
-		GLDebug.DrawLine(Vector3.zero, Vector3.right, Color.red);
-		GLDebug.DrawLine(Vector3.zero, Vector3.up, Color.green);
-		GLDebug.DrawCube(HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(new Triplet(2, 0, 0), Mathf.FloorToInt(Time.time % 12))), HexUtilities.HexDirToRot(Mathf.FloorToInt(Time.time % 12)));
-		for(int i = 0; i < 12; i++){
-			GLDebug.DrawCube(HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(new Triplet(2, 0, 0), i)), HexUtilities.HexDirToRot(i), Vector3.one * 0.5f, Color.green);
-		}
-		print(Mathf.FloorToInt(Time.time % 12));
-		*/
+		
 
 		// Control environment.
 		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
@@ -511,41 +453,6 @@ public class NodeController : MonoBehaviour {
 
 	void OnGUI(){
 
-		/*
-		string infoString = "";
-		infoString += "Nodes: " + Node.getAll.Count + "\n";
-		infoString += "Assemblies: " + Assembly.getAll.Count + "\n";
-		infoString += "Framerate: " + (1f / Time.deltaTime).ToString("F1") + "\n";
-
-		GUI.skin.label.alignment = TextAnchor.UpperLeft;
-		GUI.skin.label.fontSize = 12;
-		GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), infoString);
-
-		if(!PersistentGameManager.IsClient){
-			foreach(Assembly someAssem in Assembly.getAll){
-
-				Vector3 screenPos = Camera.main.WorldToScreenPoint(someAssem.Position);
-				//screenPos.y = Screen.height - screenPos.y;
-				if(screenPos.z < 0f)
-					continue;
-
-				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-				GUI.skin.label.fontSize = Mathf.Clamp(Mathf.CeilToInt(20f / (screenPos.z * 0.01f)), 0, 50);
-				
-
-				if(relativesToHighlight.Contains(someAssem))
-					GUI.color = Color.cyan;
-				else
-					GUI.color = Color.white;
-
-				string familyString = "";
-				foreach(int someInt in someAssem.familyTree)
-					familyString += someInt + " ";
-				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y, 1000f), familyString);
-			}
-		}
-		*/
-
         // Leaderboard
         if (PersistentGameManager.IsServer && ViewerController.Inst && !ViewerController.Hide && showLeaderboard)
         {
@@ -617,6 +524,8 @@ public class NodeController : MonoBehaviour {
 
     public static void UpdateBirthCount(int assemblyID, int generationRemoved)
     {
+		return;
+
         float posGen = (generationRemoved < 0) ? 0f : (float)generationRemoved;
 		if(generationRemoved < 10){
 			if(!assemblyScores.ContainsKey(assemblyID))
@@ -631,6 +540,8 @@ public class NodeController : MonoBehaviour {
 
     private static void MaintainLeaderboardOnBirth(int assemblyID, List<int> leaderList)
     {
+		return;
+
         int idx = LeaderboardIndex(assemblyID, leaderList);
         if (idx != -1)
             AdjustExistingLeaderBoardEntry(assemblyID, idx, leaderList);
@@ -638,7 +549,10 @@ public class NodeController : MonoBehaviour {
             InsertLeaderBoardEntry(assemblyID, leaderList);
     }
 
-    private static void AdjustExistingLeaderBoardEntry(int assemblyID, int currentIdx, List<int> leaderList){
+    private static void AdjustExistingLeaderBoardEntry(int assemblyID, int currentIdx, List<int> leaderList)
+	{
+		return;
+
         // find new insert point
         int newIdx = -1;
         for (int i = 1; i <= currentIdx && assemblyScores[leaderList[currentIdx - i]] < assemblyScores[assemblyID]; ++i)
@@ -653,6 +567,8 @@ public class NodeController : MonoBehaviour {
 
     private static void InsertLeaderBoardEntry(int assemblyID, List<int> leaderList)
     {
+		return;
+
         if (!ViewerController.Inst || ViewerController.Hide)
             return;
         if (leaderList.Count < leaderboardMaxSize || assemblyScores[leaderList.Last<int>()] < assemblyScores[assemblyID])
@@ -673,6 +589,8 @@ public class NodeController : MonoBehaviour {
 
     public static void UpdateDeathCount(int assemblyID, int generationRemoved)
     {
+		return;
+
         float posGen = (generationRemoved < 0) ? 0f : (float)generationRemoved;
 		if(generationRemoved < 10){
 			if (!assemblyScores.ContainsKey(assemblyID))
@@ -687,6 +605,8 @@ public class NodeController : MonoBehaviour {
 
     private static void MaintainLeaderboardOnDeath(int assemblyID, List<int> leaderList)
     {
+		return;
+
         int idx = LeaderboardIndex(assemblyID, leaderList);
         if (idx != -1)
         {

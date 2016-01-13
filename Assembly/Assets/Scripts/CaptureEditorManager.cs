@@ -45,9 +45,7 @@ public class CaptureEditorManager {
         if( capturedObj != null ){
             capturedObj.Destroy();
 
-            CameraControl.Inst.selectedJellyfish = null;
-            CameraControl.Inst.selectedAssembly = null;
-            CameraControl.Inst.selectedNode = null;
+            CameraControl.Inst.selectedCaptureObj = null;
             CameraControl.Inst.targetRadius = 100f;
 
         }

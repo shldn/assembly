@@ -110,4 +110,13 @@ public static class MathUtilities {
 		return p;
 	} // End of CalculateBezierPoint().
 
+
+	public static Transform FindChildRecursively(this GameObject gameObject, string childName){
+		Transform[] allChildren = gameObject.GetComponentsInChildren<Transform>();
+		for(int i = 0; i < allChildren.Length; i++)
+			if(allChildren[i].gameObject.name.Equals(childName))
+				return allChildren[i];
+		return null;
+	} // End of FindChildRecursively().
+
 } // End of MathUtilities.

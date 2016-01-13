@@ -109,4 +109,3 @@ public struct SVector3
     public float y;
     public float z;
 }
-
