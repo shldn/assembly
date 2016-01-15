@@ -13,18 +13,8 @@ public struct MatingPair
 
 public class MatingViewer : MonoBehaviour {
 
-    private static MatingViewer inst = null;
-    public static MatingViewer Inst {
-        get {
-            if (inst == null)
-                inst = (new GameObject("MatingViewer")).AddComponent<MatingViewer>();
-            return inst;
-        }
-    }
-
-
     List<MatingPair> mates = new List<MatingPair>();
-    Dictionary<int,Dictionary<int, MatingPair>> amalgamPairs = new Dictionary<int, Dictionary<int, MatingPair>>(); // amalgam id --> mate id to pair map
+    Dictionary<int, MatingPair> idToPairMap = new Dictionary<int, MatingPair>(); // amalgam id --> mate id to pair map
 	
 	void Update () {
         for(int m = 0; m < mates.Count; ++m) {
@@ -41,49 +31,28 @@ public class MatingViewer : MonoBehaviour {
         }
     }
 
-    void OnDestroy() {
-        inst = null;
-    }
-
-    public void AddMates(int amalgamId, int id1, int id2) {
-
-        if (!amalgamPairs.ContainsKey(amalgamId))
-            amalgamPairs.Add(amalgamId, new Dictionary<int, MatingPair>());
-
+    public void AddMates(AssemblyViewer assembly1, AssemblyViewer assembly2) {
+        int id1 = assembly1.Id;
+        int id2 = assembly2.Id;
         MatingPair mp;
-        Dictionary<int, MatingPair> idToPairMap = amalgamPairs[amalgamId];
         if (idToPairMap.TryGetValue(id1, out mp)) {
             // bail out if this already added.
             if (mp.a1.Id == id2 || mp.a2.Id == id2)
                 return;
         }
-        if(AssemblyViewer.GetAssemblyViewers(amalgamId).ContainsKey(id1) && AssemblyViewer.GetAssemblyViewers(amalgamId).ContainsKey(id2)) {
-            mp = new MatingPair(AssemblyViewer.GetAssemblyViewers(amalgamId)[id1], AssemblyViewer.GetAssemblyViewers(amalgamId)[id2]);
-            mates.Add(mp);
-            idToPairMap.Add(id1, mp);
-            idToPairMap.Add(id2, mp);
-        }
-        else {
-            Debug.LogError(id1 + " or " + id2 + " Does not exist");
-        }
+
+        mp = new MatingPair(assembly1, assembly2);
+        mates.Add(mp);
+        idToPairMap.Add(id1, mp);
+        idToPairMap.Add(id2, mp);
     }
 
-    public void RemoveMates(int amalgamId, int mateId) {
-        if (!amalgamPairs.ContainsKey(amalgamId))
-            return;
-        Dictionary<int, MatingPair> idToPairMap = amalgamPairs[amalgamId];
+    public void RemoveMates(int mateId) {
         MatingPair mp;
         if (idToPairMap.TryGetValue(mateId, out mp)) {
             mates.Remove(mp);
             idToPairMap.Remove(mp.a1.Id);
             idToPairMap.Remove(mp.a2.Id);
         }
-    }
-
-    public void RemoveAmalgamMates(int amalgamId) {
-        Dictionary<int, MatingPair> idToPairMap = amalgamPairs[amalgamId];
-        foreach (KeyValuePair<int, MatingPair> kv in idToPairMap)
-            mates.Remove(kv.Value);
-        idToPairMap.Clear();
     }
 }

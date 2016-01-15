@@ -12,6 +12,7 @@ public class ViewerController : MonoBehaviour {
 
     // Bridges to Controllers
     List<MVCBridge> mvcBridges = new List<MVCBridge>();
+    List<AmalgamViewer> amalgams = new List<AmalgamViewer>();
 
     // Internal Variables
     bool hide = false;
@@ -42,18 +43,18 @@ public class ViewerController : MonoBehaviour {
         if(PersistentGameManager.ViewerOnlyApp) {
             Debug.LogError("Initializing Viewer Networking");
             int numServers = 10;
-            for(int i=0; i < numServers; ++i)
+            for(int i=0; i < numServers; ++i) {
                 mvcBridges.Add(new MVCBridge());
-            for(int i = 0; i < mvcBridges.Count; ++i)
                 mvcBridges[i].InitializeViewer("127.0.0.1", 12000 + i);
+                amalgams.Add(null);
+            }
         }
     }
 
     void Update() {
-        foreach( AssemblyViewer a in AssemblyViewer.All){
-            for (int i = 0; i < a.nodes.Count; ++i) {
-                a.nodes[i].Update();
-            }
+        foreach(AmalgamViewer av in amalgams) {
+            if (av != null)
+                av.Update();
         }
 
         for (int i = 0; i < mvcBridges.Count; ++i)
@@ -85,40 +86,12 @@ public class ViewerController : MonoBehaviour {
     private void HandleViewerMessages(int amalgamId, ViewerData data) {
 
         try {
+            if (amalgams[amalgamId] == null)
+                amalgams[amalgamId] = new AmalgamViewer();
 
-            // Assembly Messages
-            for (int i = 0; i < data.assemblyCreations.Count; i++)
-                new AssemblyViewer(amalgamId, data.assemblyCreations[i]);
+            // Amalgam Messages
+            amalgams[amalgamId].HandleMessages(data);
 
-            Dictionary<int, AssemblyViewer> viewers = AssemblyViewer.GetAssemblyViewers(amalgamId);
-            for (int i = 0; i < data.assemblyUpdates.Count; i++) {
-                AssemblyTransformUpdate update = data.assemblyUpdates[i];
-                if (viewers.ContainsKey(update.id))
-                    viewers[update.id].TransformUpdate(update.transforms);
-            }
-
-            for (int i = 0; i < data.assemblyPropertyUpdates.Count; ++i) {
-                if (viewers.ContainsKey(data.assemblyPropertyUpdates[i].id)) {
-                    AssemblyViewer av = viewers[data.assemblyPropertyUpdates[i].id];
-                    av.Properties = data.assemblyPropertyUpdates[i];
-                }
-            }
-
-            for (int i = 0; i < data.assemblyDeletes.Count; ++i) {
-                if (viewers.ContainsKey(data.assemblyDeletes[i]))
-                    viewers[data.assemblyDeletes[i]].Destroy();
-            }
-
-
-            // Food Messages
-            for (int i = 0; i < data.foodCreations.Count; ++i)
-                new FoodPelletViewer(amalgamId, data.foodCreations[i].Position, data.foodCreations[i].id);
-
-            Dictionary<int, FoodPelletViewer> fViewers = FoodPelletViewer.GetFoodViewers(amalgamId);
-            for (int i = 0; i < data.foodDeletes.Count; ++i) {
-                if (fViewers.ContainsKey(data.foodDeletes[i]))
-                    fViewers[data.foodDeletes[i]].Destroy();
-            }
 
             // Generic Messages
             for (int i = 0; i < data.messages.Count; ++i)
@@ -159,21 +132,9 @@ public class ViewerController : MonoBehaviour {
                 if (caller == mvcBridges[i])
                     amalgamId = i;
 
-        if(amalgamId == -1) {
-            Debug.LogError("Trying to clear amalgam: " + amalgamId);
-        }
-        else {
-            Dictionary<int, AssemblyViewer> aViewers = AssemblyViewer.GetAssemblyViewers(amalgamId);
-            foreach (KeyValuePair<int, AssemblyViewer> kvp in aViewers)
-                kvp.Value.DestroyKeepInList();
-            aViewers.Clear();
-
-            Dictionary<int, FoodPelletViewer> fViewers = FoodPelletViewer.GetFoodViewers(amalgamId);
-            foreach (KeyValuePair<int, FoodPelletViewer> kvp in fViewers)
-                kvp.Value.Destroy(false);
-            fViewers.Clear();
-
-            MatingViewer.Inst.RemoveAmalgamMates(amalgamId);
+        if(amalgamId >= 0 && amalgams[amalgamId] != null) {
+            amalgams[amalgamId].Destroy();
+            amalgams[amalgamId] = null;
         }
     }
 

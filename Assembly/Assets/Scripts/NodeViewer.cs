@@ -163,6 +163,7 @@ public class NodeViewer {
     {
         if (ViewerController.Hide || cubeTransform == null)
             return;
+
         // Update mating color
         mateColorLerp = Mathf.MoveTowards(mateColorLerp, assemblyProperties.wantToMate ? 1f : 0f, Time.deltaTime);
         genderColorLerp = Mathf.MoveTowards(genderColorLerp, assemblyProperties.gender ? 1f : 0f, Time.deltaTime);
