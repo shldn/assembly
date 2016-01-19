@@ -24,7 +24,7 @@ public class NodeViewer {
 
     // Accessors
     public Vector3 Position { get { return cubeTransform.transform.position; } private set { cubeTransform.transform.position = value; } }
-    private Quaternion Rotation { get { return cubeTransform.transform.rotation; } set { cubeTransform.transform.rotation = value; } }
+    public Quaternion Rotation { get { return cubeTransform.transform.rotation; } private set { cubeTransform.transform.rotation = value; } }
 
 	private bool smoothMotion = false;
 	private Vector3 positionTarget = Vector3.zero;

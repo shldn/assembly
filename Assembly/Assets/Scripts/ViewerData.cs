@@ -51,6 +51,23 @@ public struct AssemblyTransformUpdate {
 }
 
 [Serializable]
+public struct AssemblyCenterUpdate
+{
+    public AssemblyCenterUpdate(int id_, Vector3 c) {
+        id = id_;
+        x = c.x;
+        y = c.y;
+        z = c.z;
+    }
+
+    public int id;
+    private float x;
+    private float y;
+    private float z;
+    public Vector3 Center { get { return new Vector3(x, y, z); } }
+}
+
+[Serializable]
 public struct SenseNodeCreationData{
     public SenseNodeCreationData(NodeProperties props) {
         sx = props.senseVector.x;
@@ -179,6 +196,7 @@ public class ViewerData {
     // Assemblies
     public List<AssemblyCreationData> assemblyCreations = new List<AssemblyCreationData>();
     public List<AssemblyTransformUpdate> assemblyUpdates = new List<AssemblyTransformUpdate>();
+    public List<AssemblyCenterUpdate> assemblyCenters = new List<AssemblyCenterUpdate>();
     public List<AssemblyProperties> assemblyPropertyUpdates = new List<AssemblyProperties>();
     public List<int> assemblyDeletes = new List<int>();
 
@@ -192,6 +210,7 @@ public class ViewerData {
     public void Clear()
     {
         assemblyUpdates.Clear();
+        assemblyCenters.Clear();
         assemblyCreations.Clear();
         assemblyDeletes.Clear();
         assemblyPropertyUpdates.Clear();

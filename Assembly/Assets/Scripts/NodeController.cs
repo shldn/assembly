@@ -55,6 +55,7 @@ public class NodeController : MonoBehaviour {
     MVCBridge mvcBridge = new MVCBridge();
     public float messageFPS = -1;
     System.DateTime lastMessageSent = System.DateTime.Now;
+    public bool useAssemblyCenterUpdates = false;
 
     // Reset Variables
     float timeUntilReset = -1f; //1.0f * 60f * 60f; // seconds -- negative number will disable reset
@@ -331,8 +332,14 @@ public class NodeController : MonoBehaviour {
         {
             if (!PersistentGameManager.EmbedViewer)
             {
-                for (int i = 0; i < Assembly.getAll.Count; i++)
-                    ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(Assembly.getAll[i]));
+                if(useAssemblyCenterUpdates) {
+                    for (int i = 0; i < Assembly.getAll.Count; i++)
+                        ViewerData.Inst.assemblyCenters.Add(new AssemblyCenterUpdate(Assembly.getAll[i].Id, Assembly.getAll[i].Position));
+                }
+                else {
+                    for (int i = 0; i < Assembly.getAll.Count; i++)
+                        ViewerData.Inst.assemblyUpdates.Add(new AssemblyTransformUpdate(Assembly.getAll[i]));
+                }
             }
 
             mvcBridge.SendDataToViewer();

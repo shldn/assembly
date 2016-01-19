@@ -25,6 +25,12 @@ public class AmalgamViewer {
                 assemblies[update.id].TransformUpdate(update.transforms);
         }
 
+        for (int i = 0; i < data.assemblyCenters.Count; i++) {
+            AssemblyCenterUpdate update = data.assemblyCenters[i];
+            if (assemblies.ContainsKey(update.id))
+                assemblies[update.id].CenterUpdate(update.Center);
+        }
+
         for (int i = 0; i < data.assemblyPropertyUpdates.Count; ++i) {
             if (assemblies.ContainsKey(data.assemblyPropertyUpdates[i].id)) {
                 AssemblyViewer av = assemblies[data.assemblyPropertyUpdates[i].id];

@@ -76,6 +76,14 @@ public class AssemblyViewer : CaptureObject{
 			effects.gameObject.transform.position = Position;
     }
 
+    public void CenterUpdate(Vector3 center) {
+        Vector3 offset = center - Position;
+        bool smoothTransform = false;
+        for (int i = 0; i < nodes.Count; ++i)
+            nodes[i].UpdateTransform(nodes[i].Position + offset, nodes[i].Rotation, smoothTransform);
+        Position = center;
+    }
+
     public void Destroy() {
         for (int i = 0; i < nodes.Count; ++i)
             nodes[i].Destroy();
