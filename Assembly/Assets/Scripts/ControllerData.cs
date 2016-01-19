@@ -69,6 +69,7 @@ public class ControllerData {
 
         messageHandlers.Add(typeof(AssemblyCaptured), NodeController.Inst.HandleCapturedAssembly);
         messageHandlers.Add(typeof(AssemblyReleased), NodeController.Inst.HandleReleasedAssembly);
+        messageHandlers.Add(typeof(DataRequest), NodeController.Inst.HandleDataRequest);
 
     }
 }
@@ -108,5 +109,18 @@ public struct SVector3
     public float x;
     public float y;
     public float z;
+}
+
+public enum DataRequestType
+{
+    ASSEMBLY_CENTERS = 1,
+    ASSEMBLY_FULL = 2,
+}
+
+[Serializable]
+public class DataRequest
+{
+    public DataRequest(DataRequestType request_) { request = request_; }
+    public DataRequestType request;
 }
 

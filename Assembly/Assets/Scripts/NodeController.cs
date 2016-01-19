@@ -755,6 +755,21 @@ public class NodeController : MonoBehaviour {
             someNode.velocity = (release.CamDir * 3f) + Random.insideUnitSphere * 1.5f;
     }
 
+    public void HandleDataRequest(object message) {
+        DataRequest requestMsg = message as DataRequest;
+        switch (requestMsg.request) {
+            case DataRequestType.ASSEMBLY_CENTERS:
+                useAssemblyCenterUpdates = true;
+                break;
+            case DataRequestType.ASSEMBLY_FULL:
+                useAssemblyCenterUpdates = false;
+                break;
+            default:
+                Debug.LogError("Data Request " + requestMsg.request + " not handled yet.");
+                break;
+        }
+    }
+
     private void HandleCommandLineArgs() {
         string[] cmdLnArgs = System.Environment.GetCommandLineArgs();
         for (int i = 1; i < cmdLnArgs.Length; i++) { // skip exe name

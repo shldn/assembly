@@ -61,6 +61,13 @@ public class ViewerController : MonoBehaviour {
             if (mvcBridges[i].viewerReadyToSend)
                 mvcBridges[i].SendDataToController();
 
+
+        // User input
+        if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) && Input.GetKeyUp(KeyCode.L))
+            ControllerData.Inst.Messages.Add(new DataRequest(DataRequestType.ASSEMBLY_FULL));
+        else if (Input.GetKeyUp(KeyCode.L))
+            ControllerData.Inst.Messages.Add(new DataRequest(DataRequestType.ASSEMBLY_CENTERS));
+
     }
 
     void LateUpdate()
