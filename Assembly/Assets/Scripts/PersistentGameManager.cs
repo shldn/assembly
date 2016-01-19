@@ -102,12 +102,12 @@ public class PersistentGameManager : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.Escape))
             Application.Quit();
 
-
-		if(Input.GetKeyDown(KeyCode.F1))
+#if !UNITY_EDITOR
+        if(Input.GetKeyDown(KeyCode.F1))
 			cursorLock = !cursorLock;
 
 		Screen.lockCursor = cursorLock;
-
+#endif
         if(!IsServer || !EmbedViewer) {
             if (IsClient && (AssemblyEditor.Inst && (!ClientTest.Inst || !ClientTest.Inst.UnlockFrameRate)))
                 Application.targetFrameRate = 30;
