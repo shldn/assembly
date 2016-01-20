@@ -42,10 +42,10 @@ public class ViewerController : MonoBehaviour {
     void Start() {
         if(PersistentGameManager.ViewerOnlyApp) {
             Debug.LogError("Initializing Viewer Networking");
-            int numServers = 10;
-            for(int i=0; i < numServers; ++i) {
+            
+            for (int i = 0; i < Config.controllerAddress.Count; ++i) {
                 mvcBridges.Add(new MVCBridge());
-                mvcBridges[i].InitializeViewer("127.0.0.1", 12000 + i);
+                mvcBridges[i].InitializeViewer(Config.controllerAddress[i].ip, Config.controllerAddress[i].port);
                 amalgams.Add(null);
             }
         }

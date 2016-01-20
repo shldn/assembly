@@ -41,8 +41,6 @@ public class AssemblyViewer : CaptureObject{
     public AssemblyViewer(AmalgamViewer amalgam_, AssemblyCreationData config) {
         amalgam = amalgam_;
         properties = new AssemblyProperties(config.properties); // make sure it is a fresh copy, not sharing with Model/Controller side.
-        if (properties.matingWith != -1)
-            Debug.LogError("Assembly created while mating, are we handling this -- will have to apply after all viewers are created? " + id + " " + properties.matingWith);
         for (int i = 0; i < config.nodeNeighbors.Count; ++i) {
             SenseNodeCreationData senseData = (config.senseNodeData.ContainsKey(i)) ? config.senseNodeData[i] : SenseNodeCreationData.identity;
             NodeViewer nv = new NodeViewer(Vector3.zero, config.properties, config.nodeNeighbors[i], config.trailIndices.Contains(i), senseData);
