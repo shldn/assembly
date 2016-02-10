@@ -28,7 +28,7 @@ public class CameraControl : MonoBehaviour {
     // Orbit = pan/tilt x/y of the camera around the centerPos.
     public float mouseSensitivity = 1f;
     public Quaternion targetOrbitQ;
-	Vector2 mouseOrbitStack = Vector2.zero; // Keeps track of mouse input... allows for greater-than-180 target rotation.
+	public Vector2 mouseOrbitStack = Vector2.zero; // Keeps track of mouse input... allows for greater-than-180 target rotation.
 	Vector2 mouseOrbitVelocity = Vector2.zero;
 	Vector2 mouseOrbitVelocityVel = Vector2.zero;
     Quaternion orbitQ = Quaternion.identity;

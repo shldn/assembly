@@ -170,10 +170,12 @@ public class Amalgam : MonoBehaviour
 			handles.Add(new AmalgamHandle(this, Random.Range(0, newIcoSphere.vertexCount)));
 			
 			// Initialize arteries
-			GameObject newArteryGO = Instantiate(Resources.Load("AmalgamArtery")) as GameObject;
-			AmalgamArtery newArtery = newArteryGO.GetComponent<AmalgamArtery>();
-			newArtery.amalgam = this;
-			newArtery.vertices = ShortestVertexPath(handles[i].attachedVert, handles[Random.Range(0, handles.Count)].attachedVert);
+			if(Random.Range(0f, 1f) < 0.25f) {
+				GameObject newArteryGO = Instantiate(Resources.Load("AmalgamArtery")) as GameObject;
+				AmalgamArtery newArtery = newArteryGO.GetComponent<AmalgamArtery>();
+				newArtery.amalgam = this;
+				newArtery.vertices = ShortestVertexPath(handles[i].attachedVert, handles[Random.Range(0, handles.Count)].attachedVert);
+			}
         }
 
 		transform.rotation = Random.rotationUniform;
@@ -493,7 +495,7 @@ public class AmalgamHandle {
 
 		energyBuildup = Mathf.MoveTowards(energyBuildup, 0f, NodeController.physicsStep * 0.02f);
 
-		if((energyBuildup >= 1f) && (Random.Range(0f, 1f) < 0.03f)) {
+		if((energyBuildup >= 1f) && (Random.Range(0f, 1f) < 0.03f) && (FoodPellet.all.Count < 100f)) {
 			FoodPellet newFood = new FoodPellet(gameObjectInt.position);
 			newFood.velocity = (gameObjectInt.forward * Random.Range(16f, 24f)) + (Random.rotation * Vector3.forward);
 			amalgam.foodPellets.Add(newFood);
