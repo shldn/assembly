@@ -70,6 +70,7 @@ public class NeuroScaleDemo : MonoBehaviour {
         Cull();
 
         enviroScale = Mathf.SmoothDamp(enviroScale, isActive? MuseManager.Inst.LastConcentrationMeasure : 1f, ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
+        //test: enviroScale = Mathf.SmoothDamp(enviroScale, Mathf.PingPong(Time.time * 0.1f, 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
 		enviroScale = Mathf.Clamp01(enviroScale);
 
         lastUseOctree = useOctree;

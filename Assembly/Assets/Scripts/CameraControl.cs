@@ -23,10 +23,14 @@ public class CameraControl : MonoBehaviour {
     // The 'fluidity' of the camera control. Low values -> snappy movement, higher values -> more 'sweeping' movements.
     public float smoothTime = 0.5f;
 
+	public float galleryCamZoomRate = 120f;
+
     // Orbit = pan/tilt x/y of the camera around the centerPos.
     public float mouseSensitivity = 1f;
     public Quaternion targetOrbitQ;
 	Vector2 mouseOrbitStack = Vector2.zero; // Keeps track of mouse input... allows for greater-than-180 target rotation.
+	Vector2 mouseOrbitVelocity = Vector2.zero;
+	Vector2 mouseOrbitVelocityVel = Vector2.zero;
     Quaternion orbitQ = Quaternion.identity;
     Quaternion orbitVelQ = Quaternion.identity; // for smoothdamp
 
@@ -40,6 +44,8 @@ public class CameraControl : MonoBehaviour {
     [HideInInspector] public float radius = 6f;
     [HideInInspector] public float targetRadius = 6f;
 	float mouseRadiusStack = 0f;
+    float radiusStackVel = 0f;
+    float radiusStackVelVel = 0f;
     float radiusVel = 0f;
     public float radiusSensitivity = 1f;
 
@@ -65,10 +71,12 @@ public class CameraControl : MonoBehaviour {
 	bool clientOrbitControl = false;
 
 	public bool lockHorizon = false;
+	public bool preferCenter = false;
 
 	// centered cam lazy center
 	Vector3 lazyCenter = Vector3.zero;
 	Vector3 lazyCenterVel = Vector3.zero;
+
 
 	public enum CameraType {
 		NONE, // No camera control.
@@ -99,19 +107,9 @@ public class CameraControl : MonoBehaviour {
 
 
 	void Start(){
-		// Set up camera rendering effects
-		if(Application.loadedLevelName != "SoupPhysics"){
-			RenderSettings.fog = true;
-			RenderSettings.fogColor = Camera.main.backgroundColor;
-		}
-
         // Camera initial values
         targetRadius = maxRadius;
         radius = targetRadius;
-        targetOrbitQ = Quaternion.Euler(300f, (minTilt + maxTilt) * 0.5f, 0f);
-        orbitQ = targetOrbitQ;
-
-		transform.eulerAngles = new Vector3(0f, 120f, 0f);
 
 		if(Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient)
 			camType = CameraType.GALLERY_AUTO;
@@ -133,6 +131,7 @@ public class CameraControl : MonoBehaviour {
 
 		// Blend between normal cam and neuroscale mode.
 		blendToNeuroscale = Mathf.SmoothDamp(blendToNeuroscale, (NeuroScaleDemo.Inst && NeuroScaleDemo.Inst.isActive && (CaptureNet_Manager.Inst.orbitPlayers.Count == 0))? 1f : 0f, ref blendToNeuroscaleVel, 1f);
+		//test: blendToNeuroscale = 1f;
 
 		// Toggle gallery camera mode
 		if(Input.GetKeyDown(KeyCode.C) && !ConsoleScript.active){
@@ -156,13 +155,12 @@ public class CameraControl : MonoBehaviour {
 
 		// Gallery cam
 		if(camType == CameraType.GALLERY_AUTO){
-			float radiusPulseTime = 200f;
-			float maxPulseRadius = 800f;
-
 			float elevationPulseTime = 75f;
-			float maxPulseElevation = 45f;
-			targetRadius = (Mathf.Cos((Time.time / radiusPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseRadius;
-			targetOrbitQ = Quaternion.Euler(targetOrbitQ.eulerAngles.x, (Mathf.Sin((Time.time / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f) * maxPulseElevation, 0f);
+			float radiusLerp = (0.5f + (Mathf.Cos((Time.timeSinceLevelLoad / galleryCamZoomRate) * (Mathf.PI * 2f)) * 0.5f));
+			if(preferCenter)
+				radiusLerp = Mathf.Pow(radiusLerp, 5f);
+			targetRadius = Mathf.Lerp(minRadius, maxRadius, radiusLerp);
+			targetOrbitQ = Quaternion.Euler(Mathf.Lerp(minTilt, maxTilt, 0.5f + ((Mathf.Sin((Time.timeSinceLevelLoad / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f))), targetOrbitQ.eulerAngles.y, 0f);
 		}
 
         // Smooth time is slowed down if cursor is locked ("cinematic mode")
@@ -179,14 +177,21 @@ public class CameraControl : MonoBehaviour {
 		if(AssemblyRadar.Inst && (CaptureEditorManager.capturedObj == null))
 			effectiveSmoothTime *= 5f;
 
-		if(Amalgam.allAmalgams.Count > 0)
-			effectiveSmoothTime /= 5f;
 
         // Determine orbit target, if any.
         // Jellyfish grotto
         if(originType == OriginType.JELLYFISH_CENTER){
-            selectedCaptureObj = Jellyfish.all[0];
-            center = Jellyfish.all[0].transform.position;
+            lazyCenter = Vector3.zero;
+
+			if(Jellyfish.all.Count > 0){
+				// Center on average assembly position
+				for(int i = 0; i < Jellyfish.all.Count; i++)
+					lazyCenter += Jellyfish.all[i].transform.position;
+				lazyCenter /= Jellyfish.all.Count;
+			}
+
+			center = Vector3.SmoothDamp(center, lazyCenter, ref lazyCenterVel, 3f);
+			Debug.DrawLine(Vector3.zero, center);
         }
         else if(originType == OriginType.ASSEMBLIES_SSBVIEW)
             KeepAssembliesInView();
@@ -199,6 +204,23 @@ public class CameraControl : MonoBehaviour {
 				for(int i = 0; i < Assembly.getAll.Count; i++)
 					lazyCenter += Assembly.getAll[i].Position;
 				lazyCenter /= Assembly.getAll.Count;
+			}
+
+			center = Vector3.SmoothDamp(center, lazyCenter, ref lazyCenterVel, 3f);
+		}
+		else if(originType == OriginType.AMALGAMS_CENTER){
+			lazyCenter = Vector3.zero;
+
+			if(Amalgam.allAmalgams.Count > 0){
+				// Center on average assembly position
+				int numAmalagams = 0;
+				for(int i = 0; i < Amalgam.allAmalgams.Count; i++) {
+					if(!Amalgam.allAmalgams[i])
+						continue;
+					lazyCenter += Amalgam.allAmalgams[i].transform.position;
+					numAmalagams ++;
+				}
+				lazyCenter /= numAmalagams;
 			}
 
 			center = Vector3.SmoothDamp(center, lazyCenter, ref lazyCenterVel, 3f);
@@ -237,10 +259,7 @@ public class CameraControl : MonoBehaviour {
 
 			// Mouse zoom
 			mouseRadiusStack += radius * -Input.GetAxis("Mouse ScrollWheel") * radiusSensitivity;
-			radius += mouseRadiusStack;
-			targetRadius += mouseRadiusStack;
-			mouseRadiusStack = 0f;
-
+			
 			// Keyboard zoom
 			if(Input.GetKey(KeyCode.Comma) && !ConsoleScript.active)
 				targetRadius += targetRadius * -Time.deltaTime * radiusSensitivity ;
@@ -251,23 +270,31 @@ public class CameraControl : MonoBehaviour {
 			if((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) || (Cursor.lockState == CursorLockMode.Locked) || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease))){
 				mouseOrbitStack.x += Input.GetAxis("Mouse X") * mouseSensitivity;
 				mouseOrbitStack.y += Input.GetAxis("Mouse Y") * mouseSensitivity;
-
-				targetOrbitQ *= Quaternion.AngleAxis(mouseOrbitStack.x, Vector3.up);
-				targetOrbitQ *= Quaternion.AngleAxis(mouseOrbitStack.y, Vector3.right);
-				orbitQ *= Quaternion.AngleAxis(mouseOrbitStack.x, Vector3.up);
-				orbitQ *= Quaternion.AngleAxis(mouseOrbitStack.y, Vector3.right);
-
-				mouseOrbitStack = Vector2.zero;
 			}
 		}
+
+		// Velocity math
+		radiusStackVel = Mathf.SmoothDamp(radiusStackVel, mouseRadiusStack * 0.2f, ref radiusStackVelVel, 0.5f);
+		radius += radiusStackVel;
+		targetRadius += radiusStackVel;
+		mouseRadiusStack = Mathf.Lerp(mouseRadiusStack, 0f, Time.deltaTime * 10f);
+
+		mouseOrbitVelocity = Vector2.SmoothDamp(mouseOrbitVelocity, mouseOrbitStack * 0.2f, ref mouseOrbitVelocityVel, 0.5f);
+		targetOrbitQ *= Quaternion.AngleAxis(mouseOrbitVelocity.x, Vector3.up);
+		targetOrbitQ *= Quaternion.AngleAxis(mouseOrbitVelocity.y, Vector3.right);
+		orbitQ *= Quaternion.AngleAxis(mouseOrbitVelocity.x, Vector3.up);
+		orbitQ *= Quaternion.AngleAxis(mouseOrbitVelocity.y, Vector3.right);
+		mouseOrbitStack = Vector2.Lerp(mouseOrbitStack, Vector2.zero, Time.deltaTime * 10f);
 
 
         // Increment values, apply camera position/rotation.
         targetRadius = Mathf.Clamp(targetRadius, minRadius, maxRadius);
         radius = Mathf.SmoothDamp(radius, targetRadius, ref radiusVel, effectiveSmoothTime);
 
-		if(lockHorizon)
+		if(lockHorizon) {
 			targetOrbitQ = Quaternion.Euler(Mathf.Clamp(Mathf.DeltaAngle(0f, targetOrbitQ.eulerAngles.x), -maxTilt, -minTilt), targetOrbitQ.eulerAngles.y, 0f);
+			orbitQ = Quaternion.Euler(Mathf.Clamp(Mathf.DeltaAngle(0f, orbitQ.eulerAngles.x), -maxTilt, -minTilt), orbitQ.eulerAngles.y, 0f);
+		}
 
 		orbitQ = Quaternion.Lerp(orbitQ, targetOrbitQ, Time.deltaTime / effectiveSmoothTime);
 

@@ -4,7 +4,7 @@ using System.Collections;
 public class RaidenLaser : MonoBehaviour {
 
 	LineRenderer lineRenderer;
-	public float resolution = 0.5f;
+	float resolution = 0.1f;
 	public Material material = null;
 	public float width = 10f;
 
@@ -16,10 +16,15 @@ public class RaidenLaser : MonoBehaviour {
 	float textureRunner = 0f;
 	float fadeIn = 0.01f;
 
+	public Color color = Color.white;
+
+	float scaleCoefficient = 1f;
+
 
 	void Start(){
 		lineRenderer = gameObject.AddComponent<LineRenderer>();
 		lineRenderer.material = material;
+		scaleCoefficient = Random.Range(0.5f, 2f);
 	} // End of Start().
 	
 
@@ -38,11 +43,10 @@ public class RaidenLaser : MonoBehaviour {
 
 		float distBetween = Vector3.Distance(pos0, pos3);
 		int vertexCount = Mathf.CeilToInt(resolution * distBetween + 1);
-		lineRenderer.material.mainTextureScale = new Vector2(distBetween * 0.02f, 1f);
+		lineRenderer.material.mainTextureScale = new Vector2(distBetween * 0.02f * scaleCoefficient, 1f);
 		lineRenderer.material.mainTextureOffset = new Vector2(textureRunner * 0.5f, 0f);
 		lineRenderer.SetVertexCount(vertexCount);
 		lineRenderer.SetWidth(width, width);
-		lineRenderer.SetColors(new Color(1f, 1f, 1f, fadeIn), new Color(1f, 1f, 1f, fadeIn));
 
 		if(startTrans)
 			pos1 = startTrans.position + (startTrans.forward * distBetween * 0.5f);
@@ -52,5 +56,7 @@ public class RaidenLaser : MonoBehaviour {
 
 		if(fadeIn == 0f)
 			Destroy(gameObject);
+
+		lineRenderer.SetColors(color.SetAlpha(fadeIn), new Color(0f, 0.25f, 1f, fadeIn));
 	} // End of Update().
 } // End of RaidenLaser.

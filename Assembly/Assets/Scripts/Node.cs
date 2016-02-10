@@ -213,7 +213,12 @@ public class Node {
             lastNeighborCount = neighbors.Count;
 
             bool createTrail = neighbors.Count == 2 && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
-			createTrail = false;
+
+			// Don't need trails on amalgam level... the amalgams are heavy enough to render already.
+			if(Application.loadedLevelName == "Soup_Amalgams")
+				createTrail = false;
+
+			//createTrail = false;
             if (viewer != null)
                 viewer.SetNeighborCount(neighbors.Count, createTrail);
             if (neighbors.Count == 1)

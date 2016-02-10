@@ -8,7 +8,7 @@ public class RandomMelody : MonoBehaviour {
     public AudioClip noteClip = null;
     public float noteFreq = 440f;
 
-    float[] notes = {277.18f, 311.13f, /*329.63f, */349.23f, 369.99f, 415.30f, 440f, 493.88f, 554.37f};
+    public float[] notes = {277.18f, 311.13f, /*329.63f, */349.23f, 369.99f, 415.30f, 440f, 493.88f, 554.37f};
 
     float cooldown = 0f;
 
@@ -34,8 +34,13 @@ public class RandomMelody : MonoBehaviour {
         }
         */
 
-		simpleSong.volume = 1f - Mathf.Sqrt(NeuroScaleDemo.Inst.enviroScale);
-		complexSong.volume = Mathf.Sqrt(NeuroScaleDemo.Inst.enviroScale);
+		if(simpleSong)
+			simpleSong.volume = 1f - Mathf.Sqrt(NeuroScaleDemo.Inst.enviroScale);
+		if(complexSong)
+			complexSong.volume = Mathf.Sqrt(NeuroScaleDemo.Inst.enviroScale);
+
+		if(Input.GetKeyDown(KeyCode.N))
+			PlayNote();
 
 	} // End of Update().
 

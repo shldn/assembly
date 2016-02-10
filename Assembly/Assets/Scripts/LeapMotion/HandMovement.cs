@@ -125,7 +125,8 @@ public class HandMovement : MonoBehaviour {
 			Destroy(rotationAnchor.gameObject);
 		}
 
-		print((!leap_hand.Fingers[0].IsExtended? "." : "\\") + (!leap_hand.Fingers[1].IsExtended? "n" : "|") + (!leap_hand.Fingers[2].IsExtended? "n" : "|") + (!leap_hand.Fingers[3].IsExtended? "n" : "|") + (!leap_hand.Fingers[4].IsExtended? "n" : "|") + "  " + gesture.ToString());
+		// Debug readout of gesture
+		//print((!leap_hand.Fingers[0].IsExtended? "." : "\\") + (!leap_hand.Fingers[1].IsExtended? "n" : "|") + (!leap_hand.Fingers[2].IsExtended? "n" : "|") + (!leap_hand.Fingers[3].IsExtended? "n" : "|") + (!leap_hand.Fingers[4].IsExtended? "n" : "|") + "  " + gesture.ToString());
 	} // End of Update().
 
 
