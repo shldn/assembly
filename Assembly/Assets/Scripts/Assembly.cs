@@ -385,7 +385,7 @@ public class Assembly : CaptureObject{
         if (Environment.Inst && !PersistentGameManager.IsClient && !WorldSizeController.Inst.WithinBoundary(Position)) {
             foreach (Node someNode in nodeDict.Values) {
                 Vector3 dir = (WorldSizeController.Inst.WorldOrigin - Position).normalized;
-                someNode.velocity += dir * NodeController.physicsStep;
+                someNode.velocity += dir * 2f * NodeController.physicsStep;
             }
         }
 

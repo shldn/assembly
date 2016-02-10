@@ -258,9 +258,9 @@ public class Node {
 		Position = delayPosition;
 		Rotation = delayRotation;
 
-        //// This appears to be a duplicate of code in Assembly.cs
+        //// An assembly level push occurs in Assembly.cs, this is a node by node check and push for the bounding box of the World dimensions...
         //if (Environment.Inst && Environment.Inst.isActiveAndEnabled) {
-        //    if ((Mathf.Abs(delayPosition.x) > WorldSizeController.Inst.WorldSize.x) || (Mathf.Abs(delayPosition.y) > WorldSizeController.Inst.WorldSize.y) || (Mathf.Abs(delayPosition.z) > WorldSizeController.Inst.WorldSize.z)) {
+        //    if ((Mathf.Abs(delayPosition.x - WorldSizeController.Inst.WorldOrigin.x) > WorldSizeController.Inst.WorldSize.x) || (Mathf.Abs(delayPosition.y - WorldSizeController.Inst.WorldOrigin.y) > WorldSizeController.Inst.WorldSize.y) || (Mathf.Abs(delayPosition.z - WorldSizeController.Inst.WorldOrigin.z) > WorldSizeController.Inst.WorldSize.z)) {
         //        Vector3 dir = (WorldSizeController.Inst.WorldOrigin - delayPosition).normalized;
         //        velocity += dir * NodeController.physicsStep;
         //    }

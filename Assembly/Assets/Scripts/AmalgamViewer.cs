@@ -16,7 +16,13 @@ public class AmalgamViewer {
         // Assembly Messages
         for (int i = 0; i < data.assemblyCreations.Count; i++) {
             AssemblyViewer v = new AssemblyViewer(this, data.assemblyCreations[i]);
-            assemblies.Add(v.Id, v);
+            try {
+                assemblies.Add(v.Id, v);
+            }
+            catch(System.Exception e) {
+                Debug.LogError("Exception adding assembly viewer: " + v.Id + " " + e.Message);
+                v.Destroy();
+            }
         }
 
         for (int i = 0; i < data.assemblyUpdates.Count; i++) {
@@ -65,6 +71,8 @@ public class AmalgamViewer {
         }
     }
 
+    // Note if one of the assemblies does not exist on startup when this is called, 
+    // the other mate will attempt to add the same relationship and both partners will exist.
     public void AddMates(int id1, int id2) {
         if(assemblies.ContainsKey(id1) && assemblies.ContainsKey(id2))
             matingViewer.AddMates(assemblies[id1], assemblies[id2]);
