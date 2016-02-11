@@ -49,6 +49,10 @@ public class NodeController : MonoBehaviour {
     // testing
     public int fps = -1;
 
+    // culling helpers
+    List<Node> nodesToRemove = new List<Node>();
+    List<FoodPellet> foodToRemove = new List<FoodPellet>();
+
     // Controller (Light Server) Variables
     public float messageFPS = -1;
     System.DateTime lastMessageSent = System.DateTime.Now;
@@ -119,7 +123,24 @@ public class NodeController : MonoBehaviour {
 		}
 	} // End of ClearAll().
 
+    void Cull() {
 
+        // Culling
+        nodesToRemove.Clear();
+        for (int i = 0; i < Node.getAll.Count; i++)
+            if (Node.getAll[i].cull)
+                nodesToRemove.Add(Node.getAll[i]);
+        foreach (Node n in nodesToRemove)
+            Node.getAll.Remove(n);
+
+        foodToRemove.Clear();
+        for (int i = 0; i < FoodPellet.all.Count; i++)
+            if (FoodPellet.all[i].cull)
+                foodToRemove.Add(FoodPellet.all[i]);
+        foreach (FoodPellet f in foodToRemove)
+            f.Destroy();
+    }
+    
 	void Update(){
 
         if (fps != -1)
@@ -160,19 +181,7 @@ public class NodeController : MonoBehaviour {
 		foreach(FoodPellet someFood in FoodPellet.all)
 			someFood.Update();
 
-		// Culling
-		Node[] tempHoldNodes = new Node[Node.getAll.Count];
-		Node.getAll.CopyTo(tempHoldNodes);
-		for(int i = 0; i < tempHoldNodes.Length; i++)
-			if(tempHoldNodes[i].cull)
-				Node.getAll.Remove(tempHoldNodes[i]);
-
-
-		FoodPellet[] tempHoldFood = new FoodPellet[FoodPellet.all.Count];
-		FoodPellet.all.CopyTo(tempHoldFood);
-		for(int i = 0; i < tempHoldFood.Length; i++)
-			if(tempHoldFood[i].cull)
-				tempHoldFood[i].Destroy();
+        Cull();
 
 		// Maintain octrees
 		FoodPellet.AllFoodTree.Maintain();

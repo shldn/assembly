@@ -11,6 +11,7 @@ public class Node {
 	public Triplet localHexPos = Triplet.zero;
 	public List<PhysNeighbor> neighbors = new List<PhysNeighbor>();
 	int lastNeighborCount = 0;
+    private System.Action<FoodPellet> handleFoodDelegate;
 
 	Assembly physAssembly = null;
 	public Assembly PhysAssembly {get{return physAssembly;} set{physAssembly = value;}}
@@ -127,7 +128,8 @@ public class Node {
         if (PersistentGameManager.EmbedViewer)
             viewer = new NodeViewer(Position, nodeProperties, physAssembly.properties);
 
-    } // End of Awake().
+        handleFoodDelegate = new System.Action<FoodPellet>(HandleDetectedFood);
+} // End of Awake().
 
 
     public Node(Triplet localHexPos, NodeProperties props){
@@ -294,8 +296,8 @@ public class Node {
 		switch(neighbors.Count){
 			case 1 : 
 				//calling detect food on sense node, determines power of node
-                Bounds foodDetectBoundary = new Bounds(position, nodeProperties.senseRange * (new Vector3(1, 1, 1)));
-				FoodPellet.AllFoodTree.RunActionInRange(new System.Action<FoodPellet>(HandleDetectedFood), foodDetectBoundary);
+                Bounds foodDetectBoundary = new Bounds(position, nodeProperties.senseRange * (Vector3.one));
+				FoodPellet.AllFoodTree.RunActionInRange(handleFoodDelegate, foodDetectBoundary);
 
 				// Amalgamation attraction
 				//Bounds attractBoundary = new Bounds(position, senseAttractRange * (new Vector3(1, 1, 1)));
