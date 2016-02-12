@@ -97,7 +97,7 @@ public class FoodPellet {
 
     public static bool WithinBoundary(Vector3 worldPosition)
     {
-        return !(Mathf.Sqrt(Mathf.Pow(worldPosition.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(worldPosition.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(worldPosition.z / NodeController.Inst.worldSize.z, 2f)) > 1f);
+        return !(Mathf.Sqrt(Mathf.Pow(worldPosition.x / NodeController.Inst.worldSphereScale.x, 2f) + Mathf.Pow(worldPosition.y / NodeController.Inst.worldSphereScale.y, 2f) + Mathf.Pow(worldPosition.z / NodeController.Inst.worldSphereScale.z, 2f)) > 1f);
     }
 
 

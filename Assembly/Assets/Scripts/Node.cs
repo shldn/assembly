@@ -280,7 +280,7 @@ public class Node {
 		Rotation = delayRotation;
 
 		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
-			if((Mathf.Abs(delayPosition.x) > NodeController.Inst.worldSize.x) || (Mathf.Abs(delayPosition.y) > NodeController.Inst.worldSize.y) || (Mathf.Abs(delayPosition.z) > NodeController.Inst.worldSize.z))
+			if((Mathf.Abs(delayPosition.x) > NodeController.Inst.worldSphereScale.x) || (Mathf.Abs(delayPosition.y) > NodeController.Inst.worldSphereScale.y) || (Mathf.Abs(delayPosition.z) > NodeController.Inst.worldSphereScale.z))
 				velocity += -delayPosition.normalized * NodeController.physicsStep;
 		}
 

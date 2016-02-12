@@ -9,8 +9,8 @@ public class Amalgam : MonoBehaviour
 
 	public List<Assembly> assemblies = new List<Assembly>();
 	public List<FoodPellet> foodPellets = new List<FoodPellet>();
-	int targetNumAssems = 20;
-	int targetNumFood = 60;
+	public int targetNumAssems = 15;
+	public int targetNumFood = 30;
 
 	public float radius = 50f;
 	public Vector3[] initialVerts;
@@ -252,6 +252,7 @@ public class Amalgam : MonoBehaviour
 			Assembly newAssem = Assembly.RandomAssembly(transform.position + (Random.insideUnitSphere * radius), Quaternion.identity, Random.Range(4, 10));
 			assemblies.Add(newAssem);
 			newAssem.amalgam = this;
+			newAssem.boundAmalgamVertex = Random.Range(0, meshFilter.mesh.vertexCount);
 		}
 
 		// ...but not TOO many! Cull the herd if there are too many.
@@ -273,10 +274,10 @@ public class Amalgam : MonoBehaviour
 		/*
 		if(foodPellets.Count < targetNumFood){
 			FoodPellet newFood = new FoodPellet(transform.position + (Random.insideUnitSphere * radius));
-			foodPellets.Add(newFood);
 			newFood.amalgam = this;
 		}
 		*/
+		
 
 		Mesh tempMesh = GetComponent<MeshFilter>().mesh;
 		Vector3[] verts = tempMesh.vertices;
@@ -295,13 +296,14 @@ public class Amalgam : MonoBehaviour
 			else
 				actualSkinDeform = Mathf.Sqrt(actualSkinDeform);
 
-			verts[i] = (Quaternion.Euler(activeVertices[i].wiggle) * initialVerts[i]) * actualSkinDeform;
+			verts[i] = (Quaternion.Euler(activeVertices[i].wiggle) * initialVerts[i]) * Mathf.Clamp(actualSkinDeform, 0.1f, Mathf.Infinity);
 			colors[i] = Color.Lerp(new Color(0f, 0f, 0.1f), Color.cyan, actualSkinDeform);
 		}
 		GetComponent<MeshFilter>().mesh.colors = colors;
 		GetComponent<MeshFilter>().mesh.vertices = verts;
 
 		GetComponent<MeshFilter>().mesh.RecalculateNormals();
+
 
 		/*
 		// Shortest path test
@@ -319,6 +321,55 @@ public class Amalgam : MonoBehaviour
 
 
 		//renderer.materials[0].mainTextureOffset = new Vector2(Time.time * 0.01f, Time.time * 0.01f);
+
+		// Bind assemblies to the 'rail' formed by their vertex.
+		for(int i = 0; i < assemblies.Count; i++) {
+			Assembly curAssem = assemblies[i];
+			
+
+			Vector3 localVertexPoint = meshFilter.mesh.vertices[curAssem.boundAmalgamVertex];
+			Vector3 worldVertexPoint = transform.TransformPoint(localVertexPoint);
+
+			//Debug.DrawLine(transform.position, worldVertexPoint, new Color(1f, 1f, 1f, 0.2f));
+
+			Vector3 localNormalToVertex = localVertexPoint.normalized;
+
+			Vector3 assemLocalPos = transform.InverseTransformPoint(curAssem.Position);
+			Vector3 localPointOnRail = Vector3.Project(assemLocalPos, localVertexPoint);
+			Vector3 worldPointOnRail = transform.TransformPoint(localPointOnRail);
+
+			//Debug.DrawLine(transform.position, worldPointOnRail, new Color(1f, 1f, 1f, 0.5f));
+			//Debug.DrawLine(curAssem.Position, worldPointOnRail, new Color(0f, 1f, 1f, 0.2f));
+
+			Color debugColor = Color.green;
+			Vector3 targetPos = worldPointOnRail;
+			// Dot product test
+			float hullDot = Vector3.Dot(localVertexPoint - assemLocalPos, localNormalToVertex);
+			if(hullDot < 0f) {
+				debugColor = Color.red;
+				targetPos = worldVertexPoint;
+			}
+
+			float originDot = Vector3.Dot(assemLocalPos, localNormalToVertex);
+			if(originDot < 0f) {
+				debugColor = Color.yellow;
+				targetPos = transform.position;
+			}
+
+
+			//Debug.DrawRay(targetPos, Vector3.up, debugColor);
+			//Debug.DrawRay(targetPos, -Vector3.up, debugColor);
+			//Debug.DrawRay(targetPos, Vector3.right, debugColor);
+			//Debug.DrawRay(targetPos, -Vector3.right, debugColor);
+			//Debug.DrawRay(targetPos, Vector3.forward, debugColor);
+			//Debug.DrawRay(targetPos, -Vector3.forward, debugColor);
+
+			Vector3 vectorToTargetPoint = curAssem.Position - targetPos;
+			for(int j = 0; j < curAssem.Nodes.Count; j++) {
+				curAssem.Nodes[j].Position += vectorToTargetPoint * 0.1f;
+			}
+		}
+
 
 	} // End of Update().
 	
@@ -495,7 +546,7 @@ public class AmalgamHandle {
 
 		energyBuildup = Mathf.MoveTowards(energyBuildup, 0f, NodeController.physicsStep * 0.02f);
 
-		if((energyBuildup >= 1f) && (Random.Range(0f, 1f) < 0.03f) && (FoodPellet.all.Count < 100f)) {
+		if((energyBuildup >= 1f) && (Random.Range(0f, 1f) < 0.03f) && (amalgam.foodPellets.Count < amalgam.targetNumFood)) {
 			FoodPellet newFood = new FoodPellet(gameObjectInt.position);
 			newFood.velocity = (gameObjectInt.forward * Random.Range(16f, 24f)) + (Random.rotation * Vector3.forward);
 			amalgam.foodPellets.Add(newFood);
@@ -506,7 +557,7 @@ public class AmalgamHandle {
 		amalgam.ActiveVertices[attachedVert].deform += NodeController.physicsStep + (0.02f * energyBuildup);
 
 		amalgam.ActiveVertices[attachedVert].deform = testBubble;
-		amalgam.ActiveVertices[attachedVert].wiggle = testWiggle * Mathf.Sin(Time.time * Mathf.PI * 2f * testWiggleFreq);
+		//amalgam.ActiveVertices[attachedVert].wiggle = testWiggle * Mathf.Sin(Time.time * Mathf.PI * 2f * testWiggleFreq);
 
 		if(Input.GetKeyDown(KeyCode.B))
 			RandomizeHandleBehaviours();

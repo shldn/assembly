@@ -10,14 +10,16 @@ public class NodeController : MonoBehaviour {
 
 	public static NodeController Inst;
 
-	public Vector3 worldSize = new Vector3(150f, 150f, 150f);
-	public float maxWorldSize = 300f;
+	float worldSize = 0f;
+	public Vector3 worldSphereScale { get { return new Vector3(minWorldSize, minWorldSize, worldSize); } }
+	public float maxWorldSize = 150f;
+	public float minWorldSize = 100f;
 
 	public static float physicsStep = 0.05f;
 
 	int foodPellets = 150;
 	float foodCooldown = 0f;
-	float foodRate = 0.5f;
+	public float foodRate = 0.5f;
 	public static int assemStage1Size = 20;
 	bool foodSeeded = false; // Once max food pellets are hit at the beginning, we start employing the foodCooldown.
 
@@ -99,6 +101,8 @@ public class NodeController : MonoBehaviour {
             MVCBridge.InitializeController();
             QualitySettings.vSyncCount = 0;
         }
+
+		worldSize = minWorldSize;
     } // End of Start().
 
 
@@ -110,9 +114,9 @@ public class NodeController : MonoBehaviour {
 	// Moves the world animation forward in the animation cycle (called when a food node is depleted, etc.)
 	public void AdvanceWorldTick(){
 		if(worldAnim == WorldAnim.capsule)
-			targetWorldSize = Mathf.MoveTowards(targetWorldSize, 385f, 1f);
+			targetWorldSize = Mathf.MoveTowards(targetWorldSize, maxWorldSize, 1f);
 		else if(worldAnim == WorldAnim.sphere)
-			targetWorldSize = Mathf.MoveTowards(targetWorldSize, 150f, 1f);
+			targetWorldSize = Mathf.MoveTowards(targetWorldSize, minWorldSize, 1f);
 	} // End of AdvanceWorldTick().
 
 
@@ -150,15 +154,16 @@ public class NodeController : MonoBehaviour {
             Application.targetFrameRate = fps;
 
         // World grows as food nodes are consumed.
-        worldSize.z = Mathf.Lerp(worldSize.z, targetWorldSize, 0.1f * Time.deltaTime);
+        worldSize = Mathf.Lerp(worldSize, targetWorldSize, 0.1f * Time.deltaTime);
+        worldSize = Mathf.MoveTowards(worldSize, targetWorldSize, 0.01f * Time.deltaTime);
 
 		// Once we get to a capsule, switch back to sphere.
-		if(targetWorldSize >= 385f){
+		if(worldSize >= maxWorldSize){
 			worldAnim = WorldAnim.sphere;
 		}
 
 		// Once we get to sphere, switch back to capsule.
-		if(targetWorldSize <= 150f){
+		if(worldSize <= minWorldSize){
 			worldAnim = WorldAnim.capsule;
 		}
 		
@@ -199,7 +204,7 @@ public class NodeController : MonoBehaviour {
 			if(PersistentGameManager.IsServer){
 				// Populate world if less than 50% max pop.
 				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.75f)){
-					Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, worldSize);
+					Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, Vector3.one * worldSize);
 					Assembly newAssembly = Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
 				}
 
@@ -225,12 +230,12 @@ public class NodeController : MonoBehaviour {
 					foodCooldown = 1f / foodRate;
 					Vector3 foodPosition = Vector3.zero;
 					if(foodInitialized && (worldAnim == WorldAnim.capsule)){
-						float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
-						float radius = worldSize.x * 0.5f;
+						float randomSeed = Random.Range(-worldSize * 0.5f, worldSize * 0.5f);
+						float radius = worldSize * 0.5f;
 						float spiralIntensity = 0.2f;
 						foodPosition = new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
 					}else
-						foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSize);
+						foodPosition = Vector3.Scale(Random.insideUnitSphere, worldSphereScale);
 
                     if(FoodPellet.WithinBoundary(foodPosition))
     					new FoodPellet(foodPosition);
