@@ -26,7 +26,7 @@ public class CameraControl : MonoBehaviour {
 	public float galleryCamZoomRate = 120f;
 
     // Orbit = pan/tilt x/y of the camera around the centerPos.
-    public float mouseSensitivity = 1f;
+    float mouseSensitivity = 3f;
     public Quaternion targetOrbitQ;
 	public Vector2 mouseOrbitStack = Vector2.zero; // Keeps track of mouse input... allows for greater-than-180 target rotation.
 	Vector2 mouseOrbitVelocity = Vector2.zero;

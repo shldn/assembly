@@ -81,6 +81,8 @@ public class DiagnosticHUD : MonoBehaviour {
 		str += "Num Nodes: " + Node.getAll.Count;
         str += "\n";
         str += "Num Assemblies: " + Assembly.getAll.Count;
+		str += "\n";
+        str += "Num Food Pellets: " + FoodPellet.all.Count;
         str += "\n";
         str += "Game Objects: " + goCount;
         str += "\n";

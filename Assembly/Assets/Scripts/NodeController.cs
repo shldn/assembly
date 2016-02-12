@@ -16,7 +16,10 @@ public class NodeController : MonoBehaviour {
 	public static float physicsStep = 0.05f;
 
 	int foodPellets = 150;
+	float foodCooldown = 0f;
+	float foodRate = 0.5f;
 	public static int assemStage1Size = 20;
+	bool foodSeeded = false; // Once max food pellets are hit at the beginning, we start employing the foodCooldown.
 
 	int minNodes = 8;
 	int maxNodes = 20;
@@ -206,7 +209,11 @@ public class NodeController : MonoBehaviour {
 				}
 
 				// Keep food at full amount.
-				if(populationControl && (FoodPellet.all.Count < foodPellets)){
+				foodCooldown -= physicsStep;
+				if(FoodPellet.all.Count == foodPellets)
+					foodSeeded = true;
+				if(populationControl && (FoodPellet.all.Count < foodPellets) && (!foodSeeded || (foodCooldown <= 0f))){
+					foodCooldown = 1f / foodRate;
 					Vector3 foodPosition = Vector3.zero;
 					if(foodInitialized && (worldAnim == WorldAnim.capsule)){
 						float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
