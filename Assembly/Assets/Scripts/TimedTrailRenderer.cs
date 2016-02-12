@@ -23,6 +23,7 @@ public class TimedTrailRenderer : MonoBehaviour
  
    public float maxVertexDistance = 10.00f;
    public float maxAngle = 3.00f;
+   private int maxNumPts = 250;
  
    public bool autoDestruct = false;
  
@@ -44,9 +45,14 @@ public class TimedTrailRenderer : MonoBehaviour
 
    // Triangle List helper
    private static List<int> triangles = new List<int>();
+   private static Dictionary<int, int[]> triangleListCache = new Dictionary<int, int[]>(); // using this helps cut down on garbage collection that was causing stutters
 
- 
-   public class Point
+    // Member data structures to avoid garbage collection with their destruction upon each rebuild - helps reduce stutters
+    Vector3[] newVertices = null;
+    Vector2[] newUV = null;
+    Color[] newColors = null;
+
+    public class Point
    {
       public float timeCreated = 0.00f;
       public Vector3 position;
@@ -80,7 +86,11 @@ public class TimedTrailRenderer : MonoBehaviour
 
        meshBounds.center = transform.position;
        meshBounds.size = Vector3.one;
-   }
+
+       newVertices = new Vector3[maxNumPts * 2];
+       newUV = new Vector2[maxNumPts * 2];
+       newColors = new Color[maxNumPts * 2];
+    }
 
 	void OnDestroy(){
 		Destroy(o);
@@ -196,7 +206,7 @@ public class TimedTrailRenderer : MonoBehaviour
         LinkedListNode<Point> it = points.First;
         while(it != null)
         {
-            if (Time.time - it.Value.timeCreated > lifeTime)
+            if (Time.time - it.Value.timeCreated > lifeTime || points.Count > maxNumPts)
             {
                 LinkedListNode<Point> toRemove = it;
                 it = it.Next;
@@ -212,9 +222,6 @@ public class TimedTrailRenderer : MonoBehaviour
 
         if (points.Count > 1 && IsTrailVisible())
         {
-          Vector3[] newVertices = new Vector3[points.Count * 2];
-          Vector2[] newUV = new Vector2[points.Count * 2];
-          Color[] newColors = new Color[points.Count * 2];
  
           int i = 0;
           float curDistance = 0.00f;
@@ -313,7 +320,9 @@ public class TimedTrailRenderer : MonoBehaviour
    private static int[] GetTriangles(int numPoints)
    {
        UpdateTriangleList(numPoints);
-       return triangles.GetRange(0, (numPoints - 1) * 6).ToArray();
+        if (!triangleListCache.ContainsKey(numPoints))
+            triangleListCache.Add(numPoints,triangles.GetRange(0, (numPoints - 1) * 6).ToArray());
+        return triangleListCache[numPoints];
    }
 
     // Maintains a static triangle list
