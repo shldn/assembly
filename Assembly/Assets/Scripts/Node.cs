@@ -98,7 +98,7 @@ public class Node {
 
 	List<SenseActuateLink> senseActuateLinks = new List<SenseActuateLink>();
 
-	public float senseAttractRange = 30f;
+	public float senseAttractRange = 10f;
     public Vector3 SenseForward { get { return Rotation * (nodeProperties.senseVector * Vector3.forward); } }
     
 
