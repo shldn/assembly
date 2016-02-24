@@ -19,6 +19,7 @@ public class PersistentGameManager : MonoBehaviour {
     public static bool IsAdminClient { get { return true; } }
     public static bool IsClient { get { return isClient; } }
     public static bool IsServer { get { return !IsClient; } }
+    public static bool IsLightServer { get { return IsServer && !EmbedViewer; } } // IsController
     private static bool isClient = false;
 
     // Should Assembly/Node classes embed viewers (Genetic Tests should have them)
@@ -29,7 +30,6 @@ public class PersistentGameManager : MonoBehaviour {
 
     public static HashSet<CaptureObject> CaptureObjects = new HashSet<CaptureObject>();
 
-    public CaptureNet_Manager captureMgr;
     public AssemblyRadar assemRadar;
     public bool optimize = true;
 
@@ -53,24 +53,26 @@ public class PersistentGameManager : MonoBehaviour {
 
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
-        if( !captureMgr )
-            captureMgr = gameObject.AddComponent<CaptureNet_Manager>();
+        if(CaptureNet_Manager.Inst == null)
+            gameObject.AddComponent<CaptureNet_Manager>();
 		if( !assemRadar )
             assemRadar = gameObject.AddComponent<AssemblyRadar>();
 
         // load prefabs
-        if( playerSyncObj == null)
-            playerSyncObj = Resources.Load("PlayerObject");
-        if (pingBurstObj == null)
-            pingBurstObj = Resources.Load("Ping_Effect");
-        if (captureClip == null)
-            captureClip = Resources.Load("pushClip") as AudioClip;
-        if (pushClip == null)
-            pushClip = Resources.Load("captureClip") as AudioClip;
-        if (!IsClient && qrCodeTexture == null)
-            qrCodeTexture = Resources.Load("Textures/Capture_QR_Code") as Texture;
+        if (!IsLightServer) {
+            if (playerSyncObj == null)
+                playerSyncObj = Resources.Load("PlayerObject");
+            if (pingBurstObj == null)
+                pingBurstObj = Resources.Load("Ping_Effect");
+            if (captureClip == null)
+                captureClip = Resources.Load("pushClip") as AudioClip;
+            if (pushClip == null)
+                pushClip = Resources.Load("captureClip") as AudioClip;
+            if (!IsClient && qrCodeTexture == null)
+                qrCodeTexture = Resources.Load("Textures/Capture_QR_Code") as Texture;
+        }
 
-        cursorLock = !IsClient;
+        cursorLock = !IsClient && !IsLightServer;
 
         if (IsServer)
             HandleCommandLineArgs();
@@ -99,7 +101,7 @@ public class PersistentGameManager : MonoBehaviour {
         }
 
         // Quit on Escape
-        if (Input.GetKeyUp(KeyCode.Escape))
+        if (Input.GetKeyUp(KeyCode.Escape) && !IsLightServer)
             Application.Quit();
 
 #if !UNITY_EDITOR
@@ -108,7 +110,7 @@ public class PersistentGameManager : MonoBehaviour {
 
 		Screen.lockCursor = cursorLock;
 #endif
-        if(!IsServer || !EmbedViewer) {
+        if(!IsLightServer && (!IsServer || !EmbedViewer)) {
             if (IsClient && (AssemblyEditor.Inst && (!ClientTest.Inst || !ClientTest.Inst.UnlockFrameRate)))
                 Application.targetFrameRate = 30;
             else

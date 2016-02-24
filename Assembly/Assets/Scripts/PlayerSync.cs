@@ -459,7 +459,7 @@ public class PlayerSync : MonoBehaviour {
     void OnNetworkInstantiate(NetworkMessageInfo info)
     {
         if (Network.isServer)
-            PersistentGameManager.Inst.captureMgr.playerSync = this;
+            CaptureNet_Manager.Inst.playerSync = this;
     }
 
 	void OnDestroy(){

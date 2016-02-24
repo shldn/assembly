@@ -81,14 +81,14 @@ public class ClientAdminMenu : MonoBehaviour {
 					showIPNumpad = false;
 			}else{
 				if (GUILayout.Button("Next Scene", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true)))
-					PersistentGameManager.Inst.captureMgr.RequestNextScene();
+					CaptureNet_Manager.Inst.RequestNextScene();
                 
 				if (GUILayout.Button("Show Download QR Code", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true)))
-					PersistentGameManager.Inst.captureMgr.RequestToggleQRCodeVisibility();
+                    CaptureNet_Manager.Inst.RequestToggleQRCodeVisibility();
 
 				if (GUILayout.Button(orbitMode ? "Orbit Mode" : "Capture Mode", GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true)))
 				{
-					PersistentGameManager.Inst.captureMgr.playerSync.RequestToggleOrbitMode();
+                    CaptureNet_Manager.Inst.playerSync.RequestToggleOrbitMode();
 					orbitMode = !orbitMode;
 				}
 

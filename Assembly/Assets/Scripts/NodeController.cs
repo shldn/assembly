@@ -102,6 +102,9 @@ public class NodeController : MonoBehaviour {
             mvcBridge.InitializeController();
             QualitySettings.vSyncCount = 0;
         }
+
+        if (PersistentGameManager.IsLightServer)
+            PersistentGameManager.Inst.Touch();
     } // End of Start().
 
 
