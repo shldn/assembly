@@ -63,14 +63,9 @@ public class ControllerData {
     }
 
     public void SetupMessageHandlers() {
-
-        if (PersistentGameManager.ViewerOnlyApp)
-            return;
-
         messageHandlers.Add(typeof(AssemblyCaptured), NodeController.Inst.HandleCapturedAssembly);
         messageHandlers.Add(typeof(AssemblyReleased), NodeController.Inst.HandleReleasedAssembly);
         messageHandlers.Add(typeof(DataRequest), NodeController.Inst.HandleDataRequest);
-
     }
 }
 
@@ -79,9 +74,10 @@ public class ControllerData {
 [Serializable]
 public class AssemblyCaptured
 {
-    public AssemblyCaptured(AssemblyViewer viewer) { id = viewer.Id; }
-    public AssemblyCaptured(int id_) { id = id_; }
+    public AssemblyCaptured(AssemblyViewer viewer, int playerId_) { id = viewer.Id; playerId = playerId_; }
+    public AssemblyCaptured(int id_, int playerId_) { id = id_; playerId = playerId_; }
     public int id;
+    public int playerId;
 }
 
 [Serializable]

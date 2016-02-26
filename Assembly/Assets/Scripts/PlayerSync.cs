@@ -8,6 +8,7 @@ public class PlayerSync : MonoBehaviour {
 	public static PlayerSync local;
     public static Dictionary<int, PlayerSync> capturedToPlayerSync = new Dictionary<int, PlayerSync>();
     public static Dictionary<int, PlayerSync> idToPlayerSync = new Dictionary<int, PlayerSync>();
+    public static Dictionary<int, PlayerSync> controllerIdToPlayerSync = new Dictionary<int, PlayerSync>();
     public bool isLocal { get { return local == this; } }
 
     Vector3 screenPos = Vector3.zero;
@@ -57,6 +58,9 @@ public class PlayerSync : MonoBehaviour {
 
 		if(PersistentGameManager.IsClient)
 			lassoClient = LassoClientDefault;
+
+        if (PersistentGameManager.IsLightServer)
+            controllerIdToPlayerSync.Add(GetComponent<NetworkView>().GetInstanceID(), this);
     }
 
 	void Start(){
@@ -176,7 +180,7 @@ public class PlayerSync : MonoBehaviour {
 
             // Determine circled objects
             if(!selecting && (lastPoints.Count > 0)){
-                if(Network.peerType == NetworkPeerType.Server){
+                if(Network.peerType == NetworkPeerType.Server || PersistentGameManager.ViewerOnlyApp){
                     CaptureObject captureObj = GetCapturedObject(lastPoints);
                     if(captureObj != null)
                         HandleCapturedObject(captureObj);
@@ -306,7 +310,7 @@ public class PlayerSync : MonoBehaviour {
             }
             else if(av != null) {
                 capturedToPlayerSync.Add(av.Id, this);
-                ControllerData.Inst.Add(new AssemblyCaptured(av));
+                ControllerData.Inst.Add(new AssemblyCaptured(av, id));
             }
             else
                 GetComponent<NetworkView>().RPC("CaptureUCreature", GetComponent<NetworkView>().owner);

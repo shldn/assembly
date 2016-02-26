@@ -744,7 +744,11 @@ public class NodeController : MonoBehaviour {
             Debug.LogError("Could not find assembly " + capture.id);
         else {
             a.SaveFamilyTree();
-            ViewerData.Inst.messages.Add(new CaptureData(capture.id, (a).ToFileString()));
+            // if Viewer is connected to mobile
+            if (PersistentGameManager.ViewerConnectsWithPhones)
+                ViewerData.Inst.messages.Add(new CaptureData(capture.id, (a).ToFileString()));
+            else
+                PlayerSync.controllerIdToPlayerSync[capture.playerId].SendCaptureAssemblyRPC((a).ToFileString());
             a.Destroy();
         }
     }
