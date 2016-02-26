@@ -138,6 +138,24 @@ public struct FoodCreationData
     public float z;
 }
 
+[Serializable]
+public class ClientCursor
+{
+    public ClientCursor(int id_, float x_, float y_, float zoom_ = 0) {
+        id = id_;
+        x = x_;
+        y = y_;
+        zoom = zoom_;
+    }
+
+    public int id;
+    public float x;
+    public float y;
+    public float zoom;
+    public Vector3 Pos { get { return new Vector3(x, y, zoom); } }
+
+}
+
 public enum ViewerMessageType
 {
     ASSEMBLY_CREATE     = 1,
@@ -174,6 +192,14 @@ public class TargetWorldSizeData
 }
 
 [Serializable]
+public class LassoEvent
+{
+    public LassoEvent(int id_, bool start_) { id = id_;  start = start_; }
+    public int id;
+    public bool start;
+}
+
+[Serializable]
 public class ViewerData {
 
     private static ViewerData inst = null;
@@ -204,6 +230,9 @@ public class ViewerData {
     public List<FoodCreationData> foodCreations = new List<FoodCreationData>();
     public List<int> foodDeletes = new List<int>();
 
+    // Capture Client Messages
+    public List<ClientCursor> cursorData = new List<ClientCursor>();
+
     // Generic Messages
     public List<object> messages = new List<object>();
 
@@ -217,6 +246,8 @@ public class ViewerData {
 
         foodCreations.Clear();
         foodDeletes.Clear();
+
+        cursorData.Clear();
 
         messages.Clear();
     }

@@ -7,9 +7,11 @@ public class PlayerSync : MonoBehaviour {
 	public static List<PlayerSync> all = new List<PlayerSync>();
 	public static PlayerSync local;
     public static Dictionary<int, PlayerSync> capturedToPlayerSync = new Dictionary<int, PlayerSync>();
-	public bool isLocal { get { return local == this; } }
+    public static Dictionary<int, PlayerSync> idToPlayerSync = new Dictionary<int, PlayerSync>();
+    public bool isLocal { get { return local == this; } }
 
     Vector3 screenPos = Vector3.zero;
+    public Vector3 ScreenPos { set { screenPos = value; } }
     public Vector3 screenPosSmoothed = Vector3.zero;
     Vector3 screenPosVel = Vector3.zero;
     float screenPosSmoothTime = 0.1f;
@@ -35,6 +37,15 @@ public class PlayerSync : MonoBehaviour {
 	public static bool LassoClientDefault { get { return true; } } // For client
 	public bool lassoClient = false; // For client/server, based on above.
 
+    // Id for Viewer Only playerSync objects
+    public int id = -1;
+
+    public static PlayerSync CreateViewerPlayerSync(int id_) {
+        PlayerSync pSync = (Instantiate(PersistentGameManager.Inst.playerSyncObj, Vector3.zero, Quaternion.identity) as GameObject).GetComponent<PlayerSync>();
+        idToPlayerSync.Add(id_, pSync);
+        pSync.id = id_;
+        return pSync;
+    }
 
     void Awake()
     {
@@ -71,7 +82,7 @@ public class PlayerSync : MonoBehaviour {
         if(cursorObject && (PersistentGameManager.IsClient) && !GetComponent<NetworkView>().isMine)
             Destroy(cursorObject.gameObject);
 
-		if(CaptureNet_Manager.Inst.orbitPlayers.Contains(GetComponent<NetworkView>().owner))
+		if(CaptureNet_Manager.Inst != null && CaptureNet_Manager.Inst.orbitPlayers.Contains(GetComponent<NetworkView>().owner))
         {
             // handle camera orbiting for these players screenPos movements here
 			if(orbitModeInit){
@@ -92,7 +103,7 @@ public class PlayerSync : MonoBehaviour {
 			screenPos = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
 			orbitModeInit = true;
         }
-        else if (!CaptureEditorManager.IsEditing && ((Network.peerType == NetworkPeerType.Server) || GetComponent<NetworkView>().isMine))
+        else if (!CaptureEditorManager.IsEditing && ((Network.peerType == NetworkPeerType.Server) || GetComponent<NetworkView>().isMine || PersistentGameManager.ViewerOnlyApp))
         {
 			orbitModeInit = false;
 
@@ -141,73 +152,32 @@ public class PlayerSync : MonoBehaviour {
 			if(!lassoClient)
                 Network.SetSendingEnabled(0, true);
 
+            if (!PersistentGameManager.ViewerOnlyApp) {
+                if (lassoClient && GetComponent<NetworkView>().isMine && Input.GetMouseButton(0) && !selecting) {
+                    selecting = true;
+                    Network.SetSendingEnabled(0, selecting);
+                    GetComponent<NetworkView>().RPC("StartSelect", RPCMode.Server);
+                }
 
-            if(lassoClient && GetComponent<NetworkView>().isMine && Input.GetMouseButton(0) && !selecting){
-                selecting = true;
-                Network.SetSendingEnabled(0, selecting);
-                GetComponent<NetworkView>().RPC("StartSelect", RPCMode.Server);
+                if (GetComponent<NetworkView>().isMine && !Input.GetMouseButton(0) && selecting) {
+                    selecting = false;
+                    GetComponent<NetworkView>().RPC("StopSelect", RPCMode.Server);
+
+                    // don't send packets while the client is not selecting anything
+                    Network.SetSendingEnabled(0, selecting);
+                }
             }
-
-            if(GetComponent<NetworkView>().isMine && !Input.GetMouseButton(0) && selecting){
-                selecting = false;
-                GetComponent<NetworkView>().RPC("StopSelect", RPCMode.Server);
-
-                // don't send packets while the client is not selecting anything
-                Network.SetSendingEnabled(0, selecting);
-            }
-
 
 
             // Collect points for gestural control.
-            if(selecting)
-            {
-                float distToCurrent = (lastPoints.Count > 0) ? Vector3.Distance(screenPosSmoothed, lastPoints.Last.Value) : 0f;
-                if ((lastPoints.Count < 2) || distToCurrent > 10f)
-                {
-                    lastPoints.AddLast(screenPosSmoothed);
-                    lastPointDists.AddLast(distToCurrent);
-                    cursorLineDist += distToCurrent;
-                    while (cursorLineDist > cursorLineMaxDist && lastPoints.Count > 0)
-                    {
-                        cursorLineDist -= lastPointDists.First.Value;
-                        lastPoints.RemoveFirst();
-                        lastPointDists.RemoveFirst();
-                    }
-                }
-            }
+            if (selecting)
+                AddLassoPoint(screenPosSmoothed);
 
 
             // Determine circled objects
             if(!selecting && (lastPoints.Count > 0)){
                 if(Network.peerType == NetworkPeerType.Server){
-                    CaptureObject captureObj = null;
-                    float distToCam = 9999999f;
-                    foreach(CaptureObject someObj in PersistentGameManager.CaptureObjects){
-                        Vector3 objScreenPos = Camera.main.WorldToScreenPoint(someObj.Position);
-                        objScreenPos.y = Screen.height - objScreenPos.y;
-
-                        float totalAngle = 0f;
-                        float lastAngleToJelly = 0f;
-                        bool firstElem = true;
-                        foreach(Vector2 pt in lastPoints){
-                            Vector2 currentVec = new Vector2(objScreenPos.x, objScreenPos.y) - pt;
-                            float angleToJelly = Mathf.Atan2(currentVec.x, currentVec.y) * Mathf.Rad2Deg;
-
-                            if(!firstElem)
-                                totalAngle += Mathf.DeltaAngle(angleToJelly, lastAngleToJelly);
-
-                            lastAngleToJelly = angleToJelly;
-                            firstElem = false;
-                        }
-
-                        float angleForgiveness = 40f;
-                        float currDistToCam = (someObj.Position - Camera.main.transform.position).sqrMagnitude;
-                        if (Mathf.Abs(totalAngle) > (360f - angleForgiveness) && (captureObj == null || currDistToCam < distToCam))
-                        {
-                            captureObj = someObj;
-                            distToCam = currDistToCam;
-                        }
-                    }
+                    CaptureObject captureObj = GetCapturedObject(lastPoints);
                     if(captureObj != null)
                         HandleCapturedObject(captureObj);
 
@@ -235,6 +205,52 @@ public class PlayerSync : MonoBehaviour {
         }
 
     } // End of Update().
+
+    public void AddLassoPoint(Vector3 newPoint) {
+        float distToCurrent = (lastPoints.Count > 0) ? Vector3.Distance(newPoint, lastPoints.Last.Value) : 0f;
+        if ((lastPoints.Count < 2) || distToCurrent > 10f) {
+            lastPoints.AddLast(newPoint);
+            lastPointDists.AddLast(distToCurrent);
+            cursorLineDist += distToCurrent;
+            while (cursorLineDist > cursorLineMaxDist && lastPoints.Count > 0) {
+                cursorLineDist -= lastPointDists.First.Value;
+                lastPoints.RemoveFirst();
+                lastPointDists.RemoveFirst();
+            }
+        }
+    }
+
+
+    CaptureObject GetCapturedObject(LinkedList<Vector2> lassoPts) {
+        CaptureObject captureObj = null;
+        float distToCam = 9999999f;
+        foreach (CaptureObject someObj in PersistentGameManager.CaptureObjects) {
+            Vector3 objScreenPos = Camera.main.WorldToScreenPoint(someObj.Position);
+            objScreenPos.y = Screen.height - objScreenPos.y;
+
+            float totalAngle = 0f;
+            float lastAngleToJelly = 0f;
+            bool firstElem = true;
+            foreach (Vector2 pt in lassoPts) {
+                Vector2 currentVec = new Vector2(objScreenPos.x, objScreenPos.y) - pt;
+                float angleToJelly = Mathf.Atan2(currentVec.x, currentVec.y) * Mathf.Rad2Deg;
+
+                if (!firstElem)
+                    totalAngle += Mathf.DeltaAngle(angleToJelly, lastAngleToJelly);
+
+                lastAngleToJelly = angleToJelly;
+                firstElem = false;
+            }
+
+            float angleForgiveness = 40f;
+            float currDistToCam = (someObj.Position - Camera.main.transform.position).sqrMagnitude;
+            if (Mathf.Abs(totalAngle) > (360f - angleForgiveness) && (captureObj == null || currDistToCam < distToCam)) {
+                captureObj = someObj;
+                distToCam = currDistToCam;
+            }
+        }
+        return captureObj;
+    }
 
     void OnLevelWasLoaded(int level)
     {
@@ -307,14 +323,22 @@ public class PlayerSync : MonoBehaviour {
         GetComponent<NetworkView>().RPC("CaptureAssembly", GetComponent<NetworkView>().owner, assemblyStr);
     }
 
+    public void SetSelecting(bool start) {
+        selecting = start;
+    }
+
     [RPC] // Server receives this message
     void StartSelect(){
         selecting = true;
+        if(PersistentGameManager.IsLightServer)
+            ViewerData.Inst.messages.Add(new LassoEvent(GetComponent<NetworkView>().GetInstanceID(), selecting));
     } // End of StartSelect().
 
     [RPC] // Server receives this message
-    void StopSelect(){
+    void StopSelect() {
         selecting = false;
+        if (PersistentGameManager.IsLightServer)
+            ViewerData.Inst.messages.Add(new LassoEvent(GetComponent<NetworkView>().GetInstanceID(), selecting));
     } // End of StopSelect().
 
     [RPC] // Client receives this when it captures a jelly.
@@ -439,7 +463,11 @@ public class PlayerSync : MonoBehaviour {
 
             if (PersistentGameManager.IsServer && NodeController.Inst)
                 NodeController.Inst.lastPlayerActivityTime = System.DateTime.Now;
-		}
+
+            if (PersistentGameManager.IsLightServer) {
+                ViewerData.Inst.cursorData.Add(new ClientCursor(info.networkView.GetInstanceID(), screenPos.x, screenPos.y, screenPos.z));
+            }
+        }
     } // End of OnSerializeNetworkView().
 
     void OnDisconnectedFromServer(NetworkDisconnection info)

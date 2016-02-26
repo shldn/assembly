@@ -90,6 +90,13 @@ public class ViewerController : MonoBehaviour {
         ViewerData.Inst.Clear();
     }
 
+    private PlayerSync GetPlayerSync(int id) {
+        PlayerSync playerSync = null;
+        if (!PlayerSync.idToPlayerSync.TryGetValue(id, out playerSync))
+            playerSync = PlayerSync.CreateViewerPlayerSync(id);
+        return playerSync;
+    }
+
     private void HandleViewerMessages(int amalgamId, ViewerData data) {
 
         try {
@@ -99,6 +106,9 @@ public class ViewerController : MonoBehaviour {
             // Amalgam Messages
             amalgams[amalgamId].HandleMessages(data);
 
+            // Capture Client Messages
+            for(int i=0; i < data.cursorData.Count; ++i)
+                GetPlayerSync(data.cursorData[i].id).ScreenPos = data.cursorData[i].Pos;
 
             // Generic Messages
             for (int i = 0; i < data.messages.Count; ++i)
@@ -125,6 +135,10 @@ public class ViewerController : MonoBehaviour {
         else if (type.Equals(typeof(WorldSizeData))) {
             WorldSizeData data = message as WorldSizeData;
             WorldSizeController.Inst.WorldSize = data.Size;
+        }
+        else if (type.Equals(typeof(LassoEvent))) {
+            LassoEvent data = message as LassoEvent;
+            GetPlayerSync(data.id).SetSelecting(data.start);
         }
         else
             Debug.LogError("HandleGenericMessage: unknown message type: " + type);

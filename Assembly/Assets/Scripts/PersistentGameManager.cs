@@ -53,13 +53,13 @@ public class PersistentGameManager : MonoBehaviour {
 
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
-        if(CaptureNet_Manager.Inst == null)
+        if(CaptureNet_Manager.Inst == null && !ViewerOnlyApp)
             gameObject.AddComponent<CaptureNet_Manager>();
 		if( !assemRadar )
             assemRadar = gameObject.AddComponent<AssemblyRadar>();
 
         // load prefabs
-        if (!IsLightServer) {
+        if (ViewerOnlyApp || !IsLightServer) { // ViewerOnlyApp needed - init ordering can cause !IsLightServer check to not include ViewerOnlyApp
             if (playerSyncObj == null)
                 playerSyncObj = Resources.Load("PlayerObject");
             if (pingBurstObj == null)
