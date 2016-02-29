@@ -11,6 +11,7 @@ public class MuseManager : MonoBehaviour {
 
     // Local variables
     private bool touchingForehead = false;
+    private int offForeheadCounter = 0;
     private float lastConcentrationMeasure = 0f;
     private float batteryLevel = 1.0f;
     private List<int> headConnectionStatus = new List<int>() {0,0,0,0};
@@ -62,7 +63,7 @@ public class MuseManager : MonoBehaviour {
     {
         //Debug.Log("packet: " + packet.Address + " " + OSCHandler.DataToString(packet.Data));
         if (packet.Address.Contains("touching_forehead"))
-            touchingForehead = ((int)packet.Data[0] != 0);
+            HandleTouchingForehead((int)packet.Data[0] != 0);
         else if (packet.Address.Contains("concentration"))
             HandleConcentrationSample((float)packet.Data[0]);
         else if (packet.Address.Contains("horseshoe"))
@@ -72,6 +73,20 @@ public class MuseManager : MonoBehaviour {
         else if (packet.Address.Contains("blink"))
             HandleBlinkSample(packet.Data);
         timeOfLastMessage = DateTime.Now;
+    }
+
+    private void HandleTouchingForehead(bool touching) {
+        if (touchingForehead && !touching) {
+            offForeheadCounter++;
+            if (offForeheadCounter >= 12) {
+                touchingForehead = false;
+                offForeheadCounter = 0;
+            }
+        }
+        else {
+            touchingForehead = touching;
+            offForeheadCounter = 0;
+        }
     }
 #endif
 
