@@ -270,7 +270,6 @@ public class PlayerSync : MonoBehaviour {
 
             if( a != null )
             {
-                a.SaveFamilyTree();
                 SendCaptureAssemblyRPC(a.ToFileString());
 
 				// Single-player
