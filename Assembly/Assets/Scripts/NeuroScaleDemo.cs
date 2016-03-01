@@ -55,6 +55,10 @@ public class NeuroScaleDemo : MonoBehaviour {
         newSelectedNode = false;
 		if((!targetNode || targetNode.cull) && (Node.getAll.Count > 0)){
 			targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
+            // 150 tries to get a non-muscle node
+            for(int i=0; targetNode.IsMuscle && i < 150; ++i) {
+                targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
+            }
             newSelectedNode = true;
 		}
 		
