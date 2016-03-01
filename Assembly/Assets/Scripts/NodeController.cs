@@ -681,7 +681,6 @@ public class NodeController : MonoBehaviour {
         if (a == null)
             Debug.LogError("Could not find assembly " + capture.id);
         else {
-            a.SaveFamilyTree();
             ViewerData.Inst.messages.Add(new CaptureData(capture.id, (a).ToFileString()));
             a.Destroy();
         }
