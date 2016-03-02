@@ -62,7 +62,7 @@ public class NeuroScaleDemo : MonoBehaviour {
             newSelectedNode = true;
 		}
 		
-		camRadius = 10f + ((NodeController.Inst.maxWorldSize - 10f) * Mathf.Pow(enviroScale, 1f));
+		camRadius = 10f + ((NodeController.Inst.minWorldSize + 10f) * Mathf.Pow(enviroScale, 1f));
 
 		RenderSettings.fogStartDistance = camRadius + (1000f * Mathf.Pow(enviroScale, 2f));
 		RenderSettings.fogEndDistance = RenderSettings.fogStartDistance * 2f;

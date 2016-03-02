@@ -74,13 +74,47 @@ public class HandMovement : MonoBehaviour {
 			gestureTime = 0f;
 		}
 
+		Vector3 crushPos = hand_model.palm.position + (-hand_model.palm.up * 2f);
+		Debug.DrawRay(crushPos, Vector3.up, Color.red);
+		Debug.DrawRay(crushPos, -Vector3.up, Color.red);
+		Debug.DrawRay(crushPos, Vector3.right, Color.red);
+		Debug.DrawRay(crushPos, -Vector3.right, Color.red);
+		Debug.DrawRay(crushPos, Vector3.forward, Color.red);
+		Debug.DrawRay(crushPos, -Vector3.forward, Color.red);
+
 		// If we're goin for a gesture consistently, we increase the time.
-		if((targetGesture != Gesture.none) && (targetGesture == pendingGesture)){
+		if((targetGesture != Gesture.none) && (targetGesture == pendingGesture) && (gesture != targetGesture)){
 			gestureTime += Time.deltaTime;
 
 			// If we have held the gesture long enough, lock it in!
-			if(gestureTime > 1f)
+			if(gestureTime > 0.1f) {
+
+				// On-gesture-change stuff here --------------------------------------------------------- //
+
+				// Crush assembly
+				if((gesture == Gesture.none) && (targetGesture == Gesture.fist)) {
+					print("Crunch!");
+					for(int i = 0; i < Assembly.getAll.Count; i++) {
+						float sqrDistanceToPalm = (Assembly.getAll[i].Position - crushPos).sqrMagnitude;
+						if(sqrDistanceToPalm < 50f) {
+							Instantiate(PersistentGameManager.Inst.pingBurstObj, Assembly.getAll[i].Position, Quaternion.identity);
+							AudioSource.PlayClipAtPoint(Resources.Load<AudioClip>("crushAssembly"), hand_model.palm.position);
+							Assembly.getAll[i].Destroy();
+						}
+					}
+				}
+
+				// Create assembly
+				if((gesture == Gesture.none) && (targetGesture == Gesture.thumbsUp)) {
+					print("New assembly!");
+					Assembly.RandomAssembly(crushPos, Random.rotation, 5);
+					Instantiate(PersistentGameManager.Inst.pingBurstObj, crushPos, Quaternion.identity);
+					AudioSource.PlayClipAtPoint(Resources.Load<AudioClip>("createAssembly"), hand_model.palm.position);
+				}
+
 				gesture = targetGesture;
+				print(gesture);
+			}
 		}
 
 		// If we change gestures, reset the time.
@@ -88,8 +122,6 @@ public class HandMovement : MonoBehaviour {
 			gestureTime = 0f;
 
 		pendingGesture = targetGesture;
-
-
 
 
 		if((gesture == Gesture.gun) && !anchor){
@@ -109,7 +141,6 @@ public class HandMovement : MonoBehaviour {
 			CameraControl.Inst.transform.position += movementVector * NodeController.physicsStep;
 
 			rotationOffset = Quaternion.Inverse(Camera.main.transform.rotation) * rotationAnchor.rotation;
-			print(rotationOffset.eulerAngles);
 
 			Camera.main.transform.parent = null;
 			CameraControl.Inst.transform.parent = Camera.main.transform;

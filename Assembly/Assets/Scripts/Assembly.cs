@@ -392,7 +392,7 @@ public class Assembly : CaptureObject{
 				mateCooldown = 30f;
 
 				RandomMelody.Inst.PlayNote();
-				//MonoBehaviour.Instantiate(PrefabManager.Inst.birthEffect, Position, Random.rotation);
+				MonoBehaviour.Instantiate(PrefabManager.Inst.birthEffect, Position, Random.rotation);
 			}
 		}
 

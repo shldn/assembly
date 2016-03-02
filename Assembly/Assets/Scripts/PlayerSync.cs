@@ -296,7 +296,8 @@ public class PlayerSync : MonoBehaviour {
         }
 
         Instantiate(PersistentGameManager.Inst.pingBurstObj, capturedObj.Position, Quaternion.identity);
-        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.captureClip, capturedObj.Position);
+		CaptureNet_Manager.Inst.UIAudioSource.clip = PersistentGameManager.Inst.captureClip;
+		CaptureNet_Manager.Inst.UIAudioSource.Play();
         editing = true;
         //capturedObj.Destroy();
         capturedObj.Destroy();
@@ -321,7 +322,8 @@ public class PlayerSync : MonoBehaviour {
         foreach(Jellyfish someJelly in Jellyfish.all)
             someJelly.Destroy();
 
-        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.captureClip, Vector3.zero);
+        CaptureNet_Manager.Inst.UIAudioSource.clip = PersistentGameManager.Inst.captureClip;
+		CaptureNet_Manager.Inst.UIAudioSource.Play();
         Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, Vector3.zero, Random.rotation) as Transform;
         JellyFishCreator newJellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
         newJellyCreator.changeHead(head);
@@ -339,7 +341,8 @@ public class PlayerSync : MonoBehaviour {
     void CaptureAssembly(string assemblyStr)
     {
         float distFromCamToSpawn = 5.0f;
-        AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
+		CaptureNet_Manager.Inst.UIAudioSource.clip = JellyfishPrefabManager.Inst.pingClip;
+		CaptureNet_Manager.Inst.UIAudioSource.Play();
         Assembly a = new Assembly(assemblyStr, null, null);
 		CameraControl.Inst.selectedCaptureObj = a;
         a.spawnPosition = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
@@ -353,7 +356,8 @@ public class PlayerSync : MonoBehaviour {
     void CaptureUCreature()
     {
         float distFromCamToSpawn = 5.0f;
-        AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
+        CaptureNet_Manager.Inst.UIAudioSource.clip = JellyfishPrefabManager.Inst.pingClip;
+		CaptureNet_Manager.Inst.UIAudioSource.Play();
         SpringCreature c = new SpringCreature();
         c.transform.position = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
         CaptureEditorManager.capturedObj = c;

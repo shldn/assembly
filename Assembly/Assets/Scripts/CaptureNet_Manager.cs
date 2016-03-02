@@ -45,6 +45,9 @@ public class CaptureNet_Manager : MonoBehaviour {
     int connectingBlock = 0;
     bool hostListReceived = false;
 
+	AudioSource uiAudioSource;
+	public AudioSource UIAudioSource { get { return uiAudioSource; } }
+
 
     void Awake(){
 		Inst = this;
@@ -77,6 +80,9 @@ public class CaptureNet_Manager : MonoBehaviour {
         tempServerName = serverTagline;
 
         InvokeRepeating("ReregisterMasterServer", 30 * 60, 30 * 60);
+
+		uiAudioSource = gameObject.AddComponent<AudioSource>();
+		uiAudioSource.spatialBlend = 0f;
 
     } // End of Awake().
 
@@ -427,7 +433,8 @@ public class CaptureNet_Manager : MonoBehaviour {
 
 		// Ensure assemblies are dropped in at a viable position, relative to the camera.
         Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 20f) + (Random.insideUnitSphere * 10f);
-        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.pushClip, Vector3.zero);
+		uiAudioSource.clip = PersistentGameManager.Inst.pushClip;
+		uiAudioSource.Play();
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
@@ -469,7 +476,6 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void PlayInstantiationEffect(Vector3 pos)
     {
-        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.pushClip, Vector3.zero);
         Instantiate(PersistentGameManager.Inst.pingBurstObj, pos, Quaternion.identity);
     }
 

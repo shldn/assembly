@@ -125,6 +125,7 @@ public class CameraControl : MonoBehaviour {
 	
 
 	void LateUpdate(){
+
 		// We surrender all camera control to Unity if a VR device is being used... for now.
 		if(VRDevice.isPresent)
 			return;
