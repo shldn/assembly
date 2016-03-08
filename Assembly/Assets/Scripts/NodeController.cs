@@ -56,6 +56,7 @@ public class NodeController : MonoBehaviour {
     public float messageFPS = -1;
     System.DateTime lastMessageSent = System.DateTime.Now;
     public bool useAssemblyCenterUpdates = false;
+    public List<string> assembliesToReleaseOnCameraUpdate = new List<string>();
 
     // Reset Variables
     float timeUntilReset = -1f; //1.0f * 60f * 60f; // seconds -- negative number will disable reset
@@ -779,6 +780,16 @@ public class NodeController : MonoBehaviour {
                 Debug.LogError("Data Request " + requestMsg.request + " not handled yet.");
                 break;
         }
+    }
+
+    public void HandleCamInfoData(object message) {
+        CamInfo camInfo = message as CamInfo;
+        Camera.main.transform.position = camInfo.Position;
+        Camera.main.transform.forward = camInfo.Direction;
+        for (int i = 0; i < assembliesToReleaseOnCameraUpdate.Count; ++i)
+            CaptureNet_Manager.Inst.ReleaseAssembly(assembliesToReleaseOnCameraUpdate[i]);
+
+        assembliesToReleaseOnCameraUpdate.Clear();
     }
 
     private void HandleCommandLineArgs() {

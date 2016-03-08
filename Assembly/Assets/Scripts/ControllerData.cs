@@ -66,6 +66,7 @@ public class ControllerData {
         messageHandlers.Add(typeof(AssemblyCaptured), NodeController.Inst.HandleCapturedAssembly);
         messageHandlers.Add(typeof(AssemblyReleased), NodeController.Inst.HandleReleasedAssembly);
         messageHandlers.Add(typeof(DataRequest), NodeController.Inst.HandleDataRequest);
+        messageHandlers.Add(typeof(CamInfo), NodeController.Inst.HandleCamInfoData);
     }
 }
 
@@ -93,6 +94,20 @@ public class AssemblyReleased
     private SVector3 camDir;
     public Vector3 Position { get { return position.Value; } }
     public Vector3 CamDir { get { return camDir.Value; } }
+}
+
+[Serializable]
+public class CamInfo
+{
+    public CamInfo(Transform t) {
+        dir = t.forward;
+        pos = t.position;
+    }
+
+    private SVector3 pos;
+    private SVector3 dir;
+    public Vector3 Position { get { return pos.Value; } }
+    public Vector3 Direction { get { return dir.Value; } }
 }
 
 [Serializable]

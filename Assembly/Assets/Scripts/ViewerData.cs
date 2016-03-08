@@ -168,6 +168,11 @@ public enum ViewerMessageType
     FOOD_DELETE         = 8,
 }
 
+public enum ViewerDataRequestType
+{
+    CAMERA_INFO = 1,
+}
+
 [Serializable]
 public class CaptureData
 {
@@ -197,6 +202,13 @@ public class LassoEvent
     public LassoEvent(int id_, bool start_) { id = id_;  start = start_; }
     public int id;
     public bool start;
+}
+
+[Serializable]
+public class ViewerDataRequest
+{
+    public ViewerDataRequest(ViewerDataRequestType type_) { type = type_; }
+    public ViewerDataRequestType type;
 }
 
 [Serializable]

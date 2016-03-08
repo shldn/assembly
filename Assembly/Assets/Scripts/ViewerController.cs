@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class ViewerController : MonoBehaviour {
 
@@ -140,8 +141,23 @@ public class ViewerController : MonoBehaviour {
             LassoEvent data = message as LassoEvent;
             GetPlayerSync(data.id).SetSelecting(data.start);
         }
+        else if (type.Equals(typeof(ViewerDataRequest))) {
+            ViewerDataRequest data = message as ViewerDataRequest;
+            HandleViewerDataRequest(data);
+        }
         else
             Debug.LogError("HandleGenericMessage: unknown message type: " + type);
+    }
+
+    private void HandleViewerDataRequest(ViewerDataRequest req) {
+        switch (req.type) {
+            case ViewerDataRequestType.CAMERA_INFO:
+                ControllerData.Inst.Messages.Add(new CamInfo(Camera.main.transform));
+                break;
+            default:
+                Debug.LogError("HandleViewerDataRequest Type " + req.type + " not handled yet");
+                break;
+        }
     }
 
     // Clear all Viewer elements

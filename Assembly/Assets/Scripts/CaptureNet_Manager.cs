@@ -433,9 +433,21 @@ public class CaptureNet_Manager : MonoBehaviour {
         //if (!GameManager.Inst)
             //return;
 
-		// Ensure assemblies are dropped in at a viable position, relative to the camera.
+
+        if (PersistentGameManager.IsLightServer && !PersistentGameManager.ViewerConnectsWithPhones) {
+            // Ask viewer for camera info before we release
+            ViewerData.Inst.messages.Add(new ViewerDataRequest(ViewerDataRequestType.CAMERA_INFO));
+            NodeController.Inst.assembliesToReleaseOnCameraUpdate.Add(assemblyStr);
+        }
+        else
+            ReleaseAssembly(assemblyStr);
+
+    } // End of PushAssembly().
+
+    public void ReleaseAssembly(string assemblyStr) {
+        // Ensure assemblies are dropped in at a viable position, relative to the camera.
         Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 20f) + (Random.insideUnitSphere * 10f);
-        //AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.pushClip, Vector3.zero);
+
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 
@@ -458,8 +470,7 @@ public class CaptureNet_Manager : MonoBehaviour {
                 a.userReleased = false;
             }
         }
-
-    } // End of PushAssembly().
+    } // End of ReleaseAssembly().
 
     // Client calls this to send request to server
     public void RequestNextScene()
