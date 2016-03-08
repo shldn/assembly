@@ -335,8 +335,12 @@ public class PlayerSync : MonoBehaviour {
         GetComponent<NetworkView>().RPC("CaptureAssembly", GetComponent<NetworkView>().owner, assemblyStr);
     }
 
+    // Currently used by viewer displaying the lasso, but not synced with capture client over unity networking.
     public void SetSelecting(bool start) {
         selecting = start;
+
+        // if we are selecting we are not editing
+        editing = false;
     }
 
     [RPC] // Server receives this message
