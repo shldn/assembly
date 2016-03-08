@@ -453,6 +453,9 @@ public class CaptureNet_Manager : MonoBehaviour {
                 a.userReleased = true;
                 a.ThrowAwayFromCamera();
                 ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(a));
+
+                // after creation message is sent, don't consider userReleased anymore, future viewers will put labels on all of these.
+                a.userReleased = false;
             }
         }
 
