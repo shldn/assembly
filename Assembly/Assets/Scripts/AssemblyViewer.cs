@@ -5,7 +5,6 @@ public class AssemblyViewer : CaptureObject{
 
     private AmalgamViewer amalgam = null;
     private AssemblyProperties properties;
-    private int id = -1;
     private Vector3 position = Vector3.zero;
     public List<NodeViewer> nodes = new List<NodeViewer>();
     public TimedLabel label = null;
@@ -82,6 +81,10 @@ public class AssemblyViewer : CaptureObject{
         Position = center;
     }
 
+    public void DetachFromAmalgam() {
+        amalgam = null;
+    }
+
     public void Destroy() {
         for (int i = 0; i < nodes.Count; ++i)
             nodes[i].Destroy();
@@ -90,12 +93,10 @@ public class AssemblyViewer : CaptureObject{
             amalgam.RemoveMates(Id);
         PersistentGameManager.CaptureObjects.Remove(this);
 
-		/*
-		if(label) {
-			Destroy(label.gameObject);
-			label = null;
-		}
-		*/
+		
+		if(label)
+            LabelDone(null);
+		
 
 		if(effects) {
 			GameObject.Destroy(effects.gameObject);

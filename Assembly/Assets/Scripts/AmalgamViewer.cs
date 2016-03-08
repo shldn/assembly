@@ -21,6 +21,8 @@ public class AmalgamViewer {
             }
             catch(System.Exception e) {
                 Debug.LogError("Exception adding assembly viewer: " + v.Id + " " + e.Message);
+                // Detach from amalgam so the valid assembly viewer with this Id isn't effected.
+                v.DetachFromAmalgam();
                 v.Destroy();
             }
         }
@@ -45,8 +47,10 @@ public class AmalgamViewer {
         }
 
         for (int i = 0; i < data.assemblyDeletes.Count; ++i) {
-            if (assemblies.ContainsKey(data.assemblyDeletes[i]))
+            if (assemblies.ContainsKey(data.assemblyDeletes[i])) {
                 assemblies[data.assemblyDeletes[i]].Destroy();
+                assemblies.Remove(data.assemblyDeletes[i]);
+            }
         }
 
 
@@ -80,6 +84,11 @@ public class AmalgamViewer {
 
     public void RemoveMates(int id) {
         matingViewer.RemoveMates(id);
+    }
+
+    public void RemoveAssembly(int id) {
+        if (assemblies.ContainsKey(id))
+            assemblies.Remove(id);
     }
 
     public void Destroy() {

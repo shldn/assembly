@@ -28,6 +28,8 @@ public class PersistentGameManager : MonoBehaviour {
     // This exe is only a viewer, it requires connection to a model/controller instance over the network.
     public static bool ViewerOnlyApp { get { return NodeController.Inst == null || !NodeController.Inst.enabled; } }
 
+    public static bool ViewerConnectsWithPhones { get { return false; } }
+
     public static HashSet<CaptureObject> CaptureObjects = new HashSet<CaptureObject>();
 
     public AssemblyRadar assemRadar;
@@ -53,7 +55,7 @@ public class PersistentGameManager : MonoBehaviour {
 
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
-        if(CaptureNet_Manager.Inst == null && !ViewerOnlyApp)
+        if(CaptureNet_Manager.Inst == null && (!ViewerOnlyApp || (ViewerOnlyApp && ViewerConnectsWithPhones)))
             gameObject.AddComponent<CaptureNet_Manager>();
 		if( !assemRadar )
             assemRadar = gameObject.AddComponent<AssemblyRadar>();

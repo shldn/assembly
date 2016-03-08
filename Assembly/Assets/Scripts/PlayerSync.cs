@@ -186,10 +186,7 @@ public class PlayerSync : MonoBehaviour {
                         HandleCapturedObject(captureObj);
 
                 }
-
-                lastPoints.Clear();
-                lastPointDists.Clear();
-                cursorLineDist = 0f;
+                ClearCaptureLinePoints();
             }
 
             if(lastPoints.Count > 2){
@@ -209,6 +206,12 @@ public class PlayerSync : MonoBehaviour {
         }
 
     } // End of Update().
+
+    public void ClearCaptureLinePoints() {
+        lastPoints.Clear();
+        lastPointDists.Clear();
+        cursorLineDist = 0f;
+    }
 
     public void AddLassoPoint(Vector3 newPoint) {
         float distToCurrent = (lastPoints.Count > 0) ? Vector3.Distance(newPoint, lastPoints.Last.Value) : 0f;
@@ -309,8 +312,13 @@ public class PlayerSync : MonoBehaviour {
 				}
             }
             else if(av != null) {
-                capturedToPlayerSync.Add(av.Id, this);
-                ControllerData.Inst.Add(new AssemblyCaptured(av, id));
+                try {
+                    capturedToPlayerSync.Add(av.Id, this);
+                    ControllerData.Inst.Add(new AssemblyCaptured(av, id));
+                }
+                catch(System.Exception e) {
+                    Debug.LogError("Exception adding to capturedToPlayerSync: " + e.ToString());
+                }
             }
             else
                 GetComponent<NetworkView>().RPC("CaptureUCreature", GetComponent<NetworkView>().owner);

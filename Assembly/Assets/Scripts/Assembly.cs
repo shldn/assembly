@@ -410,6 +410,10 @@ public class Assembly : CaptureObject{
 	} // End of Update().
 
 
+    public void ThrowAwayFromCamera() {
+        foreach (Node someNode in NodeDict.Values)
+            someNode.velocity = (Camera.main.transform.forward * 3f) + Random.insideUnitSphere * 1.5f;
+    }
 
     private void UpdateFamilyTreeFromParent(Assembly parent)
     {

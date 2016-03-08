@@ -747,8 +747,12 @@ public class NodeController : MonoBehaviour {
             // if Viewer is connected to mobile
             if (PersistentGameManager.ViewerConnectsWithPhones)
                 ViewerData.Inst.messages.Add(new CaptureData(capture.id, (a).ToFileString()));
-            else
+            else {
                 PlayerSync.controllerIdToPlayerSync[capture.playerId].SendCaptureAssemblyRPC((a).ToFileString());
+
+                // Stop capturing
+                PlayerSync.controllerIdToPlayerSync[capture.playerId].ClearCaptureLinePoints();
+            }
             a.Destroy();
         }
     }

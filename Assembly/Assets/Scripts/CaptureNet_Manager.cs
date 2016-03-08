@@ -443,11 +443,18 @@ public class CaptureNet_Manager : MonoBehaviour {
             Assembly a = new Assembly(assemblyStr, null, assemblyNewPos, false, true);
 
             // Assembly is "thrown" back into the environment.
-            foreach (Node someNode in a.NodeDict.Values)
-                someNode.velocity = (Camera.main.transform.forward * 3f) + Random.insideUnitSphere * 1.5f;
+            a.ThrowAwayFromCamera();
         }
-        else
-            ControllerData.Inst.Add(new AssemblyReleased(assemblyStr, assemblyNewPos, Camera.main.transform.forward));
+        else {
+            if(PersistentGameManager.ViewerConnectsWithPhones)
+                ControllerData.Inst.Add(new AssemblyReleased(assemblyStr, assemblyNewPos, Camera.main.transform.forward));
+            else {
+                Assembly a = new Assembly(assemblyStr, null, assemblyNewPos, false, true);
+                a.userReleased = true;
+                a.ThrowAwayFromCamera();
+                ViewerData.Inst.assemblyCreations.Add(new AssemblyCreationData(a));
+            }
+        }
 
     } // End of PushAssembly().
 
@@ -477,8 +484,10 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void PlayInstantiationEffect(Vector3 pos)
     {
-        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.pushClip, Vector3.zero);
-        Instantiate(PersistentGameManager.Inst.pingBurstObj, pos, Quaternion.identity);
+        if (!PersistentGameManager.IsLightServer) {
+            AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.pushClip, Vector3.zero);
+            Instantiate(PersistentGameManager.Inst.pingBurstObj, pos, Quaternion.identity);
+        }
     }
 
     void OnFailedToConnectToMasterServer(NetworkConnectionError info)
