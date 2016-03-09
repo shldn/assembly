@@ -15,6 +15,8 @@ public class HandMovement : MonoBehaviour {
 	public Quaternion rotationOffset = Quaternion.identity;
 	Quaternion initialCamRotOffset = Quaternion.identity;
 
+	float foodCooldown = 0f;
+
 	public enum Gesture {
 		none,
 		fist,
@@ -35,15 +37,23 @@ public class HandMovement : MonoBehaviour {
 	Gesture pendingGesture = Gesture.none; // set to targetGesture constantly; if it changes, we reset the timer.
 	float gestureTime = 0f;
 
+	bool crushDist = false;
+
+	public HandModel hand_model;
+	public Hand leap_hand;
+
 
 	void Awake() {
 		allHandMovements.Add(this);
 	} // End of Awake().
 
+	void Start() {
+	} // End of Start().
+
 
 	void LateUpdate() {
-		HandModel hand_model = GetComponent<HandModel>();
-		Hand leap_hand = hand_model.GetLeapHand();
+		hand_model = GetComponent<HandModel>();
+		leap_hand = hand_model.GetLeapHand();
 
 		if(leap_hand == null)
 			return;
@@ -93,7 +103,6 @@ public class HandMovement : MonoBehaviour {
 
 				// Crush assembly
 				if((gesture == Gesture.none) && (targetGesture == Gesture.fist)) {
-					print("Crunch!");
 					for(int i = 0; i < Assembly.getAll.Count; i++) {
 						float sqrDistanceToPalm = (Assembly.getAll[i].Position - crushPos).sqrMagnitude;
 						if(sqrDistanceToPalm < 50f) {
@@ -105,7 +114,7 @@ public class HandMovement : MonoBehaviour {
 				}
 
 				// Create assembly
-				if((gesture == Gesture.none) && (targetGesture == Gesture.thumbsUp)) {
+				if((gesture == Gesture.none) && (targetGesture == Gesture.peace)) {
 					print("New assembly!");
 					Assembly.RandomAssembly(crushPos, Random.rotation, 5);
 					Instantiate(PersistentGameManager.Inst.pingBurstObj, crushPos, Quaternion.identity);
@@ -113,7 +122,6 @@ public class HandMovement : MonoBehaviour {
 				}
 
 				gesture = targetGesture;
-				print(gesture);
 			}
 		}
 
@@ -124,6 +132,14 @@ public class HandMovement : MonoBehaviour {
 		pendingGesture = targetGesture;
 
 
+		foodCooldown -= Time.deltaTime;
+		if((gesture == Gesture.hangLoose) && (foodCooldown < 0f)) {
+			FoodPellet newFood = new FoodPellet(crushPos);
+			newFood.velocity = Random.insideUnitSphere * 10f;
+			foodCooldown = Random.Range(0.1f, 0.5f);
+			AudioSource.PlayClipAtPoint(Resources.Load<AudioClip>("createFood"), hand_model.palm.position);
+		}
+
 		if((gesture == Gesture.gun) && !anchor){
 			anchor = Instantiate(anchorPrefab, hand_model.palm.position, Camera.main.transform.rotation) as Transform;
 			rotationAnchor = new GameObject("rotationAnchor").transform;
@@ -131,6 +147,8 @@ public class HandMovement : MonoBehaviour {
 			rotationAnchor.parent = hand_model.palm;
 
 			anchor.transform.parent = Camera.main.transform;
+
+			AudioSource.PlayClipAtPoint(Resources.Load<AudioClip>("moveEngaged"), hand_model.palm.position);
 		}
 
 		if(anchor){
@@ -151,13 +169,64 @@ public class HandMovement : MonoBehaviour {
 			movementVector = Vector3.zero;
 		}
 
-		if(anchor && !(gesture == Gesture.gun)){
+		if(anchor && (gesture != Gesture.gun)){
 			Destroy(anchor.gameObject);
 			Destroy(rotationAnchor.gameObject);
+
+			AudioSource.PlayClipAtPoint(Resources.Load<AudioClip>("moveRelease"), hand_model.palm.position);
 		}
 
 		// Debug readout of gesture
 		//print((!leap_hand.Fingers[0].IsExtended? "." : "\\") + (!leap_hand.Fingers[1].IsExtended? "n" : "|") + (!leap_hand.Fingers[2].IsExtended? "n" : "|") + (!leap_hand.Fingers[3].IsExtended? "n" : "|") + (!leap_hand.Fingers[4].IsExtended? "n" : "|") + "  " + gesture.ToString());
+
+
+		// Two-hand gestures
+		if(allHandMovements.Count == 2) {
+			float distBetweenPalms = Vector3.Distance(allHandMovements[0].hand_model.palm.position, allHandMovements[1].hand_model.palm.position);
+
+			// Assembly crush
+			if(distBetweenPalms > 8f)
+				crushDist = false;
+			else if(!crushDist) {
+				crushDist = true;
+
+				Vector3 palmAveragePos = Vector3.Lerp(allHandMovements[0].hand_model.palm.position, allHandMovements[1].hand_model.palm.position, 0.5f);
+
+				for(int i = 0; i < Assembly.getAll.Count; i++) {
+					float sqrDistanceToPalm = (Assembly.getAll[i].Position - palmAveragePos).sqrMagnitude;
+					if(sqrDistanceToPalm < 50f) {
+						Instantiate(PersistentGameManager.Inst.pingBurstObj, Assembly.getAll[i].Position, Quaternion.identity);
+						AudioSource.PlayClipAtPoint(Resources.Load<AudioClip>("crushAssembly"), hand_model.palm.position);
+						Assembly.getAll[i].Destroy();
+					}
+				}
+			}
+
+			// Two-handed steering
+			if(allHandMovements[0].anchor && allHandMovements[1].anchor) {
+
+				HandMovement leftHand = null;
+				HandMovement rightHand = null;
+				for(int i = 0; i < allHandMovements.Count; i++) {
+					if(allHandMovements[i].leap_hand.IsLeft)
+						leftHand = allHandMovements[i];
+					else
+						rightHand = allHandMovements[i];
+				}
+
+				if(leftHand && rightHand) {
+					Vector3 forwardVector = rightHand.movementVector + leftHand.movementVector;
+					Vector3 differenceVector = rightHand.movementVector - leftHand.movementVector;
+
+					Camera.main.transform.parent = null;
+					CameraControl.Inst.transform.parent = Camera.main.transform;
+					Camera.main.transform.rotation *= Quaternion.AngleAxis(differenceVector.magnitude * 0.025f, Quaternion.Inverse(Camera.main.transform.rotation * Quaternion.Euler(-90f, 0f, 0f)) * differenceVector);
+					CameraControl.Inst.transform.parent = null;
+					Camera.main.transform.parent = CameraControl.Inst.transform;
+                }
+			}
+		}
+
 	} // End of Update().
 
 

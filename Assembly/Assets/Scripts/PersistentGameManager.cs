@@ -154,5 +154,4 @@ public class PersistentGameManager : MonoBehaviour {
 
     // Helper function to make sure singleton instance exists and is initialized
     public void Touch() { }
-
 }
