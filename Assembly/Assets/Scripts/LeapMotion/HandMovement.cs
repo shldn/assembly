@@ -220,7 +220,7 @@ public class HandMovement : MonoBehaviour {
 
 					Camera.main.transform.parent = null;
 					CameraControl.Inst.transform.parent = Camera.main.transform;
-					Camera.main.transform.rotation *= Quaternion.AngleAxis(differenceVector.magnitude * 0.025f, Quaternion.Inverse(Camera.main.transform.rotation * Quaternion.Euler(-90f, 0f, 0f)) * differenceVector);
+					Camera.main.transform.rotation *= Quaternion.AngleAxis(differenceVector.magnitude * 0.05f, Quaternion.Inverse(Camera.main.transform.rotation * Quaternion.Euler(-90f, 0f, 0f)) * differenceVector);
 					CameraControl.Inst.transform.parent = null;
 					Camera.main.transform.parent = CameraControl.Inst.transform;
                 }
