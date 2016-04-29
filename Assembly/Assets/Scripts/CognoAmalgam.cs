@@ -151,13 +151,11 @@ public class CognoAmalgam : MonoBehaviour {
 			allAVs[i].RevengeOfUpdate();
 
 		for(int i = 0; i < allAVs.Length; i++) {
-			for(int j = 0; j < HandCognoOutside.allHandMovements.Count; j++) {
-				//float sqrDist = Vector3.Distance(HandCognoOutside.allHandMovements[j].hand_model.palm.position, allAVs[i].worldOriginPoint);
-				//float sqrDist = Vector3.SqrMagnitude(HandCognoOutside.allHandMovements[j].hand_model.palm.position - allAVs[i].worldOriginPoint);
-				//allAVs[i].deform += 1f / (sqrDist * 0.5f);
+			for(int j = 0; j < 2; j++) {
 				Vector3 avFingerPos = Vector3.zero;
+				// Get networked fingertip positions
 				for(int k = 0; k < 5; k++)
-					avFingerPos += HandCognoOutside.allHandMovements[j].hand_model.fingers[k].bones[2].position;
+					avFingerPos += SmoothNetPosition.allFingertips[(j * 5) + k].transform.position;
 				
 				avFingerPos /= 5f;
 

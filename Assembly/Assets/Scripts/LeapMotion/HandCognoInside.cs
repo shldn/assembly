@@ -169,7 +169,6 @@ public class HandCognoInside : MonoBehaviour {
 					}
 				}
 			}
-
 		}
 
 		// Sync networked fingertip
