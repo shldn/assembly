@@ -10,6 +10,7 @@ public class MuseManager : MonoBehaviour {
 	public Texture2D sensorDisplayIn;
 
     // Local variables
+    private bool useLSL = false; // Switch to NeuroScale pipeline with a data streaming over LSL
     private bool touchingForehead = false;
     private int offForeheadCounter = 0;
     private float lastConcentrationMeasure = 0f;
@@ -21,7 +22,11 @@ public class MuseManager : MonoBehaviour {
 
     // Accessors
     public bool TouchingForehead{get{return touchingForehead && (MuseManager.Inst.SecondsSinceLastMessage < 1f);}}
-    public float LastConcentrationMeasure{get{return !invertConcentration? lastConcentrationMeasure : 1f - lastConcentrationMeasure;}}
+    public float LastConcentrationMeasure{
+        get {
+            float concentration = useLSL ? MuseLSLManager.Inst.LastConcentrationMetric : lastConcentrationMeasure;
+            return !invertConcentration? concentration : 1f - concentration;
+        }}
     public float SecondsSinceLastMessage { get { return (float)(DateTime.Now - timeOfLastMessage).TotalSeconds; } }
     public int NumBlinksInLastSecond { get { return Sum(blinkQueue); } }
     // float (0-1)
@@ -52,6 +57,8 @@ public class MuseManager : MonoBehaviour {
 			invertConcentration = !invertConcentration;
 		if(Input.GetKeyDown(KeyCode.S))
 			slowResponse = !slowResponse;
+        if (Input.GetKeyDown(KeyCode.L))
+            useLSL = !useLSL;
 	}
 
     void OnDestroy() {
@@ -165,6 +172,9 @@ public class MuseManager : MonoBehaviour {
 
 			if(slowResponse)
 				statusStr += " s";
+
+            if (useLSL)
+                statusStr += " Q";
 
 			if(BatteryPercentage < 0.2f)
 				statusStr += "\n" + (BatteryPercentage * 100f).ToString("F0") + "% battery remaining.";
