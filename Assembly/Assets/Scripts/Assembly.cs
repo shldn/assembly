@@ -402,11 +402,12 @@ public class Assembly : CaptureObject{
         lastPosition = newPosition;
 
         // Keeps assemblies in Capsule
-        if(Environment.Inst && !PersistentGameManager.IsClient && Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSphereScale.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSphereScale.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSphereScale.z, 2f)) > 1f)
-        {
+		/*
+        if(Environment.Inst && !PersistentGameManager.IsClient && Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSphereScale.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSphereScale.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSphereScale.z, 2f)) > 1f){
             foreach (Node someNode in nodeDict.Values)
-                someNode.velocity += -Position.normalized * NodeController.physicsStep;
+                someNode.velocity += -Position.normalized * NodeController.physicsStep * 0.01f;
         }
+		*/
 
 		// Send new assembly to clients.
 		if((Network.peerType == NetworkPeerType.Server) && !pushedToClients){

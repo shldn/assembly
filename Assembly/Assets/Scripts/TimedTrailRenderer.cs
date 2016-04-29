@@ -12,6 +12,7 @@ public class TimedTrailRenderer : MonoBehaviour
  
    public Color[] colors;
    public float[] sizes;
+   public float fade = 1f;
  
    public float uvLengthScale = 0.01f;
    public bool higherQualityUVs = true;
@@ -240,7 +241,7 @@ public class TimedTrailRenderer : MonoBehaviour
                float lerp = Mathf.InverseLerp(min, max, colorTime);
                if (min >= colors.Length) min = colors.Length - 1; if (min < 0) min = 0;
                if (max >= colors.Length) max = colors.Length - 1; if (max < 0) max = 0;
-               color = Color.Lerp(colors[(int)min], colors[(int)max], lerp);
+               color = Color.Lerp(colors[(int)min], colors[(int)max], lerp).SetAlpha(fade);
             }
 
             float size = (sizes != null && sizes.Length == 1) ? sizes[0] : 1f;

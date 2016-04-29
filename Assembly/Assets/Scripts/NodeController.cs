@@ -154,8 +154,10 @@ public class NodeController : MonoBehaviour {
             Application.targetFrameRate = fps;
 
         // World grows as food nodes are consumed.
+		/*
         worldSize = Mathf.Lerp(worldSize, targetWorldSize, 0.1f * Time.deltaTime);
         worldSize = Mathf.MoveTowards(worldSize, targetWorldSize, 0.01f * Time.deltaTime);
+		*/
 
 		// Once we get to a capsule, switch back to sphere.
 		if(worldSize >= maxWorldSize){
@@ -204,7 +206,7 @@ public class NodeController : MonoBehaviour {
 			if(PersistentGameManager.IsServer){
 				// Populate world if less than 50% max pop.
 				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.75f)){
-					Vector3 assemblySpawnPos = Vector3.Scale(Random.insideUnitSphere, Vector3.one * worldSize);
+					Vector3 assemblySpawnPos = Vector3.Scale(Random.onUnitSphere, Vector3.one * worldSize * Random.Range(1.3f, 2f));
 					Assembly newAssembly = Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
 				}
 

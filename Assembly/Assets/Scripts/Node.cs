@@ -235,10 +235,11 @@ public class Node {
 
 		// Reel in to amalgam
 		//if(Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f){
+		/*
 		if(physAssembly.amalgam && (Vector3.Distance(Position, physAssembly.amalgam.transform.position) > physAssembly.amalgam.radius)){
-			Position -= (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
+			Position -= 0.05f * (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
 		}
-
+		*/
 
 		// Reset power
 		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep);
@@ -337,8 +338,9 @@ public class Node {
 	} // End of AttachNeighbor().
 
 	public void Destroy(){
-        if (viewer != null)
-            viewer.Destroy();
+        if (viewer != null) {
+			viewer.Destroy();
+		}
 		cull = true;
 	} // End of OnDestroy().
 
@@ -493,7 +495,7 @@ public struct NodeProperties {
     // A fully randomly-seeded NodeProperties.
     public static NodeProperties random{
         get{
-            return new NodeProperties(Random.rotation, 45f, Random.Range(100.0f, 180.0f), Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
+            return new NodeProperties(Random.rotation, 45f, Random.Range(50.0f, 80.0f), Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
         }
     } // End of NodeProperties.random.
 
@@ -517,7 +519,7 @@ public struct NodeProperties {
 
         senseVector = Quaternion.identity;
         fieldOfView = 90.0f;
-        senseRange = 150.0f;
+        senseRange = 35.0f;
         muscleStrength = 1.0f;
         actuateVector = Quaternion.identity;
 

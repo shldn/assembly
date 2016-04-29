@@ -30,6 +30,7 @@ public class PersistentGameManager : MonoBehaviour {
     public static HashSet<CaptureObject> CaptureObjects = new HashSet<CaptureObject>();
 
     public CaptureNet_Manager captureMgr;
+	public Cognogenesis_Networking cognoNetMgr;
     public AssemblyRadar assemRadar;
     public bool optimize = true;
 
@@ -48,13 +49,17 @@ public class PersistentGameManager : MonoBehaviour {
 	public string serverCapturedAssem = "";
 	public string capturedWorldFilename = "";
 
+	bool cognogenesisNet = true;
+
 
 	void Awake () {
 
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
-        if( !captureMgr )
+        if( !cognogenesisNet && !captureMgr )
             captureMgr = gameObject.AddComponent<CaptureNet_Manager>();
+		if( cognogenesisNet && !cognoNetMgr )
+            cognoNetMgr = gameObject.AddComponent<Cognogenesis_Networking>();
 		if( !assemRadar )
             assemRadar = gameObject.AddComponent<AssemblyRadar>();
 

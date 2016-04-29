@@ -122,12 +122,6 @@ public class NodeViewer {
             viewConeTrans = null;
         }
 
-        if (trail)
-        {
-            GameObject.Destroy(trail.gameObject);
-            GameObject.Destroy(trail);
-            trail = null;
-        }
     }
 
     void CreateViewCone()
@@ -149,12 +143,15 @@ public class NodeViewer {
 
     public void Destroy()
     {
-        if(trail)
+        if(trail) {
             trail.transform.parent = null;
+			trail.autoDestruct = true;
+		}
         CleanupNodeEffects();
 
         if (cubeTransform)
-            MonoBehaviour.Destroy(cubeTransform.gameObject);
+			cubeTransform.gameObject.AddComponent<ShrinkAndDestroy>();
+            //MonoBehaviour.Destroy(cubeTransform.gameObject);
     }
 
     public void Update()
@@ -193,6 +190,8 @@ public class NodeViewer {
 				UpdateViewConeTransform();
 		}
 
+		if(trail)
+			trail.fade = Mathf.Sin(Time.time);
     }
 
     public void UpdateTransform(Vector3 pos, Quaternion rot, bool smoothed = false) {

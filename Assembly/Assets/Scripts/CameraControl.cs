@@ -77,6 +77,9 @@ public class CameraControl : MonoBehaviour {
 	Vector3 lazyCenter = Vector3.zero;
 	Vector3 lazyCenterVel = Vector3.zero;
 
+	public bool vrOrbit = false;
+	public float vrOrbitDist = 300f;
+
 
 	public enum CameraType {
 		NONE, // No camera control.
@@ -127,8 +130,15 @@ public class CameraControl : MonoBehaviour {
 	void LateUpdate(){
 
 		// We surrender all camera control to Unity if a VR device is being used... for now.
-		if(VRDevice.isPresent)
+		if(VRDevice.isPresent) {
+			/*
+			if(vrOrbit) {
+				transform.position = Camera.main.transform.rotation * Quaternion.Euler(-30f, 0f, 0f) * Vector3.forward * -vrOrbitDist;
+				transform.position += Camera.main.transform.localPosition * 10f;
+			}
+			*/
 			return;
+		}
 
 		// Blend between normal cam and neuroscale mode.
 		blendToNeuroscale = Mathf.SmoothDamp(blendToNeuroscale, (NeuroScaleDemo.Inst && NeuroScaleDemo.Inst.isActive && (CaptureNet_Manager.Inst.orbitPlayers.Count == 0))? 1f : 0f, ref blendToNeuroscaleVel, 1f);

@@ -7,6 +7,8 @@ public class Environment : MonoBehaviour {
 	public Renderer outerShell;
 	Color defaultShellColor;
 
+	public bool overrideScale = false;
+
     public bool Visible{
         set{
             Renderer[] renderers = transform.GetComponentsInChildren<Renderer>();
@@ -23,7 +25,8 @@ public class Environment : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		transform.localScale = NodeController.Inst.worldSphereScale;
+		if(!overrideScale)
+			transform.localScale = NodeController.Inst.worldSphereScale;
 
         // Fade outer shell if camera gets close.
         if (Camera.main) {
