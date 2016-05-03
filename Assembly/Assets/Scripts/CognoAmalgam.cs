@@ -8,10 +8,10 @@ public class CognoAmalgam : MonoBehaviour {
 	MeshFilter myMeshFilter = null;
 	public MeshFilter[] targetMeshFilters;
 
-	int[] streamVerts = new int[0];
+	List<int> streamVerts = new List<int>();
 	int streamVertDensity = 30;
 	LineRenderer streamLineRenderer;
-	ThreeAxisCreep[] streamCreeps;
+	List<ThreeAxisCreep> streamCreeps = new List<ThreeAxisCreep>();
 
 	public class ActiveVertex
 	{
@@ -98,22 +98,11 @@ public class CognoAmalgam : MonoBehaviour {
 
 
 		/*
-		int numStreamVerts = 10;
-		streamVerts = new int[numStreamVerts];
-		streamCreeps = new ThreeAxisCreep[numStreamVerts];
-		for(int i = 0; i < streamVerts.Length; i++) {
-			streamVerts[i] = Random.Range(0, myMeshFilter.mesh.vertexCount);
+		streamVerts = new List<int>(new int[]{1, 30, 8, 527, 131, 2, 348, 172, 14});
+		for(int i = 0; i < streamVerts.Count; i++) {
 			streamCreeps[i] = gameObject.AddComponent<ThreeAxisCreep>();
 			streamCreeps[i].relaxedness = 5f;
-		}
-		//*/
-
-		//*
-		streamVerts = new int[] {0, 1, 2};
-		streamCreeps = new ThreeAxisCreep[streamVerts.Length];
-		for(int i = 0; i < streamVerts.Length; i++) {
-			streamCreeps[i] = gameObject.AddComponent<ThreeAxisCreep>();
-			streamCreeps[i].relaxedness = 5f;
+			streamCreeps[i].maxCreep = 0.2f;
 		}
 		//*/
 
@@ -121,6 +110,7 @@ public class CognoAmalgam : MonoBehaviour {
 
 	} // End of Start().
 	
+
 	int[] FindNeighborVertices(int vertex, Mesh mesh)
 	{
 		int[] triangles = mesh.triangles;
@@ -142,6 +132,7 @@ public class CognoAmalgam : MonoBehaviour {
 		neighbors.CopyTo(neighborVerts);
 		return neighborVerts;
 	} // End of FindNeighborVertices().
+
 
 	void Update () {
 		// Update ActiveVertices.
@@ -194,7 +185,7 @@ public class CognoAmalgam : MonoBehaviour {
 		for(int i = 0; i < targetMeshFilters.Length; i++)
 			targetMeshFilters[i].mesh = myMeshFilter.mesh;
 
-		int numVerts = (streamVerts.Length + 1) * streamVertDensity;
+		int numVerts = (streamVerts.Count + 1) * streamVertDensity;
 		streamLineRenderer.SetVertexCount(numVerts);
 		for(int i = 0; i < numVerts; i++) {
 			int lastVertIdx = Mathf.FloorToInt((float)i / (float)streamVertDensity);
@@ -207,14 +198,18 @@ public class CognoAmalgam : MonoBehaviour {
 			Vector3 nextVert = GetStreamVertCreeped(nextVertIdx);
 			Vector3 nextNextVert = GetStreamVertCreeped(nextVertIdx + 1);
 
-			Vector3 lastHandle = Vector3.Lerp(lastLastVert, lastVert, 0.5f);
-			Vector3 nextHandle = Vector3.LerpUnclamped(lastVert, nextVert, 1.5f);
+			Vector3 lastHandleA = Vector3.LerpUnclamped(lastVert, nextVert, 0.2f);
+			Vector3 lastHandleB = Vector3.LerpUnclamped(lastVert, lastLastVert, -0.2f);
 
-			streamLineRenderer.SetPosition(i, MathUtilities.CalculateBezierPoint(curLerp, lastVert, lastHandle, nextHandle, nextVert));
+			Vector3 nextHandleA = Vector3.LerpUnclamped(nextVert, lastVert, 0.2f);
+			Vector3 nextHandleB = Vector3.LerpUnclamped(nextVert, nextNextVert, -0.2f);
 
-			//Debug.DrawRay(Vector3.Lerp(lastVert, nextVert, curLerp), Vector3.up, Color.Lerp(Color.green, Color.cyan, curLerp));
+			Debug.DrawLine(lastVert, lastHandleA, Color.green);
+			Debug.DrawLine(nextVert, nextHandleA, Color.cyan);
+			Debug.DrawLine(lastVert, nextVert, Color.white);
 
-			//print("last: " + lastVertIdx + " next: " + nextVertIdx + " lerp: " + curLerp);
+			streamLineRenderer.SetPosition(i, MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert));
+
         }
 
 		//*
@@ -236,10 +231,13 @@ public class CognoAmalgam : MonoBehaviour {
 			Vector3 nextVert = GetStreamVertCreeped(nextVertIdx);
 			Vector3 nextNextVert = GetStreamVertCreeped(nextVertIdx + 1);
 
-			Vector3 lastHandle = Vector3.Lerp(lastLastVert, lastVert, 0.5f);
-			Vector3 nextHandle = Vector3.LerpUnclamped(lastVert, nextVert, 1.5f);
+			Vector3 lastHandleA = Vector3.Lerp(lastLastVert, lastVert, 0.5f);
+			Vector3 lastHandleB = Vector3.Lerp(lastLastVert, lastVert, 0.5f);
 
-			particles[i].position = MathUtilities.CalculateBezierPoint(curLerp, lastVert, lastHandle, nextHandle, nextVert) / 80f;
+			Vector3 nextHandleA = Vector3.LerpUnclamped(lastVert, nextVert, 1.5f);
+			Vector3 nextHandleB = Vector3.LerpUnclamped(lastVert, nextVert, 1.5f);
+
+			particles[i].position = MathUtilities.CalculateBezierPoint(curLerp, lastVert, lastHandleA, nextHandleA, nextVert) / 80f;
 
 			if(particles[i].lifetime < 30f)
 				particles[i].startColor = Color.white.SetAlpha(Mathf.Sin(lerp * Mathf.PI));
@@ -253,12 +251,59 @@ public class CognoAmalgam : MonoBehaviour {
 		streamLineRenderer.material.mainTextureScale = new Vector2(10f, 1f);
 		streamLineRenderer.material.mainTextureOffset = new Vector2(Time.time * 0.5f, 0f);
 
+		float power = 0.5f + (0.5f * Mathf.Sin(Time.time));
+
+		float width = 15f * (0.2f + Random.Range(power * 0.3f, power * 0.8f));
+		streamLineRenderer.SetWidth(width, width);
+		Color color = Color.Lerp(Color.white.SetAlpha(0f), Color.white, power);
+		streamLineRenderer.SetColors(color, color);
+
 	} // End of Update().
+
+	bool vertSelected = false;
+	void OnGUI() {
+		GUI.skin.label.alignment = TextAnchor.MiddleCenter;
+		float minDist = Vector3.Distance(Camera.main.transform.position, transform.position) - 50f;
+
+		float minDistToCursor = 9999f;
+		int closestVert = -1;
+
+		for(int i = 0; i < allAVs.Length; i++) {
+			Vector3 vertexScreenPos = Camera.main.WorldToScreenPoint(allAVs[i].worldPoint);
+			if(vertexScreenPos.z < minDist) {
+				Rect labelRect = MathUtilities.CenteredSquare(vertexScreenPos.x, vertexScreenPos.y, 200f);
+				GUI.color = streamVerts.Contains(i)? Color.red : Color.white;
+				GUI.Label(labelRect, i.ToString());
+
+				float distToCursor = Vector2.Distance(new Vector2(vertexScreenPos.x, vertexScreenPos.y), Input.mousePosition);
+				if(distToCursor < minDistToCursor) {
+					minDistToCursor = distToCursor;
+					closestVert = i;
+				}
+			}
+		}
+
+		Vector3 bestVertexScreenPos = Camera.main.WorldToScreenPoint(allAVs[closestVert].worldPoint);
+		Rect bestLabelRect = MathUtilities.CenteredSquare(bestVertexScreenPos.x, bestVertexScreenPos.y, 200f);
+		GUI.color = Color.green;
+		GUI.Label(bestLabelRect, closestVert.ToString());
+
+		if(!vertSelected && Input.GetMouseButton(0) && (closestVert > -1)) {
+			vertSelected = true;
+			streamVerts.Add(closestVert);
+			streamCreeps.Add(gameObject.AddComponent<ThreeAxisCreep>());
+			streamCreeps[streamCreeps.Count - 1].relaxedness = 5f;
+			streamCreeps[streamCreeps.Count - 1].maxCreep = 0.2f;
+		}
+
+		if(!Input.GetMouseButton(0))
+			vertSelected = false;
+	} // End of OnGUI().
 
 
 	Vector3 GetStreamVertCreeped(int i) {
-		int wrappedIdx = (int)Mathf.Repeat(i, streamVerts.Length);
-		return transform.rotation * Vector3.Scale((initialVerts[streamVerts[wrappedIdx]] * 1.2f) /*+ streamCreeps[wrappedIdx].creep*/, transform.localScale);
+		int wrappedIdx = (int)Mathf.Repeat(i, streamVerts.Count);
+		return transform.rotation * Vector3.Scale((initialVerts[streamVerts[wrappedIdx]] * 1.35f) + streamCreeps[wrappedIdx].creep, transform.localScale);
 	} // End of GetStreamVertCreeped().
 
 } // End of CognoAmalgam.
