@@ -97,12 +97,12 @@ public class CognoAmalgam : MonoBehaviour {
 		}
 
 
-		/*
-		streamVerts = new List<int>(new int[]{1, 30, 8, 527, 131, 2, 348, 172, 14});
+		//*
+		streamVerts = new List<int>(new int[]{413, 238, 231, 212, 309, 9, 450, 440, 339, 84, 49, 12, 347, 363, 466, 487, 588, 390, 621});
 		for(int i = 0; i < streamVerts.Count; i++) {
-			streamCreeps[i] = gameObject.AddComponent<ThreeAxisCreep>();
-			streamCreeps[i].relaxedness = 5f;
-			streamCreeps[i].maxCreep = 0.2f;
+			streamCreeps.Add(gameObject.AddComponent<ThreeAxisCreep>());
+			streamCreeps[streamCreeps.Count - 1].relaxedness = 5f;
+			streamCreeps[streamCreeps.Count - 1].maxCreep = 0.2f;
 		}
 		//*/
 
@@ -198,11 +198,11 @@ public class CognoAmalgam : MonoBehaviour {
 			Vector3 nextVert = GetStreamVertCreeped(nextVertIdx);
 			Vector3 nextNextVert = GetStreamVertCreeped(nextVertIdx + 1);
 
-			Vector3 lastHandleA = Vector3.LerpUnclamped(lastVert, nextVert, 0.2f);
-			Vector3 lastHandleB = Vector3.LerpUnclamped(lastVert, lastLastVert, -0.2f);
+			Vector3 lastHandleA = Vector3.LerpUnclamped(lastVert, nextVert, 0.5f);
+			Vector3 lastHandleB = Vector3.LerpUnclamped(lastVert, lastLastVert, -0.5f);
 
-			Vector3 nextHandleA = Vector3.LerpUnclamped(nextVert, lastVert, 0.2f);
-			Vector3 nextHandleB = Vector3.LerpUnclamped(nextVert, nextNextVert, -0.2f);
+			Vector3 nextHandleA = Vector3.LerpUnclamped(nextVert, lastVert, 0.5f);
+			Vector3 nextHandleB = Vector3.LerpUnclamped(nextVert, nextNextVert, -0.5f);
 
 			Debug.DrawLine(lastVert, lastHandleA, Color.green);
 			Debug.DrawLine(nextVert, nextHandleA, Color.cyan);
@@ -260,8 +260,11 @@ public class CognoAmalgam : MonoBehaviour {
 
 	} // End of Update().
 
+
 	bool vertSelected = false;
 	void OnGUI() {
+		return;
+
 		GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 		float minDist = Vector3.Distance(Camera.main.transform.position, transform.position) - 50f;
 
@@ -298,6 +301,14 @@ public class CognoAmalgam : MonoBehaviour {
 
 		if(!Input.GetMouseButton(0))
 			vertSelected = false;
+
+
+		Rect screenRect = new Rect(0f, 0f, Screen.width, Screen.height);
+		GUI.skin.label.alignment = TextAnchor.UpperLeft;
+		string vertList = "";
+		for(int i = 0; i < streamVerts.Count; i++)
+			vertList += streamVerts[i] + "\n";
+		GUI.Label(screenRect, vertList);
 	} // End of OnGUI().
 
 
