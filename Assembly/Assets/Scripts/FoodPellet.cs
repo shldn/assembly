@@ -35,7 +35,7 @@ public class FoodPellet {
     // For Olympics
     public Assembly owner = null; // to restrict energy consumption to just this entity
 
-    FoodPelletViewer viewer = null;
+    public FoodPelletViewer viewer = null;
     public bool Visible
     {
         get { return viewer.Visible; }

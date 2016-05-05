@@ -233,10 +233,12 @@ public class HandCognoOutside : MonoBehaviour {
 			for(int i = 0; i < 5; i++) {
 				SmoothNetPosition.allFingertips[i].transform.position = hand_model.fingers[i].GetTipPosition();
 			}
+			SmoothNetPosition.allFingertips[20].transform.position = hand_model.GetPalmPosition();
 		} else {
 			for(int i = 5; i < 10; i++) {
 				SmoothNetPosition.allFingertips[i].transform.position = hand_model.fingers[i - 5].GetTipPosition();
 			}
+			SmoothNetPosition.allFingertips[21].transform.position = hand_model.GetPalmPosition();
 		}
 
 
