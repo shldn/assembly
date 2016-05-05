@@ -171,18 +171,38 @@ public class HandCognoInside : MonoBehaviour {
 			}
 		}
 
+
+		// Energy collection/dispersion
+		float distFromCam = Vector3.Distance(Camera.main.transform.position, leap_hand.PalmPosition.ToUnity());
+		float attractDistribute = Mathf.InverseLerp(100f, 300f, distFromCam);
+
+		for(int i = 0; i < FoodPellet.all.Count; i++) {
+			Vector3 vectorToPellet = FoodPellet.all[i].WorldPosition - hand_model.GetPalmPosition();
+			FoodPellet.all[i].velocity += (-vectorToPellet / Mathf.Clamp(vectorToPellet.sqrMagnitude * 0.01f, 0.1f, Mathf.Infinity)) * 0.1f;
+		}
+
 		// Sync networked fingertip
 		if(leap_hand.IsLeft) {
 			for(int i = 10; i < 15; i++) {
 				SmoothNetPosition.allFingertips[i].transform.position = hand_model.fingers[i - 10].GetTipPosition();
+				SmoothNetPosition.allFingertips[i].render = true;
 			}
+			SmoothNetPosition.allFingertips[22].render = true;
+			SmoothNetPosition.allFingertips[22].transform.position = hand_model.GetPalmPosition();
+			SmoothNetPosition.allFingertips[22].transform.localScale = Vector3.one * (30f + (attractDistribute * 40f));
+			SmoothNetPosition.allFingertips[22].GetComponent<Renderer>().material.SetColor("_TintColor", Color.Lerp(Color.green, Color.white, attractDistribute));
 		} else {
 			for(int i = 15; i < 20; i++) {
 				SmoothNetPosition.allFingertips[i].transform.position = hand_model.fingers[i - 15].GetTipPosition();
+				SmoothNetPosition.allFingertips[i].render = true;
 			}
+			SmoothNetPosition.allFingertips[23].render = true;
+			SmoothNetPosition.allFingertips[23].transform.position = hand_model.GetPalmPosition();
+			SmoothNetPosition.allFingertips[23].transform.localScale = Vector3.one * (30f + (attractDistribute * 40f));
+			SmoothNetPosition.allFingertips[23].GetComponent<Renderer>().material.SetColor("_TintColor", Color.Lerp(Color.green, Color.white, attractDistribute));
 		}
 
-	} // End of Update().
+	} // End Update().
 
-}
+} // End HandCognoInside.cs.
  

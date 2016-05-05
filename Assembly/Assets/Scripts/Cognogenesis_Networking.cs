@@ -62,7 +62,6 @@ public class Cognogenesis_Networking : MonoBehaviour {
 			connectionString = "Connected as client.";
 
 		GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), connectionString);
-		print(connectionString);
 
     } // End of OnGUI().
 
