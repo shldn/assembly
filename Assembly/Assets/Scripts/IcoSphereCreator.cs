@@ -165,4 +165,22 @@ public class IcoSphereCreator : MonoBehaviour
         return geometry;
     } // End of Create().
 
+    // Test the 15 faces, then recurse to find the correct face
+    // should be able to create a more direct mapping (ranges of angles define which face it belongs to)
+    // If a point is inside a triangular cone to the face, then it maps to that face.
+    // Check in a recursive manner, biggest triangles first, then drill down
+    // Ideally the distance from the triangle cone edges should immediately identify the correct triangle face.
+    public int GetProjectedFace(Vector3 pt, out bool inside) {
+
+        // Narrow down which of the original 20 faces the ray intersects.
+
+        // Is in first set of five faces around point 0
+        Vector3 section1normal = vertices[0].normalized;
+        Debug.LogError("Normal: " + section1normal);
+        Plane section1TestPlane = new Plane(section1normal, vertices[1]);
+        inside = section1TestPlane.GetSide(pt);
+
+        return -1;
+    }
+
 } // End of IcosphereGenerator.
