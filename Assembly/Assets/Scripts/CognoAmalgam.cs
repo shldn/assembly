@@ -317,4 +317,10 @@ public class CognoAmalgam : MonoBehaviour {
 		return transform.rotation * Vector3.Scale((initialVerts[streamVerts[wrappedIdx]] * 1.35f) + streamCreeps[wrappedIdx].creep, transform.localScale);
 	} // End of GetStreamVertCreeped().
 
+    public bool IsInside(Vector3 pt) {
+        bool isInside = false;
+        Vector3 transformedPt = new Vector3(pt.x/transform.lossyScale.x, pt.y/transform.lossyScale.y, pt.z/transform.lossyScale.z);
+        IcoSphereCreator.Inst.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
+        return isInside;
+    }
 } // End of CognoAmalgam.

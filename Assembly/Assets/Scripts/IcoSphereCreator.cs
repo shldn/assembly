@@ -11,12 +11,14 @@ public class IcoSphereCreator : MonoBehaviour
         public int v1;
         public int v2;
         public int v3;
+        public int id; // creation id
 
-        public TriangleIndices(int v1, int v2, int v3)
+        public TriangleIndices(int v1, int v2, int v3, int id)
         {
             this.v1 = v1;
             this.v2 = v2;
             this.v3 = v3;
+            this.id = id;
         }
     } // End of TriangleIndices.
 
@@ -28,6 +30,9 @@ public class IcoSphereCreator : MonoBehaviour
 	List<int> triangles;
 	List<Vector3> vertices;
 
+    // Helpers for finding intersecting faces
+    List<TriangleIndices> baseFaces;
+    Dictionary<int, List<TriangleIndices>> faceChildren = new Dictionary<int, List<TriangleIndices>>();
 
 	void Awake()
 	{
@@ -85,55 +90,58 @@ public class IcoSphereCreator : MonoBehaviour
         // create 12 vertices of a icosahedron
         float t = (1.0f + Mathf.Sqrt(5.0f)) / 2.0f;
 
-        AddVertex(new Vector3(-1,  t,  0));
-        AddVertex(new Vector3( 1,  t,  0));
-        AddVertex(new Vector3(-1, -t,  0));
-        AddVertex(new Vector3( 1, -t,  0));
+        AddVertex(new Vector3(-1,  t,  0)); // point 0
+        AddVertex(new Vector3( 1,  t,  0)); // point 1
+        AddVertex(new Vector3(-1, -t,  0)); // point 2
+        AddVertex(new Vector3( 1, -t,  0)); // point 3
 
-        AddVertex(new Vector3( 0, -1,  t));
-        AddVertex(new Vector3( 0,  1,  t));
-        AddVertex(new Vector3( 0, -1, -t));
-        AddVertex(new Vector3( 0,  1, -t));
+        AddVertex(new Vector3( 0, -1,  t)); // point 4
+        AddVertex(new Vector3( 0,  1,  t)); // point 5
+        AddVertex(new Vector3( 0, -1, -t)); // point 6
+        AddVertex(new Vector3( 0,  1, -t)); // point 7
 
-        AddVertex(new Vector3( t,  0, -1));
-        AddVertex(new Vector3( t,  0,  1));
-        AddVertex(new Vector3(-t,  0, -1));
-        AddVertex(new Vector3(-t,  0,  1));
+        AddVertex(new Vector3( t,  0, -1)); // point 8
+        AddVertex(new Vector3( t,  0,  1)); // point 9
+        AddVertex(new Vector3(-t,  0, -1)); // point 10
+        AddVertex(new Vector3(-t,  0,  1)); // point 11
 
 
         // create 20 triangles of the icosahedron
-        List<TriangleIndices> faces = new List<TriangleIndices>();
+        baseFaces = new List<TriangleIndices>();
+        int count = 0;
 
         // 5 faces around point 0
-        faces.Add(new TriangleIndices(0, 11, 5));
-        faces.Add(new TriangleIndices(0, 5, 1));
-        faces.Add(new TriangleIndices(0, 1, 7));
-        faces.Add(new TriangleIndices(0, 7, 10));
-        faces.Add(new TriangleIndices(0, 10, 11));
+        baseFaces.Add(new TriangleIndices(0, 11, 5, count++)); // face 0
+        baseFaces.Add(new TriangleIndices(0, 5, 1, count++)); // face 1
+        baseFaces.Add(new TriangleIndices(0, 1, 7, count++)); // face 2
+        baseFaces.Add(new TriangleIndices(0, 7, 10, count++)); // face 3
+        baseFaces.Add(new TriangleIndices(0, 10, 11, count++)); // face 4
 
         // 5 adjacent faces 
-        faces.Add(new TriangleIndices(1, 5, 9));
-        faces.Add(new TriangleIndices(5, 11, 4));
-        faces.Add(new TriangleIndices(11, 10, 2));
-        faces.Add(new TriangleIndices(10, 7, 6));
-        faces.Add(new TriangleIndices(7, 1, 8));
+        baseFaces.Add(new TriangleIndices(1, 5, 9, count++)); // face 5
+        baseFaces.Add(new TriangleIndices(5, 11, 4, count++)); // face 6
+        baseFaces.Add(new TriangleIndices(11, 10, 2, count++)); // face 7
+        baseFaces.Add(new TriangleIndices(10, 7, 6, count++)); // face 8
+        baseFaces.Add(new TriangleIndices(7, 1, 8, count++)); // face 9
 
         // 5 faces around point 3
-        faces.Add(new TriangleIndices(3, 9, 4));
-        faces.Add(new TriangleIndices(3, 4, 2));
-        faces.Add(new TriangleIndices(3, 2, 6));
-        faces.Add(new TriangleIndices(3, 6, 8));
-        faces.Add(new TriangleIndices(3, 8, 9));
+        baseFaces.Add(new TriangleIndices(3, 9, 4, count++)); // face 10
+        baseFaces.Add(new TriangleIndices(3, 4, 2, count++)); // face 11
+        baseFaces.Add(new TriangleIndices(3, 2, 6, count++)); // face 12
+        baseFaces.Add(new TriangleIndices(3, 6, 8, count++)); // face 13
+        baseFaces.Add(new TriangleIndices(3, 8, 9, count++)); // face 14
 
         // 5 adjacent faces 
-        faces.Add(new TriangleIndices(4, 9, 5));
-        faces.Add(new TriangleIndices(2, 4, 11));
-        faces.Add(new TriangleIndices(6, 2, 10));
-        faces.Add(new TriangleIndices(8, 6, 7));
-        faces.Add(new TriangleIndices(9, 8, 1));
+        baseFaces.Add(new TriangleIndices(4, 9, 5, count++)); // face 15
+        baseFaces.Add(new TriangleIndices(2, 4, 11, count++)); // face 16
+        baseFaces.Add(new TriangleIndices(6, 2, 10, count++)); // face 17
+        baseFaces.Add(new TriangleIndices(8, 6, 7, count++)); // face 18
+        baseFaces.Add(new TriangleIndices(9, 8, 1, count++)); // face 19
 
 
         // refine triangles
+        int fIdx = 0;
+        List<TriangleIndices> faces = new List<TriangleIndices>(baseFaces);
         for (int i = 0; i < recursionLevel; i++){
             List<TriangleIndices> faces2 = new List<TriangleIndices>();
             foreach (TriangleIndices tri in faces){
@@ -142,10 +150,11 @@ public class IcoSphereCreator : MonoBehaviour
                 int b = GetMiddlePoint(tri.v2, tri.v3);
                 int c = GetMiddlePoint(tri.v3, tri.v1);
 
-                faces2.Add(new TriangleIndices(tri.v1, a, c));
-                faces2.Add(new TriangleIndices(tri.v2, b, a));
-                faces2.Add(new TriangleIndices(tri.v3, c, b));
-                faces2.Add(new TriangleIndices(a, b, c));
+                faces2.Add(new TriangleIndices(tri.v1, a, c, count++));
+                faces2.Add(new TriangleIndices(tri.v2, b, a, count++));
+                faces2.Add(new TriangleIndices(tri.v3, c, b, count++));
+                faces2.Add(new TriangleIndices(a, b, c, count++));
+                faceChildren.Add(fIdx++, faces2);
             }
             faces = faces2;
         }
@@ -165,22 +174,42 @@ public class IcoSphereCreator : MonoBehaviour
         return geometry;
     } // End of Create().
 
-    // Test the 15 faces, then recurse to find the correct face
-    // should be able to create a more direct mapping (ranges of angles define which face it belongs to)
-    // If a point is inside a triangular cone to the face, then it maps to that face.
+
+    bool InsideFace(TriangleIndices triIndices, Vector3 pt) {
+        Plane testPlane0 = new Plane(Vector3.zero, vertices[triIndices.v1], vertices[triIndices.v2]);
+        Plane testPlane1 = new Plane(Vector3.zero, vertices[triIndices.v2], vertices[triIndices.v3]);
+        Plane testPlane2 = new Plane(Vector3.zero, vertices[triIndices.v3], vertices[triIndices.v1]);
+        return testPlane0.GetSide(pt) && testPlane1.GetSide(pt) && testPlane2.GetSide(pt);
+    }
+
     // Check in a recursive manner, biggest triangles first, then drill down
-    // Ideally the distance from the triangle cone edges should immediately identify the correct triangle face.
-    public int GetProjectedFace(Vector3 pt, out bool inside) {
+    // should be able to create a more direct mapping (ranges of angles define which face it belongs to)
+    // Ideally the angle to the point should immediately identify the correct triangle face.
+    private int GetProjectedFaceImpl(List<TriangleIndices> faces, Vector3[] verts, Vector3 pt, out bool inside) {
+        for (int i = 0; i < faces.Count; ++i) {
+            if (InsideFace(faces[i], pt)) {
 
-        // Narrow down which of the original 20 faces the ray intersects.
+                // check if inside face
+                Plane testFacePlane = new Plane(GetVert(verts,faces[i].v3), GetVert(verts,faces[i].v2), GetVert(verts,faces[i].v1));
+                inside = testFacePlane.GetSide(pt);
+                if (faceChildren.ContainsKey(faces[i].id))
+                    return GetProjectedFaceImpl(faceChildren[faces[i].id], verts, pt, out inside);
+                return i;
+            }
+        }
 
-        // Is in first set of five faces around point 0
-        Vector3 section1normal = vertices[0].normalized;
-        Debug.LogError("Normal: " + section1normal);
-        Plane section1TestPlane = new Plane(section1normal, vertices[1]);
-        inside = section1TestPlane.GetSide(pt);
-
+        inside = false;
         return -1;
+    }
+
+    public int GetProjectedFace(Vector3 pt, Vector3[] verts, out bool inside) {
+        return GetProjectedFaceImpl(baseFaces, verts, pt, out inside);
+    }
+
+    public Vector3 GetVert(Vector3[] verts, int idx) {
+        if (verts == null)
+            return vertices[idx];
+        return verts[idx];
     }
 
 } // End of IcosphereGenerator.
