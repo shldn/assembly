@@ -174,12 +174,19 @@ public class IcoSphereCreator : MonoBehaviour
         return geometry;
     } // End of Create().
 
-
-    bool InsideFace(TriangleIndices triIndices, Vector3 pt) {
+    // Is point inside the cone created by the 3 planes from the origin to the sides of the face triangle
+    bool InsideFaceCone(TriangleIndices triIndices, Vector3 pt) {
         Plane testPlane0 = new Plane(Vector3.zero, vertices[triIndices.v1], vertices[triIndices.v2]);
         Plane testPlane1 = new Plane(Vector3.zero, vertices[triIndices.v2], vertices[triIndices.v3]);
         Plane testPlane2 = new Plane(Vector3.zero, vertices[triIndices.v3], vertices[triIndices.v1]);
         return testPlane0.GetSide(pt) && testPlane1.GetSide(pt) && testPlane2.GetSide(pt);
+    }
+
+    bool InsideFaceConeInclusive(TriangleIndices triIndices, Vector3 pt) {
+        Plane testPlane0 = new Plane(Vector3.zero, vertices[triIndices.v1], vertices[triIndices.v2]);
+        Plane testPlane1 = new Plane(Vector3.zero, vertices[triIndices.v2], vertices[triIndices.v3]);
+        Plane testPlane2 = new Plane(Vector3.zero, vertices[triIndices.v3], vertices[triIndices.v1]);
+        return testPlane0.GetDistanceToPoint(pt) >= 0f && testPlane1.GetDistanceToPoint(pt) >= 0f && testPlane2.GetDistanceToPoint(pt) >= 0f;
     }
 
     // Check in a recursive manner, biggest triangles first, then drill down
@@ -187,7 +194,7 @@ public class IcoSphereCreator : MonoBehaviour
     // Ideally the angle to the point should immediately identify the correct triangle face.
     private int GetProjectedFaceImpl(List<TriangleIndices> faces, Vector3[] verts, Vector3 pt, out bool inside) {
         for (int i = 0; i < faces.Count; ++i) {
-            if (InsideFace(faces[i], pt)) {
+            if (InsideFaceCone(faces[i], pt)) {
 
                 // check if inside face
                 Plane testFacePlane = new Plane(GetVert(verts,faces[i].v3), GetVert(verts,faces[i].v2), GetVert(verts,faces[i].v1));
@@ -198,6 +205,19 @@ public class IcoSphereCreator : MonoBehaviour
             }
         }
 
+        // if we get here, the point is probably co-planar, check again inclusively
+        // Code duplication - should probably refactor (could always check inclusively)
+        for (int i = 0; i < faces.Count; ++i) {
+            if (InsideFaceConeInclusive(faces[i], pt)) {
+
+                // check if inside face
+                Plane testFacePlane = new Plane(GetVert(verts, faces[i].v3), GetVert(verts, faces[i].v2), GetVert(verts, faces[i].v1));
+                inside = testFacePlane.GetSide(pt);
+                if (faceChildren.ContainsKey(faces[i].id))
+                    return GetProjectedFaceImpl(faceChildren[faces[i].id], verts, pt, out inside);
+                return i;
+            }
+        }
         inside = false;
         return -1;
     }
