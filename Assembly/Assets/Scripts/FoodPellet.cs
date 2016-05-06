@@ -75,10 +75,12 @@ public class FoodPellet {
 		}
 
         // Destroy nodes outside of worlds
+		/*
         if (!WithinBoundary(worldPosition) && Environment.Inst)
         {
             cull = true;
         }
+		*/
 
 		viewer.gameObject.GetComponent<Rigidbody>().isKinematic = !viewer.gameObject.GetComponent<GrabbableObject>().IsGrabbed();
 		if(viewer.gameObject.GetComponent<GrabbableObject>().IsGrabbed()) {

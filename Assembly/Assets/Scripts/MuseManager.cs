@@ -41,6 +41,12 @@ public class MuseManager : MonoBehaviour {
 	public bool SlowResponse {get{return slowResponse;}}
 
 
+	// Diagetic GUI
+	public Transform[] physicalCxnInds = new Transform[0];
+	Vector3 defaultPhysCxnIndScale = Vector3.one;
+
+
+
     void Awake(){
         Inst = this;
     }
@@ -51,6 +57,9 @@ public class MuseManager : MonoBehaviour {
         if (OSCHandler.Instance.Servers.ContainsKey("AssemblyOSC"))
             OSCHandler.Instance.Servers["AssemblyOSC"].server.PacketReceivedEvent += Server_PacketReceivedEvent;
 #endif
+
+		if(physicalCxnInds.Length > 0)
+			defaultPhysCxnIndScale = physicalCxnInds[0].localScale;
     }
 
 	void Update () {
@@ -157,6 +166,8 @@ public class MuseManager : MonoBehaviour {
 			GUI.DrawTexture(sensorStatusRect, sensorDisplayIn);
 
 			sensorIndSizes[i] = Mathf.SmoothDamp(sensorIndSizes[i], HeadConnectionStatus[i], ref sensorIndSizeVels[i], 0.25f);
+			if(physicalCxnInds.Length > 0)
+				physicalCxnInds[i].localScale = (defaultPhysCxnIndScale * sensorIndSizes[i]) / 3f;
 		}
 
         GUI.skin.label.fontSize = 14;

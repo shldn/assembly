@@ -208,11 +208,16 @@ public class CognoAmalgam : MonoBehaviour {
 			Debug.DrawLine(nextVert, nextHandleA, Color.cyan);
 			Debug.DrawLine(lastVert, nextVert, Color.white);
 
+			Vector3 linePoint = MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert);
 			streamLineRenderer.SetPosition(i, MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert));
 
+			if((Random.Range(0f, 1f) < 0.01f) && IsInside(linePoint)) {
+				FoodPellet newFood = new FoodPellet(linePoint);
+				newFood.velocity = -newFood.WorldPosition * Random.Range(0.05f, 0.2f);
+			}
         }
 
-		//*
+		/*
 		UnityEngine.ParticleSystem.Particle[] particles = new UnityEngine.ParticleSystem.Particle[pSys.particleCount];
 		pSys.GetParticles(particles);
 		for(int i = 0; i < particles.Length; i++) {
