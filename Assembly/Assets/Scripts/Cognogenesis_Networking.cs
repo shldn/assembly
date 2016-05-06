@@ -91,6 +91,13 @@ public class Cognogenesis_Networking : MonoBehaviour {
 			SmoothNetPosition.allFingertips[i].netView.viewID = newID;
 			myNetworkView.RPC("AssignFingerViewID", RPCMode.Server, i, newID);
 		}
+
+		for(int i = 22; i < 24; i++) {
+			NetworkViewID newID = Network.AllocateViewID();
+			SmoothNetPosition.allFingertips[i].netView.viewID = newID;
+			myNetworkView.RPC("AssignFingerViewID", RPCMode.Server, i, newID);
+		}
+
 	} // End of OnConnectedToServer().
 
 
