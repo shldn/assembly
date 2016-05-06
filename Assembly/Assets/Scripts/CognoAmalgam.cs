@@ -223,7 +223,7 @@ public class CognoAmalgam : MonoBehaviour {
 			Vector3 linePoint = MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert);
 			streamLineRenderer.SetPosition(i, MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert));
 
-			if((Random.Range(0f, 1f) < (0.005f * (1f - NeuroScaleDemo.Inst.enviroScale))) && IsInside(linePoint)) {
+			if((Random.Range(0f, 1f) < (0.005f * (1f - Cognogenesis_Networking.Inst.externalEnviroScale))) && IsInside(linePoint)) {
 				FoodPellet newFood = new FoodPellet(linePoint);
 				newFood.velocity = -newFood.WorldPosition * Random.Range(0.05f, 0.2f);
 			}
@@ -261,10 +261,10 @@ public class CognoAmalgam : MonoBehaviour {
 			Vector3 linePoint = MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert);
 			particles[i].position = linePoint / 80f;
 
-			particles[i].startColor = Color.white.SetAlpha(Mathf.Sin(lerp * Mathf.PI) * (1f - NeuroScaleDemo.Inst.enviroScale) * Random.Range(0, 1f));
+			particles[i].startColor = Color.white.SetAlpha(Mathf.Sin(lerp * Mathf.PI) * (1f - Cognogenesis_Networking.Inst.externalEnviroScale) * Random.Range(0, 1f));
 			// ------------------------------------------------------------------------ //
 
-			particles[i].position += particles[i].rotation3D * 0.05f * (0.2f + ((1f - NeuroScaleDemo.Inst.enviroScale) * 0.8f));
+			particles[i].position += particles[i].rotation3D * 0.05f * (0.2f + ((1f - Cognogenesis_Networking.Inst.externalEnviroScale) * 0.8f));
 		}
 		pSys.SetParticles(particles, particles.Length);
 		//*/
@@ -273,7 +273,7 @@ public class CognoAmalgam : MonoBehaviour {
 		streamLineRenderer.material.mainTextureScale = new Vector2(10f, 1f);
 		streamLineRenderer.material.mainTextureOffset = new Vector2(Time.time * 0.5f, 0f);
 
-		float power = (1f - NeuroScaleDemo.Inst.enviroScale);
+		float power = (1f - Cognogenesis_Networking.Inst.externalEnviroScale);
 
 		float width = 15f * (0.2f + Random.Range(power * 0.3f, power * 0.8f));
 		streamLineRenderer.SetWidth(width, width);

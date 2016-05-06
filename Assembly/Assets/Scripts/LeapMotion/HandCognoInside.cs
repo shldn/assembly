@@ -206,7 +206,7 @@ public class HandCognoInside : MonoBehaviour {
 			SmoothNetPosition.allFingertips[22].render = true;
 			SmoothNetPosition.allFingertips[22].transform.position = hand_model.GetPalmPosition();
 			SmoothNetPosition.allFingertips[22].transform.localScale = Vector3.one * (30f + (attractDistribute * 40f));
-			SmoothNetPosition.allFingertips[22].GetComponent<Renderer>().material.SetColor("_TintColor", Color.Lerp(Color.green, Color.white, attractDistribute));
+			SmoothNetPosition.allFingertips[22].GetComponent<Renderer>().material.SetColor("_TintColor", Color.Lerp(new Color(0.65f, 0.26f, 1f), Color.white, attractDistribute));
 		} else {
 			for(int i = 15; i < 20; i++) {
 				SmoothNetPosition.allFingertips[i].transform.position = hand_model.fingers[i - 15].GetTipPosition();
@@ -215,7 +215,7 @@ public class HandCognoInside : MonoBehaviour {
 			SmoothNetPosition.allFingertips[23].render = true;
 			SmoothNetPosition.allFingertips[23].transform.position = hand_model.GetPalmPosition();
 			SmoothNetPosition.allFingertips[23].transform.localScale = Vector3.one * (30f + (attractDistribute * 40f));
-			SmoothNetPosition.allFingertips[23].GetComponent<Renderer>().material.SetColor("_TintColor", Color.Lerp(Color.green, Color.white, attractDistribute));
+			SmoothNetPosition.allFingertips[23].GetComponent<Renderer>().material.SetColor("_TintColor", Color.Lerp(new Color(0.65f, 0.26f, 1f), Color.white, attractDistribute));
 		}
 
 	} // End Update().

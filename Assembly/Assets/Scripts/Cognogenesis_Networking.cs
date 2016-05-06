@@ -25,6 +25,8 @@ public class Cognogenesis_Networking : MonoBehaviour {
 	public GameObject serverStuff;
 	public GameObject clientStuff;
 
+	public float externalEnviroScale = 0f;
+
 
     void Awake(){
 		Inst = this;
@@ -49,6 +51,9 @@ public class Cognogenesis_Networking : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.C))
 			Network.Connect(connectToIP, connectionPort);
 		
+		if(Network.peerType == NetworkPeerType.Server)
+			externalEnviroScale = NeuroScaleDemo.Inst.enviroScale;
+
     } // End of Update().
 	
 
@@ -93,6 +98,25 @@ public class Cognogenesis_Networking : MonoBehaviour {
 	void AssignFingerViewID(int index, NetworkViewID newID) {
 		SmoothNetPosition.allFingertips[index].netView.viewID = newID;
 	} // End of AssignFingerViewID().
+
+
+	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info){
+
+		float serverEnviroScale = 0f;
+
+		// When sending my own data out...
+		if(stream.isWriting){
+			serverEnviroScale = externalEnviroScale;
+
+			stream.Serialize(ref serverEnviroScale);
+		}
+		// When receiving data from someone else...
+		else{
+            stream.Serialize(ref serverEnviroScale);
+
+			externalEnviroScale = serverEnviroScale;
+		}
+    } // End of OnSerializeNetworkView().
 
 } // End of CaptureNet_Manager.
 

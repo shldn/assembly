@@ -239,7 +239,7 @@ public class CameraControl : MonoBehaviour {
 			center = Vector3.SmoothDamp(center, lazyCenter, ref lazyCenterVel, 3f);
 		}
 
-		if(NeuroScaleDemo.Inst && NeuroScaleDemo.Inst.TargetNode)
+		if(NeuroScaleDemo.Inst && NeuroScaleDemo.Inst.TargetNode && neuroscaleFade)
 			center = Vector3.Lerp(center, NeuroScaleDemo.Inst.TargetNode.Position, blendToNeuroscale);
 
 		if((Assembly.getAll.Count > 0f) && Environment.Inst && Environment.Inst.isActiveAndEnabled)
