@@ -1,0 +1,32 @@
+[	
+    {
+        "#" : "JSON Configuration file for assembly",
+        "type": "description",
+    },
+    {
+        "#" : "graphics settings",
+        "type": "graphics",
+    },
+    {
+        "#" : "viewer settings",
+        "type": "viewer",
+        "controllers":[
+        	{"ip":"127.0.0.1", "port":12000},
+        	{"ip":"127.0.0.1", "port":12001},
+        	{"ip":"127.0.0.1", "port":12002},
+        	{"ip":"127.0.0.1", "port":12003},
+        	{"ip":"127.0.0.1", "port":12004},
+        	{"ip":"127.0.0.1", "port":12005}
+        ]
+    },
+    {
+        "#" : "controller settings",
+        "type": "controller",
+    },
+
+    {
+        "#" : "eeg settings",
+        "type": "eeg",
+        "LSLStream": "ConcentrationStream",
+    },
+]    
