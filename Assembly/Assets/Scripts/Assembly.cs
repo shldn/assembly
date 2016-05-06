@@ -402,7 +402,7 @@ public class Assembly : CaptureObject{
         lastPosition = newPosition;
 
         // Keeps assemblies in Capsule
-        if (Environment.Inst && Environment.Inst.isActiveAndEnabled && !PersistentGameManager.IsClient) {
+        if (!PersistentGameManager.IsClient) {
             if(CognoAmalgam.Inst != null && !CognoAmalgam.Inst.IsInside(Position)) {
                 foreach (Node someNode in nodeDict.Values)
                     someNode.velocity += -Position.normalized * NodeController.physicsStep;
