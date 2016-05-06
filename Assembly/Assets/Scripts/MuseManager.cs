@@ -11,6 +11,7 @@ public class MuseManager : MonoBehaviour {
 
     // Local variables
     private bool useLSL = false; // Switch to NeuroScale pipeline with a data streaming over LSL
+    private bool forceDataDisplay = false; // Get data even if not touching forehead
     private bool touchingForehead = false;
     private int offForeheadCounter = 0;
     private float lastConcentrationMeasure = 0f;
@@ -21,7 +22,7 @@ public class MuseManager : MonoBehaviour {
 
 
     // Accessors
-    public bool TouchingForehead{get{return touchingForehead && (MuseManager.Inst.SecondsSinceLastMessage < 1f);}}
+    public bool TouchingForehead{get{return forceDataDisplay || (touchingForehead && (MuseManager.Inst.SecondsSinceLastMessage < 1f));}}
     public float LastConcentrationMeasure{
         get {
             float concentration = useLSL ? MuseLSLManager.Inst.LastConcentrationMetric : lastConcentrationMeasure;
@@ -59,7 +60,9 @@ public class MuseManager : MonoBehaviour {
 			slowResponse = !slowResponse;
         if (Input.GetKeyDown(KeyCode.L))
             useLSL = !useLSL;
-	}
+        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.F))
+            forceDataDisplay = !forceDataDisplay;
+    }
 
     void OnDestroy() {
         Inst = null;
@@ -161,8 +164,8 @@ public class MuseManager : MonoBehaviour {
 
 		string statusStr = "";
 		// Attention metric
-		if(SecondsSinceLastMessage < 1f){
-			if(touchingForehead)
+		if(SecondsSinceLastMessage < 1f || forceDataDisplay) {
+			if(TouchingForehead)
 				statusStr += (NeuroScaleDemo.Inst.enviroScale * 100f).ToString("F0") + "%";
 			else
 				statusStr += "EEG device ready.";
@@ -176,7 +179,10 @@ public class MuseManager : MonoBehaviour {
             if (useLSL)
                 statusStr += " Q";
 
-			if(BatteryPercentage < 0.2f)
+            if (forceDataDisplay)
+                statusStr += ">";
+
+            if (BatteryPercentage < 0.2f)
 				statusStr += "\n" + (BatteryPercentage * 100f).ToString("F0") + "% battery remaining.";
 
 
