@@ -20,11 +20,14 @@ public class MuseLSLManager : MonoBehaviour {
     private float lastConcentrationMetric = 0f;
 
     // Accessors
+    public static bool Exists { get { return inst != null; } }
     public bool IsConnected { get { return inlet != null; } }
     public float LastConcentrationMetric { get { return lastConcentrationMetric; } }
+    public string LSLStreamName { get { return controlStream; } }
 
 
     void Start() {
+        controlStream = Config.LSLStream;
         Debug.Log("Creating LSL resolver for stream " + controlStream);
         resolver = new liblsl.ContinuousResolver("name", controlStream);
     }

@@ -95,6 +95,12 @@ public class DiagnosticHUD : MonoBehaviour {
             str += "\n";
             str += "EnviroScale: " + (NeuroScaleDemo.Inst.enviroScale * 100f).ToString("F0") + "%";
         }
+        if (MuseLSLManager.Exists && MuseLSLManager.Inst.IsConnected) {
+            str += "\n";
+            str += "Stream: " + MuseLSLManager.Inst.LSLStreamName;
+            str += "\n";
+            str += "LSL Value: " + MuseLSLManager.Inst.LastConcentrationMetric.ToString("F2");
+        }
 
         return str;
     }
