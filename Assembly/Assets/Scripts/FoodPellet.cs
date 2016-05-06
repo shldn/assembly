@@ -32,6 +32,10 @@ public class FoodPellet {
 	float maxEnergy = 10f;
 	public bool cull = false;
 
+
+	bool cognoQuickKill = true;
+
+
     // For Olympics
     public Assembly owner = null; // to restrict energy consumption to just this entity
 
@@ -68,6 +72,9 @@ public class FoodPellet {
     }
 
     public void Update(){
+
+		if(cognoQuickKill)
+			energy -= NodeController.physicsStep;
 
 		if(energy < 0f){
 			NodeController.Inst.AdvanceWorldTick();

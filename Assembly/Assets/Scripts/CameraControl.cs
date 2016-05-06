@@ -66,6 +66,7 @@ public class CameraControl : MonoBehaviour {
 	Vector2 targetPanTilt = new Vector2(0f, 0f);
 	Vector2 panTiltVel = Vector2.zero;
 
+	public bool neuroscaleFade = true;
 	float blendToNeuroscale = 0f;
 	float blendToNeuroscaleVel = 0f;
 	bool clientOrbitControl = false;
@@ -141,7 +142,8 @@ public class CameraControl : MonoBehaviour {
 		}
 
 		// Blend between normal cam and neuroscale mode.
-		blendToNeuroscale = Mathf.SmoothDamp(blendToNeuroscale, (NeuroScaleDemo.Inst && NeuroScaleDemo.Inst.isActive && !CaptureNet_Manager.HasOrbitPlayers)? 1f : 0f, ref blendToNeuroscaleVel, 1f);
+		if(neuroscaleFade)
+			blendToNeuroscale = Mathf.SmoothDamp(blendToNeuroscale, (NeuroScaleDemo.Inst && NeuroScaleDemo.Inst.isActive && !CaptureNet_Manager.HasOrbitPlayers)? 1f : 0f, ref blendToNeuroscaleVel, 1f);
 		//test: blendToNeuroscale = 1f;
 
 		// Toggle gallery camera mode

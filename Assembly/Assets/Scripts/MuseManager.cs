@@ -44,7 +44,7 @@ public class MuseManager : MonoBehaviour {
 	// Diagetic GUI
 	public Transform[] physicalCxnInds = new Transform[0];
 	Vector3 defaultPhysCxnIndScale = Vector3.one;
-
+	public TextMesh physText = null;
 
 
     void Awake(){
@@ -167,7 +167,7 @@ public class MuseManager : MonoBehaviour {
 
 			sensorIndSizes[i] = Mathf.SmoothDamp(sensorIndSizes[i], HeadConnectionStatus[i], ref sensorIndSizeVels[i], 0.25f);
 			if(physicalCxnInds.Length > 0)
-				physicalCxnInds[i].localScale = (defaultPhysCxnIndScale * sensorIndSizes[i]) / 3f;
+				physicalCxnInds[i].localScale = (defaultPhysCxnIndScale * ((4f - sensorIndSizes[i]) / 3f));
 		}
 
         GUI.skin.label.fontSize = 14;
@@ -198,6 +198,12 @@ public class MuseManager : MonoBehaviour {
 
 
 			GUI.Label(MathUtilities.CenteredSquare(Screen.width * 0.5f, ((sensorRingSize + (sensorRingSpacing)) * Mathf.Sqrt(wearingHeadsetIndication)) + 505f, 1000f), statusStr);
+			if(physText) {
+				physText.text = statusStr;
+				physText.GetComponent<Renderer>().enabled = true;
+			}
+		} else {
+			physText.GetComponent<Renderer>().enabled = false;
 		}
     }
 }

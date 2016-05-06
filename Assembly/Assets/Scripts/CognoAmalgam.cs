@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 public class CognoAmalgam : MonoBehaviour {
 
+	List<Assembly> assemblies = new List<Assembly>();
+	public int targetNumAssems = 50;
+	
 	public float deformFluxRate = 0.0025f;
 	MeshFilter myMeshFilter = null;
 	public MeshFilter[] targetMeshFilters;
@@ -211,13 +214,13 @@ public class CognoAmalgam : MonoBehaviour {
 			Vector3 linePoint = MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert);
 			streamLineRenderer.SetPosition(i, MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert));
 
-			if((Random.Range(0f, 1f) < 0.01f) && IsInside(linePoint)) {
+			if((Random.Range(0f, 1f) < (0.005f * (1f - NeuroScaleDemo.Inst.enviroScale))) && IsInside(linePoint)) {
 				FoodPellet newFood = new FoodPellet(linePoint);
 				newFood.velocity = -newFood.WorldPosition * Random.Range(0.05f, 0.2f);
 			}
         }
 
-		/*
+		//*
 		UnityEngine.ParticleSystem.Particle[] particles = new UnityEngine.ParticleSystem.Particle[pSys.particleCount];
 		pSys.GetParticles(particles);
 		for(int i = 0; i < particles.Length; i++) {
@@ -236,32 +239,60 @@ public class CognoAmalgam : MonoBehaviour {
 			Vector3 nextVert = GetStreamVertCreeped(nextVertIdx);
 			Vector3 nextNextVert = GetStreamVertCreeped(nextVertIdx + 1);
 
-			Vector3 lastHandleA = Vector3.Lerp(lastLastVert, lastVert, 0.5f);
-			Vector3 lastHandleB = Vector3.Lerp(lastLastVert, lastVert, 0.5f);
+			Vector3 lastHandleA = Vector3.LerpUnclamped(lastVert, nextVert, 0.5f);
+			Vector3 lastHandleB = Vector3.LerpUnclamped(lastVert, lastLastVert, -0.5f);
 
-			Vector3 nextHandleA = Vector3.LerpUnclamped(lastVert, nextVert, 1.5f);
-			Vector3 nextHandleB = Vector3.LerpUnclamped(lastVert, nextVert, 1.5f);
+			Vector3 nextHandleA = Vector3.LerpUnclamped(nextVert, lastVert, 0.5f);
+			Vector3 nextHandleB = Vector3.LerpUnclamped(nextVert, nextNextVert, -0.5f);
 
-			particles[i].position = MathUtilities.CalculateBezierPoint(curLerp, lastVert, lastHandleA, nextHandleA, nextVert) / 80f;
+			Debug.DrawLine(lastVert, lastHandleA, Color.green);
+			Debug.DrawLine(nextVert, nextHandleA, Color.cyan);
+			Debug.DrawLine(lastVert, nextVert, Color.white);
 
-			if(particles[i].lifetime < 30f)
-				particles[i].startColor = Color.white.SetAlpha(Mathf.Sin(lerp * Mathf.PI));
+			Vector3 linePoint = MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert);
+			particles[i].position = linePoint / 80f;
+
+			particles[i].startColor = Color.white.SetAlpha(Mathf.Sin(lerp * Mathf.PI) * (1f - NeuroScaleDemo.Inst.enviroScale) * Random.Range(0, 1f));
 			// ------------------------------------------------------------------------ //
 
-			particles[i].position += particles[i].rotation3D * 0.05f;
+			particles[i].position += particles[i].rotation3D * 0.05f * (0.2f + ((1f - NeuroScaleDemo.Inst.enviroScale) * 0.8f));
 		}
 		pSys.SetParticles(particles, particles.Length);
 		//*/
 
+
 		streamLineRenderer.material.mainTextureScale = new Vector2(10f, 1f);
 		streamLineRenderer.material.mainTextureOffset = new Vector2(Time.time * 0.5f, 0f);
 
-		float power = 0.5f + (0.5f * Mathf.Sin(Time.time));
+		float power = (1f - NeuroScaleDemo.Inst.enviroScale);
 
 		float width = 15f * (0.2f + Random.Range(power * 0.3f, power * 0.8f));
 		streamLineRenderer.SetWidth(width, width);
 		Color color = Color.Lerp(Color.white.SetAlpha(0f), Color.white, power);
 		streamLineRenderer.SetColors(color, color);
+
+
+
+		// Assemblies
+		// Keep assemblies up!
+		if(assemblies.Count < targetNumAssems){
+			Assembly newAssem = Assembly.RandomAssembly(transform.position + (Random.insideUnitSphere * 80f), Quaternion.identity, Random.Range(4, 10));
+			assemblies.Add(newAssem);
+		}
+
+		// ...but not TOO many! Cull the herd if there are too many.
+		if(assemblies.Count > targetNumAssems * 1.2f){
+			float highestHealth = 9999f;
+			Assembly worstAssembly = null;
+			for(int i = 0; i < assemblies.Count; i++){
+				if(assemblies[i].Health < highestHealth){
+					highestHealth = assemblies[i].Health;
+					worstAssembly = assemblies[i];
+				}
+			}
+			if(worstAssembly)
+				worstAssembly.Destroy();
+		} 
 
 	} // End of Update().
 

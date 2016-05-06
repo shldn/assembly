@@ -42,9 +42,11 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 
 	void Start(){
-		RenderSettings.fog = true;
-		RenderSettings.fogMode = FogMode.Linear;
-		RenderSettings.fogColor = Color.black;
+		if(CameraControl.Inst.neuroscaleFade) {
+			RenderSettings.fog = true;
+			RenderSettings.fogMode = FogMode.Linear;
+			RenderSettings.fogColor = Color.black;
+		}
 	} // End of Start().
 	
 
@@ -52,26 +54,28 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 		isActive = MuseManager.Inst.TouchingForehead;
 
-        newSelectedNode = false;
-		if((!targetNode || targetNode.cull) && (Node.getAll.Count > 0)){
-			targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
-            // 150 tries to get a non-muscle node
-            for(int i=0; targetNode.IsMuscle && i < 150; ++i) {
-                targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
-            }
-            newSelectedNode = true;
-		}
+		if(CameraControl.Inst.neuroscaleFade) {
+			newSelectedNode = false;
+			if((!targetNode || targetNode.cull) && (Node.getAll.Count > 0)){
+				targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
+				// 150 tries to get a non-muscle node
+				for(int i=0; targetNode.IsMuscle && i < 150; ++i) {
+					targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
+				}
+				newSelectedNode = true;
+			}
 		
-		camRadius = 10f + ((NodeController.Inst.minWorldSize + 10f) * Mathf.Pow(enviroScale, 1f));
+			camRadius = 10f + ((NodeController.Inst.minWorldSize + 10f) * Mathf.Pow(enviroScale, 1f));
 
-		RenderSettings.fogStartDistance = camRadius + (1000f * Mathf.Pow(enviroScale, 2f));
-		RenderSettings.fogEndDistance = RenderSettings.fogStartDistance * 2f;
+			RenderSettings.fogStartDistance = camRadius + (1000f * Mathf.Pow(enviroScale, 2f));
+			RenderSettings.fogEndDistance = RenderSettings.fogStartDistance * 2f;
 
-        lastNumNodesToShow = numNodesToShow;
-		numNodesToShow = 1 + Mathf.RoundToInt(Mathf.Pow(enviroScale, 3f) * Node.getAll.Count);
-		numFoodToShow = Mathf.RoundToInt(Mathf.Pow(enviroScale, 2f) * FoodPellet.all.Count);
+			lastNumNodesToShow = numNodesToShow;
+			numNodesToShow = 1 + Mathf.RoundToInt(Mathf.Pow(enviroScale, 3f) * Node.getAll.Count);
+			numFoodToShow = Mathf.RoundToInt(Mathf.Pow(enviroScale, 2f) * FoodPellet.all.Count);
 
-        Cull();
+			Cull();
+		}
 
         enviroScale = Mathf.SmoothDamp(enviroScale, isActive? MuseManager.Inst.LastConcentrationMeasure : 1f, ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
         //test: enviroScale = Mathf.SmoothDamp(enviroScale, Mathf.PingPong(Time.time * 0.1f, 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
@@ -80,10 +84,12 @@ public class NeuroScaleDemo : MonoBehaviour {
         lastUseOctree = useOctree;
 
 
-		// Keep targetted assembly from getting too far from the origin.
-		if(targetNode && !PersistentGameManager.IsClient && MuseManager.Inst.TouchingForehead){
-			foreach(KeyValuePair<Triplet, Node> kvp in targetNode.PhysAssembly.NodeDict){
-				kvp.Value.Position += targetNode.PhysAssembly.Position * NodeController.physicsStep * 0.1f;
+		if(CameraControl.Inst.neuroscaleFade) {
+			// Keep targetted assembly from getting too far from the origin.
+			if(targetNode && !PersistentGameManager.IsClient && MuseManager.Inst.TouchingForehead){
+				foreach(KeyValuePair<Triplet, Node> kvp in targetNode.PhysAssembly.NodeDict){
+					kvp.Value.Position += targetNode.PhysAssembly.Position * NodeController.physicsStep * 0.1f;
+				}
 			}
 		}
 
