@@ -141,7 +141,7 @@ public class CameraControl : MonoBehaviour {
 		}
 
 		// Blend between normal cam and neuroscale mode.
-		blendToNeuroscale = Mathf.SmoothDamp(blendToNeuroscale, (NeuroScaleDemo.Inst && NeuroScaleDemo.Inst.isActive && (CaptureNet_Manager.Inst.orbitPlayers.Count == 0))? 1f : 0f, ref blendToNeuroscaleVel, 1f);
+		blendToNeuroscale = Mathf.SmoothDamp(blendToNeuroscale, (NeuroScaleDemo.Inst && NeuroScaleDemo.Inst.isActive && !CaptureNet_Manager.HasOrbitPlayers)? 1f : 0f, ref blendToNeuroscaleVel, 1f);
 		//test: blendToNeuroscale = 1f;
 
 		// Toggle gallery camera mode
@@ -153,13 +153,13 @@ public class CameraControl : MonoBehaviour {
 		}
 
 		// If a player goes into orbit mode while in gallery mode, interrupt it.
-		if(CaptureNet_Manager.Inst != null && (CaptureNet_Manager.Inst.orbitPlayers.Count > 0) && (camType == CameraType.GALLERY_AUTO)){
+		if(CaptureNet_Manager.HasOrbitPlayers && (camType == CameraType.GALLERY_AUTO)){
 			camType = CameraType.USER_ORBIT;
 			galleryCamInterrupted = true;
 		}
 
 		// When no players are orbiting anymore (and we previously interrupted the gallery cam), re-instate it.
-		if(CaptureNet_Manager.Inst != null && (CaptureNet_Manager.Inst.orbitPlayers.Count == 0) && galleryCamInterrupted){
+		if(!CaptureNet_Manager.HasOrbitPlayers && galleryCamInterrupted){
 			camType = CameraType.GALLERY_AUTO;
 			galleryCamInterrupted = false;
 		}
@@ -177,7 +177,7 @@ public class CameraControl : MonoBehaviour {
         // Smooth time is slowed down if cursor is locked ("cinematic mode")
         float effectiveSmoothTime = smoothTime;
         if(!PersistentGameManager.IsClient){
-			if(PersistentGameManager.Inst.CursorLock && (CaptureNet_Manager.Inst.orbitPlayers.Count == 0)){
+			if(PersistentGameManager.Inst.CursorLock && !CaptureNet_Manager.HasOrbitPlayers){
 				effectiveSmoothTime *= 5f;
 
 				// Auto-orbit in this 'manual cinematic mode'

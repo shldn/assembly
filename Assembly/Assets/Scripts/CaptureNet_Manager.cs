@@ -7,6 +7,7 @@ using System.Collections.Generic;
 public class CaptureNet_Manager : MonoBehaviour {
 
 	public static CaptureNet_Manager Inst = null;
+    public static bool HasOrbitPlayers { get { return Inst != null && Inst.orbitPlayers.Count > 0; } }
 
     // Multiplayer variables
 
