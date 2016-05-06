@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class CognoAmalgam : MonoBehaviour {
 
+    public static CognoAmalgam Inst = null;
+
 	List<Assembly> assemblies = new List<Assembly>();
 	public int targetNumAssems = 50;
 	
@@ -65,6 +67,13 @@ public class CognoAmalgam : MonoBehaviour {
 
 	ParticleSystem pSys;
 
+    void Awake() {
+        Inst = this;
+    }
+
+    void OnDestroy() {
+        Inst = null;
+    }
 
 	void Start () {
 		myMeshFilter = GetComponent<MeshFilter>();
