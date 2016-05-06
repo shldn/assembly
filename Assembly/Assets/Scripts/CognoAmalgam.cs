@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class CognoAmalgam : MonoBehaviour {
 
+    public static CognoAmalgam Inst = null;
+
 	public float deformFluxRate = 0.0025f;
 	MeshFilter myMeshFilter = null;
 	public MeshFilter[] targetMeshFilters;
@@ -62,6 +64,13 @@ public class CognoAmalgam : MonoBehaviour {
 
 	ParticleSystem pSys;
 
+    void Awake() {
+        Inst = this;
+    }
+
+    void OnDestroy() {
+        Inst = null;
+    }
 
 	void Start () {
 		myMeshFilter = GetComponent<MeshFilter>();

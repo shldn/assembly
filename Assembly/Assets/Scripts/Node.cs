@@ -280,10 +280,11 @@ public class Node {
 		Position = delayPosition;
 		Rotation = delayRotation;
 
-		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
-			if((Mathf.Abs(delayPosition.x) > NodeController.Inst.worldSphereScale.x) || (Mathf.Abs(delayPosition.y) > NodeController.Inst.worldSphereScale.y) || (Mathf.Abs(delayPosition.z) > NodeController.Inst.worldSphereScale.z))
-				velocity += -delayPosition.normalized * NodeController.physicsStep;
-		}
+        // Moved this to the Assembly class.
+		//if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
+		//	if((Mathf.Abs(delayPosition.x) > NodeController.Inst.worldSphereScale.x) || (Mathf.Abs(delayPosition.y) > NodeController.Inst.worldSphereScale.y) || (Mathf.Abs(delayPosition.z) > NodeController.Inst.worldSphereScale.z))
+		//		velocity += -delayPosition.normalized * NodeController.physicsStep;
+		//}
 
         if (viewer != null)
             viewer.UpdateTransform(Position,Rotation);
