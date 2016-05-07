@@ -403,7 +403,7 @@ public class Assembly : CaptureObject{
 
         // Keeps assemblies in Capsule
         if (!PersistentGameManager.IsClient) {
-            if(CognoAmalgam.Inst != null && !CognoAmalgam.Inst.IsInside(Position)) {
+            if(CognoAmalgam.Inst != null && Random.Range(0f, 1f) >= 0.6f && !CognoAmalgam.Inst.IsInside(Position)) {
                 foreach (Node someNode in nodeDict.Values)
                     someNode.velocity += -Position.normalized * NodeController.physicsStep;
             }
