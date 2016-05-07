@@ -37,7 +37,7 @@ public class SmoothNetPosition : MonoBehaviour {
 
 	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info){
 
-		Vector3 transferPos = Vector3.zero;
+		Vector3 transferPos = targetPosition;
 		bool netRender = false;
 
 		// When sending my own data out...
