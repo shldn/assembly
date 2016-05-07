@@ -27,6 +27,6 @@
     {
         "#" : "eeg settings",
         "type": "eeg",
-        "LSLStream": "ConcentrationStream",
+        "LSLStream": "ConcentrationStreamErik",
     },
 ]    

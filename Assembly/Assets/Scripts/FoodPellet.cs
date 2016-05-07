@@ -81,6 +81,10 @@ public class FoodPellet {
 			cull = true;
 		}
 
+        if (CognoAmalgam.Inst != null && !CognoAmalgam.Inst.IsInside(WorldPosition))
+            velocity += -WorldPosition.normalized * NodeController.physicsStep * 8;
+
+
         // Destroy nodes outside of worlds
 		/*
         if (!WithinBoundary(worldPosition) && Environment.Inst)
