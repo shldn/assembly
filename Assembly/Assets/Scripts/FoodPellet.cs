@@ -107,7 +107,7 @@ public class FoodPellet {
 
         if (viewer != null) {
             viewer.Position = worldPosition;
-            viewer.Scale = (energy / maxEnergy) * (activated? 1f : Random.Range(0f, 1f));
+            viewer.Scale = (energy / maxEnergy) * (activated? 1f : Random.Range(0f, 0.25f));
         }
     } // End of Update().
 
