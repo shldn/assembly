@@ -236,7 +236,7 @@ public class HandCognoOutside : MonoBehaviour {
 			}
 			SmoothNetPosition.allFingertips[20].transform.position = hand_model.GetPalmPosition();
 			SmoothNetPosition.allFingertips[20].render = true;
-			SmoothNetPosition.allFingertips[21].transform.localScale = Vector3.one * 200f;
+			SmoothNetPosition.allFingertips[20].transform.localScale = Vector3.one * 200f;
 		} else {
 			for(int i = 5; i < 10; i++) {
 				SmoothNetPosition.allFingertips[i].transform.position = hand_model.fingers[i - 5].GetTipPosition();
