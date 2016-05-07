@@ -6,7 +6,7 @@ public class CognoAmalgam : MonoBehaviour {
 
     public static CognoAmalgam Inst = null;
 
-	List<Assembly> assemblies = new List<Assembly>();
+	public List<Assembly> assemblies = new List<Assembly>();
 	public int targetNumAssems = 50;
 	
 	public float deformFluxRate = 0.0025f;

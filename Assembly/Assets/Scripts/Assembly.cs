@@ -102,6 +102,7 @@ public class Assembly : CaptureObject{
     Vector3 velocity = Vector3.zero;
 
 	public Amalgam amalgam = null;
+	public CognoAmalgam cognoAmalgam = null;
 	public int boundAmalgamVertex = 0;
 
 	bool pushedToClients = false;
@@ -578,6 +579,10 @@ public class Assembly : CaptureObject{
 
 		if(amalgam)
 			amalgam.assemblies.Remove(this);
+
+		if(cognoAmalgam)
+			cognoAmalgam.assemblies.Remove(this);
+
 		cull = true;
         ViewerData.Inst.assemblyDeletes.Add(id);
 	} // End of Destroy().
