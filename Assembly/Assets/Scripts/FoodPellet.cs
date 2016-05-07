@@ -74,7 +74,7 @@ public class FoodPellet {
     public void Update(){
 
 		if(cognoQuickKill)
-			energy -= NodeController.physicsStep;
+			Energy -= NodeController.physicsStep * 0.25f;
 
 		if(energy < 0f){
 			NodeController.Inst.AdvanceWorldTick();
