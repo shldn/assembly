@@ -81,7 +81,7 @@ public class FoodPellet {
 			cull = true;
 		}
 
-        if (CognoAmalgam.Inst != null && !CognoAmalgam.Inst.IsInside(WorldPosition))
+        if (CognoAmalgam.Inst != null && Random.Range(0f, 1f) >= 0.6f && !CognoAmalgam.Inst.IsInside(WorldPosition))
             velocity += -WorldPosition.normalized * NodeController.physicsStep * 8;
 
 
