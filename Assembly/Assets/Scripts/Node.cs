@@ -389,13 +389,13 @@ public class Node {
     private void HandleDetectedFood(FoodPellet food){
 		Vector3 vectorToFood = food.WorldPosition - position;
 		float distanceToFood = vectorToFood.magnitude;
-		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) )
+		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) || !food.activated)
 			return;
 
 		float angleToFood = Vector3.Angle(rotation * nodeProperties.senseVector * Vector3.forward, vectorToFood);
         float strength = 1f - (distanceToFood / nodeProperties.senseRange);
 
-		if(angleToFood < 0.5f * nodeProperties.fieldOfView){
+		//if(angleToFood < 0.5f * nodeProperties.fieldOfView){
 			power = 2f;
 			signalRotation = Quaternion.Inverse(rotation) * Quaternion.LookRotation(vectorToFood, rotation * Vector3.up);
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
@@ -404,7 +404,7 @@ public class Node {
 
             food.Energy -= foodToPull;
 			physAssembly.energy += foodToPull;
-		}
+		//}
 		//else
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(1f, 1f, 1f, 0.25f * Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 	} // End of HandleDetectedFood().

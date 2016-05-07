@@ -108,8 +108,9 @@ public class HandCognoInside : MonoBehaviour {
 			// If we have held the gesture long enough, lock it in!
 			if(gestureTime > 0.1f) {
 
-				// On-gesture-change stuff here --------------------------------------------------------- //
+                // On-gesture-change stuff here --------------------------------------------------------- //
 
+                /*
 				// Crush assembly
 				if((gesture == Gesture.none) && (targetGesture == Gesture.fist)) {
 					for(int i = 0; i < Assembly.getAll.Count; i++) {
@@ -129,8 +130,9 @@ public class HandCognoInside : MonoBehaviour {
 					Instantiate(PersistentGameManager.Inst.pingBurstObj, palmPos, Quaternion.identity);
 					AudioSource.PlayClipAtPoint(Resources.Load<AudioClip>("createAssembly"), hand_model.palm.position);
 				}
+                */
 
-				gesture = targetGesture;
+                gesture = targetGesture;
 			}
 		}
 
@@ -140,7 +142,7 @@ public class HandCognoInside : MonoBehaviour {
 
 		pendingGesture = targetGesture;
 
-
+        /*
 		foodCooldown -= Time.deltaTime;
 		if((gesture == Gesture.hangLoose) && (foodCooldown < 0f)) {
 			FoodPellet newFood = new FoodPellet(palmPos);
@@ -148,6 +150,7 @@ public class HandCognoInside : MonoBehaviour {
 			foodCooldown = Random.Range(0.1f, 0.5f);
 			AudioSource.PlayClipAtPoint(Resources.Load<AudioClip>("createFood"), hand_model.palm.position);
 		}
+        */
 
 
 		// Two-hand gestures
@@ -176,25 +179,28 @@ public class HandCognoInside : MonoBehaviour {
 
 		// Energy collection/dispersion
 		float distFromCam = Vector3.Distance(Camera.main.transform.position, leap_hand.PalmPosition.ToUnity());
-		float attractDistribute = Mathf.InverseLerp(100f, 300f, distFromCam);
+		float attractDistribute = Mathf.InverseLerp(200f, 300f, distFromCam);
 
 		if(attractDistribute < 0.8f) {
 			for(int i = 0; i < FoodPellet.all.Count; i++) {
 				Vector3 vectorToPellet = FoodPellet.all[i].WorldPosition - hand_model.GetPalmPosition();
-				if(capturedPellets.Contains(FoodPellet.all[i])){
-					FoodPellet.all[i].velocity *= 0.8f;
-					FoodPellet.all[i].velocity += -vectorToPellet * 2f;
-					FoodPellet.all[i].velocity += Random.insideUnitSphere * 20f;
-				} else {
-					if(vectorToPellet.sqrMagnitude < 15f)
-						capturedPellets.Add(FoodPellet.all[i]);
+                if (capturedPellets.Contains(FoodPellet.all[i])) {
+                    FoodPellet.all[i].velocity *= 0.8f;
+                    FoodPellet.all[i].velocity += -vectorToPellet * 2f;
+                    FoodPellet.all[i].velocity += Random.insideUnitSphere * 20f;
+                } else {
+                    if (vectorToPellet.sqrMagnitude < 15f) {
+                        capturedPellets.Add(FoodPellet.all[i]);
+                    }
 					else {
 						FoodPellet.all[i].velocity += (-vectorToPellet / Mathf.Clamp(vectorToPellet.sqrMagnitude * 0.01f, 0.1f, Mathf.Infinity)) * 0.1f;
 					}
 				}
 			}
 		} else {
-			capturedPellets.Clear();
+            for(int i = 0; i < FoodPellet.all.Count; i++)
+                FoodPellet.all[i].activated = true;
+            capturedPellets.Clear();
 		}
 
 		// Sync networked fingertip

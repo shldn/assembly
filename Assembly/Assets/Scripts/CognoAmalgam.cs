@@ -287,6 +287,7 @@ public class CognoAmalgam : MonoBehaviour {
 		if(assemblies.Count < targetNumAssems){
 			Assembly newAssem = Assembly.RandomAssembly(transform.position + (Random.insideUnitSphere * 80f), Quaternion.identity, Random.Range(4, 10));
 			assemblies.Add(newAssem);
+            newAssem.cognoAmalgam = this;
 		}
 
 		// ...but not TOO many! Cull the herd if there are too many.
@@ -301,8 +302,9 @@ public class CognoAmalgam : MonoBehaviour {
 			}
 			if(worstAssembly)
 				worstAssembly.Destroy();
-		} 
+		}
 
+        print(assemblies.Count);
 	} // End of Update().
 
 

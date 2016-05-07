@@ -28,9 +28,11 @@ public class FoodPellet {
     int id = -1;
     public int Id { get { return id; } }
 	float energy = 10f;
-    public float Energy { get { return energy; } set { energy = value; if (viewer != null) { viewer.Scale = energy / maxEnergy; } } }
+    public float Energy { get { return energy; } set { energy = value; } }
 	float maxEnergy = 10f;
 	public bool cull = false;
+
+    public bool activated = false;
 
 
 	bool cognoQuickKill = true;
@@ -103,10 +105,11 @@ public class FoodPellet {
 			velocity = Vector3.MoveTowards(velocity, Vector3.zero, NodeController.physicsStep * 4f);
 		}
 
-		if(viewer != null)
-			viewer.Position = worldPosition;
-
-	} // End of Update().
+        if (viewer != null) {
+            viewer.Position = worldPosition;
+            viewer.Scale = (energy / maxEnergy) * (activated? 1f : Random.Range(0f, 1f));
+        }
+    } // End of Update().
 
     public static bool WithinBoundary(Vector3 worldPosition)
     {
