@@ -58,6 +58,8 @@ public class HandCognoOutside : MonoBehaviour {
 		if(leap_hand == null)
 			return;
 
+		/*
+
 		if( !leap_hand.Fingers[0].IsExtended && !leap_hand.Fingers[1].IsExtended && !leap_hand.Fingers[2].IsExtended && !leap_hand.Fingers[3].IsExtended && !leap_hand.Fingers[4].IsExtended)
 			targetGesture = Gesture.fist;
 		else if( leap_hand.Fingers[0].IsExtended && !leap_hand.Fingers[1].IsExtended && !leap_hand.Fingers[2].IsExtended && !leap_hand.Fingers[3].IsExtended && !leap_hand.Fingers[4].IsExtended)
@@ -226,6 +228,7 @@ public class HandCognoOutside : MonoBehaviour {
                 }
 			}
 		}
+		*/
 
 
 		// Sync networked fingertip
