@@ -29,7 +29,7 @@ public class SmoothNetPosition : MonoBehaviour {
 		else
 			transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref posVel, 0.2f);
 
-		GetComponent<Renderer>().enabled = render;
+		//GetComponent<Renderer>().enabled = render;
 		render = false;
 
 	} // End of Update().
