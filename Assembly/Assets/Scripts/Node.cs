@@ -396,7 +396,7 @@ public class Node {
         float strength = 1f - (distanceToFood / nodeProperties.senseRange);
 
 		if(angleToFood < 0.5f * nodeProperties.fieldOfView){
-			power = 1f;
+			power = 2f;
 			signalRotation = Quaternion.Inverse(rotation) * Quaternion.LookRotation(vectorToFood, rotation * Vector3.up);
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 

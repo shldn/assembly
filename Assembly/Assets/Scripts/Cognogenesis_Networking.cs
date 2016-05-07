@@ -51,8 +51,20 @@ public class Cognogenesis_Networking : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.C))
 			Network.Connect(connectToIP, connectionPort);
 		
-		if(Network.peerType == NetworkPeerType.Server)
+		if(Network.peerType == NetworkPeerType.Server) {
 			externalEnviroScale = NeuroScaleDemo.Inst.enviroScale;
+
+			// Bullshittery
+			for(int i = 0; i < FoodPellet.all.Count; i++) {
+				for(int j = 22; j < 24; j++) {
+					Vector3 vectorToPellet = FoodPellet.all[i].WorldPosition - SmoothNetPosition.allFingertips[j].transform.position;
+					FoodPellet.all[i].velocity += (-vectorToPellet / Mathf.Clamp(vectorToPellet.sqrMagnitude * 0.01f, 0.1f, Mathf.Infinity)) * 0.1f;
+				}
+			}
+
+		}
+
+
 
     } // End of Update().
 	
