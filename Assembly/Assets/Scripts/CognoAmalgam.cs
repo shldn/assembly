@@ -225,7 +225,7 @@ public class CognoAmalgam : MonoBehaviour {
 
 			if((Random.Range(0f, 1f) < (0.005f * (1f - Cognogenesis_Networking.Inst.externalEnviroScale))) && IsInside(linePoint)) {
 				FoodPellet newFood = new FoodPellet(linePoint);
-				newFood.velocity = -newFood.WorldPosition * Random.Range(0.05f, 0.2f);
+				newFood.velocity = -newFood.WorldPosition * Random.Range(0.1f, 0.35f);
 			}
         }
 
