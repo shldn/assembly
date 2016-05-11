@@ -33,8 +33,11 @@ public class IcoSphereCreator : MonoBehaviour
     // Helpers for finding intersecting faces
     List<TriangleIndices> baseFaces;
     Dictionary<int, List<TriangleIndices>> faceChildren = new Dictionary<int, List<TriangleIndices>>();
+    Dictionary<int, Plane> faceSide0Planes = new Dictionary<int, Plane>();
+    Dictionary<int, Plane> faceSide1Planes = new Dictionary<int, Plane>();
+    Dictionary<int, Plane> faceSide2Planes = new Dictionary<int, Plane>();
 
-	void Awake()
+    void Awake()
 	{
 		Inst = this;
 	} // End of Awake().
@@ -174,19 +177,38 @@ public class IcoSphereCreator : MonoBehaviour
         return geometry;
     } // End of Create().
 
+    Plane GetPlaneSide0(TriangleIndices triIndices) {
+        Plane p;
+        if(!faceSide0Planes.TryGetValue(triIndices.id, out p)) {
+            p = new Plane(Vector3.zero, vertices[triIndices.v1], vertices[triIndices.v2]);
+            faceSide0Planes[triIndices.id] = p;
+        }
+        return p;
+    }
+    Plane GetPlaneSide1(TriangleIndices triIndices) {
+        Plane p;
+        if (!faceSide1Planes.TryGetValue(triIndices.id, out p)) {
+            p = new Plane(Vector3.zero, vertices[triIndices.v2], vertices[triIndices.v3]);
+            faceSide1Planes[triIndices.id] = p;
+        }
+        return p;
+    }
+    Plane GetPlaneSide2(TriangleIndices triIndices) {
+        Plane p;
+        if (!faceSide2Planes.TryGetValue(triIndices.id, out p)) {
+            p = new Plane(Vector3.zero, vertices[triIndices.v3], vertices[triIndices.v1]);
+            faceSide2Planes[triIndices.id] = p;
+        }
+        return p;
+    }
+
     // Is point inside the cone created by the 3 planes from the origin to the sides of the face triangle
     bool InsideFaceCone(TriangleIndices triIndices, Vector3 pt) {
-        Plane testPlane0 = new Plane(Vector3.zero, vertices[triIndices.v1], vertices[triIndices.v2]);
-        Plane testPlane1 = new Plane(Vector3.zero, vertices[triIndices.v2], vertices[triIndices.v3]);
-        Plane testPlane2 = new Plane(Vector3.zero, vertices[triIndices.v3], vertices[triIndices.v1]);
-        return testPlane0.GetSide(pt) && testPlane1.GetSide(pt) && testPlane2.GetSide(pt);
+        return GetPlaneSide0(triIndices).GetSide(pt) && GetPlaneSide1(triIndices).GetSide(pt) && GetPlaneSide2(triIndices).GetSide(pt);
     }
 
     bool InsideFaceConeInclusive(TriangleIndices triIndices, Vector3 pt) {
-        Plane testPlane0 = new Plane(Vector3.zero, vertices[triIndices.v1], vertices[triIndices.v2]);
-        Plane testPlane1 = new Plane(Vector3.zero, vertices[triIndices.v2], vertices[triIndices.v3]);
-        Plane testPlane2 = new Plane(Vector3.zero, vertices[triIndices.v3], vertices[triIndices.v1]);
-        return testPlane0.GetDistanceToPoint(pt) >= 0f && testPlane1.GetDistanceToPoint(pt) >= 0f && testPlane2.GetDistanceToPoint(pt) >= 0f;
+        return GetPlaneSide0(triIndices).GetDistanceToPoint(pt) >= 0f && GetPlaneSide1(triIndices).GetDistanceToPoint(pt) >= 0f && GetPlaneSide2(triIndices).GetDistanceToPoint(pt) >= 0f;
     }
 
     // Check in a recursive manner, biggest triangles first, then drill down
