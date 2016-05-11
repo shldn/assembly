@@ -23,10 +23,14 @@
         "#" : "controller settings",
         "type": "controller",
     },
-
     {
         "#" : "eeg settings",
         "type": "eeg",
         "LSLStream": "ConcentrationStreamErik",
+    },
+    {
+        "#" : "cognogenesis settings",
+        "type": "cognogenesis",
+        "server_ip": "132.239.235.118",
     },
 ]    

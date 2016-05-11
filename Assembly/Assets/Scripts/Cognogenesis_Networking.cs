@@ -8,7 +8,6 @@ public class Cognogenesis_Networking : MonoBehaviour {
 
 	public static Cognogenesis_Networking Inst = null;
 
-	string connectToIP = "132.239.235.116";
     public int connectionPort = 25565;
     string ipAddress;
     string port;
@@ -49,7 +48,7 @@ public class Cognogenesis_Networking : MonoBehaviour {
 	        Network.InitializeServer(maxNumberOfPlayers, connectionPort, !Network.HavePublicAddress());
 
 		if(Input.GetKeyDown(KeyCode.C))
-			Network.Connect(connectToIP, connectionPort);
+			Network.Connect(Config.cognoIP, connectionPort);
 		
 		if(Network.peerType == NetworkPeerType.Server) {
 			externalEnviroScale = NeuroScaleDemo.Inst.enviroScale;

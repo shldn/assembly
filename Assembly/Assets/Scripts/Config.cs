@@ -27,6 +27,9 @@ public static class Config {
     public static string LSLStream = "ConcentrationStream";
 
 
+    // Cognogenesis Config
+    public static string cognoIP = "132.239.235.116";
+
     static Config () {
         Read("config.txt");
 	}
@@ -66,6 +69,9 @@ public static class Config {
                         case "eeg":
                             ReadEEG(arr[i].Obj);
                             break;
+                        case "cognogenesis":
+                            ReadCognogenesis(arr[i].Obj);
+                            break;
                         default:
                             Debug.LogError("Config type " + arr[i].Obj.GetString("type").Trim() + " not handled yet.");
                             break;
@@ -98,6 +104,13 @@ public static class Config {
         foreach (KeyValuePair<string, JSONValue> v in obj) {
             if (v.Key.Trim() == "LSLStream")
                 LSLStream = v.Value.Str.Trim();
+        }
+    }
+
+    static void ReadCognogenesis(JSONObject obj) {
+        foreach (KeyValuePair<string, JSONValue> v in obj) {
+            if (v.Key.Trim() == "server_ip")
+                cognoIP = v.Value.Str.Trim();
         }
     }
 
