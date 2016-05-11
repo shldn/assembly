@@ -18,6 +18,9 @@ public class CognoAmalgam : MonoBehaviour {
 	LineRenderer streamLineRenderer;
 	List<ThreeAxisCreep> streamCreeps = new List<ThreeAxisCreep>();
 
+    // Optimizations
+    float minDeformRadius = 0f;
+
 	public class ActiveVertex
 	{
 		public int index = 0;
@@ -175,8 +178,11 @@ public class CognoAmalgam : MonoBehaviour {
 			//Debug.DrawRay(allAVs[i].worldOriginPoint, Vector3.up);
         }
 
-		// Apply mesh effects.
-		Mesh tempMesh = myMeshFilter.mesh;
+        // Reset min deform radius, will get reset as we loop through all of the verts.
+        minDeformRadius = 0f;
+
+        // Apply mesh effects.
+        Mesh tempMesh = myMeshFilter.mesh;
 		Vector3[] verts = tempMesh.vertices;
 		Color[] colors = new Color[tempMesh.vertexCount];
 		for(int i = 0; i < tempMesh.vertexCount; i++){
@@ -185,8 +191,10 @@ public class CognoAmalgam : MonoBehaviour {
 			Vector3 vertRotated = transform.rotation * initialVerts[i];
 
 			float actualSkinDeform = allAVs[i].deform;
-
-			verts[i] = initialVerts[i] * (1f + (actualSkinDeform * 3f));
+            float skinDeformAmount = 3f * actualSkinDeform;
+            if (minDeformRadius > skinDeformAmount)
+                minDeformRadius = skinDeformAmount;
+            verts[i] = initialVerts[i] * (1f + skinDeformAmount);
 			colors[i] = Color.Lerp(new Color(0f, 0f, 0.1f), Color.cyan, actualSkinDeform);
 		}
 		GetComponent<MeshFilter>().mesh.colors = colors;
@@ -304,7 +312,6 @@ public class CognoAmalgam : MonoBehaviour {
 				worstAssembly.Destroy();
 		}
 
-        print(assemblies.Count);
 	} // End of Update().
 
 
@@ -365,6 +372,12 @@ public class CognoAmalgam : MonoBehaviour {
 	} // End of GetStreamVertCreeped().
 
     public bool IsInside(Vector3 pt) {
+
+        //check inner sphere first
+        if (pt.sqrMagnitude < transform.lossyScale.x * (1 + minDeformRadius) * transform.lossyScale.x * (1 + minDeformRadius))
+            return true;
+
+        // now check outer geometry
         bool isInside = false;
         Vector3 transformedPt = new Vector3(pt.x/transform.lossyScale.x, pt.y/transform.lossyScale.y, pt.z/transform.lossyScale.z);
         IcoSphereCreator.Inst.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
