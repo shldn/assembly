@@ -29,8 +29,9 @@
         "LSLStream": "ConcentrationStreamErik",
     },
     {
-        "#" : "cognogenesis settings",
+        "#" : "cognogenesis settings - view = inside or outside",
         "type": "cognogenesis",
         "server_ip": "132.239.235.118",
+        "view":"outside"
     },
 ]    

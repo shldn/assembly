@@ -30,6 +30,10 @@ public static class Config {
     // Cognogenesis Config
     public static string cognoIP = "132.239.235.116";
 
+    // Is view from inside or from outside.
+    // values in ["inside","outside"]
+    public static string cognoView = "";
+
     static Config () {
         Read("config.txt");
 	}
@@ -111,6 +115,8 @@ public static class Config {
         foreach (KeyValuePair<string, JSONValue> v in obj) {
             if (v.Key.Trim() == "server_ip")
                 cognoIP = v.Value.Str.Trim();
+            if (v.Key.Trim().ToLower() == "view")
+                cognoView = v.Value.Str.Trim().ToLower();
         }
     }
 

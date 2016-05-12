@@ -44,6 +44,13 @@ public class Cognogenesis_Networking : MonoBehaviour {
 	    Network.minimumAllocatableViewIDs = 500;
         DontDestroyOnLoad(this);
 
+        if(IsCognoClient && IsCognoServer) {
+            if (Config.cognoView.StartsWith("in"))
+                serverStuff.SetActive(false);
+            else
+                clientStuff.SetActive(false);
+        }
+
     } // End of Awake().
 
 
