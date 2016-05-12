@@ -389,7 +389,7 @@ public class Node {
     private void HandleDetectedFood(FoodPellet food){
 		Vector3 vectorToFood = food.WorldPosition - position;
 		float distanceToFood = vectorToFood.magnitude;
-		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) || !food.activated)
+		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) || !food.Activated)
 			return;
 
 		float angleToFood = Vector3.Angle(rotation * nodeProperties.senseVector * Vector3.forward, vectorToFood);

@@ -32,11 +32,13 @@ public class FoodPellet {
 	float maxEnergy = 10f;
 	public bool cull = false;
 
-    public bool activated = false;
 
-
-	bool cognoQuickKill = true;
-
+    // Cognogenesis
+    bool cognoQuickKill = true;
+    bool activated = false;
+    bool captured = false;
+    public bool Activated { get { return activated; } set { activated = value; if (activated) { captured = false; } } }
+    public bool Captured { get { return captured; } set { captured = value; } }
 
     // For Olympics
     public Assembly owner = null; // to restrict energy consumption to just this entity
@@ -47,6 +49,7 @@ public class FoodPellet {
         get { return viewer.Visible; }
         set { viewer.Visible = value; }
     }
+
 
 	public FoodPellet(Vector3 position, Assembly owner_ = null){
 		worldPosition = position;
@@ -75,10 +78,18 @@ public class FoodPellet {
 
     public void Update(){
 
-		if(cognoQuickKill)
-			Energy -= NodeController.physicsStep * 0.25f;
+        if (Cognogenesis_Networking.Inst) {
 
-		if(energy < 0f){
+            // Enforce lifetime
+            if (!activated && MuseManager.Inst.TouchingForehead) {
+                if(!captured)
+                    Energy -= (1f - MuseManager.Inst.LastConcentrationMeasure) * 0.25f;
+            }
+            else if (cognoQuickKill)
+                Energy -= NodeController.physicsStep * 0.25f;
+        }
+
+		if (energy < 0f){
 			NodeController.Inst.AdvanceWorldTick();
 			cull = true;
 		}

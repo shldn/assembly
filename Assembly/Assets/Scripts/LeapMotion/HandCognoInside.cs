@@ -190,6 +190,7 @@ public class HandCognoInside : MonoBehaviour {
                     FoodPellet.all[i].velocity += Random.insideUnitSphere * 20f;
                 } else {
                     if (vectorToPellet.sqrMagnitude < (15f + ((1f - NeuroScaleDemo.Inst.enviroScale) * 40f))) {
+                        FoodPellet.all[i].Captured = true;
                         capturedPellets.Add(FoodPellet.all[i]);
                     }
 					else {
@@ -199,7 +200,7 @@ public class HandCognoInside : MonoBehaviour {
 			}
 		} else {
             for(int i = 0; i < capturedPellets.Count; i++)
-                capturedPellets[i].activated = true;
+                capturedPellets[i].Activated = true;
             capturedPellets.Clear();
 		}
 
