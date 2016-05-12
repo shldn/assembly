@@ -20,11 +20,16 @@ public class Cognogenesis_Networking : MonoBehaviour {
     public static NetworkView myNetworkView;
 
     int ipListConnect = 0;
+    float connectCooldown = 0f;
 
 	public GameObject serverStuff;
 	public GameObject clientStuff;
 
 	public float externalEnviroScale = 0f;
+
+    // Accessors
+    public bool IsCognoServer { get { return serverStuff != null && serverStuff.activeInHierarchy; } }
+    public bool IsCognoClient { get { return clientStuff != null && clientStuff.activeInHierarchy; } }
 
 
     void Awake(){
@@ -44,12 +49,21 @@ public class Cognogenesis_Networking : MonoBehaviour {
 
     void Update(){
 
-		if(Input.GetKeyDown(KeyCode.S))
-	        Network.InitializeServer(maxNumberOfPlayers, connectionPort, !Network.HavePublicAddress());
+        // Create server or Connect to server.
+        if (Network.peerType == NetworkPeerType.Disconnected) {
+            if (IsCognoServer) {
+                Network.InitializeServer(maxNumberOfPlayers, connectionPort, !Network.HavePublicAddress());
+            }
+            else {
+                connectCooldown -= Time.deltaTime;
+                if (connectCooldown < 0f) {
+                    // try to connect to the server
+                    Network.Connect(Config.cognoIP, connectionPort);
+                    connectCooldown = 0.5f;
+                }
+            }
+        }
 
-		if(Input.GetKeyDown(KeyCode.C))
-			Network.Connect(Config.cognoIP, connectionPort);
-		
 		if(Network.peerType == NetworkPeerType.Server) {
 			externalEnviroScale = NeuroScaleDemo.Inst.enviroScale;
 
