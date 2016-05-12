@@ -312,6 +312,8 @@ public class CognoAmalgam : MonoBehaviour {
 				worstAssembly.Destroy();
 		}
 
+		if(Input.GetKeyDown(KeyCode.Space))
+			Reset();
 	} // End of Update().
 
 
@@ -383,4 +385,14 @@ public class CognoAmalgam : MonoBehaviour {
         IcoSphereCreator.Inst.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
         return isInside;
     }
+
+
+	void Reset() {
+		for(int i = 0; i < Assembly.getAll.Count; i++)
+			Assembly.getAll[i].Destroy();
+
+		for(int i = 0; i < FoodPellet.all.Count; i++)
+			FoodPellet.all[i].Destroy();
+	} // End of Reset().
+
 } // End of CognoAmalgam.
