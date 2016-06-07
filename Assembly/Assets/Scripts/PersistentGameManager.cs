@@ -53,7 +53,7 @@ public class PersistentGameManager : MonoBehaviour {
 
 
 	void Awake () {
-
+        cognogenesisNet = Application.loadedLevelName == "Cognogenesis";
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
         if( !cognogenesisNet && !captureMgr )
