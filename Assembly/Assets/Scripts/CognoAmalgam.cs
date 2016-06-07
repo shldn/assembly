@@ -234,8 +234,14 @@ public class CognoAmalgam : MonoBehaviour {
 			if((Random.Range(0f, 1f) < (0.005f * (1f - Cognogenesis_Networking.Inst.externalEnviroScale))) && IsInside(linePoint)) {
 				FoodPellet newFood = new FoodPellet(linePoint);
 				newFood.velocity = -newFood.WorldPosition * Random.Range(0.1f, 0.35f);
+
+				if(FoodPellet.all.Count > 100f) {
+					FoodPellet.all[Random.Range(0, FoodPellet.all.Count)].Destroy();
+				}
 			}
         }
+
+		float power = (1f - Cognogenesis_Networking.Inst.externalEnviroScale);
 
 		//*
 		UnityEngine.ParticleSystem.Particle[] particles = new UnityEngine.ParticleSystem.Particle[pSys.particleCount];
@@ -270,6 +276,7 @@ public class CognoAmalgam : MonoBehaviour {
 			particles[i].position = linePoint / 80f;
 
 			particles[i].startColor = Color.white.SetAlpha(Mathf.Sin(lerp * Mathf.PI) * (1f - Cognogenesis_Networking.Inst.externalEnviroScale) * Random.Range(0, 1f));
+			particles[i].startSize = Random.Range(0.1f, 0.5f) * power;
 			// ------------------------------------------------------------------------ //
 
 			particles[i].position += particles[i].rotation3D * 0.05f * (0.2f + ((1f - Cognogenesis_Networking.Inst.externalEnviroScale) * 0.8f));
@@ -281,12 +288,10 @@ public class CognoAmalgam : MonoBehaviour {
 		streamLineRenderer.material.mainTextureScale = new Vector2(10f, 1f);
 		streamLineRenderer.material.mainTextureOffset = new Vector2(Time.time * 0.5f, 0f);
 
-		float power = (1f - Cognogenesis_Networking.Inst.externalEnviroScale);
 
-		float width = 15f * (0.2f + Random.Range(power * 0.3f, power * 0.8f));
+		float width = 15f * (Random.Range(power * 0.3f, power * 0.8f));
 		streamLineRenderer.SetWidth(width, width);
 		Color color = Color.Lerp(Color.white.SetAlpha(0f), Color.white, power);
-		streamLineRenderer.SetColors(color, color);
 
 
 
@@ -314,7 +319,24 @@ public class CognoAmalgam : MonoBehaviour {
 
 		if(Input.GetKeyDown(KeyCode.Space))
 			Reset();
+
+
+
+		// New wrapping energy stream
+		Vector3 throughVector = Vector3.forward;
+		int numPoints = 200;
+		for(int i = 0; i < numPoints; i++)
+			Debug.DrawRay(GetSurfaceLightningPoint(throughVector, (float)i / (float)numPoints, i * 5f) * transform.localScale.x, Vector3.up * 3f);
+
 	} // End of Update().
+
+
+	Vector3 GetSurfaceLightningPoint(Vector3 inputVector, float t, float radialAngle) {
+		Quaternion inputRot = Quaternion.LookRotation(inputVector);
+		inputRot *= Quaternion.AngleAxis(radialAngle, Vector3.forward);
+		inputRot *= Quaternion.AngleAxis(t * 180f, Vector3.right);
+		return inputRot * Vector3.forward;
+	} // End of GetSurfaceLightningPoint().
 
 
 	bool vertSelected = false;
