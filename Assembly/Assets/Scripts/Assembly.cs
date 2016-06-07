@@ -109,7 +109,10 @@ public class Assembly : CaptureObject{
 
 	public bool ready = false; // Turns true after having survived an Update() step.
 
-	private static Octree<Assembly> allAssemblyTree;
+    System.DateTime creationTime = System.DateTime.Now;
+    public float AgeInSeconds { get { return (float)(System.DateTime.Now - creationTime).TotalSeconds; } }
+
+    private static Octree<Assembly> allAssemblyTree;
     public static Octree<Assembly> AllAssemblyTree{ 
         get{
             if(allAssemblyTree == null){
@@ -297,7 +300,7 @@ public class Assembly : CaptureObject{
 		lastEnergy = energy;
 
 		if(PersistentGameManager.IsServer){
-			if(energy < 0f)
+			if(energy < 0f && (!userReleased || AgeInSeconds > 30))
 				Destroy();
 		}
 
@@ -404,9 +407,15 @@ public class Assembly : CaptureObject{
 
         // Keeps assemblies in Capsule
         if (!PersistentGameManager.IsClient) {
-            if(CognoAmalgam.Inst != null && Random.Range(0f, 1f) >= 0.6f && !CognoAmalgam.Inst.IsInside(Position)) {
+            if (CognoAmalgam.Inst != null && Random.Range(0f, 1f) >= 0.6f && !CognoAmalgam.Inst.IsInside(Position)) {
                 foreach (Node someNode in nodeDict.Values)
                     someNode.velocity += -Position.normalized * NodeController.physicsStep;
+            }
+            else if (Environment.Inst && Environment.Inst.isActiveAndEnabled && PersistentGameManager.IsServer) {
+                if (!Environment.Inst.IsInside(Position)) {
+                    foreach (Node someNode in nodeDict.Values)
+                        someNode.velocity += -Position.normalized * NodeController.physicsStep * 0.1f;
+                }
             }
         }
 

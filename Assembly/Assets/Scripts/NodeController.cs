@@ -206,8 +206,9 @@ public class NodeController : MonoBehaviour {
 			if(PersistentGameManager.IsServer){
 				// Populate world if less than 50% max pop.
 				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.75f)){
-					Vector3 assemblySpawnPos = Vector3.Scale(Random.onUnitSphere, Vector3.one * worldSize * Random.Range(1.3f, 2f));
-					Assembly newAssembly = Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
+					Vector3 assemblySpawnPos = Vector3.Scale(Random.onUnitSphere, Vector3.one * worldSize * Random.Range(0.6f, 2f));
+                    if(Environment.Inst.IsInside(assemblySpawnPos))
+    					Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
 				}
 
 				// Cull the herd if too many assemblies.

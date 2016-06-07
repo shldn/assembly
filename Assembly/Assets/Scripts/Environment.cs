@@ -35,4 +35,8 @@ public class Environment : MonoBehaviour {
             outerShell.material.color = defaultShellColor.SetAlpha(fadeAmount);
         }
     }
+
+    public bool IsInside(Vector3 pos) {
+        return (Mathf.Sqrt(Mathf.Pow(pos.x / NodeController.Inst.worldSphereScale.x, 2f) + Mathf.Pow(pos.y / NodeController.Inst.worldSphereScale.y, 2f) + Mathf.Pow(pos.z / NodeController.Inst.worldSphereScale.z, 2f)) <= 1f);
+    }
 }
