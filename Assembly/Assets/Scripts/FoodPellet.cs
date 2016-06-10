@@ -85,7 +85,7 @@ public class FoodPellet {
                 if(!captured)
                     Energy -= (1f - MuseManager.Inst.LastConcentrationMeasure) * 0.25f;
             }
-            else if (cognoQuickKill)
+            else if (cognoQuickKill && !captured)
                 Energy -= NodeController.physicsStep * 0.25f;
         }
 

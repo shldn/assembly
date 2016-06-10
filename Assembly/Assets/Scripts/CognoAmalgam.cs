@@ -231,12 +231,18 @@ public class CognoAmalgam : MonoBehaviour {
 			Vector3 linePoint = MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert);
 			streamLineRenderer.SetPosition(i, MathUtilities.CalculateBezierPoint(curLerp, lastVert, Vector3.Lerp(lastHandleA, lastHandleB, 0.5f), Vector3.Lerp(nextHandleA, nextHandleB, 0.5f), nextVert));
 
-			if((Random.Range(0f, 1f) < (0.005f * (1f - Cognogenesis_Networking.Inst.externalEnviroScale))) && IsInside(linePoint)) {
+            bool createNewFood = FoodPellet.all.Count < 200f && (Random.Range(0f, 1f) < (0.005f * (1f - Cognogenesis_Networking.Inst.externalEnviroScale))) && IsInside(linePoint);
+#if DEBUG_ENERGY_CAPTURE
+            createNewFood = FoodPellet.all.Count < 300f && (Random.Range(0f, 1f) < 0.1f);
+#endif
+            if (createNewFood) {
 				FoodPellet newFood = new FoodPellet(linePoint);
 				newFood.velocity = -newFood.WorldPosition * Random.Range(0.1f, 0.35f);
 
 				if(FoodPellet.all.Count > 100f) {
-					FoodPellet.all[Random.Range(0, FoodPellet.all.Count)].Destroy();
+                    FoodPellet foodToDestroy = FoodPellet.all[Random.Range(0, FoodPellet.all.Count)];
+                    if(!foodToDestroy.Captured)
+                        foodToDestroy.Destroy();
 				}
 			}
         }
