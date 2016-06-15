@@ -71,8 +71,11 @@ public class Cognogenesis_Networking : MonoBehaviour {
             }
         }
 
+		externalEnviroScale = (Mathf.Sin(Time.time * 0.2f) * 0.5f) + 0.5f;
 		if(Network.peerType == NetworkPeerType.Server) {
-			externalEnviroScale = NeuroScaleDemo.Inst.enviroScale;
+			if(MuseManager.Inst.TouchingForehead)
+				externalEnviroScale = NeuroScaleDemo.Inst.enviroScale;
+				
 
 			// Bullshittery
 			for(int i = 0; i < FoodPellet.all.Count; i++) {
