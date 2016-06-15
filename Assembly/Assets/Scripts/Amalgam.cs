@@ -328,12 +328,13 @@ public class Amalgam : MonoBehaviour
 
 		for(int i = 0; i < assemblies.Count; i++) {
 			Assembly curAssem = assemblies[i];
-			if(!IsInside(curAssem.Position)) {
-				for(int j = 0; j < curAssem.Nodes.Count; j++) {
-					Vector3 vecToAmalgamCenter = curAssem.Position - transform.position;
-					curAssem.Nodes[j].Position += vecToAmalgamCenter.normalized * 0.1f;
-				}
-			}
+            Vector3 newPos = Vector3.zero;
+            if (!IsInside(curAssem.Position, out newPos)) {
+                for (int j = 0; j < curAssem.Nodes.Count; j++) {
+                    Vector3 vecToAmalgamCenter = curAssem.Position - newPos;
+                    curAssem.Nodes[j].Position += vecToAmalgamCenter.normalized * 0.1f;
+                }
+            }
 		}
 
 
@@ -479,6 +480,19 @@ public class Amalgam : MonoBehaviour
         IcoSphereCreator.Inst.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
         return isInside;
     } // End of IsInside().
+
+    // amalgam
+    public bool IsInside(Vector3 pt, out Vector3 amalgamPt) {
+
+        bool isInside = false;
+        Vector3 transformedPt = new Vector3(pt.x / transform.lossyScale.x, pt.y / transform.lossyScale.y, pt.z / transform.lossyScale.z);
+        IcoSphereCreator.Inst.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside, out amalgamPt);
+
+        amalgamPt.x *= transform.localScale.x;
+        amalgamPt.y *= transform.localScale.y;
+        amalgamPt.z *= transform.localScale.z;
+        return isInside;
+    }
 
 } // End of Amalgam.
 
