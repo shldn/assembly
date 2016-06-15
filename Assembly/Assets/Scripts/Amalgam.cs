@@ -182,7 +182,7 @@ public class Amalgam : MonoBehaviour
 			}
         }
 
-		transform.rotation = Random.rotationUniform;
+		//transform.rotation = Random.rotationUniform;
 		randomRotVector = Random.rotationUniform * Vector3.forward;
 
 		transform.localScale *= Random.Range(0.5f, 2f);
