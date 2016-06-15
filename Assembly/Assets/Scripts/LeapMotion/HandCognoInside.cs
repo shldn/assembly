@@ -39,6 +39,7 @@ public class HandCognoInside : MonoBehaviour {
 	[HideInInspector] public Hand leap_hand;
 
 	List<FoodPellet> capturedPellets = new List<FoodPellet>();
+    Dictionary<FoodPellet, HandTargetPt> capturedTarget = new Dictionary<FoodPellet, HandTargetPt>();
 
 
 	void Awake() {
@@ -185,13 +186,15 @@ public class HandCognoInside : MonoBehaviour {
 			for(int i = 0; i < FoodPellet.all.Count; i++) {
 				Vector3 vectorToPellet = FoodPellet.all[i].WorldPosition - hand_model.GetPalmPosition();
                 if (capturedPellets.Contains(FoodPellet.all[i])) {
+                    Vector3 vectorToTarget = FoodPellet.all[i].WorldPosition - capturedTarget[FoodPellet.all[i]].Position;
                     FoodPellet.all[i].velocity *= 0.8f;
-                    FoodPellet.all[i].velocity += -vectorToPellet * 2f;
-                    FoodPellet.all[i].velocity += Random.insideUnitSphere * 20f;
+                    FoodPellet.all[i].velocity += -vectorToTarget * 2f;
+                    FoodPellet.all[i].velocity += Random.insideUnitSphere * 5f;
                 } else {
                     if (vectorToPellet.sqrMagnitude < (15f + ((1f - NeuroScaleDemo.Inst.enviroScale) * 40f))) {
                         FoodPellet.all[i].Captured = true;
                         capturedPellets.Add(FoodPellet.all[i]);
+                        capturedTarget.Add(FoodPellet.all[i], new HandTargetPt(hand_model, Random.Range(0, HandModel.NUM_FINGERS), Random.Range(0, FingerModel.NUM_JOINTS), Random.Range(0f,1f)));
                     }
 					else {
 						FoodPellet.all[i].velocity += (-vectorToPellet / Mathf.Clamp(vectorToPellet.sqrMagnitude * 0.01f, 0.1f, Mathf.Infinity)) * 0.1f;
@@ -202,7 +205,8 @@ public class HandCognoInside : MonoBehaviour {
             for(int i = 0; i < capturedPellets.Count; i++)
                 capturedPellets[i].Activated = true;
             capturedPellets.Clear();
-		}
+            capturedTarget.Clear();
+        }
 
 		// Sync networked fingertip
 		if(leap_hand.IsLeft) {

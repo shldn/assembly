@@ -214,7 +214,7 @@ public class IcoSphereCreator : MonoBehaviour
     // Check in a recursive manner, biggest triangles first, then drill down
     // should be able to create a more direct mapping (ranges of angles define which face it belongs to)
     // Ideally the angle to the point should immediately identify the correct triangle face.
-    private int GetProjectedFaceImpl(List<TriangleIndices> faces, Vector3[] verts, Vector3 pt, out bool inside) {
+    private int GetProjectedFaceImpl(List<TriangleIndices> faces, Vector3[] verts, Vector3 pt, out bool inside, out Vector3 positionOnMesh) {
         for (int i = 0; i < faces.Count; ++i) {
             if (InsideFaceCone(faces[i], pt)) {
 
@@ -222,7 +222,8 @@ public class IcoSphereCreator : MonoBehaviour
                 Plane testFacePlane = new Plane(GetVert(verts,faces[i].v3), GetVert(verts,faces[i].v2), GetVert(verts,faces[i].v1));
                 inside = testFacePlane.GetSide(pt);
                 if (faceChildren.ContainsKey(faces[i].id))
-                    return GetProjectedFaceImpl(faceChildren[faces[i].id], verts, pt, out inside);
+                    return GetProjectedFaceImpl(faceChildren[faces[i].id], verts, pt, out inside, out positionOnMesh);
+                positionOnMesh = Vector3.ProjectOnPlane(pt, testFacePlane.normal.normalized);
                 return i;
             }
         }
@@ -236,17 +237,25 @@ public class IcoSphereCreator : MonoBehaviour
                 Plane testFacePlane = new Plane(GetVert(verts, faces[i].v3), GetVert(verts, faces[i].v2), GetVert(verts, faces[i].v1));
                 inside = testFacePlane.GetSide(pt);
                 if (faceChildren.ContainsKey(faces[i].id))
-                    return GetProjectedFaceImpl(faceChildren[faces[i].id], verts, pt, out inside);
+                    return GetProjectedFaceImpl(faceChildren[faces[i].id], verts, pt, out inside, out positionOnMesh);
+                positionOnMesh = Vector3.ProjectOnPlane(pt, testFacePlane.normal.normalized);
                 return i;
             }
         }
+        positionOnMesh = Vector3.zero;
         inside = false;
         return -1;
     }
 
     public int GetProjectedFace(Vector3 pt, Vector3[] verts, out bool inside) {
-        return GetProjectedFaceImpl(baseFaces, verts, pt, out inside);
+        Vector3 positionOnMesh = Vector3.zero;
+        return GetProjectedFaceImpl(baseFaces, verts, pt, out inside, out positionOnMesh);
     }
+
+    public int GetProjectedFace(Vector3 pt, Vector3[] verts, out bool inside, out Vector3 positionOnMesh) {
+        return GetProjectedFaceImpl(baseFaces, verts, pt, out inside, out positionOnMesh);
+    }
+
 
     public Vector3 GetVert(Vector3[] verts, int idx) {
         if (verts == null)
