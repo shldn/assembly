@@ -406,7 +406,7 @@ public class CognoAmalgam : MonoBehaviour {
         Vector3 transformedPt = new Vector3(pt.x/transform.lossyScale.x, pt.y/transform.lossyScale.y, pt.z/transform.lossyScale.z);
         IcoSphereCreator.Inst.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
         return isInside;
-    }
+    } // End of IsInside().
 
 
 	void Reset() {
