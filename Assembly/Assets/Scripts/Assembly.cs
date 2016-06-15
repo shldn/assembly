@@ -103,7 +103,7 @@ public class Assembly : CaptureObject{
 
 	public Amalgam amalgam = null;
 	public CognoAmalgam cognoAmalgam = null;
-	public int boundAmalgamVertex = 0;
+	//public int boundAmalgamVertex = 0;
 
 	bool pushedToClients = false;
 

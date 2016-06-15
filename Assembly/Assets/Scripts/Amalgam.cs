@@ -41,6 +41,10 @@ public class Amalgam : MonoBehaviour
 	public float wiggleFluxRate = 5f;
 	public static int sphereResolution = 2;
 
+	float minDeformRadius = 0f;
+
+
+
 	public class ActiveVertex
 	{
 		public int index = 0;
@@ -252,7 +256,7 @@ public class Amalgam : MonoBehaviour
 			Assembly newAssem = Assembly.RandomAssembly(transform.position + (Random.insideUnitSphere * radius), Quaternion.identity, Random.Range(4, 10));
 			assemblies.Add(newAssem);
 			newAssem.amalgam = this;
-			newAssem.boundAmalgamVertex = Random.Range(0, meshFilter.mesh.vertexCount);
+			//newAssem.boundAmalgamVertex = Random.Range(0, meshFilter.mesh.vertexCount);
 		}
 
 		// ...but not TOO many! Cull the herd if there are too many.
@@ -314,7 +318,7 @@ public class Amalgam : MonoBehaviour
 		*/
 
 		// Rotation
-		transform.rotation *= Quaternion.AngleAxis(NodeController.physicsStep * 1f, randomRotVector);
+		//transform.rotation *= Quaternion.AngleAxis(NodeController.physicsStep * 1f, randomRotVector);
 
 		for(int i = 0; i < handles.Count; i++)
 			handles[i].Update();
@@ -322,7 +326,19 @@ public class Amalgam : MonoBehaviour
 
 		//renderer.materials[0].mainTextureOffset = new Vector2(Time.time * 0.01f, Time.time * 0.01f);
 
+		for(int i = 0; i < assemblies.Count; i++) {
+			Assembly curAssem = assemblies[i];
+			if(!IsInside(curAssem.Position)) {
+				for(int j = 0; j < curAssem.Nodes.Count; j++) {
+					Vector3 vecToAmalgamCenter = curAssem.Position - transform.position;
+					curAssem.Nodes[j].Position += vecToAmalgamCenter.normalized * 0.1f;
+				}
+			}
+		}
+
+
 		// Bind assemblies to the 'rail' formed by their vertex.
+		/*
 		for(int i = 0; i < assemblies.Count; i++) {
 			Assembly curAssem = assemblies[i];
 			
@@ -369,6 +385,11 @@ public class Amalgam : MonoBehaviour
 				curAssem.Nodes[j].Position += vectorToTargetPoint * 0.1f;
 			}
 		}
+		*/
+
+		if(Input.GetKey(KeyCode.R))
+			for(int i = 0; i < activeVertices.Length; i++)
+				activeVertices[i].deform = 0f;
 
 
 	} // End of Update().
@@ -397,7 +418,7 @@ public class Amalgam : MonoBehaviour
 	} // End of FindNeighborVertices().
 
 
-	// Uses A* to find the shortest path between two vertices.
+	// Use simplified A* to find the shortest path between two vertices.
 	int[] ShortestVertexPath(int initialVert, int targetVert){
 		List<int> shortestPath = new List<int>();
 		shortestPath.Add(initialVert);
@@ -444,6 +465,20 @@ public class Amalgam : MonoBehaviour
 	public Vector3 GetVertexWorldPoint(int index){
 		return transform.position + (transform.rotation * Vector3.Scale(meshFilter.mesh.vertices[index], transform.localScale));
 	} // End of GetVertexWorldPoint().
+
+
+	public bool IsInside(Vector3 pt) {
+
+        //check inner sphere first
+        //if (pt.sqrMagnitude < transform.lossyScale.x * (1 + minDeformRadius) * transform.lossyScale.x * (1 + minDeformRadius))
+            //return true;
+
+        // now check outer geometry
+        bool isInside = false;
+        Vector3 transformedPt = new Vector3(pt.x/transform.lossyScale.x, pt.y/transform.lossyScale.y, pt.z/transform.lossyScale.z);
+        IcoSphereCreator.Inst.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
+        return isInside;
+    } // End of IsInside().
 
 } // End of Amalgam.
 

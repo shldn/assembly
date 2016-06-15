@@ -203,7 +203,8 @@ public class MuseManager : MonoBehaviour {
 				physText.GetComponent<Renderer>().enabled = true;
 			}
 		} else {
-			physText.GetComponent<Renderer>().enabled = false;
+			if(physText)
+				physText.GetComponent<Renderer>().enabled = false;
 		}
     }
 }
