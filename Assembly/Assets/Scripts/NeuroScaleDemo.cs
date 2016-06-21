@@ -15,6 +15,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 	int numNodesToShow = 1;
 	int numFoodToShow = 0;
     int lastNumNodesToShow = 0;
+    bool cullSelectedAssemblyNodes = false;
 
 	//ThreeAxisCreep simulator;
 
@@ -77,7 +78,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 			Cull();
 		}
 
-        enviroScale = Mathf.SmoothDamp(enviroScale, isActive? MuseManager.Inst.LastConcentrationMeasure : 1f, ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
+        enviroScale = Mathf.SmoothDamp(enviroScale, (isActive ? MuseManager.Inst.LastConcentrationMeasure : 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
         //test: enviroScale = Mathf.SmoothDamp(enviroScale, Mathf.PingPong(Time.time * 0.1f, 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
 		enviroScale = Mathf.Clamp01(enviroScale);
 
@@ -114,7 +115,9 @@ public class NeuroScaleDemo : MonoBehaviour {
                 // Only cull when the enviroScale amount changes to minimize the popping in and out of nodes in the same assembly as one gets further from the selectedNode
                 if (newSelectedNode || lastNumNodesToShow != numNodesToShow || !lastUseOctree)
                 {
-                    CullNodes(selectedAssembly);
+                    if(cullSelectedAssemblyNodes)
+                        CullNodes(selectedAssembly);
+
                     HandleCulledNodeVisibility();
                 }
                 else
@@ -201,6 +204,10 @@ public class NeuroScaleDemo : MonoBehaviour {
     void HandleCulledNodeVisibility()
     {
         SetAllNodeVisibility(false);
+
+        if (!cullSelectedAssemblyNodes)
+            foreach (Node n in targetNode.PhysAssembly.Nodes)
+                n.Visible = true;
 
         // turn on selected nodes
         foreach (KeyValuePair<float, Node> nodePair in nodeSortedSet)
