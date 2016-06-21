@@ -331,8 +331,8 @@ public class Amalgam : MonoBehaviour
             Vector3 newPos = Vector3.zero;
             if (!IsInside(curAssem.Position, out newPos)) {
                 for (int j = 0; j < curAssem.Nodes.Count; j++) {
-                    Vector3 vecToAmalgamCenter = curAssem.Position - newPos;
-                    curAssem.Nodes[j].Position += vecToAmalgamCenter.normalized * 0.1f;
+                    Vector3 vecToNewPos = curAssem.Position - newPos;
+                    curAssem.Nodes[j].Position += vecToNewPos;
                 }
             }
 		}
