@@ -145,7 +145,7 @@ public class NodeViewer {
     {
         if(trail) {
             trail.transform.parent = null;
-			trail.autoDestruct = true;
+            GameObject.Destroy(trail.gameObject);
 		}
         CleanupNodeEffects();
 
