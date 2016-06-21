@@ -127,8 +127,21 @@ public abstract class FingerModel : MonoBehaviour {
     return Vector3.zero;
   }
 
-  /** Returns the location of the given joint on the finger in relation to the controller.*/
-  public Vector3 GetJointPosition(int joint) {
+    /** Assembly addition -- Returns the location of the tip of the finger in relation to the controller.*/
+    public Vector3 GetTipGrabDirection() {
+
+        Vector3 fingerDirection = GetBoneDirection(NUM_BONES - 1);
+        Vector3 firstBoneDirection = GetBoneDirection(0);
+        if (fingerDirection != Vector3.zero && firstBoneDirection != Vector3.zero && fingerDirection != firstBoneDirection) {
+            Vector3 rtDir = Vector3.Cross(firstBoneDirection, fingerDirection);
+            float sign = hand_.IsRight ? 1f : -1f;
+            return Vector3.Cross(fingerDirection, sign * rtDir);
+        }
+        return Vector3.zero;
+    }
+
+    /** Returns the location of the given joint on the finger in relation to the controller.*/
+    public Vector3 GetJointPosition(int joint) {
     if (joint >= NUM_BONES) {
       return GetTipPosition ();
     }
