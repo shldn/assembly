@@ -292,6 +292,8 @@ public class CameraControl : MonoBehaviour {
 		targetRadius += radiusStackVel;
 		mouseRadiusStack = Mathf.Lerp(mouseRadiusStack, 0f, Time.deltaTime * 10f);
 
+		radius = Mathf.Clamp(radius, 1f, Mathf.Infinity);
+
 		mouseOrbitVelocity = Vector2.SmoothDamp(mouseOrbitVelocity, mouseOrbitStack * 0.2f, ref mouseOrbitVelocityVel, 0.5f);
 		targetOrbitQ *= Quaternion.AngleAxis(mouseOrbitVelocity.x, Vector3.up);
 		targetOrbitQ *= Quaternion.AngleAxis(mouseOrbitVelocity.y, Vector3.right);
