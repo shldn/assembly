@@ -19,6 +19,7 @@ public class Assembly : CaptureObject{
     bool propertiesDirty = false;
     public bool userReleased = false; // Did a user just drop this assembly into the world?
     public bool isOffspring = false;
+    public bool isTraitTest = false;
     private int id = -1;
     public int Id { 
         get { return id; } 
@@ -245,7 +246,7 @@ public class Assembly : CaptureObject{
 
         // Destroy the duplicates
         for (int i = nodesList.Count - 1; i >= 0; --i)
-            nodesList[i].Destroy();
+            nodesList[i].Destroy(true);
 
             //IntegrateNode(someNode.localHexPos, someNode);
 	} // End of AddNodes().

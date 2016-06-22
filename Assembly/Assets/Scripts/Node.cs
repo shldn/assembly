@@ -244,12 +244,13 @@ public class Node {
 		// Reset power
 		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep);
 
-		// Sense nodes at full power if we're in the client, otherwise residual.
-		if(neighbors.Count == 1)
-			power = PersistentGameManager.IsClient? (ClientTest.Inst ? ClientTest.Inst.NodePower : 1f) : 0.2f;
-		// "Residual" power
-		else if(neighbors.Count == 2)
-			power = 0f;
+        // Sense nodes at full power if we're in the client, otherwise residual.
+        if (neighbors.Count == 1) {
+            power = ClientTest.Inst ? ClientTest.Inst.NodePower : (PersistentGameManager.IsClient ? 1f : 0.2f);
+        }
+        // "Residual" power
+        else if (neighbors.Count == 2)
+            power = 0f;
 		
 	} // End of DoMath().
 
@@ -338,9 +339,9 @@ public class Node {
 		newNeighbor.physNode.AttachNeighbor(this);
 	} // End of AttachNeighbor().
 
-	public void Destroy(){
+    public void Destroy(bool immediate = false){
         if (viewer != null) {
-			viewer.Destroy();
+			viewer.Destroy(immediate);
 		}
 		cull = true;
 	} // End of OnDestroy().

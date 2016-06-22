@@ -141,7 +141,7 @@ public class NodeViewer {
             trail.lifeTime *= 0.3f;
     }
 
-    public void Destroy()
+    public void Destroy(bool immediate = false)
     {
         if(trail) {
             trail.transform.parent = null;
@@ -149,9 +149,12 @@ public class NodeViewer {
 		}
         CleanupNodeEffects();
 
-        if (cubeTransform)
-			cubeTransform.gameObject.AddComponent<ShrinkAndDestroy>();
-            //MonoBehaviour.Destroy(cubeTransform.gameObject);
+        if (cubeTransform) {
+            if(immediate)
+                MonoBehaviour.Destroy(cubeTransform.gameObject);
+            else
+                cubeTransform.gameObject.AddComponent<ShrinkAndDestroy>();
+        }
     }
 
     public void Update()
