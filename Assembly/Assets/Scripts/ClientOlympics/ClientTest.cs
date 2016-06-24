@@ -12,6 +12,12 @@ public class ClientTest : MonoBehaviour {
     protected float nodePower = 1.0f;
     protected Assembly winner = null;
 
+    // Events
+    public delegate void TestDoneHandler();
+    public TestDoneHandler TestDone;
+
+    // Accessors
+    public Assembly Winner { get { return winner; } }
     public float NodePower { get { return nodePower; } protected set { nodePower = value; } }
     public bool UnlockFrameRate { get { return unlockFrameRate; } protected set { unlockFrameRate = value; } }
     public bool IsDone {  get{ return runTime > testDuration; } }
@@ -34,12 +40,14 @@ public class ClientTest : MonoBehaviour {
     {
         DestroyAllButWinner();
         CameraControl.Inst.KeepAssembliesInView();
+        if (TestDone != null)
+            TestDone();
         Destroy(gameObject);
     } // End of EndTest().
 
     protected virtual void DestroyAllButWinner()
     {
-        foreach (Assembly someAssem in Assembly.getAll)
+        foreach (Assembly someAssem in AssemblyEditor.Inst.testAssemblies)
         {
             if (winner == null)
                 winner = someAssem;
@@ -49,13 +57,16 @@ public class ClientTest : MonoBehaviour {
                 AssemblyEditor.Inst.capturedAssembly = someAssem;
 
         }
+        if (winner != null)
+            winner.isTraitTest = false;
+        AssemblyEditor.Inst.testAssemblies.Clear();
     } // End of DestroyAllButWinner().
 
     protected void AssignWinnerByHighestEnergy()
     {
         float maxEnergy = -999999999f;
 
-        foreach (Assembly someAssem in Assembly.getAll)
+        foreach (Assembly someAssem in AssemblyEditor.Inst.testAssemblies)
         {
             if (someAssem.energy > maxEnergy)
             {

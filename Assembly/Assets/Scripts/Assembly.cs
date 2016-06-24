@@ -578,11 +578,34 @@ public class Assembly : CaptureObject{
     } // End of SetVisibility().
 
 
-	public void Destroy(){
-		foreach(KeyValuePair<Triplet, Node> somePair in nodeDict)
-			somePair.Value.Destroy();
+    public float GetBoundingSphereRadiusFromPoint(Vector3 point) {
+        Vector3 center;
+        float radius;
+        GetBoundingSphere(out center, out radius);
+        return radius + Vector3.Distance(center, point);
+    } // End of GetBoundingSphereRadius().
 
-		allAssemblyTree.Remove(this);
+    public void GetBoundingSphere(out Vector3 center, out float sphereRadius) {
+        List<Vector3> pts = new List<Vector3>();
+        foreach (Node someNode in NodeDict.Values)
+            pts.Add(someNode.Position);
+        MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);
+    } // End of GetBoundingSphere().
+
+    public void DestroyImmediate() {
+        DestroyImpl(true);
+    } // End of DestroyImmediate().
+
+
+    public void Destroy(){
+        DestroyImpl(false);
+	} // End of Destroy().
+
+    private void DestroyImpl(bool immediate) {
+        foreach (KeyValuePair<Triplet, Node> somePair in nodeDict)
+            somePair.Value.Destroy(immediate);
+
+        allAssemblyTree.Remove(this);
         foreach (int someInt in familyTree)
             NodeController.UpdateDeathCount(someInt, familyGenerationRemoved[someInt]);
 		PersistentGameManager.CaptureObjects.Remove(this);

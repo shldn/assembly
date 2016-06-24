@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 
 public class AssemblyEditor : MonoBehaviour {
@@ -8,6 +8,9 @@ public class AssemblyEditor : MonoBehaviour {
 
     public Assembly capturedAssembly = null;
     public Node selectedNode = null;
+
+    // Test data structures
+    public List<Assembly> testAssemblies = new List<Assembly>();
 
     // Test parameters
     public int numTestAssemblies = 10;
@@ -29,6 +32,9 @@ public class AssemblyEditor : MonoBehaviour {
 	public AudioClip buttonForwardClip;
 	public AudioClip buttonBackwardClip;
 
+    // Events
+    public delegate void TestDoneHandler(AssemblyEditor sender);
+    public TestDoneHandler TestDone;
 
     void Start(){
         CaptureEditorManager.ObjectCaptured += HandleObjectCaptured;
@@ -39,8 +45,12 @@ public class AssemblyEditor : MonoBehaviour {
         Inst = this;
     } // End of Awake().
 
+    void OnDestroy() {
+        Inst = null;
+    } // End of OnDestroy()
 
-	enum MenuType {
+
+	public enum MenuType {
 		main,
 		help,
 		test,
@@ -71,6 +81,9 @@ public class AssemblyEditor : MonoBehaviour {
 
 
     void OnGUI(){
+
+        if (!PersistentGameManager.IsClient)
+            return;
 
 		// Vignette
 		GUI.depth = 999;
@@ -246,12 +259,12 @@ public class AssemblyEditor : MonoBehaviour {
 					if(GUILayout.Button("Low", GUILayout.Height(defaultButtonSize))){
 						mutationRate = 0.1f;
 						AudioSource.PlayClipAtPoint(buttonForwardClip, Vector3.zero);
-						DoTest();
+						DoTest(menu);
 					}
 					if(GUILayout.Button("High", GUILayout.Height(defaultButtonSize))){
 						mutationRate = 0.25f;
 						AudioSource.PlayClipAtPoint(buttonForwardClip, Vector3.zero);
-						DoTest();
+						DoTest(menu);
 					}
 					GUILayout.EndHorizontal();
 					if(GUILayout.Button("Cancel", GUILayout.Height(defaultButtonSize))){
@@ -267,49 +280,55 @@ public class AssemblyEditor : MonoBehaviour {
     } // End of OnGUI().
 
 
-	void DoTest(){
-		GameObject testObject;
-		switch(menu){
+	public void DoTest(MenuType traitTestType){
+		GameObject testObject = null;
+		switch(traitTestType) {
 			case(MenuType.maximumTravel):
 				SpawnTestAssemblies(numTestAssemblies, mutationRate, Random.rotation);
 				testObject = new GameObject("maxTravelTester", typeof(Test_MaxTravel));
 				testObject.transform.position = capturedAssembly.Position;
-				capturedAssembly.Destroy();
+				capturedAssembly.DestroyImmediate();
 				break;
 			case(MenuType.maximumSpeed):
 				SpawnTestAssemblies(numTestAssemblies, mutationRate, Random.rotation);
 				testObject = new GameObject("maxSpeedTester", typeof(Test_MaxSpeed));
 				testObject.transform.position = capturedAssembly.Position;
-				capturedAssembly.Destroy();
+				capturedAssembly.DestroyImmediate();
 				break;
             case (MenuType.visionRange):
                 SpawnTestAssemblies(numTestAssemblies, mutationRate, Random.rotation);
                 testObject = new GameObject("maxVisionRange", typeof(Test_SenseRange));
                 testObject.transform.position = capturedAssembly.Position;
-                capturedAssembly.Destroy();
+                capturedAssembly.DestroyImmediate();
                 break;
             case (MenuType.visionScope):
                 SpawnTestAssemblies(numTestAssemblies, mutationRate, Random.rotation);
                 testObject = new GameObject("maxVisionScope", typeof(Test_SenseFov));
                 testObject.transform.position = capturedAssembly.Position;
-                capturedAssembly.Destroy();
+                capturedAssembly.DestroyImmediate();
                 break;
 			case(MenuType.iq):
 				//SpawnTestAssemblies(numTestAssemblies, mutationRate, capturedAssembly.spawnRotation);
 				testObject = new GameObject("maxIQTester", typeof(Test_IQ));
 				testObject.transform.position = capturedAssembly.Position;
-				capturedAssembly.Destroy();
+				capturedAssembly.DestroyImmediate();
 				break;
             case(MenuType.rotation):
                 SpawnTestAssemblies(10, mutationRate, Random.rotation, 2.0f);
 				testObject = new GameObject("rotationTester", typeof(Test_MaxRotation));
 				testObject.transform.position = capturedAssembly.Position;
-				capturedAssembly.Destroy();
+				capturedAssembly.DestroyImmediate();
                 break;
 		}
-		menu = MenuType.main;
+        if (testObject != null)
+            testObject.GetComponent<ClientTest>().TestDone += OnTestDone;
+        menu = MenuType.main;
 	} // End of DoTest().
 
+    void OnTestDone() {
+        if (TestDone != null)
+            TestDone(this);
+    }
 
     void SpawnTestAssemblies(int num, float mutationRate, Quaternion? rot, float posOffset = 0.0f)
     {
@@ -318,7 +337,9 @@ public class AssemblyEditor : MonoBehaviour {
         for (int i = 0; i < num; i++)
         {
             Assembly newPhysAssem = new Assembly(IOHelper.AssemblyToString(capturedAssembly), rot, initPos + i * offset, false);
+            newPhysAssem.isTraitTest = true;
             newPhysAssem.Mutate(mutationRate);
+            testAssemblies.Add(newPhysAssem);
         }
     }
 

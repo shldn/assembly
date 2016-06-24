@@ -202,7 +202,7 @@ public class NodeController : MonoBehaviour {
 		
 
 		// Control environment.
-		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
+		if(Environment.Inst && Environment.Inst.isActiveAndEnabled && ClientTest.Inst == null){
 			if(PersistentGameManager.IsServer){
 				// Populate world if less than 50% max pop.
 				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.75f)){

@@ -10,6 +10,8 @@ public class NeuroScaleDemo : MonoBehaviour {
 	// How much information is shown to the user, from 0f (very little) to 1f (everything)
 	public float enviroScale = 0f;
     float enviroScaleVel = 0f;
+    float fogVel = 0f;
+    float timeAtZero = 0f;
 
 	// As this increases, the number of nodes shown will increase--chosen radiating out from the origin node.
 	int numNodesToShow = 1;
@@ -35,6 +37,9 @@ public class NeuroScaleDemo : MonoBehaviour {
 	public float CamRadius {get{return camRadius;}}
 	Node targetNode = null;
 	public Node TargetNode {get{return targetNode;}}
+
+    // Genetic Engineering
+    float timeAtZeroToStartTest = 1.0f;
 
 
 	void Awake(){
@@ -66,10 +71,18 @@ public class NeuroScaleDemo : MonoBehaviour {
 				newSelectedNode = true;
 			}
 		
+			
+
 			camRadius = 10f + ((NodeController.Inst.minWorldSize + 10f) * Mathf.Pow(enviroScale, 1f));
+
+            // Make sure target assembly is in view
+            if(targetNode != null && targetNode.PhysAssembly != null)
+                camRadius = Mathf.Max(camRadius, targetNode.PhysAssembly.GetBoundingSphereRadiusFromPoint(targetNode.Position) + 1f);
 
 			RenderSettings.fogStartDistance = camRadius + (1000f * Mathf.Pow(enviroScale, 2f));
 			RenderSettings.fogEndDistance = RenderSettings.fogStartDistance * 2f;
+
+
 
 			lastNumNodesToShow = numNodesToShow;
 			numNodesToShow = 1 + Mathf.RoundToInt(Mathf.Pow(enviroScale, 3f) * Node.getAll.Count);
@@ -77,10 +90,19 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 			Cull();
 		}
+        else if(ClientTest.Inst != null) {
+            float pulledBackCamRadius = 10f + ((NodeController.Inst.minWorldSize + 10f));
+            RenderSettings.fogStartDistance = Mathf.SmoothDamp(RenderSettings.fogStartDistance, pulledBackCamRadius + 1000f, ref fogVel, 0.5f);
+            RenderSettings.fogEndDistance = RenderSettings.fogStartDistance * 2f;
+        }
 
         enviroScale = Mathf.SmoothDamp(enviroScale, (isActive ? MuseManager.Inst.LastConcentrationMeasure : 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
         //test: enviroScale = Mathf.SmoothDamp(enviroScale, Mathf.PingPong(Time.time * 0.1f, 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
 		enviroScale = Mathf.Clamp01(enviroScale);
+
+        // Shortcut to get down to zero.
+        if (Debug.isDebugBuild && Input.GetKey(KeyCode.Z))
+            enviroScale = 0f;
 
         lastUseOctree = useOctree;
 
@@ -94,8 +116,40 @@ public class NeuroScaleDemo : MonoBehaviour {
 			}
 		}
 
+        // Start Asexual mutation / genetic testing if user holds enviroScale at zero for long enough.
+        if (isActive && enviroScale <= 0.01f) {
+            timeAtZero += Time.deltaTime;
+            if(timeAtZeroToStartTest >= 0f && timeAtZero > timeAtZeroToStartTest && AssemblyEditor.Inst == null)
+                StartTest();
+        }
+        else
+            timeAtZero = 0f;
+
 	} // End of Update().
 
+    private void StartTest() {
+        CameraControl.Inst.neuroscaleFade = false;
+        CameraControl.Inst.originType = CameraControl.OriginType.ASSEMBLIES_SSBVIEW;
+
+        AssemblyEditor testRunner = new GameObject("AssemblyEditor").AddComponent<AssemblyEditor>();
+        testRunner.capturedAssembly = targetNode.PhysAssembly;
+        testRunner.DoTest(AssemblyEditor.MenuType.maximumSpeed);
+        testRunner.TestDone += OnTestDone;
+    }
+
+    private void OnTestDone(AssemblyEditor sender) {
+        if(ClientTest.Inst.Winner != null) {
+            for(int i=0; i < ClientTest.Inst.Winner.Nodes.Count; ++i) {
+                if (!ClientTest.Inst.Winner.Nodes[i].IsMuscle)
+                    targetNode = ClientTest.Inst.Winner.Nodes[i];
+            }
+        }
+        targetNode = ClientTest.Inst.Winner != null ? ClientTest.Inst.Winner.Nodes[0] : null;
+
+        CameraControl.Inst.neuroscaleFade = true;
+        CameraControl.Inst.originType = CameraControl.OriginType.WORLD;
+        Destroy(sender);
+    }
 
     void Cull()
     {
@@ -128,8 +182,11 @@ public class NeuroScaleDemo : MonoBehaviour {
                             a.SetVisibility(false);
                 }
             }
-            else if (enviroScale >= 0.99f || numNodesToShow >= Node.getAll.Count)
+            else if (enviroScale >= 0.99f || numNodesToShow >= Node.getAll.Count) {
+                if (ClientTest.Inst != null)
+                    return;
                 SetAllNodeVisibility(true);
+            }
             else
             {
                 float boundsSize = RenderSettings.fogEndDistance - RenderSettings.fogStartDistance;
@@ -197,13 +254,18 @@ public class NeuroScaleDemo : MonoBehaviour {
 
     void SetAllNodeVisibility(bool vis)
     {
-        for (int i = 0; i < Node.getAll.Count; i++)
-            Node.getAll[i].Visible = vis;
+        for (int i = 0; i < Node.getAll.Count; i++) {
+            if (Node.getAll[i].PhysAssembly == null || !Node.getAll[i].PhysAssembly.isTraitTest)
+                Node.getAll[i].Visible = vis;
+        }
+
     } // End of SetAllNodeVisibility().
 
     void HandleCulledNodeVisibility()
     {
         SetAllNodeVisibility(false);
+        if (ClientTest.Inst != null)
+            return;
 
         if (!cullSelectedAssemblyNodes)
             foreach (Node n in targetNode.PhysAssembly.Nodes)

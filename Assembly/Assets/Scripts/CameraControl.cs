@@ -314,7 +314,7 @@ public class CameraControl : MonoBehaviour {
 		orbitQ = Quaternion.Lerp(orbitQ, targetOrbitQ, Time.deltaTime / effectiveSmoothTime);
 
         centerOffset = Vector3.SmoothDamp(centerOffset, Vector3.zero, ref centerOffsetVel, effectiveSmoothTime);
-        transform.position = center + centerOffset + (orbitQ * (Vector3.forward * (NeuroScaleDemo.Inst? Mathf.Lerp(radius, NeuroScaleDemo.Inst.CamRadius, blendToNeuroscale) : radius)));
+        transform.position = center + centerOffset + (orbitQ * (Vector3.forward * ((NeuroScaleDemo.Inst && neuroscaleFade) ? Mathf.Lerp(radius, NeuroScaleDemo.Inst.CamRadius, blendToNeuroscale) : radius)));
 		
 		Quaternion orbitCamRot = orbitQ * Quaternion.AngleAxis(180f, Vector3.up);
 
@@ -375,7 +375,8 @@ public class CameraControl : MonoBehaviour {
     public void KeepAssembliesInView()
     {
         List<Vector3> pts = new List<Vector3>();
-        foreach (Assembly someAssembly in Assembly.getAll)
+        List<Assembly> assemblyList = (ClientTest.Inst != null) ? AssemblyEditor.Inst.testAssemblies : Assembly.getAll;
+        foreach (Assembly someAssembly in assemblyList)
             if(!someAssembly.cull)
                 pts.Add(someAssembly.Position);
         float sphereRadius = 0f;
