@@ -53,7 +53,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     void Awake(){
 		Inst = this;
 
-        if( PersistentGameManager.IsClient && !useKhanServerList)
+        if( PersistentGameManager.IsClient && !useKhanServerList && Config.useMasterServer)
             RequestMasterServerHostList();
 
         if (Debug.isDebugBuild)
@@ -80,7 +80,8 @@ public class CaptureNet_Manager : MonoBehaviour {
             
         tempServerName = serverTagline;
 
-        InvokeRepeating("ReregisterMasterServer", 30 * 60, 30 * 60);
+        if(!Config.useMasterServer)
+            InvokeRepeating("ReregisterMasterServer", 30 * 60, 30 * 60);
 
 		uiAudioSource = gameObject.AddComponent<AudioSource>();
 		uiAudioSource.spatialBlend = 0f;
@@ -90,14 +91,20 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void Update(){
 	    connectCooldown -= Time.deltaTime;
-        // Cycle through available IPs to connect to.
-        if (useKhanServerList && (connectToIP.Count > 0) && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f) && (!ClientAdminMenu.Inst.showMenu || !PersistentGameManager.IsAdminClient)){
-			Network.Connect(connectToIP[ipListConnect], connectionPort);
-            ipListConnect = (ipListConnect + 1) % connectToIP.Count;
-
-            connectCooldown = 0.5f;
+        if ((Network.peerType == NetworkPeerType.Disconnected) && (PersistentGameManager.IsClient)) {
+            if((connectCooldown <= 0f) && (!ClientAdminMenu.Inst.showMenu || !PersistentGameManager.IsAdminClient)) {
+                if (!Config.useMasterServer && Config.fallbackServerIP != "") {
+                    Network.Connect(Config.fallbackServerIP);
+                    connectCooldown = 0.5f;
+                }
+                // Cycle through available IPs to connect to.
+                else if (useKhanServerList && (connectToIP.Count > 0)) {
+                    Network.Connect(connectToIP[ipListConnect], connectionPort);
+                    ipListConnect = (ipListConnect + 1) % connectToIP.Count;
+                    connectCooldown = 0.5f;
+                }
+            }
         }
-
         // If player is not connected, run the ConnectWindow function.
         if( PersistentGameManager.IsServer )
         {
@@ -105,7 +112,8 @@ public class CaptureNet_Manager : MonoBehaviour {
             {
                 // Create the server.
                 Network.InitializeServer(maxNumberOfPlayers, connectionPort, !Network.HavePublicAddress());
-                MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
+                if(!Config.useMasterServer)
+                    MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
             }
 
             if (KeyInput.GetKeyUp(KeyCode.Q))
@@ -180,14 +188,14 @@ public class CaptureNet_Manager : MonoBehaviour {
 	    GUI.skin.label.fontStyle = FontStyle.Normal;
 
         // Client GUI
-		if (((ClientAdminMenu.Inst && !ClientAdminMenu.Inst.showMenu) || !PersistentGameManager.IsAdminClient)  && useKhanServerList){
+		if (((ClientAdminMenu.Inst && !ClientAdminMenu.Inst.showMenu) || !PersistentGameManager.IsAdminClient)  && (useKhanServerList || !Config.useMasterServer)){
 			if ((PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected)){
 				GUI.skin.label.fontSize = 40;
 				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
 				GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Connecting to server...");
 			}
         }
-        if (PersistentGameManager.IsClient && (Network.peerType == NetworkPeerType.Disconnected) && !useKhanServerList && Time.frameCount > connectingBlock + 10)
+        if (PersistentGameManager.IsClient && (Network.peerType == NetworkPeerType.Disconnected) && Config.useMasterServer && !useKhanServerList && Time.frameCount > connectingBlock + 10)
         {
             GUI.skin = AssemblyEditor.Inst.guiSkin;
             GUI.skin.button.font = PrefabManager.Inst.assemblyFont;
@@ -290,7 +298,7 @@ public class CaptureNet_Manager : MonoBehaviour {
                         serverTagline = tempServerName;
                         PlayerPrefs.SetString("AServerName", serverTagline);
                         MasterServer.UnregisterHost();
-                        if(Network.peerType != NetworkPeerType.Disconnected)
+                        if(Network.peerType != NetworkPeerType.Disconnected && !Config.useMasterServer)
                             MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
                         //else
                             // Next update will RegisterHost with MasterServer
@@ -400,8 +408,10 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void ReregisterMasterServer()
     {
-        MasterServer.UnregisterHost();
-        MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
+        if (!Config.useMasterServer){
+            MasterServer.UnregisterHost();
+            MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
+        }
     }
 
     [RPC] // Server receives this from client when they send a jellyfish back.

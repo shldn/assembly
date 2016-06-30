@@ -16,6 +16,11 @@ public static class Config {
     // Graphics Config
 
 
+    // Networking Config
+    public static bool useMasterServer = true;
+    public static string fallbackServerIP = "127.0.0.1";
+
+
     // Viewer Config
     public static List<IpPortPair> controllerAddress = new List<IpPortPair>();
 
@@ -64,6 +69,9 @@ public static class Config {
                         case "graphics":
                             ReadGraphics(arr[i].Obj);
                             break;
+                        case "network":
+                            ReadNetwork(arr[i].Obj);
+                            break;
                         case "viewer":
                             ReadViewer(arr[i].Obj);
                             break;
@@ -91,6 +99,15 @@ public static class Config {
 
     static void ReadGraphics(JSONObject obj) {
 
+    }
+
+    static void ReadNetwork(JSONObject obj) {
+        foreach (KeyValuePair<string, JSONValue> v in obj) {
+            if (v.Key.Trim() == "server_ip")
+                fallbackServerIP = v.Value.Str.Trim();
+            if (v.Key.Trim().ToLower() == "updateMasterServer")
+                useMasterServer = v.Value.Boolean;
+        }
     }
 
     static void ReadViewer(JSONObject obj) {

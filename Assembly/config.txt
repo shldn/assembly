@@ -8,6 +8,12 @@
         "type": "graphics",
     },
     {
+        "#" : "network settings - if not using master server, can specify ip address to connect to (ad hoc networking solution)",
+        "type": "network",
+        "useMasterServer": true,
+        "server_ip": "132.239.235.118",
+    },    
+    {
         "#" : "viewer settings",
         "type": "viewer",
         "controllers":[
