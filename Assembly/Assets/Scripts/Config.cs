@@ -105,7 +105,7 @@ public static class Config {
         foreach (KeyValuePair<string, JSONValue> v in obj) {
             if (v.Key.Trim() == "server_ip")
                 fallbackServerIP = v.Value.Str.Trim();
-            if (v.Key.Trim().ToLower() == "updateMasterServer")
+            if (v.Key.Trim().ToLower() == "usemasterserver")
                 useMasterServer = v.Value.Boolean;
         }
     }

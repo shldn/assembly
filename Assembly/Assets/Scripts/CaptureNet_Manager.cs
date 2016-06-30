@@ -94,7 +94,7 @@ public class CaptureNet_Manager : MonoBehaviour {
         if ((Network.peerType == NetworkPeerType.Disconnected) && (PersistentGameManager.IsClient)) {
             if((connectCooldown <= 0f) && (!ClientAdminMenu.Inst.showMenu || !PersistentGameManager.IsAdminClient)) {
                 if (!Config.useMasterServer && Config.fallbackServerIP != "") {
-                    Network.Connect(Config.fallbackServerIP);
+                    Network.Connect(Config.fallbackServerIP, connectionPort);
                     connectCooldown = 0.5f;
                 }
                 // Cycle through available IPs to connect to.
