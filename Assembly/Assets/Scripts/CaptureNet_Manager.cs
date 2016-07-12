@@ -80,7 +80,7 @@ public class CaptureNet_Manager : MonoBehaviour {
             
         tempServerName = serverTagline;
 
-        if(!Config.useMasterServer)
+        if(Config.useMasterServer)
             InvokeRepeating("ReregisterMasterServer", 30 * 60, 30 * 60);
 
 		uiAudioSource = gameObject.AddComponent<AudioSource>();
@@ -112,7 +112,7 @@ public class CaptureNet_Manager : MonoBehaviour {
             {
                 // Create the server.
                 Network.InitializeServer(maxNumberOfPlayers, connectionPort, !Network.HavePublicAddress());
-                if(!Config.useMasterServer)
+                if(Config.useMasterServer)
                     MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
             }
 
@@ -298,7 +298,7 @@ public class CaptureNet_Manager : MonoBehaviour {
                         serverTagline = tempServerName;
                         PlayerPrefs.SetString("AServerName", serverTagline);
                         MasterServer.UnregisterHost();
-                        if(Network.peerType != NetworkPeerType.Disconnected && !Config.useMasterServer)
+                        if(Network.peerType != NetworkPeerType.Disconnected && Config.useMasterServer)
                             MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
                         //else
                             // Next update will RegisterHost with MasterServer
@@ -408,7 +408,7 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void ReregisterMasterServer()
     {
-        if (!Config.useMasterServer){
+        if (Config.useMasterServer){
             MasterServer.UnregisterHost();
             MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
         }
