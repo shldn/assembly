@@ -125,6 +125,10 @@ public static class Config {
         foreach (KeyValuePair<string, JSONValue> v in obj) {
             if (v.Key.Trim() == "LSLStream")
                 LSLStream = v.Value.Str.Trim();
+            if (v.Key.Trim() == "enableMutationOnFocus")
+                NeuroScaleDemo.enableMutationOnFocus = v.Value.Boolean;
+            if (v.Key.Trim() == "focusedTimeToLaunchMutation")
+                NeuroScaleDemo.timeAtZeroToStartTest = (float)v.Value.Number;
         }
     }
 

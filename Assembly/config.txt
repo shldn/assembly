@@ -30,8 +30,10 @@
         "type": "controller",
     },
     {
-        "#" : "eeg settings",
+        "#" : "eeg settings - enableMutationOnFocus - when focusing on an assembly for focusedTimeToLaunchMutation seconds, mutation test is launched",
         "type": "eeg",
+        "enableMutationOnFocus": true,
+        "focusedTimeToLaunchMutation": 5,
         "LSLStream": "ConcentrationStreamErik",
     },
     {

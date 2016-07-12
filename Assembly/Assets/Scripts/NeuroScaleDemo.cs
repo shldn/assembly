@@ -39,7 +39,8 @@ public class NeuroScaleDemo : MonoBehaviour {
 	public Node TargetNode {get{return targetNode;}}
 
     // Genetic Engineering
-    float timeAtZeroToStartTest = 1.0f;
+    public static bool enableMutationOnFocus = false;
+    public static float timeAtZeroToStartTest = 1.0f;
 
 
 	void Awake(){
@@ -119,7 +120,7 @@ public class NeuroScaleDemo : MonoBehaviour {
         // Start Asexual mutation / genetic testing if user holds enviroScale at zero for long enough.
         if (isActive && enviroScale <= 0.01f) {
             timeAtZero += Time.deltaTime;
-            if(timeAtZeroToStartTest >= 0f && timeAtZero > timeAtZeroToStartTest && AssemblyEditor.Inst == null)
+            if(enableMutationOnFocus && timeAtZeroToStartTest >= 0f && timeAtZero > timeAtZeroToStartTest && AssemblyEditor.Inst == null)
                 StartTest();
         }
         else
@@ -149,6 +150,7 @@ public class NeuroScaleDemo : MonoBehaviour {
         CameraControl.Inst.neuroscaleFade = true;
         CameraControl.Inst.originType = CameraControl.OriginType.WORLD;
         Destroy(sender);
+        timeAtZero = 0f;
     }
 
     void Cull()
