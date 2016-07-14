@@ -126,7 +126,11 @@ public class NeuroScaleDemo : MonoBehaviour {
         else
             timeAtZero = 0f;
 
-	} // End of Update().
+        // Toggle Asexual mutation at zero enviroScale value
+        if (Input.GetKeyUp(KeyCode.Space))
+            enableMutationOnFocus = !enableMutationOnFocus;
+
+    } // End of Update().
 
     private void StartTest() {
         CameraControl.Inst.neuroscaleFade = false;
