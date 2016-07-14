@@ -16,6 +16,7 @@ public class PlayerSync : MonoBehaviour {
 
     LinkedList<Vector2> lastPoints = new LinkedList<Vector2>();
     LinkedList<float> lastPointDists = new LinkedList<float>();
+    Vector3 lastMousePosition = Vector2.zero;
     bool selecting = false;
     bool initialPosSent = false;
 
@@ -124,12 +125,10 @@ public class PlayerSync : MonoBehaviour {
 			}
 
             if(GetComponent<NetworkView>().isMine){
-#if UNITY_ANDROID || UNITY_IOS
-                if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && ((Input.touchCount == 1) || (Application.platform == RuntimePlatform.WindowsEditor)))
-#else
-                if (!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0))
-#endif
-                    screenPos += new Vector3(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y")) * 10f;
+                bool drawningOnScreen = (Input.touchSupported && Input.touchCount == 1 && !Input.GetMouseButtonDown(0) && Input.GetMouseButton(0)) || (!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0));
+                if (drawningOnScreen)
+                    screenPos += new Vector3(Input.mousePosition.x - lastMousePosition.x, -(Input.mousePosition.y - lastMousePosition.y));
+                lastMousePosition = Input.mousePosition;
             }
 
             screenPos.x = Mathf.Clamp(screenPos.x, 0f, Screen.width);
