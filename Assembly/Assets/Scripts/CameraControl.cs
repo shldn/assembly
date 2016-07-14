@@ -27,7 +27,7 @@ public class CameraControl : MonoBehaviour {
 
     // Orbit = pan/tilt x/y of the camera around the centerPos.
     float mouseSensitivity = 3f;
-    public Quaternion targetOrbitQ;
+    public Quaternion targetOrbitQ = Quaternion.identity;
 	public Vector2 mouseOrbitStack = Vector2.zero; // Keeps track of mouse input... allows for greater-than-180 target rotation.
 	Vector2 mouseOrbitVelocity = Vector2.zero;
 	Vector2 mouseOrbitVelocityVel = Vector2.zero;
@@ -310,6 +310,12 @@ public class CameraControl : MonoBehaviour {
 			targetOrbitQ = Quaternion.Euler(Mathf.Clamp(Mathf.DeltaAngle(0f, targetOrbitQ.eulerAngles.x), -maxTilt, -minTilt), targetOrbitQ.eulerAngles.y, 0f);
 			orbitQ = Quaternion.Euler(Mathf.Clamp(Mathf.DeltaAngle(0f, orbitQ.eulerAngles.x), -maxTilt, -minTilt), orbitQ.eulerAngles.y, 0f);
 		}
+
+        // Safeguard for 0 target quaternion.
+        // This happens occasionally in capture client, will though exceptions and make captured assembly disappear.
+        if (targetOrbitQ.w == 0f && targetOrbitQ.x == 0f && targetOrbitQ.y == 0f && targetOrbitQ.z == 0f) {
+            targetOrbitQ = Quaternion.identity;
+        }
 
 		orbitQ = Quaternion.Lerp(orbitQ, targetOrbitQ, Time.deltaTime / effectiveSmoothTime);
 
