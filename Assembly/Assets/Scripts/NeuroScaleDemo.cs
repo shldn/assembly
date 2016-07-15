@@ -204,11 +204,15 @@ public class NeuroScaleDemo : MonoBehaviour {
             // Food
             if (numFoodToShow > 0)
             {
-                foodSortedSet.Clear();
-                float boundsSize = RenderSettings.fogEndDistance - RenderSettings.fogStartDistance;
-                Bounds foodBoundary = new Bounds(targetNode.Position, boundsSize * Vector3.one);
-                FoodPellet.AllFoodTree.RunActionInRange(new System.Action<FoodPellet>(CullFood), foodBoundary);
-                HandleCulledFoodVisibility();
+                if (numFoodToShow == FoodPellet.all.Count)
+                    SetAllFoodVisibility(true);
+                else {
+                    foodSortedSet.Clear();
+                    float boundsSize = RenderSettings.fogEndDistance - RenderSettings.fogStartDistance;
+                    Bounds foodBoundary = new Bounds(targetNode.Position, boundsSize * Vector3.one);
+                    FoodPellet.AllFoodTree.RunActionInRange(new System.Action<FoodPellet>(CullFood), foodBoundary);
+                    HandleCulledFoodVisibility();
+                }
             }
             else
                 SetAllFoodVisibility(false);
