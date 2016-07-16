@@ -39,7 +39,7 @@ public class ClientTest : MonoBehaviour {
     protected virtual void EndTest()
     {
         DestroyAllButWinner();
-        CameraControl.Inst.KeepAssembliesInView();
+        //CameraControl.Inst.KeepAssembliesInView();
         if (TestDone != null)
             TestDone();
         Destroy(gameObject);

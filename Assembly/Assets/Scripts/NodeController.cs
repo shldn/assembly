@@ -291,7 +291,7 @@ public class NodeController : MonoBehaviour {
             }
         }
 
-
+		/*
 		// Server-local capture.
 		if(Input.GetKeyDown(KeyCode.Insert)){
 			Assembly assemToCap = CameraControl.Inst.assemblyOfInterest;
@@ -301,6 +301,7 @@ public class NodeController : MonoBehaviour {
 			PersistentGameManager.Inst.serverCapturedAssem = assemToCap.ToString();
 			Application.LoadLevel("CaptureClient");
 		}
+		*/
 
         float delayBetweenMessages = (messageFPS <= 0f) ? -1f : 1.0f / messageFPS;
         if(delayBetweenMessages <= (System.DateTime.Now - lastMessageSent).TotalSeconds && MVCBridge.controllerReadyToSend)

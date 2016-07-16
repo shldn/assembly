@@ -194,6 +194,7 @@ public class Amalgam : MonoBehaviour
 	void Update()
 	{
 		// Find closest vert to mouse.
+		/*
 		float maxDist = 9999f;
 		float distFromCam = 9999f;
 		ActiveVertex curVert = null;
@@ -214,6 +215,7 @@ public class Amalgam : MonoBehaviour
 
 			//Debug.DrawRay(transform.position, (transform.rotation * initialNorms[handles[i].attachedVert]) * 100f);
 		}
+		*/
 
 		//positionChange += motionVector * NodeController.physicsStep * 2f;
 		
@@ -331,8 +333,7 @@ public class Amalgam : MonoBehaviour
             Vector3 newPos = Vector3.zero;
             if (!IsInside(curAssem.Position, out newPos)) {
                 for (int j = 0; j < curAssem.Nodes.Count; j++) {
-                    Vector3 vecToNewPos = curAssem.Position - newPos;
-                    curAssem.Nodes[j].Position += vecToNewPos;
+                    Debug.DrawLine(curAssem.Nodes[j].Position, newPos);
                 }
             }
 		}
@@ -508,7 +509,7 @@ public class AmalgamHandle {
 	public Transform gameObjectInt = null;
 	public Transform gameObjectExt = null;
 
-	//public float frequency = 0f;
+	public float frequency = 0f;
 
 	public float energyBuildup = 0f; // When this is high enough, it will emit a food pellet.
 
@@ -535,7 +536,6 @@ public class AmalgamHandle {
 		intEffect = Random.Range(0.2f, 1f);
 
 		energySearchCooldown = Random.Range(0f, 10f);
-		//frequency = Random.Range(2f, 30f);
 
 		RandomizeHandleBehaviours();
 	} // End of AmalgamHandle().
@@ -603,10 +603,9 @@ public class AmalgamHandle {
 			energyBuildup -= 1f;
 		}
 
-		amalgam.ActiveVertices[attachedVert].deform += NodeController.physicsStep + (0.02f * energyBuildup);
+		//amalgam.ActiveVertices[attachedVert].deform += NodeController.physicsStep + (0.02f * energyBuildup);
 
-		amalgam.ActiveVertices[attachedVert].deform = testBubble;
-		//amalgam.ActiveVertices[attachedVert].wiggle = testWiggle * Mathf.Sin(Time.time * Mathf.PI * 2f * testWiggleFreq);
+		amalgam.ActiveVertices[attachedVert].deform = testBubble * (1f + (Mathf.Cos(Time.time * testWiggleFreq) * 0.5f));
 
 		if(Input.GetKeyDown(KeyCode.B))
 			RandomizeHandleBehaviours();
@@ -614,8 +613,7 @@ public class AmalgamHandle {
 	} // End of Update().
 
 	void RandomizeHandleBehaviours() {
-		testWiggle = Random.rotation * Vector3.forward * Random.Range(0f, 90f);
-		testWiggleFreq = Random.Range(0.02f, 0.1f);
+		testWiggleFreq = Random.Range(0.2f, 1f);
 		testBubble = Random.Range(0f, 3f);
 	} // End of RandomizeHandleBehaviours().
 

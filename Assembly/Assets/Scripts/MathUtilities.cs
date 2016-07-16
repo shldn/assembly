@@ -119,4 +119,14 @@ public static class MathUtilities {
 		return null;
 	} // End of FindChildRecursively().
 
+
+	public static float LinToSmoothLerp(float input) {
+		return 0.5f + ((Mathf.Sin(Mathf.PI * (input - 0.5f)) * 0.5f));
+	} // End of LinearLerpToSmooth().
+
+
+	public static float SmoothPingPong01(float input) {
+		return Mathf.Sin(input * Mathf.PI);
+	} // End of LinearLerpToSmooth().
+
 } // End of MathUtilities.
