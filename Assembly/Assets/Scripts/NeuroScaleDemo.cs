@@ -39,8 +39,8 @@ public class NeuroScaleDemo : MonoBehaviour {
 	public Node TargetNode {get{return targetNode;}}
 
     // Genetic Engineering
-    public static bool enableMutationOnFocus = false;
-    public static float timeAtZeroToStartTest = 1.0f;
+    public static bool enableMutationOnFocus = true;
+    public static float timeAtZeroToStartTest = 4.0f;
 
 
 	void Awake(){
@@ -48,79 +48,57 @@ public class NeuroScaleDemo : MonoBehaviour {
 	} // End of Awake().
 
 
-	void Start(){
-		if(CameraControl.Inst.neuroscaleFade) {
-			RenderSettings.fog = true;
-			RenderSettings.fogMode = FogMode.Linear;
-			RenderSettings.fogColor = Color.black;
-		}
-	} // End of Start().
-	
-
 	void Update(){
 
-		isActive = MuseManager.Inst.TouchingForehead;
-
-		if(CameraControl.Inst.neuroscaleFade) {
-			newSelectedNode = false;
-			if((!targetNode || targetNode.cull) && (Node.getAll.Count > 0)){
-				targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
-				// 150 tries to get a non-muscle node
-				for(int i=0; targetNode.IsMuscle && i < 150; ++i) {
-					targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
-				}
-				newSelectedNode = true;
-			}
-		
-			
-
-			camRadius = 10f + ((NodeController.Inst.minWorldSize + 10f) * Mathf.Pow(enviroScale, 1f));
-
-            // Make sure target assembly is in view
-            if(targetNode != null && targetNode.PhysAssembly != null)
-                camRadius = Mathf.Max(camRadius, targetNode.PhysAssembly.GetBoundingSphereRadiusFromPoint(targetNode.Position) + 1f);
-
-			RenderSettings.fogStartDistance = camRadius + (1000f * Mathf.Pow(enviroScale, 2f));
-			RenderSettings.fogEndDistance = RenderSettings.fogStartDistance * 2f;
-
-
-
-			lastNumNodesToShow = numNodesToShow;
-			numNodesToShow = 1 + Mathf.RoundToInt(Mathf.Pow(enviroScale, 3f) * Node.getAll.Count);
-			numFoodToShow = Mathf.RoundToInt(Mathf.Pow(enviroScale, 2f) * FoodPellet.all.Count);
-
-			Cull();
+		if(MuseManager.Inst.TouchingForehead && !isActive) {
+			isActive = true;
 		}
-        else if(ClientTest.Inst != null) {
-            float pulledBackCamRadius = 10f + ((NodeController.Inst.minWorldSize + 10f));
-            RenderSettings.fogStartDistance = Mathf.SmoothDamp(RenderSettings.fogStartDistance, pulledBackCamRadius + 1000f, ref fogVel, 0.5f);
-            RenderSettings.fogEndDistance = RenderSettings.fogStartDistance * 2f;
-        }
 
-        enviroScale = Mathf.SmoothDamp(enviroScale, (isActive ? MuseManager.Inst.LastConcentrationMeasure : 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
-        //test: enviroScale = Mathf.SmoothDamp(enviroScale, Mathf.PingPong(Time.time * 0.1f, 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
+		if(!MuseManager.Inst.TouchingForehead && isActive) {
+			isActive = false;
+			targetNode = null;
+			CameraControl.Inst.SetMode_GalleryAuto();
+		}
+
+
+		newSelectedNode = false;
+		if(isActive && (!targetNode || targetNode.cull) && (Node.getAll.Count > 0) && (enviroScale < 1f) && !ClientTest.Inst){
+			targetNode = Node.getAll[Random.Range(0, Node.getAll.Count)];
+			CameraControl.Inst.SetMode_NeuroScaleFocus(targetNode);
+			newSelectedNode = true;
+		}
+
+		if(enviroScale == 1f) {
+			targetNode = null;
+		}
+
+        // Make sure target assembly is in view
+        if(targetNode != null && targetNode.PhysAssembly != null)
+            camRadius = Mathf.Max(camRadius, targetNode.PhysAssembly.GetBoundingSphereRadiusFromPoint(targetNode.Position) + 1f);
+
+		lastNumNodesToShow = numNodesToShow;
+		numNodesToShow = 1 + Mathf.RoundToInt(Mathf.Pow(enviroScale, 3f) * Node.getAll.Count);
+		numFoodToShow = Mathf.RoundToInt(Mathf.Pow(enviroScale, 2f) * FoodPellet.all.Count);
+
+		Cull();
+
+        if (!Debug.isDebugBuild || !Input.GetKey(KeyCode.Z)) {
+			enviroScale = Mathf.SmoothDamp(enviroScale, (isActive ? MuseManager.Inst.LastConcentrationMeasure : 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
+			enviroScale = Mathf.MoveTowards(enviroScale, (isActive ? MuseManager.Inst.LastConcentrationMeasure : 1f), Time.deltaTime * 0.001f);
+		}
 		enviroScale = Mathf.Clamp01(enviroScale);
 
         // Shortcut to get down to zero.
         if (Debug.isDebugBuild && Input.GetKey(KeyCode.Z))
-            enviroScale = 0f;
+            enviroScale = Mathf.MoveTowards(enviroScale, 0f, 0.25f * Time.deltaTime);
 
         lastUseOctree = useOctree;
 
 
-		if(CameraControl.Inst.neuroscaleFade) {
-			// Keep targetted assembly from getting too far from the origin.
-			if(targetNode && !PersistentGameManager.IsClient && MuseManager.Inst.TouchingForehead){
-				foreach(KeyValuePair<Triplet, Node> kvp in targetNode.PhysAssembly.NodeDict){
-					kvp.Value.Position += targetNode.PhysAssembly.Position * NodeController.physicsStep * 0.1f;
-				}
-			}
-		}
-
         // Start Asexual mutation / genetic testing if user holds enviroScale at zero for long enough.
-        if (isActive && enviroScale <= 0.01f) {
+        if (isActive && (enviroScale <= 0.01f)) {
             timeAtZero += Time.deltaTime;
-            if(enableMutationOnFocus && timeAtZeroToStartTest >= 0f && timeAtZero > timeAtZeroToStartTest && AssemblyEditor.Inst == null)
+            if(enableMutationOnFocus && (timeAtZeroToStartTest >= 0f) && (timeAtZero > timeAtZeroToStartTest) && (AssemblyEditor.Inst == null))
                 StartTest();
         }
         else
@@ -133,14 +111,16 @@ public class NeuroScaleDemo : MonoBehaviour {
     } // End of Update().
 
     private void StartTest() {
-        CameraControl.Inst.neuroscaleFade = false;
-        CameraControl.Inst.originType = CameraControl.OriginType.ASSEMBLIES_SSBVIEW;
+		print("Running test!");
 
         AssemblyEditor testRunner = new GameObject("AssemblyEditor").AddComponent<AssemblyEditor>();
         testRunner.capturedAssembly = targetNode.PhysAssembly;
         testRunner.DoTest(AssemblyEditor.MenuType.maximumSpeed);
         testRunner.TestDone += OnTestDone;
-    }
+		targetNode = null;
+
+		CameraControl.Inst.SetMode_AssemblyHerd();
+    } // End of StartTest().
 
     private void OnTestDone(AssemblyEditor sender) {
         if(ClientTest.Inst.Winner != null) {
@@ -150,18 +130,16 @@ public class NeuroScaleDemo : MonoBehaviour {
             }
         }
         targetNode = ClientTest.Inst.Winner != null ? ClientTest.Inst.Winner.Nodes[0] : null;
+		CameraControl.Inst.SetMode_NeuroScaleFocus(targetNode);
 
-        CameraControl.Inst.neuroscaleFade = true;
-        CameraControl.Inst.originType = CameraControl.OriginType.WORLD;
         Destroy(sender);
         timeAtZero = 0f;
-    }
+    } // End of OnTestDone().
 
     void Cull()
     {
         if (useOctree)
         {
-
             // Nodes
             if (!targetNode)
                 return;
@@ -216,7 +194,6 @@ public class NeuroScaleDemo : MonoBehaviour {
             }
             else
                 SetAllFoodVisibility(false);
-
         }
         else
         {
@@ -260,7 +237,7 @@ public class NeuroScaleDemo : MonoBehaviour {
             }
             catch (System.ArgumentException) { }
         }
-    }
+    } // End of AddToSortedList().
 
     void SetAllNodeVisibility(bool vis)
     {

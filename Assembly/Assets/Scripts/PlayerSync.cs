@@ -77,8 +77,8 @@ public class PlayerSync : MonoBehaviour {
             // handle camera orbiting for these players screenPos movements here
 			if(orbitModeInit){
                 Vector2 centerOffset = (new Vector2(screenPos.x, screenPos.y) - new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
-				CameraControl.Inst.mouseOrbitStack.x += centerOffset.x;
-				CameraControl.Inst.mouseOrbitStack.y -= centerOffset.y;
+				//CameraControl.Inst.mouseOrbitStack.x += centerOffset.x;
+				//CameraControl.Inst.mouseOrbitStack.y -= centerOffset.y;
 				CameraControl.Inst.targetRadius += screenPos.z;
 
                 if( UtopiaGameManager.Inst )
