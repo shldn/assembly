@@ -334,6 +334,7 @@ public class Amalgam : MonoBehaviour
             if (!IsInside(curAssem.Position, out newPos)) {
                 for (int j = 0; j < curAssem.Nodes.Count; j++) {
                     Debug.DrawLine(curAssem.Nodes[j].Position, newPos);
+					curAssem.Nodes[j].Position += (newPos - curAssem.Position) * -0.01f;
                 }
             }
 		}

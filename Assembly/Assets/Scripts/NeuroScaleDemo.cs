@@ -58,6 +58,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 			isActive = false;
 			targetNode = null;
 			CameraControl.Inst.SetMode_GalleryAuto();
+			SetAllNodeVisibility(true);
 		}
 
 
@@ -130,10 +131,13 @@ public class NeuroScaleDemo : MonoBehaviour {
             }
         }
         targetNode = ClientTest.Inst.Winner != null ? ClientTest.Inst.Winner.Nodes[0] : null;
+		targetNode.PhysAssembly.isTraitTest = false;
 		CameraControl.Inst.SetMode_NeuroScaleFocus(targetNode);
 
         Destroy(sender);
         timeAtZero = 0f;
+
+		SetAllNodeVisibility(true);
     } // End of OnTestDone().
 
     void Cull()
