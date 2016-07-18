@@ -247,7 +247,7 @@ public class CameraControl : MonoBehaviour {
 			camRB.isKinematic = true;
 		}
 
-		currentCamEngine = new UserOrbitCamera();
+		currentCamEngine = new GalleryAutoCamera();
 	} // End of Start().
 	
 

@@ -92,6 +92,8 @@ public class NodeController : MonoBehaviour {
 
 
     void Start(){
+		PersistentGameManager.Inst.Touch();
+
 		// Are we loading a saved world for a singleplayer run?
 		if(Application.loadedLevelName.Equals("SoupPhysics") && (PersistentGameManager.Inst.capturedWorldFilename != "")){
 			EnvironmentManager.Load(PersistentGameManager.Inst.capturedWorldFilename);
