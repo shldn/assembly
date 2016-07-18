@@ -23,7 +23,6 @@ public class IcoSphereCreator : MonoBehaviour
     } // End of TriangleIndices.
 
 
-	public static IcoSphereCreator Inst;
 
     private int index;
     private Dictionary<Int64, int> middlePointIndexCache;
@@ -36,12 +35,6 @@ public class IcoSphereCreator : MonoBehaviour
     Dictionary<int, Plane> faceSide0Planes = new Dictionary<int, Plane>();
     Dictionary<int, Plane> faceSide1Planes = new Dictionary<int, Plane>();
     Dictionary<int, Plane> faceSide2Planes = new Dictionary<int, Plane>();
-
-    void Awake()
-	{
-		Inst = this;
-	} // End of Awake().
-
 
     // add vertex to mesh, fix position to be on unit sphere, return index
     private int AddVertex(Vector3 p)

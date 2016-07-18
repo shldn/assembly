@@ -70,6 +70,9 @@ public class CognoAmalgam : MonoBehaviour {
 
 	ParticleSystem pSys;
 
+    // skin mesh
+    IcoSphereCreator skinMeshCreator = null;
+
     void Awake() {
         Inst = this;
     }
@@ -81,8 +84,9 @@ public class CognoAmalgam : MonoBehaviour {
 	void Start () {
 		myMeshFilter = GetComponent<MeshFilter>();
 		pSys = GetComponent<ParticleSystem>();
+        skinMeshCreator = gameObject.AddComponent<IcoSphereCreator>();
 
-		Mesh newIcoSphere = IcoSphereCreator.Inst.Create(3);
+        Mesh newIcoSphere = skinMeshCreator.Create(3);
 		myMeshFilter.mesh = newIcoSphere;
 
 		initialVerts = myMeshFilter.mesh.vertices;
@@ -410,7 +414,7 @@ public class CognoAmalgam : MonoBehaviour {
         // now check outer geometry
         bool isInside = false;
         Vector3 transformedPt = new Vector3(pt.x/transform.lossyScale.x, pt.y/transform.lossyScale.y, pt.z/transform.lossyScale.z);
-        IcoSphereCreator.Inst.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
+        skinMeshCreator.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
         return isInside;
     } // End of IsInside().
 

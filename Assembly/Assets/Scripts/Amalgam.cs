@@ -43,9 +43,11 @@ public class Amalgam : MonoBehaviour
 
 	float minDeformRadius = 0f;
 
+    // skin mesh
+    IcoSphereCreator skinMeshCreator = null;
 
 
-	public class ActiveVertex
+    public class ActiveVertex
 	{
 		public int index = 0;
 		public ActiveVertex[] neighbors;
@@ -113,10 +115,11 @@ public class Amalgam : MonoBehaviour
 
 	void Start()
 	{
-		Mesh newIcoSphere = IcoSphereCreator.Inst.Create(sphereResolution);
-		GetComponent<MeshFilter>().mesh = newIcoSphere;
-		initialVerts = newIcoSphere.vertices;
-		initialNorms = newIcoSphere.normals;
+        skinMeshCreator = gameObject.AddComponent<IcoSphereCreator>();
+        Mesh skinMesh = skinMeshCreator.Create(sphereResolution);
+		GetComponent<MeshFilter>().mesh = skinMesh;
+		initialVerts = skinMesh.vertices;
+		initialNorms = skinMesh.normals;
 
 		deformFluxRate = Mathf.Pow(Random.Range(1f, 2f), 3f);
 		wiggleFluxRate = Mathf.Pow(Random.Range(1f, 3f), 2f);
@@ -135,17 +138,17 @@ public class Amalgam : MonoBehaviour
         }
 		meshFilter.mesh.uv = newUV.ToArray();
 
-		activeVertices = new ActiveVertex[newIcoSphere.vertexCount]; // Set up active vertex list
-		for(int i = 0; i < newIcoSphere.vertexCount; i++){
+		activeVertices = new ActiveVertex[skinMesh.vertexCount]; // Set up active vertex list
+		for(int i = 0; i < skinMesh.vertexCount; i++){
 			activeVertices[i] = new ActiveVertex();
 			activeVertices[i].amalgam = this;
 			activeVertices[i].index = i;
-			activeVertices[i].originPoint = newIcoSphere.vertices[i];
+			activeVertices[i].originPoint = skinMesh.vertices[i];
 		}
 
 		vertexGraph = new int[activeVertices.Length][]; // Set up vertex graph
-		for(int i = 0; i < newIcoSphere.vertexCount; i++){
-			int[] neighborVerts = FindNeighborVertices(i, newIcoSphere);
+		for(int i = 0; i < skinMesh.vertexCount; i++){
+			int[] neighborVerts = FindNeighborVertices(i, skinMesh);
 			activeVertices[i].neighbors = new ActiveVertex[neighborVerts.Length];
 
 			// Fill vertex graph
@@ -171,7 +174,7 @@ public class Amalgam : MonoBehaviour
 		handlePrefabExt = Resources.Load("AmalgamHandleExt");
 		int numHandles = Random.Range(3, 12);
 		for(int i = 0; i < numHandles; i++){
-			handles.Add(new AmalgamHandle(this, Random.Range(0, newIcoSphere.vertexCount)));
+			handles.Add(new AmalgamHandle(this, Random.Range(0, skinMesh.vertexCount)));
 			
 			// Initialize arteries
 			if(Random.Range(0f, 1f) < 0.25f) {
@@ -477,7 +480,7 @@ public class Amalgam : MonoBehaviour
         // now check outer geometry
         bool isInside = false;
         Vector3 transformedPt = new Vector3(pt.x/transform.lossyScale.x, pt.y/transform.lossyScale.y, pt.z/transform.lossyScale.z);
-        IcoSphereCreator.Inst.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
+        skinMeshCreator.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
         return isInside;
     } // End of IsInside().
 
@@ -486,7 +489,7 @@ public class Amalgam : MonoBehaviour
 
         bool isInside = false;
         Vector3 transformedPt = new Vector3(pt.x / transform.lossyScale.x, pt.y / transform.lossyScale.y, pt.z / transform.lossyScale.z);
-        IcoSphereCreator.Inst.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside, out amalgamPt);
+        skinMeshCreator.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside, out amalgamPt);
 
         amalgamPt.x *= transform.localScale.x;
         amalgamPt.y *= transform.localScale.y;
