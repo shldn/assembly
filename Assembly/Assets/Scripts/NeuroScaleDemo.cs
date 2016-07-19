@@ -42,6 +42,9 @@ public class NeuroScaleDemo : MonoBehaviour {
     public static bool enableMutationOnFocus = true;
     public static float timeAtZeroToStartTest = 4.0f;
 
+	bool simulateMuse = false;
+	float simValue = 1f;
+
 
 	void Awake(){
 		Inst = this;
@@ -50,11 +53,22 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 	void Update(){
 
-		if(MuseManager.Inst.TouchingForehead && !isActive) {
+		if(Input.GetKeyDown(KeyCode.E))
+			simulateMuse = !simulateMuse;
+
+		if(simulateMuse) {
+			if(Input.GetKey(KeyCode.UpArrow))
+				simValue += Time.deltaTime * 0.3f;
+			if(Input.GetKey(KeyCode.DownArrow))
+				simValue -= Time.deltaTime * 0.3f;
+			simValue = Mathf.Clamp01(simValue);
+		}
+
+		if(simulateMuse || (MuseManager.Inst.TouchingForehead && !isActive)) {
 			isActive = true;
 		}
 
-		if(!MuseManager.Inst.TouchingForehead && isActive) {
+		if(!simulateMuse && !MuseManager.Inst.TouchingForehead && isActive) {
 			isActive = false;
 			targetNode = null;
 			CameraControl.Inst.SetMode_GalleryAuto();
@@ -83,16 +97,12 @@ public class NeuroScaleDemo : MonoBehaviour {
 
 		Cull();
 
-        if (!Debug.isDebugBuild || !Input.GetKey(KeyCode.Z)) {
-			enviroScale = Mathf.SmoothDamp(enviroScale, (isActive ? MuseManager.Inst.LastConcentrationMeasure : 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
-			enviroScale = Mathf.MoveTowards(enviroScale, (isActive ? MuseManager.Inst.LastConcentrationMeasure : 1f), Time.deltaTime * 0.001f);
+        if (simulateMuse || !Debug.isDebugBuild || !Input.GetKey(KeyCode.Z)) {
+			enviroScale = Mathf.SmoothDamp(enviroScale, simulateMuse? simValue : (isActive ? MuseManager.Inst.LastConcentrationMeasure : 1f), ref enviroScaleVel, MuseManager.Inst.SlowResponse? 5f : 1f);
+			enviroScale = Mathf.MoveTowards(enviroScale, simulateMuse? simValue : (isActive ? MuseManager.Inst.LastConcentrationMeasure : 1f), Time.deltaTime * 0.001f);
 		}
 		enviroScale = Mathf.Clamp01(enviroScale);
-
-        // Shortcut to get down to zero.
-        if (Debug.isDebugBuild && Input.GetKey(KeyCode.Z))
-            enviroScale = Mathf.MoveTowards(enviroScale, 0f, 0.25f * Time.deltaTime);
-
+		
         lastUseOctree = useOctree;
 
 
@@ -324,4 +334,12 @@ public class NeuroScaleDemo : MonoBehaviour {
 			}
 		}
 	} // End of SortNodes().
+
+	void OnGUI() {
+		if(simulateMuse) {
+			GUI.skin.label.alignment = TextAnchor.UpperCenter;
+			string info = "Muse Override - " + (enviroScale * 100f).ToString("F0") + "%";
+			GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), info);
+		}
+	} // End of OnGUI().
 } // End of NeuroScaleDemo.
