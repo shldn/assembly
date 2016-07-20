@@ -489,6 +489,8 @@ public class Amalgam : MonoBehaviour
     // amalgam
     public bool IsInside(Vector3 pt, out Vector3 amalgamPt) {
 
+		pt -= transform.position;
+
         bool isInside = false;
         Vector3 transformedPt = new Vector3(pt.x / transform.lossyScale.x, pt.y / transform.lossyScale.y, pt.z / transform.lossyScale.z);
         skinMeshCreator.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside, out amalgamPt);
@@ -496,6 +498,7 @@ public class Amalgam : MonoBehaviour
         amalgamPt.x *= transform.localScale.x;
         amalgamPt.y *= transform.localScale.y;
         amalgamPt.z *= transform.localScale.z;
+		amalgamPt += transform.position;
         return isInside;
     }
 

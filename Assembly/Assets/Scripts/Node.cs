@@ -161,8 +161,6 @@ public class Node {
 		if(cull || !physAssembly)
 			return;
 		
-		power = 1f;
-
 		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / nodeProperties.oscillateFrequency)) * smoothedPower;
 		waveformRunner += NodeController.physicsStep * power;
 		bool functioningMuscle = (neighbors.Count == 2) && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
@@ -234,19 +232,14 @@ public class Node {
 
 
 		// Reel in to amalgam
-		Vector3 worldSize = Vector3.one * 50f;
-		if((Mathf.Sqrt(Mathf.Pow(Position.x / worldSize.x, 2f) + Mathf.Pow(Position.y / worldSize.y, 2f) + Mathf.Pow(Position.z / worldSize.z, 2f)) > 1f)){
+		Vector3 worldSize = Vector3.one * 100f;
+		if(Application.loadedLevelName.Equals("Soup_Assemblies") && (Mathf.Sqrt(Mathf.Pow(Position.x / worldSize.x, 2f) + Mathf.Pow(Position.y / worldSize.y, 2f) + Mathf.Pow(Position.z / worldSize.z, 2f)) > 1f)){
 			delayPosition = Vector3.MoveTowards(delayPosition, Vector3.zero, NodeController.physicsStep * 1f);
 		}
-
-		/*
-		if(physAssembly.amalgam && (Vector3.Distance(Position, physAssembly.amalgam.transform.position) > physAssembly.amalgam.radius)){
-			Position -= 0.05f * (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
-		}
-		*/
+		
 
 		// Reset power
-		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep * 10f);
+		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep * 3f);
 
         // Sense nodes at full power if we're in the client, otherwise residual.
         if (neighbors.Count == 1) {
@@ -392,16 +385,18 @@ public class Node {
 
 
     private void HandleDetectedFood(FoodPellet food){
+
 		Vector3 vectorToFood = food.WorldPosition - position;
 		float distanceToFood = vectorToFood.magnitude;
-		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) || !food.Activated)
+		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) || (CognoAmalgam.Inst != null && !food.Activated))
 			return;
 
 		float angleToFood = Vector3.Angle(rotation * nodeProperties.senseVector * Vector3.forward, vectorToFood);
         float strength = 1f - (distanceToFood / nodeProperties.senseRange);
 
 		if(angleToFood < 0.5f * nodeProperties.fieldOfView){
-			power = 2f;
+			power = 1f;
+
 			signalRotation = Quaternion.Inverse(rotation) * Quaternion.LookRotation(vectorToFood, rotation * Vector3.up);
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 
