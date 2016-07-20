@@ -39,6 +39,10 @@ public static class Config {
     // values in ["inside","outside"]
     public static string cognoView = "";
 
+
+    // Blip Config
+    public static bool enableBlips = false;
+
     static Config () {
         Read("config.txt");
 	}
@@ -83,6 +87,9 @@ public static class Config {
                             break;
                         case "cognogenesis":
                             ReadCognogenesis(arr[i].Obj);
+                            break;
+                        case "blips":
+                            ReadBlips(arr[i].Obj);
                             break;
                         default:
                             Debug.LogError("Config type " + arr[i].Obj.GetString("type").Trim() + " not handled yet.");
@@ -138,6 +145,13 @@ public static class Config {
                 cognoIP = v.Value.Str.Trim();
             if (v.Key.Trim().ToLower() == "view")
                 cognoView = v.Value.Str.Trim().ToLower();
+        }
+    }
+
+    static void ReadBlips(JSONObject obj) {
+                foreach (KeyValuePair<string, JSONValue> v in obj) {
+            if (v.Key.Trim() == "enableBlips")
+                enableBlips = v.Value.Boolean;
         }
     }
 
