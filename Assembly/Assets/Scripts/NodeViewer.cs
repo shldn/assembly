@@ -52,7 +52,7 @@ public class NodeViewer {
             if(cubeTransform != null)
                 cubeTransform.GetComponent<Renderer>().enabled = value;
             if (trail)
-                trail.render = value;
+                trail.Render = value;
             if (viewCone)
                 viewCone.render = value;
         }
