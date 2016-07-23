@@ -148,6 +148,7 @@ public class NeuroScaleDemo : MonoBehaviour {
         timeAtZero = 0f;
 
 		SetAllNodeVisibility(true);
+        Cull();
     } // End of OnTestDone().
 
     void Cull()
