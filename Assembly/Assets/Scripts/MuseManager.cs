@@ -97,7 +97,7 @@ public class MuseManager : MonoBehaviour {
     private void HandleTouchingForehead(bool touching) {
         if (touchingForehead && !touching) {
             offForeheadCounter++;
-            if (offForeheadCounter >= 12) {
+            if (offForeheadCounter >= 2) {
                 touchingForehead = false;
                 offForeheadCounter = 0;
             }
