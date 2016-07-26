@@ -139,6 +139,9 @@ public class NeuroScaleDemo : MonoBehaviour {
                 if (!ClientTest.Inst.Winner.Nodes[i].IsMuscle)
                     targetNode = ClientTest.Inst.Winner.Nodes[i];
             }
+
+            // Make sure assembly doesn't die right away
+            ClientTest.Inst.Winner.SetReborn();
         }
         targetNode = ClientTest.Inst.Winner != null ? ClientTest.Inst.Winner.Nodes[0] : null;
 		targetNode.PhysAssembly.isTraitTest = false;
@@ -148,6 +151,7 @@ public class NeuroScaleDemo : MonoBehaviour {
         timeAtZero = 0f;
 
 		SetAllNodeVisibility(true);
+        Cull();
     } // End of OnTestDone().
 
     void Cull()
