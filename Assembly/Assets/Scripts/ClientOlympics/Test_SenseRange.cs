@@ -27,7 +27,7 @@ public class Test_SenseRange : ClientTest
 
     void Start()
     {
-        testAssemblies = Assembly.getAll;
+        testAssemblies = AssemblyEditor.Inst.testAssemblies;
 
 		winner = testAssemblies[0];
         StartAssemblyTest(testIdx);

@@ -9,7 +9,7 @@ public class Test_MaxSpeed : ClientTest {
 	protected override void Awake(){
 		base.Awake();
         testDuration = 250; // frames
-		foreach(Assembly someAssem in Assembly.getAll)
+		foreach(Assembly someAssem in AssemblyEditor.Inst.testAssemblies)
 			someAssem.distanceCovered = 0f;
 	} // End of Awake().
 	
@@ -20,7 +20,7 @@ public class Test_MaxSpeed : ClientTest {
 
 		if(IsDone){
 			float furthestDistance = 0f;
-			foreach(Assembly someAssem in Assembly.getAll){
+			foreach(Assembly someAssem in AssemblyEditor.Inst.testAssemblies) {
 				if(someAssem.distanceCovered > furthestDistance){
 					furthestDistance = someAssem.distanceCovered;
 					winner = someAssem;
