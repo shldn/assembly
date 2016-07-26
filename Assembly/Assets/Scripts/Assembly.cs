@@ -312,7 +312,7 @@ public class Assembly : CaptureObject{
 
 		mateCooldown -= NodeController.physicsStep;
 
-		if(!PersistentGameManager.IsClient && (energy > (maxEnergy * 0.9f)) && (mateCooldown < 0f) && (NeuroScaleDemo.Inst == null || NeuroScaleDemo.Inst.TargetNode.PhysAssembly != this))
+		if(!PersistentGameManager.IsClient && (energy > (maxEnergy * 0.9f)) && (mateCooldown < 0f) && (NeuroScaleDemo.Inst == null || NeuroScaleDemo.Inst.TargetNode == null || NeuroScaleDemo.Inst.TargetNode.PhysAssembly != this))
             WantToMate = true;
 		else if(energy < maxEnergy * 0.5f){
             WantToMate = false;
