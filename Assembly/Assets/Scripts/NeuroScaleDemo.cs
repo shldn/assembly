@@ -68,7 +68,7 @@ public class NeuroScaleDemo : MonoBehaviour {
 			isActive = true;
 		}
 
-		if(!simulateMuse && !MuseManager.Inst.TouchingForehead && isActive) {
+		if(!simulateMuse && !MuseManager.Inst.TouchingForehead && isActive && ClientTest.Inst == null) {
 			isActive = false;
 			targetNode = null;
 			CameraControl.Inst.SetMode_GalleryAuto();
@@ -145,7 +145,10 @@ public class NeuroScaleDemo : MonoBehaviour {
         }
         targetNode = ClientTest.Inst.Winner != null ? ClientTest.Inst.Winner.Nodes[0] : null;
 		targetNode.PhysAssembly.isTraitTest = false;
-		CameraControl.Inst.SetMode_NeuroScaleFocus(targetNode);
+        if (!MuseManager.Inst.TouchingForehead && !simulateMuse)
+            CameraControl.Inst.SetMode_GalleryAuto();
+        else
+    		CameraControl.Inst.SetMode_NeuroScaleFocus(targetNode);
 
         Destroy(sender);
         timeAtZero = 0f;
