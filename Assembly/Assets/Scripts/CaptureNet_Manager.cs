@@ -422,6 +422,8 @@ public class CaptureNet_Manager : MonoBehaviour {
 
         float distInFrontOfCam = 10f;
         Vector3 newJellyPos = Camera.main.transform.position + (Camera.main.transform.forward * distInFrontOfCam) + (Random.insideUnitSphere * 0.6f * distInFrontOfCam);
+        uiAudioSource.clip = PersistentGameManager.Inst.pushClip;
+        uiAudioSource.Play();
         PlayInstantiationEffect(newJellyPos);
 
         Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, newJellyPos, Random.rotation) as Transform;
@@ -440,10 +442,11 @@ public class CaptureNet_Manager : MonoBehaviour {
     {
 		print("PushAssembly()");
         //if (!GameManager.Inst)
-            //return;
+        //return;
 
-		// Ensure assemblies are dropped in at a viable position, relative to the camera.
-        Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 20f) + (Random.insideUnitSphere * 10f);
+        // Ensure assemblies are dropped in at a viable position, relative to the camera.
+        float distInFrontOfCam = 10f;
+        Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * distInFrontOfCam) + (Random.insideUnitSphere * 0.5f * distInFrontOfCam);
 		uiAudioSource.clip = PersistentGameManager.Inst.pushClip;
 		uiAudioSource.Play();
         PlayInstantiationEffect(assemblyNewPos);
@@ -453,8 +456,9 @@ public class CaptureNet_Manager : MonoBehaviour {
             Assembly a = new Assembly(assemblyStr, null, assemblyNewPos, false, true);
 
             // Assembly is "thrown" back into the environment.
+            float velocityMagnitude = 2f;
             foreach (Node someNode in a.NodeDict.Values)
-                someNode.velocity = (Camera.main.transform.forward * 3f) + Random.insideUnitSphere * 1.5f;
+                someNode.velocity = (Camera.main.transform.forward * velocityMagnitude) + Random.insideUnitSphere * 0.5f * velocityMagnitude;
         }
         else
             ControllerData.Inst.Add(new AssemblyReleased(assemblyStr, assemblyNewPos, Camera.main.transform.forward));
