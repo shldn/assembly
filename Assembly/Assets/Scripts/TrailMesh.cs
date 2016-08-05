@@ -91,6 +91,13 @@ public class TrailMesh : MonoBehaviour
         meshBounds.center = objectToTrail.transform.position;
         meshBounds.size = Vector3.one;
 
+        // Clear mesh if it exists.
+        MeshFilter meshFilter = gameObject.GetComponent(typeof(MeshFilter)) as MeshFilter;
+        if(meshFilter != null) {
+            Mesh mesh = meshFilter.mesh;
+            mesh.Clear();
+        }
+
         points.Clear();
         render = true;
     }

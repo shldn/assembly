@@ -61,7 +61,9 @@ public class NodeViewer {
     // Constructors
     public NodeViewer(Vector3 position, NodeProperties properties, AssemblyProperties aProperties)
     {
-        cubeTransform = MonoBehaviour.Instantiate(ViewerController.Inst.physNodePrefab, position, Quaternion.identity) as Transform;
+        cubeTransform = ViewerController.Inst.NodePool.Get().transform;
+        cubeTransform.position = position;
+        cubeTransform.rotation = Quaternion.identity;
         cubeTransform.GetComponent<PhysNode>().nodeViewer = this;
         if(aProperties != null) {
             cubeTransform.name = "Node-" + aProperties.id;
@@ -150,10 +152,12 @@ public class NodeViewer {
         CleanupNodeEffects();
 
         if (cubeTransform) {
-            if(immediate)
-                MonoBehaviour.Destroy(cubeTransform.gameObject);
-            else
-                cubeTransform.gameObject.AddComponent<ShrinkAndDestroy>();
+            if (immediate)
+                ViewerController.Inst.NodePool.Release(cubeTransform.gameObject);
+            else {
+                Shrink shrinker = cubeTransform.gameObject.AddComponent<Shrink>();
+                shrinker.Done += OnNodeDoneShrinking;
+            }
         }
     }
 
@@ -233,6 +237,9 @@ public class NodeViewer {
         viewCone.fovAngle = nodeProperties.fieldOfView;
     }
 
-
+    void OnNodeDoneShrinking(GameObject go, Vector3 initScale) {
+        go.transform.localScale = initScale;
+        ViewerController.Inst.NodePool.Release(go);
+    }
 
 }
