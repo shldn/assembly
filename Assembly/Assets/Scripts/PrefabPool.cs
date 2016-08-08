@@ -13,7 +13,6 @@ public class PrefabPool {
         }
         else {
             obj = MonoBehaviour.Instantiate(prefab) as GameObject;
-            obj.AddComponent<TrailMesh>();
         }
         used.Add(obj);
         obj.SetActive(true);

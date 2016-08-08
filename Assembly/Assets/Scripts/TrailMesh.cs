@@ -62,7 +62,8 @@ public class TrailMesh : MonoBehaviour
     }
 
     void Init() {
-        lastPosition = objectToTrail.transform.position;
+        if(objectToTrail != null)
+            lastPosition = objectToTrail.transform.position;
         gameObject.layer = LayerMask.NameToLayer("TransparentFX");
         transform.parent = null;
         transform.position = Vector3.zero;
