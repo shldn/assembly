@@ -44,10 +44,12 @@ public class AssemblyRadar : MonoBehaviour {
 		boneTexture = Resources.Load<Texture2D>("Textures/bone_pixel");
 
 		CameraControl.Inst.targetRadius = 100f;
-	} // End of Start().
-	
 
-	void Update(){
+        enabled = Config.enableBlips;
+    } // End of Start().
+
+
+    void Update(){
 		// Broadcast assembly position updates across network.
 		if(Network.peerType == NetworkPeerType.Server){
 			if(assemToBroadcast >= Assembly.getAll.Count)

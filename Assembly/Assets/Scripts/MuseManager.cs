@@ -97,7 +97,7 @@ public class MuseManager : MonoBehaviour {
     private void HandleTouchingForehead(bool touching) {
         if (touchingForehead && !touching) {
             offForeheadCounter++;
-            if (offForeheadCounter >= 12) {
+            if (offForeheadCounter >= 2) {
                 touchingForehead = false;
                 offForeheadCounter = 0;
             }
@@ -152,7 +152,13 @@ public class MuseManager : MonoBehaviour {
 
     void OnGUI()
     {
-		wearingHeadsetIndication = Mathf.SmoothDamp(wearingHeadsetIndication, TouchingForehead? 1f : 0f, ref wearingHeadsetIndicationVel, 1f);
+        if (ClientTest.Inst != null)
+        {
+            wearingHeadsetIndication = 0f;
+            return;
+        }
+
+        wearingHeadsetIndication = Mathf.SmoothDamp(wearingHeadsetIndication, TouchingForehead? 1f : 0f, ref wearingHeadsetIndicationVel, 1f);
 
 		// Sensor displays
 		float sensorRingSize = 50f * wearingHeadsetIndication;

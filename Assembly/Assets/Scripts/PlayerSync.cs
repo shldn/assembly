@@ -77,9 +77,8 @@ public class PlayerSync : MonoBehaviour {
             // handle camera orbiting for these players screenPos movements here
 			if(orbitModeInit){
                 Vector2 centerOffset = (new Vector2(screenPos.x, screenPos.y) - new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
-				//CameraControl.Inst.mouseOrbitStack.x += centerOffset.x;
-				//CameraControl.Inst.mouseOrbitStack.y -= centerOffset.y;
-				CameraControl.Inst.targetRadius += screenPos.z;
+
+				CameraControl.Inst.ManualOrbit(centerOffset.x, centerOffset.y, screenPos.z);
 
                 if( UtopiaGameManager.Inst )
                 {
@@ -451,10 +450,14 @@ public class PlayerSync : MonoBehaviour {
 
     public void ToggleOrbitPlayer(NetworkPlayer player)
     {
-        if (CaptureNet_Manager.Inst.orbitPlayers.Contains(player))
+        if (CaptureNet_Manager.Inst.orbitPlayers.Contains(player)) {
             CaptureNet_Manager.Inst.orbitPlayers.Remove(player);
-        else
+			CameraControl.Inst.SetMode_GalleryAuto();
+		}
+        else {
             CaptureNet_Manager.Inst.orbitPlayers.Add(player);
+			CameraControl.Inst.SetMode_UserOrbit();
+		}
     }
 
     // Notifies server when a player sync object is spawned

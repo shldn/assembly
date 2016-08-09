@@ -161,8 +161,6 @@ public class Node {
 		if(cull || !physAssembly)
 			return;
 		
-		//power = 1f;
-
 		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / nodeProperties.oscillateFrequency)) * smoothedPower;
 		waveformRunner += NodeController.physicsStep * power;
 		bool functioningMuscle = (neighbors.Count == 2) && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
@@ -234,15 +232,14 @@ public class Node {
 
 
 		// Reel in to amalgam
-		//if(Mathf.Sqrt(Mathf.Pow(Position.x / NodeController.Inst.worldSize.x, 2f) + Mathf.Pow(Position.y / NodeController.Inst.worldSize.y, 2f) + Mathf.Pow(Position.z / NodeController.Inst.worldSize.z, 2f)) > 1f){
-		/*
-		if(physAssembly.amalgam && (Vector3.Distance(Position, physAssembly.amalgam.transform.position) > physAssembly.amalgam.radius)){
-			Position -= 0.05f * (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
+		Vector3 worldSize = Vector3.one * 100f;
+		if(Application.loadedLevelName.Equals("Soup_Assemblies") && (Mathf.Sqrt(Mathf.Pow(Position.x / worldSize.x, 2f) + Mathf.Pow(Position.y / worldSize.y, 2f) + Mathf.Pow(Position.z / worldSize.z, 2f)) > 1f)){
+			delayPosition = Vector3.MoveTowards(delayPosition, Vector3.zero, NodeController.physicsStep * 1f);
 		}
-		*/
+		
 
 		// Reset power
-		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep);
+		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep * 3f);
 
         // Sense nodes at full power if we're in the client, otherwise residual.
         if (neighbors.Count == 1) {
@@ -388,16 +385,18 @@ public class Node {
 
 
     private void HandleDetectedFood(FoodPellet food){
+
 		Vector3 vectorToFood = food.WorldPosition - position;
 		float distanceToFood = vectorToFood.magnitude;
-		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) || !food.Activated)
+		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) || (CognoAmalgam.Inst != null && !food.Activated))
 			return;
 
 		float angleToFood = Vector3.Angle(rotation * nodeProperties.senseVector * Vector3.forward, vectorToFood);
         float strength = 1f - (distanceToFood / nodeProperties.senseRange);
 
-		//if(angleToFood < 0.5f * nodeProperties.fieldOfView){
-			power = 2f;
+		if(angleToFood < 0.5f * nodeProperties.fieldOfView){
+			power = 1f;
+
 			signalRotation = Quaternion.Inverse(rotation) * Quaternion.LookRotation(vectorToFood, rotation * Vector3.up);
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 
@@ -405,7 +404,7 @@ public class Node {
 
             food.Energy -= foodToPull;
 			physAssembly.energy += foodToPull;
-		//}
+		}
 		//else
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(1f, 1f, 1f, 0.25f * Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 	} // End of HandleDetectedFood().
@@ -497,7 +496,7 @@ public struct NodeProperties {
     // A fully randomly-seeded NodeProperties.
     public static NodeProperties random{
         get{
-            return new NodeProperties(Random.rotation, 45f, Random.Range(50.0f, 80.0f), Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
+            return new NodeProperties(Random.rotation, 90f, Random.Range(50.0f, 80.0f), Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
         }
     } // End of NodeProperties.random.
 

@@ -157,6 +157,10 @@ public class PersistentGameManager : MonoBehaviour {
         }
     }
 
+    void OnLevelWasLoaded(int level) {
+        TrailMeshPool.Clear();
+    }
+
     // Helper function to make sure singleton instance exists and is initialized
     public void Touch() { }
 }

@@ -29,6 +29,18 @@ public class CameraControl : MonoBehaviour {
 	float fogAmount = 0f;
 	float fogVel = 0f;
 
+	Vector3 smoothCameraOrbitStack = Vector3.zero;
+	Vector3 smoothCameraOrbitChaser = Vector3.zero;
+	Vector3 smoothCameraOrbitChaserVel = Vector3.zero;
+
+	[Header("GalleryAutoCam settings")]
+	public float minRadius_def = 1f;
+	public float maxRadius_def = 250f;
+	public float maxTilt_def = -80f;
+	public float minTilt_def = 80f;
+	public bool lockHorizon_def = false;
+
+
 	// Camera Engines --------------------------------------------------------------------------------------------------------- //
 	// A CameraEngine is a self-contained scheme for driving the camera's position and rotation. Whenever the camera behaviour is
 	//    changed, a new CameraEngine scheme is created, and it is blended to from the previous CameraEngine. This allows for
@@ -92,14 +104,30 @@ public class CameraControl : MonoBehaviour {
 
 			radius += radius * -Input.GetAxis("Mouse ScrollWheel");
 
+			radius = Mathf.Clamp(radius, 1f, 1000f);
+
 			// Mouse/touch orbit.
 			if((PersistentGameManager.IsClient && Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0) && (Input.touchCount < 2) || (Cursor.lockState == CursorLockMode.Locked) || (!Input.GetMouseButtonDown(1) && Input.GetMouseButton(1) && pinchRelease))){
 				rotation *= Quaternion.AngleAxis(Input.GetAxis("Mouse X") * mouseSensitivity, Vector3.up);
 				rotation *= Quaternion.AngleAxis(Input.GetAxis("Mouse Y") * mouseSensitivity, -Vector3.right);
 			}
 
+			if(CameraControl.Inst.lockHorizon_def) {
+				Vector3 tempEulers = rotation.eulerAngles;
+				tempEulers.z = 0f;
+				rotation = Quaternion.Euler(tempEulers);
+			}
+
+
 			position = rotation * -Vector3.forward * radius;
 		} // End of Update().
+
+		public void ManualOrbit(float x, float y, float zoom) {
+			float manualSensitivity = 1f;
+			rotation *= Quaternion.AngleAxis(x * manualSensitivity, Vector3.up);
+			rotation *= Quaternion.AngleAxis(y * manualSensitivity, Vector3.right);
+			radius *= 1f + (zoom * 0.001f);
+		} // End of ManualOribt().
 	} // End of UserOrbitCamera.
 
 	// Automatically orbits in and out of the environment, eyeballing assemblies and other interesting things.
@@ -113,6 +141,8 @@ public class CameraControl : MonoBehaviour {
 		float maxRadius = 250f;
 		float galleryCamZoomRate = 60f;
 
+		bool lockHorizon = false;
+
 		// Camera offset rotation from center point (NOT camera rotation!)
 		Quaternion orbitRot = Quaternion.identity;
 
@@ -123,11 +153,19 @@ public class CameraControl : MonoBehaviour {
 		Vector2 targetPanTilt = new Vector2(0f, 0f);
 		Vector2 panTiltVel = Vector2.zero;
 
+		public GalleryAutoCamera() {
+			minRadius = CameraControl.Inst.minRadius_def;
+			maxRadius = CameraControl.Inst.maxRadius_def;
+			minTilt = CameraControl.Inst.minTilt_def;
+			maxTilt = CameraControl.Inst.maxTilt_def;
+			lockHorizon = CameraControl.Inst.lockHorizon_def;
+		}
+
 		public override void Update() {
 			float elevationPulseTime = 75f;
 			float radiusLerp = Mathf.Pow((0.5f + (Mathf.Cos((Time.timeSinceLevelLoad / galleryCamZoomRate) * (Mathf.PI * 2f)) * 0.5f)), 5f);
 			orbitRadius = Mathf.Lerp(minRadius, maxRadius, radiusLerp);
-			orbitRot = Quaternion.Euler(Mathf.Lerp(minTilt, maxTilt, 0.5f + ((Mathf.Sin((Time.timeSinceLevelLoad / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f))), orbitRot.eulerAngles.y, 0f);
+			orbitRot = Quaternion.Euler(Mathf.Lerp(minTilt, maxTilt, 0.5f + ((Mathf.Sin((Time.timeSinceLevelLoad / elevationPulseTime) * (Mathf.PI * 2f)) * 0.5f))), Time.time * 2f, 0f);
 
 			Quaternion targetRotation = orbitRot;
 
@@ -170,6 +208,8 @@ public class CameraControl : MonoBehaviour {
 			float panTiltSmoothTime = 2f;
 			tempEulers.x = Mathf.SmoothDampAngle(tempEulers.x, targetPanTilt.x, ref panTiltVel.x, panTiltSmoothTime);
 			tempEulers.y = Mathf.SmoothDampAngle(tempEulers.y, targetPanTilt.y, ref panTiltVel.y, panTiltSmoothTime);
+			if(lockHorizon)
+				tempEulers.z = 0f;
 			rotation = Quaternion.Euler(tempEulers);
 
 			position = orbitRot * -Vector3.forward * orbitRadius;
@@ -303,6 +343,12 @@ public class CameraControl : MonoBehaviour {
 		RenderSettings.fogStartDistance = Mathf.Lerp(300f, 10f, fogAmount);
 		RenderSettings.fogEndDistance = Mathf.Lerp(1000f, 20f, fogAmount);
 
+		smoothCameraOrbitChaser = Vector3.SmoothDamp(smoothCameraOrbitChaser, smoothCameraOrbitStack, ref smoothCameraOrbitChaserVel, 0.25f);
+		smoothCameraOrbitStack = Vector3.Lerp(smoothCameraOrbitStack, Vector3.zero, Time.deltaTime);
+		if(currentCamEngine is UserOrbitCamera) {
+			((UserOrbitCamera)currentCamEngine).ManualOrbit(smoothCameraOrbitChaser.x * 0.01f, smoothCameraOrbitChaser.y * 0.01f, smoothCameraOrbitChaser.z * 0.1f);
+		}
+
 	} // End of Update().
 
 	// Setting camera mode
@@ -337,5 +383,10 @@ public class CameraControl : MonoBehaviour {
             GUILayout.EndVertical();
         }
     } // End of OnGUI().
+
+
+	public void ManualOrbit(float x, float y, float zoom) {
+		smoothCameraOrbitStack += new Vector3(x, y, zoom);
+	} // End of ManualOrbit().
 
 } // End of CameraOrbit.

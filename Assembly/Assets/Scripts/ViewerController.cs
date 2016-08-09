@@ -12,6 +12,8 @@ public class ViewerController : MonoBehaviour {
 
     // Internal Variables
     bool hide = false;
+    PrefabPool foodPool = new PrefabPool();
+    PrefabPool nodePool = new PrefabPool();
 
     // Accessors
     public static bool Hide { 
@@ -27,9 +29,14 @@ public class ViewerController : MonoBehaviour {
         } 
     }
 
+    public PrefabPool FoodPool { get { return foodPool; } }
+    public PrefabPool NodePool { get { return nodePool; } }
+
     void Awake()
     {
         Inst = this;
+        nodePool.prefab = physNodePrefab.gameObject;
+        foodPool.prefab = physFoodPrefab.gameObject;
     }
 
     void Start() {

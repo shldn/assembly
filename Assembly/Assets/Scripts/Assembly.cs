@@ -111,6 +111,7 @@ public class Assembly : CaptureObject{
 	public bool ready = false; // Turns true after having survived an Update() step.
 
     System.DateTime creationTime = System.DateTime.Now;
+    public void SetReborn() { creationTime = System.DateTime.Now; }
     public float AgeInSeconds { get { return (float)(System.DateTime.Now - creationTime).TotalSeconds; } }
 
     private static Octree<Assembly> allAssemblyTree;
@@ -311,7 +312,7 @@ public class Assembly : CaptureObject{
 
 		mateCooldown -= NodeController.physicsStep;
 
-		if(!PersistentGameManager.IsClient && (energy > (maxEnergy * 0.9f)) && (mateCooldown < 0f))
+		if(!PersistentGameManager.IsClient && (energy > (maxEnergy * 0.9f)) && (mateCooldown < 0f) && (NeuroScaleDemo.Inst == null || NeuroScaleDemo.Inst.TargetNode == null || NeuroScaleDemo.Inst.TargetNode.PhysAssembly != this))
             WantToMate = true;
 		else if(energy < maxEnergy * 0.5f){
             WantToMate = false;
@@ -357,7 +358,7 @@ public class Assembly : CaptureObject{
 			}
 
 			// Create offspring!
-			if(mateCompletion >= 1f){
+			if(mateCompletion >= 1f && ClientTest.Inst == null){
 				// Spawn a new assembly between the two.
 				int numNodes = Random.Range(nodes.Count, MatingWith.nodes.Count + 1);
                 string name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));

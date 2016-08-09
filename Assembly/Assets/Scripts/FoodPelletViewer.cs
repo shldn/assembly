@@ -37,7 +37,9 @@ public class FoodPelletViewer {
 
     public FoodPelletViewer(Vector3 worldPosition, int id_ = -1)
     {
-        transform = MonoBehaviour.Instantiate(ViewerController.Inst.physFoodPrefab, worldPosition, Random.rotation) as Transform;
+        transform = ViewerController.Inst.FoodPool.Get().transform;
+        transform.position = worldPosition;
+        Scale = 1;
         renderers = transform.GetComponentsInChildren<Renderer>();
         Visible = !ViewerController.Hide;
         id = id_;
@@ -47,7 +49,7 @@ public class FoodPelletViewer {
 
     public void Destroy(bool removeFromList = true)
     {
-        GameObject.Destroy(gameObject);
+        ViewerController.Inst.FoodPool.Release(gameObject);
         if (removeFromList && all.ContainsKey(id))
             all.Remove(id);
     }

@@ -68,10 +68,11 @@ public class NeuroScaleDemo : MonoBehaviour {
 			isActive = true;
 		}
 
-		if(!simulateMuse && !MuseManager.Inst.TouchingForehead && isActive) {
+		if(!simulateMuse && !MuseManager.Inst.TouchingForehead && isActive && ClientTest.Inst == null) {
 			isActive = false;
 			targetNode = null;
 			CameraControl.Inst.SetMode_GalleryAuto();
+			SetAllNodeVisibility(true);
 		}
 
 
@@ -138,12 +139,22 @@ public class NeuroScaleDemo : MonoBehaviour {
                 if (!ClientTest.Inst.Winner.Nodes[i].IsMuscle)
                     targetNode = ClientTest.Inst.Winner.Nodes[i];
             }
+
+            // Make sure assembly doesn't die right away
+            ClientTest.Inst.Winner.SetReborn();
         }
         targetNode = ClientTest.Inst.Winner != null ? ClientTest.Inst.Winner.Nodes[0] : null;
-		CameraControl.Inst.SetMode_NeuroScaleFocus(targetNode);
+		targetNode.PhysAssembly.isTraitTest = false;
+        if (!MuseManager.Inst.TouchingForehead && !simulateMuse)
+            CameraControl.Inst.SetMode_GalleryAuto();
+        else
+    		CameraControl.Inst.SetMode_NeuroScaleFocus(targetNode);
 
         Destroy(sender);
         timeAtZero = 0f;
+
+		SetAllNodeVisibility(true);
+        Cull();
     } // End of OnTestDone().
 
     void Cull()

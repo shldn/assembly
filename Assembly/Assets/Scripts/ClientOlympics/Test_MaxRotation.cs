@@ -40,7 +40,7 @@ public class Test_MaxRotation : ClientTest {
     void AddFoodToAllPeriphery()
     {
         FoodPellet.DestroyAll();
-        foreach (Assembly someAssembly in Assembly.getAll)
+        foreach (Assembly someAssembly in AssemblyEditor.Inst.testAssemblies)
         {
             if (!someAssembly.cull)
                 AddFoodAtPeriphery(someAssembly);
@@ -66,7 +66,7 @@ public class Test_MaxRotation : ClientTest {
 
     bool CheckForSenseNodes()
     {
-        foreach (Assembly someAssembly in Assembly.getAll)
+        foreach (Assembly someAssembly in AssemblyEditor.Inst.testAssemblies)
             if (!someAssembly.cull)
                 foreach (KeyValuePair<Triplet, Node> kvp in someAssembly.NodeDict)
                     if (kvp.Value.IsSense)
