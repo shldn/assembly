@@ -38,6 +38,9 @@ public class AssemblyEditor : MonoBehaviour {
 
     void Start(){
         CaptureEditorManager.ObjectCaptured += HandleObjectCaptured;
+        if (PersistentGameManager.IsClient) {
+            CameraControl.Inst.SetMode_AssemblyHerd();
+        }
     } // End of Start().
 
 

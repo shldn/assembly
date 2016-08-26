@@ -25,7 +25,8 @@ public class ClientTest : MonoBehaviour {
 
 	protected virtual void Awake(){
 		Inst = this;
-	} // End of Awake().
+        CameraControl.Inst.SetMode_AssemblyHerd();
+    } // End of Awake().
 	
 
 	protected virtual void Update(){
