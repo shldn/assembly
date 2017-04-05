@@ -215,7 +215,7 @@ public class Node {
             bool createTrail = neighbors.Count == 2 && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
 
 			// Don't need trails on amalgam level... the amalgams are heavy enough to render already.
-			if(Application.loadedLevelName == "Soup_Amalgams")
+			if(NodeController.Inst.LoadedLevelName == "Soup_Amalgams")
 				createTrail = false;
 
 			//createTrail = false;
@@ -233,7 +233,7 @@ public class Node {
 
 		// Reel in to amalgam
 		Vector3 worldSize = Vector3.one * 100f;
-		if(Application.loadedLevelName.Equals("Soup_Assemblies") && (Mathf.Sqrt(Mathf.Pow(Position.x / worldSize.x, 2f) + Mathf.Pow(Position.y / worldSize.y, 2f) + Mathf.Pow(Position.z / worldSize.z, 2f)) > 1f)){
+		if(NodeController.Inst.LoadedLevelName.Equals("Soup_Assemblies") && (Mathf.Sqrt(Mathf.Pow(Position.x / worldSize.x, 2f) + Mathf.Pow(Position.y / worldSize.y, 2f) + Mathf.Pow(Position.z / worldSize.z, 2f)) > 1f)){
 			delayPosition = Vector3.MoveTowards(delayPosition, Vector3.zero, NodeController.physicsStep * 1f);
 		}
 		

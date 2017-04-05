@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +69,10 @@ public class NodeController : MonoBehaviour {
     System.DateTime lastResetTime = System.DateTime.Now;
     public System.DateTime lastPlayerActivityTime = System.DateTime.Now;
 
+    // Performance helpers
+    // Application.loadedLevelName allocates memory unnecessarily, this approach saves that and helps on garbage collection events.
+    private string loadedLevelName = "";
+    public string LoadedLevelName { get { return loadedLevelName; } }
 
 	float leaderboardFadeIn = 0f;
 
@@ -88,8 +93,9 @@ public class NodeController : MonoBehaviour {
         string lineEnding = isWindows ? "\r\n" : "\n";
         TextAsset maleNamesText = Resources.Load("Text/randomwords.txt") as TextAsset;
         nameList = maleNamesText.text.Split(new string[] { lineEnding }, System.StringSplitOptions.RemoveEmptyEntries);
-	} // End of Awake().
 
+        SceneManager.sceneLoaded += onSceneLoaded;
+    } // End of Awake().
 
     void Start(){
 		PersistentGameManager.Inst.Touch();
@@ -107,8 +113,12 @@ public class NodeController : MonoBehaviour {
 		worldSize = minWorldSize;
     } // End of Start().
 
+    void onSceneLoaded(Scene scene, LoadSceneMode mode) {
+        loadedLevelName = scene.name;
+    }
 
-	public string GetRandomName(){
+
+    public string GetRandomName(){
 		return nameList[Random.Range(0, nameList.Length)];
 	} // End of GetRandomName().
 
