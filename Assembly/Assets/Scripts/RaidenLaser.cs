@@ -69,7 +69,7 @@ public class RaidenLaser : MonoBehaviour {
 		pSys.GetParticles(particles);
 		for(int i = 0; i < particles.Length; i++) {
 			particles[i].startLifetime = distBetween * 0.001f * Mathf.Lerp(10f, 50f, (float)particles[i].randomSeed / 4294967295f);
-			float lerp = particles[i].lifetime / particles[i].startLifetime;
+			float lerp = particles[i].remainingLifetime / particles[i].startLifetime;
 			particles[i].position = MathUtilities.CalculateBezierPoint(lerp, pos0, pos1, pos2, pos3);
 			particles[i].position += particles[i].rotation3D * 4f;
 			particles[i].startColor = Color.Lerp(color.SetAlpha(fadeIn), new Color(1f, 1f, 1f, fadeIn), lerp);
