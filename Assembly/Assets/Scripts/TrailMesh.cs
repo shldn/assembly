@@ -255,6 +255,7 @@ public class TrailMesh : MonoBehaviour
                 }
 
                 Mesh mesh = (GetComponent(typeof(MeshFilter)) as MeshFilter).mesh;
+                mesh.MarkDynamic();
                 mesh.Clear();
                 mesh.vertices = newVertices;
                 mesh.colors = newColors;
