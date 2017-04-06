@@ -154,8 +154,8 @@ public class Assembly : CaptureObject{
         isOffspring = isOffspring_;
         AddRandomNodes(numNodes);
 
-        foreach (Node someNode in NodeDict.Values)
-            someNode.ComputeEnergyNetwork();
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            kvp.Value.ComputeEnergyNetwork();
 
 
         if (!PersistentGameManager.EmbedViewer) {
@@ -198,8 +198,8 @@ public class Assembly : CaptureObject{
 		AllAssemblyTree.Insert(this);
 
         AddNodes(newNodes);
-		foreach(Node someNode in NodeDict.Values)
-			someNode.ComputeEnergyNetwork();
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            kvp.Value.ComputeEnergyNetwork();
 
 		PersistentGameManager.CaptureObjects.Add(this);
         userReleased = userReleased_;
@@ -232,8 +232,8 @@ public class Assembly : CaptureObject{
                 spawnHexPos += HexUtilities.RandomAdjacent();
             }
 
-            foreach (Node someNode in NodeDict.Values) {
-                if (someNode.neighbors.Count == 1) {
+            foreach (KeyValuePair<Triplet, Node> kvp in nodeDict) {
+                if (kvp.Value.neighbors.Count == 1) {
                     containsSenseNode = true;
                     break;
                 }
@@ -306,7 +306,7 @@ public class Assembly : CaptureObject{
 				Destroy();
 		}
 
-		float maxEnergy = nodeDict.Values.Count * 2f;
+		float maxEnergy = nodeDict.Count * 2f;
 		if(!PersistentGameManager.IsClient)
 			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
@@ -417,13 +417,13 @@ public class Assembly : CaptureObject{
         // Keeps assemblies in Capsule
         if (!PersistentGameManager.IsClient) {
             if (CognoAmalgam.Inst != null && Random.Range(0f, 1f) >= 0.6f && !CognoAmalgam.Inst.IsInside(Position)) {
-                foreach (Node someNode in nodeDict.Values)
-                    someNode.velocity += -Position.normalized * NodeController.physicsStep;
+                foreach (KeyValuePair<Triplet,Node> kvp in nodeDict)
+                    kvp.Value.velocity += -Position.normalized * NodeController.physicsStep;
             }
             else if (Environment.Inst && Environment.Inst.isActiveAndEnabled && PersistentGameManager.IsServer) {
                 if (!Environment.Inst.IsInside(Position)) {
-                    foreach (Node someNode in nodeDict.Values)
-                        someNode.velocity += -Position.normalized * NodeController.physicsStep * 0.1f;
+                    foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+                        kvp.Value.velocity += -Position.normalized * NodeController.physicsStep * 0.1f;
                 }
             }
         }
@@ -519,7 +519,8 @@ public class Assembly : CaptureObject{
 
 	// Merges two assemblies together.
 	public void AmaglamateTo(Assembly otherAssembly, Triplet offset){
-		foreach(Node someNode in nodeDict.Values){
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict) {
+            Node someNode = kvp.Value;
 			otherAssembly.energy += 1f;
 			someNode.PhysAssembly = otherAssembly;
 			someNode.localHexPos += offset;
@@ -542,8 +543,8 @@ public class Assembly : CaptureObject{
 
 
 	public void Mutate(float amount){
-		foreach(Node someNode in NodeDict.Values)
-			someNode.Mutate(amount);
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            kvp.Value.Mutate(amount);
 	} // End of Mutate().
 
 
@@ -568,8 +569,8 @@ public class Assembly : CaptureObject{
 
     public void RemoveAllNodes(bool destroy = true) {
         if(destroy)
-            foreach (Node someNode in NodeDict.Values)
-                someNode.Destroy();
+            foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+                kvp.Value.Destroy();
 
         nodeDict.Clear();
         nodes.Clear();
@@ -595,8 +596,8 @@ public class Assembly : CaptureObject{
 
     public void GetBoundingSphere(out Vector3 center, out float sphereRadius) {
         List<Vector3> pts = new List<Vector3>();
-        foreach (Node someNode in NodeDict.Values)
-            pts.Add(someNode.Position);
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            pts.Add(kvp.Value.Position);
         MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);
     } // End of GetBoundingSphere().
 
