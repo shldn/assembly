@@ -53,10 +53,10 @@ public class Assembly : CaptureObject{
             if (cachedFrame == Time.frameCount)
                 return cachedPosition;
 			Vector3 worldPos = Vector3.zero;
-			foreach(Node someNode in nodeDict.Values)
-				worldPos += someNode.Position;
-			if(nodeDict.Keys.Count > 0f)
-				worldPos /= nodeDict.Keys.Count;
+			foreach(KeyValuePair<Triplet,Node> kvp in nodeDict)
+				worldPos += kvp.Value.Position;
+			if(nodeDict.Count > 0f)
+				worldPos /= nodeDict.Count;
 
             cachedFrame = Time.frameCount;
             cachedPosition = worldPos;
