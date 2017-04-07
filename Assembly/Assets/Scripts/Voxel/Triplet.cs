@@ -143,18 +143,23 @@ public class Triplet {
 		return new Vector3(x, y, z);
 	}
 
+    private static Triplet[] hexDirectionImpl = null;
 	public static Triplet[] hexDirection{
-        get{ return new Triplet[]{   new Triplet(1, 0, 0),
-                                     new Triplet(0, 1, 0),
-                                     new Triplet(-1, 1, 0),
-                                     new Triplet(-1, 0, 0),
-                                     new Triplet(0, -1, 0),
-                                     new Triplet(1, -1, 0),
-                                     new Triplet(0, 0, 1),
-                                     new Triplet(-1, 0, 1),
-                                     new Triplet(0, -1, 1),
-                                     new Triplet(0, 0, -1),
-                                     new Triplet(1, 0, -1),
-                                     new Triplet(0, 1, -1) }; }
+        get{
+            if(hexDirectionImpl == null)
+                hexDirectionImpl = new Triplet[]{    new Triplet(1, 0, 0),
+                                                     new Triplet(0, 1, 0),
+                                                     new Triplet(-1, 1, 0),
+                                                     new Triplet(-1, 0, 0),
+                                                     new Triplet(0, -1, 0),
+                                                     new Triplet(1, -1, 0),
+                                                     new Triplet(0, 0, 1),
+                                                     new Triplet(-1, 0, 1),
+                                                     new Triplet(0, -1, 1),
+                                                     new Triplet(0, 0, -1),
+                                                     new Triplet(1, 0, -1),
+                                                     new Triplet(0, 1, -1) };
+            return hexDirectionImpl;
+        }
     } // End of directions{}.
 }
