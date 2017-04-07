@@ -346,7 +346,8 @@ public class Node {
 
 	// When a sense node calls this function, it will rebuild its energy transfer network.
 	public void ComputeEnergyNetwork(){
-		senseActuateLinks = ComputeCircuitry(new HashSet<Node>(new Node[]{this}), 1f);
+        if(IsSense)
+    		senseActuateLinks = ComputeCircuitry(new HashSet<Node>(new Node[]{this}), 1f);
 	} // End of ComputeEnergyNetwork().
 
 
@@ -358,7 +359,7 @@ public class Node {
 		if(signalStrength < 0.02f)
 			return linksToReturn;
 
-		if(neighbors.Count == 2)
+		if(IsMuscle)
 			linksToReturn.Add(new SenseActuateLink(this, signalStrength));
 
 		for(int i = 0; i < neighbors.Count; i++){
