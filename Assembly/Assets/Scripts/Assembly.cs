@@ -379,9 +379,16 @@ public class Assembly : CaptureObject{
 
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(MatingWith);
+
+				// Inherit amalgam
 				newAssembly.amalgam = amalgam;
 				if(newAssembly.amalgam)
 					newAssembly.amalgam.assemblies.Add(newAssembly);
+
+				// Inherit cognoamalgam
+				newAssembly.cognoAmalgam = cognoAmalgam;
+				if(newAssembly.cognoAmalgam)
+					newAssembly.cognoAmalgam.assemblies.Add(newAssembly);
 
                 //Debug.LogError("Baby assembly born: family size: " + familyTree.Count);
 

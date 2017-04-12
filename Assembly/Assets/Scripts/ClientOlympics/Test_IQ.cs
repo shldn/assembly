@@ -6,7 +6,6 @@ public class Test_IQ : ClientTest
     Vector3[] targetDir = { Vector3.forward, Vector3.up, -2f * Vector3.forward, Vector3.right };
     int[] targetEndFrame = {100, 200, 400, 500};
     int targetIdx = 0;
-    List<Assembly> testAssemblies = new List<Assembly>();
     Quaternion rotation = Quaternion.identity;
 
     void Awake()
@@ -27,7 +26,7 @@ public class Test_IQ : ClientTest
         {
             Assembly newPhysAssem = new Assembly(IOHelper.AssemblyToString(AssemblyEditor.Inst.capturedAssembly), rot, initPos + i * offset, false);
             newPhysAssem.Mutate(mutationRate);
-            testAssemblies.Add(newPhysAssem);
+            AssemblyEditor.Inst.testAssemblies.Add(newPhysAssem);
         }
     }
 
@@ -64,7 +63,7 @@ public class Test_IQ : ClientTest
 
     Quaternion GetRotationToFirstSense()
     {
-        foreach (Assembly someAssembly in testAssemblies)
+        foreach (Assembly someAssembly in AssemblyEditor.Inst.testAssemblies)
             if (!someAssembly.cull)
                 foreach (KeyValuePair<Triplet, Node> kvp in someAssembly.NodeDict)
                     if (kvp.Value.IsSense)
@@ -87,7 +86,7 @@ public class Test_IQ : ClientTest
         if (clearFood)
             FoodPellet.DestroyAll();
         int count = 0;
-        foreach (Assembly someAssembly in testAssemblies)
+        foreach (Assembly someAssembly in AssemblyEditor.Inst.testAssemblies)
         {
             if (!someAssembly.cull)
                 AddFoodAtCenterOfSense(someAssembly, dist, setAsOwner, showOnlyOne && count != 0);

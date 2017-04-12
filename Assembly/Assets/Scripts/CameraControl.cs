@@ -264,6 +264,14 @@ public class CameraControl : MonoBehaviour {
 				MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);
 				radius = (sphereRadius + 10f) / Mathf.Tan(Camera.main.fieldOfView * 0.4f * Mathf.Deg2Rad);
 			}
+            else {
+                foreach (Assembly someAssembly in Assembly.getAll)
+                    if (!someAssembly.cull)
+                        pts.Add(someAssembly.Position);
+                float sphereRadius = 0f;
+                MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);
+                radius = (sphereRadius + 10f) / Mathf.Tan(Camera.main.fieldOfView * 0.4f * Mathf.Deg2Rad);
+            }
 
 			position = center - Camera.main.transform.forward * radius;
 		} // End of Update().
