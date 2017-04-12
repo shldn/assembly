@@ -20,7 +20,8 @@ public class PrefabPool {
     }
 
     public void Release(GameObject obj) {
-        obj.SetActive(false);
+        if(obj)
+            obj.SetActive(false);
         used.Remove(obj);
         free.Push(obj);
     }
