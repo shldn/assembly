@@ -129,8 +129,6 @@ public class NeuroScaleDemo : MonoBehaviour {
         testRunner.DoTest(AssemblyEditor.MenuType.maximumSpeed);
         testRunner.TestDone += OnTestDone;
 		targetNode = null;
-
-		CameraControl.Inst.SetMode_AssemblyHerd();
     } // End of StartTest().
 
     private void OnTestDone(AssemblyEditor sender) {
