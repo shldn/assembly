@@ -259,7 +259,7 @@ public class CognoAmalgam : MonoBehaviour {
 		for(int i = 0; i < particles.Length; i++) {
 			//particles[i].startLifetime = 10f * Mathf.Lerp(10f, 50f, (float)particles[i].randomSeed / 4294967295f);
 			particles[i].startLifetime = 30f;
-			float lerp = Mathf.Repeat((particles[i].lifetime / particles[i].startLifetime) + ((float)particles[i].randomSeed / 4294967295f), 1f);
+			float lerp = Mathf.Repeat((particles[i].remainingLifetime / particles[i].startLifetime) + ((float)particles[i].randomSeed / 4294967295f), 1f);
 
 			// ------------------------------------------------------------------------ //
 			int lastVertIdx = Mathf.FloorToInt(((float)lerp * (float)numVerts) / (float)streamVertDensity);
@@ -397,8 +397,9 @@ public class CognoAmalgam : MonoBehaviour {
 		for(int i = 0; i < streamVerts.Count; i++)
 			vertList += streamVerts[i] + "\n";
 		GUI.Label(screenRect, vertList);
+		
 	} // End of OnGUI().
-
+	
 
 	Vector3 GetStreamVertCreeped(int i) {
 		int wrappedIdx = (int)Mathf.Repeat(i, streamVerts.Count);

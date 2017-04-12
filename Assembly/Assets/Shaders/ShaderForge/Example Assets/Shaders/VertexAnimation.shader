@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
 #warning Upgrade NOTE: unity_Scale shader variable was removed; replaced 'unity_Scale.w' with '1.0'
 
 // Shader created with Shader Forge v1.00 
@@ -63,15 +65,15 @@ Shader "Shader Forge/Examples/Vertex Animation" {
                 VertexOutput o;
                 o.uv0 = v.texcoord0;
                 #if SHOULD_SAMPLE_SH_PROBE
-                    o.shLight = ShadeSH9(float4(mul(_Object2World, float4(v.normal,0)).xyz * 1.0,1)) * 0.5;
+                    o.shLight = ShadeSH9(float4(mul(unity_ObjectToWorld, float4(v.normal,0)).xyz * 1.0,1)) * 0.5;
                 #endif
-                o.normalDir = mul(_Object2World, float4(v.normal,0)).xyz;
-                o.tangentDir = normalize( mul( _Object2World, float4( v.tangent.xyz, 0.0 ) ).xyz );
+                o.normalDir = mul(unity_ObjectToWorld, float4(v.normal,0)).xyz;
+                o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
                 o.binormalDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
                 float4 node_8699 = _Time + _TimeEditor;
                 float node_133 = pow((abs((frac((o.uv0+node_8699.g*float2(0.25,0)).r)-0.5))*2.0),_BulgeShape); // Panning gradient
                 v.vertex.xyz += (node_133*_BulgeScale*v.normal);
-                o.posWorld = mul(_Object2World, v.vertex);
+                o.posWorld = mul(unity_ObjectToWorld, v.vertex);
                 float3 lightColor = _LightColor0.rgb;
                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
@@ -169,13 +171,13 @@ Shader "Shader Forge/Examples/Vertex Animation" {
             VertexOutput vert (VertexInput v) {
                 VertexOutput o;
                 o.uv0 = v.texcoord0;
-                o.normalDir = mul(_Object2World, float4(v.normal,0)).xyz;
-                o.tangentDir = normalize( mul( _Object2World, float4( v.tangent.xyz, 0.0 ) ).xyz );
+                o.normalDir = mul(unity_ObjectToWorld, float4(v.normal,0)).xyz;
+                o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
                 o.binormalDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
                 float4 node_8701 = _Time + _TimeEditor;
                 float node_133 = pow((abs((frac((o.uv0+node_8701.g*float2(0.25,0)).r)-0.5))*2.0),_BulgeShape); // Panning gradient
                 v.vertex.xyz += (node_133*_BulgeScale*v.normal);
-                o.posWorld = mul(_Object2World, v.vertex);
+                o.posWorld = mul(unity_ObjectToWorld, v.vertex);
                 float3 lightColor = _LightColor0.rgb;
                 o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
@@ -257,7 +259,7 @@ Shader "Shader Forge/Examples/Vertex Animation" {
             VertexOutput vert (VertexInput v) {
                 VertexOutput o;
                 o.uv0 = v.texcoord0;
-                o.normalDir = mul(_Object2World, float4(v.normal,0)).xyz;
+                o.normalDir = mul(unity_ObjectToWorld, float4(v.normal,0)).xyz;
                 float4 node_8703 = _Time + _TimeEditor;
                 float node_133 = pow((abs((frac((o.uv0+node_8703.g*float2(0.25,0)).r)-0.5))*2.0),_BulgeShape); // Panning gradient
                 v.vertex.xyz += (node_133*_BulgeScale*v.normal);
@@ -308,7 +310,7 @@ Shader "Shader Forge/Examples/Vertex Animation" {
             VertexOutput vert (VertexInput v) {
                 VertexOutput o;
                 o.uv0 = v.texcoord0;
-                o.normalDir = mul(_Object2World, float4(v.normal,0)).xyz;
+                o.normalDir = mul(unity_ObjectToWorld, float4(v.normal,0)).xyz;
                 float4 node_8705 = _Time + _TimeEditor;
                 float node_133 = pow((abs((frac((o.uv0+node_8705.g*float2(0.25,0)).r)-0.5))*2.0),_BulgeShape); // Panning gradient
                 v.vertex.xyz += (node_133*_BulgeScale*v.normal);
