@@ -397,8 +397,9 @@ public class CognoAmalgam : MonoBehaviour {
 		for(int i = 0; i < streamVerts.Count; i++)
 			vertList += streamVerts[i] + "\n";
 		GUI.Label(screenRect, vertList);
+		
 	} // End of OnGUI().
-
+	
 
 	Vector3 GetStreamVertCreeped(int i) {
 		int wrappedIdx = (int)Mathf.Repeat(i, streamVerts.Count);

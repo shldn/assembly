@@ -253,6 +253,11 @@ public class CameraControl : MonoBehaviour {
 	public class AssemblyHerdCamera : CameraEngine {
 		Vector3 center = Vector3.zero;
 		float radius = 0f;
+		public bool testAssembliesOnly = false;
+
+		public AssemblyHerdCamera(bool _testAssembliesOnly) {
+			testAssembliesOnly = _testAssembliesOnly;
+		}
 
 		public override void Update() {
 			List<Vector3> pts = new List<Vector3>();
@@ -264,7 +269,7 @@ public class CameraControl : MonoBehaviour {
 				MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);
 				radius = (sphereRadius + 10f) / Mathf.Tan(Camera.main.fieldOfView * 0.4f * Mathf.Deg2Rad);
 			}
-            else {
+            else if(!testAssembliesOnly){
                 foreach (Assembly someAssembly in Assembly.getAll)
                     if (!someAssembly.cull)
                         pts.Add(someAssembly.Position);
@@ -319,7 +324,7 @@ public class CameraControl : MonoBehaviour {
 		if(Input.GetKeyDown(KeyCode.Alpha3))
 			SetMode_GalleryAuto();
 		if(Input.GetKeyDown(KeyCode.Alpha4))
-			SetMode_AssemblyHerd();
+			SetMode_AssemblyHerd(false);
 
 
 		if(storedCamEngine && !nextCamEngine) {
@@ -342,6 +347,7 @@ public class CameraControl : MonoBehaviour {
 				nextCamEngine = null;
 			}
 		}
+
 
 		// Manual control of fog distance
 		float targetFogLerp = 0f;
@@ -368,7 +374,7 @@ public class CameraControl : MonoBehaviour {
 	}
 	public void SetMode_UserOrbit() { storedCamEngine = new UserOrbitCamera(); storedCamEngine.Init(); }
 	public void SetMode_GalleryAuto() { storedCamEngine = new GalleryAutoCamera(); storedCamEngine.Init(); }
-	public void SetMode_AssemblyHerd() { storedCamEngine = new AssemblyHerdCamera(); storedCamEngine.Init(); }
+	public void SetMode_AssemblyHerd(bool testAssembliesOnly) { storedCamEngine = new AssemblyHerdCamera(testAssembliesOnly); storedCamEngine.Init(); }
 
 
     void OnGUI(){
