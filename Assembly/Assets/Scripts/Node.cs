@@ -480,6 +480,10 @@ public class SenseActuateLink {
 
 public struct NodeProperties {
 
+    public static readonly bool tetherFovAndRange = true;
+    public static readonly float senseMin = 1f;
+    public static readonly float senseMax = 100f;
+
     // Sense
     public Quaternion senseVector;  // viewer needs
     public float fieldOfView;       // viewer needs
@@ -497,7 +501,9 @@ public struct NodeProperties {
     // A fully randomly-seeded NodeProperties.
     public static NodeProperties random{
         get{
-            return new NodeProperties(Random.rotation, 90f, Random.Range(50.0f, 80.0f), Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
+            float senseRange = Random.Range(50f, 80f);
+            float fov = tetherFovAndRange ? GetFovFromRange(senseRange) : Random.Range(70.0f, 110.0f);
+            return new NodeProperties(Random.rotation, fov, senseRange, Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
         }
     } // End of NodeProperties.random.
 
@@ -575,15 +581,23 @@ public struct NodeProperties {
         }
     } // End of NodeProperties constructor.
 
+    static float GetFovFromRange(float range) {
+        float lerpVal = (range - senseMin) / (senseMax - senseMin);
+        return Mathf.Lerp(225f, 15f, lerpVal);
+    }
 
 	public void Mutate(float amount){
 		senseVector *= Quaternion.AngleAxis(Random.Range(0f, 180f * amount), Random.onUnitSphere);
 
         senseRange = (1.0f + Random.Range(-amount, amount)) * senseRange;
-        senseRange = Mathf.Clamp(senseRange, 1f, 1000f);
+        senseRange = Mathf.Clamp(senseRange, senseMin, senseMax);
 
-		fieldOfView += Random.Range(-180f, 180f) * amount;
-		fieldOfView = Mathf.Clamp(fieldOfView, 1f, 180f);
+        if (tetherFovAndRange)
+            fieldOfView = GetFovFromRange(senseRange);
+        else {
+            fieldOfView += Random.Range(-180f, 180f) * amount;
+            fieldOfView = Mathf.Clamp(fieldOfView, 1f, 180f);
+        }
 
 		muscleStrength += Random.Range(-1f, 1f) * amount;
 		muscleStrength = Mathf.Clamp01(muscleStrength);
