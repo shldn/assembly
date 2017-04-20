@@ -401,7 +401,9 @@ public class Node {
 			signalRotation = Quaternion.Inverse(rotation) * Quaternion.LookRotation(vectorToFood, rotation * Vector3.up);
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 
-			float foodToPull = NodeController.physicsStep * 0.3f;
+            float fullPullCutoff = 0.25f * nodeProperties.senseRange;
+            float pullMagnitude = distanceToFood < fullPullCutoff ? 1f : Mathf.Lerp(1f, 0f, (distanceToFood - fullPullCutoff) / (nodeProperties.senseRange - fullPullCutoff));
+			float foodToPull = pullMagnitude * NodeController.physicsStep * 0.3f;
 
             food.Energy -= foodToPull;
 			physAssembly.energy += foodToPull;
