@@ -171,7 +171,7 @@ public class Assembly : CaptureObject{
 
 
     // Load from string--file path, etc.
-    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false){
+    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false, bool addMutationNode = false){
         List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         if(isFilePath)
@@ -198,6 +198,8 @@ public class Assembly : CaptureObject{
 		AllAssemblyTree.Insert(this);
 
         AddNodes(newNodes);
+        if (addMutationNode)
+            AddRandomNode();
         foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
             kvp.Value.ComputeEnergyNetwork();
 
@@ -364,12 +366,13 @@ public class Assembly : CaptureObject{
                 string name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));
 
 				bool randomParent = Random.Range(0f, 1f) > 0.5f;
-				Assembly newAssembly = null;
+                bool addMutationNode = Random.value > 0.9f; // infrequently mutate structure of offspring
+                Assembly newAssembly = null;
 
 				if(randomParent)
-	                newAssembly = new Assembly(IOHelper.AssemblyToString(this), Random.rotation, Position);
+	                newAssembly = new Assembly(IOHelper.AssemblyToString(this), Random.rotation, Position, false, false, addMutationNode);
 				else
-					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position);
+					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position, false, false, addMutationNode);
 
 				newAssembly.Mutate(0.1f);
 
@@ -560,7 +563,6 @@ public class Assembly : CaptureObject{
 				// If this position is not filled, we have our position.
 				if(!NodeDict.Keys.Contains(testPos)){
 					Node newNode = AddNode(testPos);
-					MonoBehaviour.print(newNode.localHexPos);
 					return;
 				}
 			}
