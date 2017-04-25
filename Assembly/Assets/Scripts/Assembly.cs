@@ -629,6 +629,9 @@ public class Assembly : CaptureObject{
 
 		cull = true;
         ViewerData.Inst.assemblyDeletes.Add(id);
+
+        // this is handled next frame in NodeController. Checks for cull == true
+        //all.Remove(this);
 	} // End of Destroy().
 
 

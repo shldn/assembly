@@ -155,7 +155,11 @@ public class NodeViewer {
             if (immediate)
                 ViewerController.Inst.NodePool.Release(cubeTransform.gameObject);
             else {
-                Shrink shrinker = cubeTransform.gameObject.AddComponent<Shrink>();
+                Shrink shrinker = cubeTransform.gameObject.GetComponent<Shrink>();
+                if(shrinker == null)
+                    shrinker = cubeTransform.gameObject.AddComponent<Shrink>();
+                shrinker.enabled = true;
+                shrinker.StartShrink();
                 shrinker.Done += OnNodeDoneShrinking;
             }
         }
@@ -238,6 +242,9 @@ public class NodeViewer {
     }
 
     void OnNodeDoneShrinking(GameObject go, Vector3 initScale) {
+        Shrink shrinker = cubeTransform.gameObject.GetComponent<Shrink>();
+        if (shrinker != null)
+            shrinker.Done -= OnNodeDoneShrinking;
         go.transform.localScale = initScale;
         ViewerController.Inst.NodePool.Release(go);
     }

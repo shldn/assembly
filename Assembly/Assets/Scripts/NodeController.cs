@@ -228,7 +228,7 @@ public class NodeController : MonoBehaviour {
                     float lowestHealth = Mathf.Infinity;
                     Assembly worstAssembly = null;
 					for(int i = 0; i < Assembly.getAll.Count; i++){
-						if(Assembly.getAll[i].Health < lowestHealth && (NeuroScaleDemo.Inst == null || (NeuroScaleDemo.Inst.TargetNode != null && NeuroScaleDemo.Inst.TargetNode.PhysAssembly != Assembly.getAll[i]))){
+						if(Assembly.getAll[i].Health < lowestHealth && (NeuroScaleDemo.Inst == null || NeuroScaleDemo.Inst.TargetNode == null || (NeuroScaleDemo.Inst.TargetNode != null && NeuroScaleDemo.Inst.TargetNode.PhysAssembly != Assembly.getAll[i]))){
 							lowestHealth = Assembly.getAll[i].Health;
 							worstAssembly = Assembly.getAll[i];
 						}
