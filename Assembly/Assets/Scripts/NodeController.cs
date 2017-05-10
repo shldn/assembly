@@ -110,7 +110,10 @@ public class NodeController : MonoBehaviour {
             QualitySettings.vSyncCount = 0;
         }
 
-		worldSize = minWorldSize;
+        if(PersistentGameManager.IsServer)
+            gameObject.AddComponent<ResetManager>();
+
+        worldSize = minWorldSize;
     } // End of Start().
 
     void onSceneLoaded(Scene scene, LoadSceneMode mode) {
