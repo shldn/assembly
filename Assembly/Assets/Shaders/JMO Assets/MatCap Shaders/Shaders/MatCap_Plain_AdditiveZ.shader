@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 // MatCap Shader, (c) 2013,2014 Jean Moreno
 
 Shader "MatCap/Vertex/Plain Additive Z"
@@ -42,7 +44,7 @@ Shader "MatCap/Vertex/Plain Additive Z"
 				v2f vert (appdata_base v)
 				{
 					v2f o;
-					o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+					o.pos = UnityObjectToClipPos (v.vertex);
 					
 					half2 capCoord;
 					capCoord.x = dot(UNITY_MATRIX_IT_MV[0].xyz,v.normal);

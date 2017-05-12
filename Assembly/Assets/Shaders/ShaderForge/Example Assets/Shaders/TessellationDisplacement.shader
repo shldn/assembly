@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 // Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
 // Shader created with Shader Forge v1.02 
@@ -67,7 +69,7 @@ Shader "Shader Forge/Examples/TessellationDisplacement" {
                 o.binormalDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
                 o.posWorld = mul(unity_ObjectToWorld, v.vertex);
                 float3 lightColor = _LightColor0.rgb;
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
                 return o;
             }
@@ -243,7 +245,7 @@ Shader "Shader Forge/Examples/TessellationDisplacement" {
                 o.binormalDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
                 o.posWorld = mul(unity_ObjectToWorld, v.vertex);
                 float3 lightColor = _LightColor0.rgb;
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
                 return o;
             }
@@ -406,7 +408,7 @@ Shader "Shader Forge/Examples/TessellationDisplacement" {
                 VertexOutput o;
                 o.uv0 = v.texcoord0;
                 o.normalDir = mul(unity_ObjectToWorld, float4(v.normal,0)).xyz;
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 TRANSFER_SHADOW_COLLECTOR(o)
                 return o;
             }
@@ -530,7 +532,7 @@ Shader "Shader Forge/Examples/TessellationDisplacement" {
                 VertexOutput o;
                 o.uv0 = v.texcoord0;
                 o.normalDir = mul(unity_ObjectToWorld, float4(v.normal,0)).xyz;
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 TRANSFER_SHADOW_CASTER(o)
                 return o;
             }

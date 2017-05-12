@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 // Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 // Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
@@ -70,7 +72,7 @@ Shader "Shader Forge/AlienNode03Shader" {
 				float2 node_2565 = o.uv0;
 				v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_2565.rg+node_2566.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
 				o.posWorld = mul(unity_ObjectToWorld, v.vertex);
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				return o;
 			}
 			fixed4 frag(VertexOutput i) : COLOR {
@@ -162,7 +164,7 @@ Shader "Shader Forge/AlienNode03Shader" {
 				float2 node_2567 = o.uv0;
 				v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_2567.rg+node_2568.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
 				o.posWorld = mul(unity_ObjectToWorld, v.vertex);
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				TRANSFER_VERTEX_TO_FRAGMENT(o)
 				return o;
 			}
@@ -237,7 +239,7 @@ Shader "Shader Forge/AlienNode03Shader" {
 				o.normalDir = mul(float4(v.normal,0), unity_WorldToObject).xyz;
 				float4 node_2570 = _Time + _TimeEditor;
 				v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_2570.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				TRANSFER_SHADOW_COLLECTOR(o)
 				return o;
 			}
@@ -283,7 +285,7 @@ Shader "Shader Forge/AlienNode03Shader" {
 				o.normalDir = mul(float4(v.normal,0), unity_WorldToObject).xyz;
 				float4 node_2572 = _Time + _TimeEditor;
 				v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_2572.g*float2(0,-0.7)).g)-0.5))*10.0),1.0));
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				TRANSFER_SHADOW_CASTER(o)
 				return o;
 			}

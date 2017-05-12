@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 // Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 // Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
@@ -51,7 +53,7 @@ Shader "Shader Forge/JellyFishTailTip01" {
 				o.uv0 = v.uv0;
 				o.normalDir = mul(float4(v.normal,0), unity_WorldToObject).xyz;
 				o.posWorld = mul(unity_ObjectToWorld, v.vertex);
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				TRANSFER_VERTEX_TO_FRAGMENT(o)
 				return o;
 			}
@@ -117,7 +119,7 @@ Shader "Shader Forge/JellyFishTailTip01" {
 				o.uv0 = v.uv0;
 				o.normalDir = mul(float4(v.normal,0), unity_WorldToObject).xyz;
 				o.posWorld = mul(unity_ObjectToWorld, v.vertex);
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				TRANSFER_VERTEX_TO_FRAGMENT(o)
 				return o;
 			}

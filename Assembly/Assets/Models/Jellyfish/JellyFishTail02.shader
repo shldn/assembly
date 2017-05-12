@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 // Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 // Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
@@ -80,7 +82,7 @@ Shader "Shader Forge/JellyFishTail02" {
 				float2 node_2108 = o.uv0;
 				v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_2108.rg+node_2109.g*float2(0,1)).g)-0.5))*1.0),0.01));
 				o.posWorld = mul(unity_ObjectToWorld, v.vertex);
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				return o;
 			}
 			fixed4 frag(VertexOutput i) : COLOR {
@@ -169,7 +171,7 @@ Shader "Shader Forge/JellyFishTail02" {
 				float2 node_2110 = o.uv0;
 				v.vertex.xyz += (v.normal*0.03*pow((abs((frac((node_2110.rg+node_2111.g*float2(0,1)).g)-0.5))*1.0),0.01));
 				o.posWorld = mul(unity_ObjectToWorld, v.vertex);
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				TRANSFER_VERTEX_TO_FRAGMENT(o)
 				return o;
 			}
@@ -235,7 +237,7 @@ Shader "Shader Forge/JellyFishTail02" {
 				o.normalDir = mul(float4(v.normal,0), unity_WorldToObject).xyz;
 				float4 node_2113 = _Time + _TimeEditor;
 				v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_2113.g*float2(0,1)).g)-0.5))*1.0),0.01));
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				TRANSFER_SHADOW_COLLECTOR(o)
 				return o;
 			}
@@ -281,7 +283,7 @@ Shader "Shader Forge/JellyFishTail02" {
 				o.normalDir = mul(float4(v.normal,0), unity_WorldToObject).xyz;
 				float4 node_2115 = _Time + _TimeEditor;
 				v.vertex.xyz += (v.normal*0.03*pow((abs((frac((o.uv0.rg+node_2115.g*float2(0,1)).g)-0.5))*1.0),0.01));
-				o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				TRANSFER_SHADOW_CASTER(o)
 				return o;
 			}

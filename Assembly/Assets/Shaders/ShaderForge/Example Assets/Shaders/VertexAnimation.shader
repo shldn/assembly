@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 // Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
 #warning Upgrade NOTE: unity_Scale shader variable was removed; replaced 'unity_Scale.w' with '1.0'
@@ -75,7 +77,7 @@ Shader "Shader Forge/Examples/Vertex Animation" {
                 v.vertex.xyz += (node_133*_BulgeScale*v.normal);
                 o.posWorld = mul(unity_ObjectToWorld, v.vertex);
                 float3 lightColor = _LightColor0.rgb;
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
                 return o;
             }
@@ -179,7 +181,7 @@ Shader "Shader Forge/Examples/Vertex Animation" {
                 v.vertex.xyz += (node_133*_BulgeScale*v.normal);
                 o.posWorld = mul(unity_ObjectToWorld, v.vertex);
                 float3 lightColor = _LightColor0.rgb;
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
                 return o;
             }
@@ -263,7 +265,7 @@ Shader "Shader Forge/Examples/Vertex Animation" {
                 float4 node_8703 = _Time + _TimeEditor;
                 float node_133 = pow((abs((frac((o.uv0+node_8703.g*float2(0.25,0)).r)-0.5))*2.0),_BulgeShape); // Panning gradient
                 v.vertex.xyz += (node_133*_BulgeScale*v.normal);
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 TRANSFER_SHADOW_COLLECTOR(o)
                 return o;
             }
@@ -314,7 +316,7 @@ Shader "Shader Forge/Examples/Vertex Animation" {
                 float4 node_8705 = _Time + _TimeEditor;
                 float node_133 = pow((abs((frac((o.uv0+node_8705.g*float2(0.25,0)).r)-0.5))*2.0),_BulgeShape); // Panning gradient
                 v.vertex.xyz += (node_133*_BulgeScale*v.normal);
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 TRANSFER_SHADOW_CASTER(o)
                 return o;
             }
