@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +69,10 @@ public class NodeController : MonoBehaviour {
     System.DateTime lastResetTime = System.DateTime.Now;
     public System.DateTime lastPlayerActivityTime = System.DateTime.Now;
 
+    // Performance helpers
+    // Application.loadedLevelName allocates memory unnecessarily, this approach saves that and helps on garbage collection events.
+    private string loadedLevelName = "";
+    public string LoadedLevelName { get { return loadedLevelName; } }
 
 	float leaderboardFadeIn = 0f;
 
@@ -88,8 +93,9 @@ public class NodeController : MonoBehaviour {
         string lineEnding = isWindows ? "\r\n" : "\n";
         TextAsset maleNamesText = Resources.Load("Text/randomwords.txt") as TextAsset;
         nameList = maleNamesText.text.Split(new string[] { lineEnding }, System.StringSplitOptions.RemoveEmptyEntries);
-	} // End of Awake().
 
+        SceneManager.sceneLoaded += onSceneLoaded;
+    } // End of Awake().
 
     void Start(){
 		PersistentGameManager.Inst.Touch();
@@ -104,11 +110,18 @@ public class NodeController : MonoBehaviour {
             QualitySettings.vSyncCount = 0;
         }
 
-		worldSize = minWorldSize;
+        if(PersistentGameManager.IsServer)
+            gameObject.AddComponent<ResetManager>();
+
+        worldSize = minWorldSize;
     } // End of Start().
 
+    void onSceneLoaded(Scene scene, LoadSceneMode mode) {
+        loadedLevelName = scene.name;
+    }
 
-	public string GetRandomName(){
+
+    public string GetRandomName(){
 		return nameList[Random.Range(0, nameList.Length)];
 	} // End of GetRandomName().
 
@@ -215,11 +228,11 @@ public class NodeController : MonoBehaviour {
 
 				// Cull the herd if too many assemblies.
 				if(populationControl && (Node.getAll.Count > worldNodeThreshold)){
-					float highestHealth = 9999f;
-					Assembly worstAssembly = null;
+                    float lowestHealth = Mathf.Infinity;
+                    Assembly worstAssembly = null;
 					for(int i = 0; i < Assembly.getAll.Count; i++){
-						if(Assembly.getAll[i].Health < highestHealth && (NeuroScaleDemo.Inst == null || (NeuroScaleDemo.Inst.TargetNode != null && NeuroScaleDemo.Inst.TargetNode.PhysAssembly != worstAssembly))){
-							highestHealth = Assembly.getAll[i].Health;
+						if(Assembly.getAll[i].Health < lowestHealth && (NeuroScaleDemo.Inst == null || NeuroScaleDemo.Inst.TargetNode == null || (NeuroScaleDemo.Inst.TargetNode != null && NeuroScaleDemo.Inst.TargetNode.PhysAssembly != Assembly.getAll[i]))){
+							lowestHealth = Assembly.getAll[i].Health;
 							worstAssembly = Assembly.getAll[i];
 						}
 					}

@@ -40,12 +40,16 @@ public class CameraControl : MonoBehaviour {
 	public float minTilt_def = 80f;
 	public bool lockHorizon_def = false;
 
+    // events
+    public delegate void TransitionDoneEventHandler();
+    public TransitionDoneEventHandler TransitionDone;
 
-	// Camera Engines --------------------------------------------------------------------------------------------------------- //
-	// A CameraEngine is a self-contained scheme for driving the camera's position and rotation. Whenever the camera behaviour is
-	//    changed, a new CameraEngine scheme is created, and it is blended to from the previous CameraEngine. This allows for
-	//    solidly-locked tracking and precision behaviours that can be nonetheless smoothly transitioned.
-	public class CameraEngine {
+
+    // Camera Engines --------------------------------------------------------------------------------------------------------- //
+    // A CameraEngine is a self-contained scheme for driving the camera's position and rotation. Whenever the camera behaviour is
+    //    changed, a new CameraEngine scheme is created, and it is blended to from the previous CameraEngine. This allows for
+    //    solidly-locked tracking and precision behaviours that can be nonetheless smoothly transitioned.
+    public class CameraEngine {
 		protected Vector3 position = Vector3.zero;
 		public Vector3 Position { get { return position; } }
 		protected Quaternion rotation = Quaternion.identity;
@@ -61,9 +65,10 @@ public class CameraControl : MonoBehaviour {
 	CameraEngine nextCamEngine = null; // Cam engine we are currently transitioning to.
 	CameraEngine storedCamEngine = null; // When we try to transition while already transitioning, we save it here to get to once the transition is done.
 	float camEngineLerp = 0f;
+    public float cameraTransitionSpeed = 0.3f;
 
-	// Does nothing.
-	public class StaticCamera : CameraEngine {
+    // Does nothing.
+    public class StaticCamera : CameraEngine {
 	} // End of StaticCamera.
 
 	public class UserOrbitCamera : CameraEngine {
@@ -303,6 +308,9 @@ public class CameraControl : MonoBehaviour {
 		currentCamEngine = new GalleryAutoCamera();
 	} // End of Start().
 	
+    void OnDestroy() {
+        Inst = null;
+    }
 
 	void LateUpdate(){
 		// Surrender all camera control to Unity if a VR device is being used... for now.
@@ -339,12 +347,14 @@ public class CameraControl : MonoBehaviour {
 			transform.position = Vector3.Lerp(currentCamEngine.Position, nextCamEngine.Position, MathUtilities.LinToSmoothLerp(MathUtilities.LinToSmoothLerp(camEngineLerp)));
 			transform.rotation = Quaternion.Lerp(currentCamEngine.Rotation, nextCamEngine.Rotation, MathUtilities.LinToSmoothLerp(MathUtilities.LinToSmoothLerp(camEngineLerp)));
 
-			camEngineLerp += Time.deltaTime * 0.3f;
+			camEngineLerp += Time.deltaTime * cameraTransitionSpeed;
 			if(camEngineLerp >= 1f) {
 				camEngineLerp = 0f;
 
 				currentCamEngine = nextCamEngine;
 				nextCamEngine = null;
+                if (TransitionDone != null)
+                    TransitionDone();
 			}
 		}
 

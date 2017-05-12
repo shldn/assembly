@@ -72,7 +72,7 @@ public class PlayerSync : MonoBehaviour {
         if(cursorObject && (PersistentGameManager.IsClient) && !GetComponent<NetworkView>().isMine)
             Destroy(cursorObject.gameObject);
 
-		if(CaptureNet_Manager.Inst.orbitPlayers.Contains(GetComponent<NetworkView>().owner))
+		if(CaptureNet_Manager.Inst && CaptureNet_Manager.Inst.orbitPlayers.Contains(GetComponent<NetworkView>().owner))
         {
             // handle camera orbiting for these players screenPos movements here
 			if(orbitModeInit){

@@ -12,10 +12,14 @@ public class Shrink : MonoBehaviour
 
 
     void Start() {
-        initScale = transform.localScale;
-        shrinkRate = Random.Range(0.25f, 2f);
+        StartShrink();
     } // End of Start().
 
+    public void StartShrink() {
+        curScale = 1f;
+        initScale = transform.localScale;
+        shrinkRate = Random.Range(0.25f, 2f);
+    }
 
     void Update() {
         curScale = Mathf.Lerp(curScale, 0f, NodeController.physicsStep * shrinkRate);

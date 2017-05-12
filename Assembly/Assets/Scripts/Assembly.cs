@@ -53,10 +53,10 @@ public class Assembly : CaptureObject{
             if (cachedFrame == Time.frameCount)
                 return cachedPosition;
 			Vector3 worldPos = Vector3.zero;
-			foreach(Node someNode in nodeDict.Values)
-				worldPos += someNode.Position;
-			if(nodeDict.Keys.Count > 0f)
-				worldPos /= nodeDict.Keys.Count;
+			foreach(KeyValuePair<Triplet,Node> kvp in nodeDict)
+				worldPos += kvp.Value.Position;
+			if(nodeDict.Count > 0f)
+				worldPos /= nodeDict.Count;
 
             cachedFrame = Time.frameCount;
             cachedPosition = worldPos;
@@ -154,8 +154,8 @@ public class Assembly : CaptureObject{
         isOffspring = isOffspring_;
         AddRandomNodes(numNodes);
 
-        foreach (Node someNode in NodeDict.Values)
-            someNode.ComputeEnergyNetwork();
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            kvp.Value.ComputeEnergyNetwork();
 
 
         if (!PersistentGameManager.EmbedViewer) {
@@ -171,7 +171,7 @@ public class Assembly : CaptureObject{
 
 
     // Load from string--file path, etc.
-    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false){
+    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false, bool addMutationNode = false){
         List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         if(isFilePath)
@@ -198,8 +198,10 @@ public class Assembly : CaptureObject{
 		AllAssemblyTree.Insert(this);
 
         AddNodes(newNodes);
-		foreach(Node someNode in NodeDict.Values)
-			someNode.ComputeEnergyNetwork();
+        if (addMutationNode)
+            AddRandomNode();
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            kvp.Value.ComputeEnergyNetwork();
 
 		PersistentGameManager.CaptureObjects.Add(this);
         userReleased = userReleased_;
@@ -232,8 +234,8 @@ public class Assembly : CaptureObject{
                 spawnHexPos += HexUtilities.RandomAdjacent();
             }
 
-            foreach (Node someNode in NodeDict.Values) {
-                if (someNode.neighbors.Count == 1) {
+            foreach (KeyValuePair<Triplet, Node> kvp in nodeDict) {
+                if (kvp.Value.neighbors.Count == 1) {
                     containsSenseNode = true;
                     break;
                 }
@@ -306,7 +308,7 @@ public class Assembly : CaptureObject{
 				Destroy();
 		}
 
-		float maxEnergy = nodeDict.Values.Count * 2f;
+		float maxEnergy = nodeDict.Count * 2f;
 		if(!PersistentGameManager.IsClient)
 			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
@@ -364,12 +366,13 @@ public class Assembly : CaptureObject{
                 string name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));
 
 				bool randomParent = Random.Range(0f, 1f) > 0.5f;
-				Assembly newAssembly = null;
+                bool addMutationNode = Random.value > 0.9f; // infrequently mutate structure of offspring
+                Assembly newAssembly = null;
 
 				if(randomParent)
-	                newAssembly = new Assembly(IOHelper.AssemblyToString(this), Random.rotation, Position);
+	                newAssembly = new Assembly(IOHelper.AssemblyToString(this), Random.rotation, Position, false, false, addMutationNode);
 				else
-					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position);
+					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position, false, false, addMutationNode);
 
 				newAssembly.Mutate(0.1f);
 
@@ -417,13 +420,13 @@ public class Assembly : CaptureObject{
         // Keeps assemblies in Capsule
         if (!PersistentGameManager.IsClient) {
             if (CognoAmalgam.Inst != null && Random.Range(0f, 1f) >= 0.6f && !CognoAmalgam.Inst.IsInside(Position)) {
-                foreach (Node someNode in nodeDict.Values)
-                    someNode.velocity += -Position.normalized * NodeController.physicsStep;
+                foreach (KeyValuePair<Triplet,Node> kvp in nodeDict)
+                    kvp.Value.velocity += -Position.normalized * NodeController.physicsStep;
             }
             else if (Environment.Inst && Environment.Inst.isActiveAndEnabled && PersistentGameManager.IsServer) {
                 if (!Environment.Inst.IsInside(Position)) {
-                    foreach (Node someNode in nodeDict.Values)
-                        someNode.velocity += -Position.normalized * NodeController.physicsStep * 0.1f;
+                    foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+                        kvp.Value.velocity += -Position.normalized * NodeController.physicsStep * 0.1f;
                 }
             }
         }
@@ -519,7 +522,8 @@ public class Assembly : CaptureObject{
 
 	// Merges two assemblies together.
 	public void AmaglamateTo(Assembly otherAssembly, Triplet offset){
-		foreach(Node someNode in nodeDict.Values){
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict) {
+            Node someNode = kvp.Value;
 			otherAssembly.energy += 1f;
 			someNode.PhysAssembly = otherAssembly;
 			someNode.localHexPos += offset;
@@ -542,8 +546,8 @@ public class Assembly : CaptureObject{
 
 
 	public void Mutate(float amount){
-		foreach(Node someNode in NodeDict.Values)
-			someNode.Mutate(amount);
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            kvp.Value.Mutate(amount);
 	} // End of Mutate().
 
 
@@ -559,7 +563,6 @@ public class Assembly : CaptureObject{
 				// If this position is not filled, we have our position.
 				if(!NodeDict.Keys.Contains(testPos)){
 					Node newNode = AddNode(testPos);
-					MonoBehaviour.print(newNode.localHexPos);
 					return;
 				}
 			}
@@ -568,8 +571,8 @@ public class Assembly : CaptureObject{
 
     public void RemoveAllNodes(bool destroy = true) {
         if(destroy)
-            foreach (Node someNode in NodeDict.Values)
-                someNode.Destroy();
+            foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+                kvp.Value.Destroy();
 
         nodeDict.Clear();
         nodes.Clear();
@@ -595,8 +598,8 @@ public class Assembly : CaptureObject{
 
     public void GetBoundingSphere(out Vector3 center, out float sphereRadius) {
         List<Vector3> pts = new List<Vector3>();
-        foreach (Node someNode in NodeDict.Values)
-            pts.Add(someNode.Position);
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            pts.Add(kvp.Value.Position);
         MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);
     } // End of GetBoundingSphere().
 
@@ -626,6 +629,9 @@ public class Assembly : CaptureObject{
 
 		cull = true;
         ViewerData.Inst.assemblyDeletes.Add(id);
+
+        // this is handled next frame in NodeController. Checks for cull == true
+        //all.Remove(this);
 	} // End of Destroy().
 
 

@@ -14,7 +14,7 @@ public class IpPortPair
 public static class Config {
 
     // Graphics Config
-
+    public static float resetTime = 30f * 60f; // half an hour
 
     // Networking Config
     public static bool useMasterServer = true;
@@ -105,7 +105,10 @@ public static class Config {
     }
 
     static void ReadGraphics(JSONObject obj) {
-
+        foreach (KeyValuePair<string, JSONValue> v in obj) {
+            if (v.Key.Trim() == "resetTime")
+                resetTime = (float)v.Value.Number;
+        }
     }
 
     static void ReadNetwork(JSONObject obj) {
