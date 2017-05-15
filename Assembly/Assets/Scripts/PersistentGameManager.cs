@@ -30,7 +30,6 @@ public class PersistentGameManager : MonoBehaviour {
     public static HashSet<CaptureObject> CaptureObjects = new HashSet<CaptureObject>();
 
     public CaptureNet_Manager captureMgr;
-	public Cognogenesis_Networking cognoNetMgr;
     public AssemblyRadar assemRadar;
     public bool optimize = true;
 
@@ -53,13 +52,13 @@ public class PersistentGameManager : MonoBehaviour {
 
 
 	void Awake () {
-        cognogenesisNet = Application.loadedLevelName == "Cognogenesis";
+        //cognogenesisNet = Application.loadedLevelName == "Cognogenesis";
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
         if( !cognogenesisNet && !captureMgr )
             captureMgr = gameObject.AddComponent<CaptureNet_Manager>();
-		if( cognogenesisNet && !cognoNetMgr )
-            cognoNetMgr = gameObject.AddComponent<Cognogenesis_Networking>();
+		//if( cognogenesisNet && !cognoNetMgr )
+            //cognoNetMgr = gameObject.AddComponent<Cognogenesis_Networking>();
 		if( !assemRadar )
             assemRadar = gameObject.AddComponent<AssemblyRadar>();
 
