@@ -9,7 +9,8 @@ public class SmoothNetPosition : MonoBehaviour {
 	Vector3 targetPosition = Vector3.zero;
     bool render = true;
 	public bool Render {
-        get { return render; }
+		get { return true; }
+        //get { return render; }
         set {
             if(value != render) {
                 render = value;
