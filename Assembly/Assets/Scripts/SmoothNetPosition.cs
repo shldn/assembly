@@ -9,14 +9,17 @@ public class SmoothNetPosition : MonoBehaviour {
 	Vector3 targetPosition = Vector3.zero;
     bool render = true;
 	public bool Render {
-        get { return render; }
+		get { return true; }
+        //get { return render; }
         set {
             if(value != render) {
                 render = value;
-                GetComponent<Renderer>().enabled = value;
+                //GetComponent<Renderer>().enabled = value;
+                GetComponent<Renderer>().enabled = true;
                 Transform child = transform.GetChild(0);
                 if (child != null)
-                    child.gameObject.SetActive(value);
+                    //child.gameObject.SetActive(value);
+                    child.gameObject.SetActive(true);
             }
         }
     }

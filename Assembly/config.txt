@@ -39,7 +39,7 @@
     {
         "#" : "cognogenesis settings - view = inside or outside",
         "type": "cognogenesis",
-        "server_ip": "132.239.235.118",
+        "server_ip": "132.239.235.116",
         "view":"outside"
     },
 ]    
