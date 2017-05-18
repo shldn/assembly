@@ -286,7 +286,7 @@ public class CognoAmalgam : MonoBehaviour {
 			particles[i].position = linePoint / 80f;
 
 			particles[i].startColor = Color.white.SetAlpha(Mathf.Sin(lerp * Mathf.PI) * (1f - Cognogenesis_Networking.Inst.externalEnviroScale) * Random.Range(0, 1f));
-			particles[i].startSize = Random.Range(0.1f, 0.5f) * power;
+            particles[i].startSize = 0.5f * power; //Random.Range(0.1f, 0.5f) * power;
 			// ------------------------------------------------------------------------ //
 
 			particles[i].position += particles[i].rotation3D * 0.05f * (0.2f + ((1f - Cognogenesis_Networking.Inst.externalEnviroScale) * 0.8f));
@@ -299,9 +299,11 @@ public class CognoAmalgam : MonoBehaviour {
 		streamLineRenderer.material.mainTextureOffset = new Vector2(Time.time * 0.5f, 0f);
 
 
-		float width = 15f * (Random.Range(power * 0.3f, power * 0.8f));
-		streamLineRenderer.SetWidth(width, width);
-		Color color = Color.Lerp(Color.white.SetAlpha(0f), Color.white, power);
+        float width = 15f * power; //(Random.Range(power * 0.3f, power * 0.8f));
+		streamLineRenderer.startWidth = width;
+		streamLineRenderer.endWidth = width;
+		Color color = new Color(0.3f, 1f, 0.8f, 1f).SetAlpha(power);
+        streamLineRenderer.material.SetColor("_TintColor", color);
 
 
 

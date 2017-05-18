@@ -18,7 +18,8 @@ public class SmoothNetPosition : MonoBehaviour {
                 GetComponent<Renderer>().enabled = true;
                 Transform child = transform.GetChild(0);
                 if (child != null)
-                    child.gameObject.SetActive(value);
+                    //child.gameObject.SetActive(value);
+                    child.gameObject.SetActive(true);
             }
         }
     }
