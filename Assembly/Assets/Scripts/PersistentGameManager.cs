@@ -74,7 +74,8 @@ public class PersistentGameManager : MonoBehaviour {
         if (!IsClient && qrCodeTexture == null)
             qrCodeTexture = Resources.Load("Textures/Capture_QR_Code") as Texture;
 
-        cursorLock = !IsClient;
+        if(!Debug.isDebugBuild)
+            cursorLock = !IsClient;
 
         if (IsServer)
             HandleCommandLineArgs();
