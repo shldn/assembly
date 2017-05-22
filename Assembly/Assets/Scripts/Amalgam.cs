@@ -481,24 +481,17 @@ public class Amalgam : MonoBehaviour
 
         // now check outer geometry
         bool isInside = false;
-        Vector3 transformedPt = new Vector3(pt.x/transform.lossyScale.x, pt.y/transform.lossyScale.y, pt.z/transform.lossyScale.z);
+        Vector3 transformedPt = transform.InverseTransformPoint(pt);
         skinMeshCreator.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
         return isInside;
     } // End of IsInside().
 
     // amalgam
     public bool IsInside(Vector3 pt, out Vector3 amalgamPt) {
-
-		pt -= transform.position;
-
         bool isInside = false;
-        Vector3 transformedPt = new Vector3(pt.x / transform.lossyScale.x, pt.y / transform.lossyScale.y, pt.z / transform.lossyScale.z);
+        Vector3 transformedPt = transform.InverseTransformPoint(pt);
         skinMeshCreator.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside, out amalgamPt);
-
-        amalgamPt.x *= transform.localScale.x;
-        amalgamPt.y *= transform.localScale.y;
-        amalgamPt.z *= transform.localScale.z;
-		amalgamPt += transform.position;
+        amalgamPt = transform.TransformPoint(amalgamPt);
         return isInside;
     }
 

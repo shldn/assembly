@@ -71,7 +71,21 @@ public class CameraControl : MonoBehaviour {
     public class StaticCamera : CameraEngine {
 	} // End of StaticCamera.
 
-	public class UserOrbitCamera : CameraEngine {
+    public class FixedCamera : CameraEngine
+    {
+        Vector3 lookAt = Vector3.zero;
+        float distanceAway = 0f;
+
+        public FixedCamera(float distanceAway_) {
+            distanceAway = distanceAway_;
+        }
+
+        public override void Update() {
+            position = lookAt - Camera.main.transform.forward * distanceAway;
+        } // End of Update().
+    } // End of FixedCamera.
+
+    public class UserOrbitCamera : CameraEngine {
 		float radius = 100f;
 		float radiusSensitivity = 1f;
 
@@ -385,6 +399,7 @@ public class CameraControl : MonoBehaviour {
 	public void SetMode_UserOrbit() { storedCamEngine = new UserOrbitCamera(); storedCamEngine.Init(); }
 	public void SetMode_GalleryAuto() { storedCamEngine = new GalleryAutoCamera(); storedCamEngine.Init(); }
 	public void SetMode_AssemblyHerd(bool testAssembliesOnly) { storedCamEngine = new AssemblyHerdCamera(testAssembliesOnly); storedCamEngine.Init(); }
+	public void SetMode_FixCamera(float distance) { storedCamEngine = new FixedCamera(distance); storedCamEngine.Init(); }
 
 
     void OnGUI(){
