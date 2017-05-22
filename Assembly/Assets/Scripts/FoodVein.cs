@@ -5,10 +5,10 @@ using UnityEngine;
 public class FoodVein : MonoBehaviour {
 
     List<Transform> food = new List<Transform>();
-    int length = 50;
-    int numBranches = 1;
+    int length = 150;
+    int numBranches = 2;
     float spacing = 2f;
-    float branchAngle = 80f;
+    float branchAngle = 30f;
 
     float decayRate = 0.5f;
 
@@ -41,11 +41,11 @@ public class FoodVein : MonoBehaviour {
         for (int i = 0; i < length; ++i) {
             Transform f = ViewerController.Inst.FoodPool.Get().transform;
             f.gameObject.GetComponent<Rigidbody>().isKinematic = true;
-            SphericalCoordinates newSpherePos = new SphericalCoordinates(transform, 1, 200, 0, 2 * Mathf.PI, 0, 2 * Mathf.PI);
-            //newSpherePos.SetRotation(currentSpherePos.polar, currentSpherePos.elevation + i * spacing * Mathf.Deg2Rad);
-            newSpherePos.SetRotation(currentSpherePos.polar + i * spacing * transform.forward.x * Mathf.Deg2Rad, currentSpherePos.elevation + i * spacing * transform.forward.y * Mathf.Deg2Rad);
+            f.position = transform.position + i * spacing * transform.forward.normalized;
+            SphericalCoordinates newSpherePos = new SphericalCoordinates(f.transform, 1, 200, 0, 2 * Mathf.PI, 0, 2 * Mathf.PI);
+            newSpherePos.SetRadius(currentSpherePos.radius);
             f.position = newSpherePos.toCartesian;
-            f.forward = new Vector3(newSpherePos.polar, newSpherePos.elevation, 0);
+            f.forward = Vector3.Cross(transform.up, -f.position.normalized);
             f.parent = transform;
             if (i > 0 && i % (length / (numBranches + 1)) == 0 && length > 1) {
                 float sign = ++branchesBuilt % 2 == 1 ? 1f : -1f;
