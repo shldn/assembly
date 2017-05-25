@@ -5,7 +5,7 @@ public class ResetManager : MonoBehaviour{
     void Update() {
         if(Time.timeSinceLevelLoad > Config.resetTime) {
             CameraControl.Inst.cameraTransitionSpeed = 0.1f;
-            CameraControl.Inst.SetMode_AssemblyHerd(false);
+            CameraControl.Inst.SetMode_FixCamera(250f);
             CameraControl.Inst.TransitionDone += Reset;
         }
     }
