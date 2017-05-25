@@ -234,18 +234,18 @@ public class HandCognoOutside : MonoBehaviour {
 		// Sync networked fingertip
 		if(leap_hand.IsLeft) {
 			for(int i = 0; i < 5; i++) {
-				SmoothNetPosition.allFingertips[i].transform.position = hand_model.fingers[i].GetTipPosition();
+				SmoothNetPosition.allFingertips[i].transform.position = Vector3.Lerp(SmoothNetPosition.allFingertips[i].transform.position, hand_model.fingers[i].GetTipPosition(), Time.deltaTime * 10f);
 				SmoothNetPosition.allFingertips[i].Render = true;
 			}
-			SmoothNetPosition.allFingertips[20].transform.position = hand_model.GetPalmPosition();
+			SmoothNetPosition.allFingertips[20].transform.position = Vector3.Lerp(SmoothNetPosition.allFingertips[20].transform.position, hand_model.GetPalmPosition(), Time.deltaTime * 10f);
 			SmoothNetPosition.allFingertips[20].Render = true;
 			SmoothNetPosition.allFingertips[20].transform.localScale = Vector3.one * 200f;
 		} else {
 			for(int i = 5; i < 10; i++) {
-				SmoothNetPosition.allFingertips[i].transform.position = hand_model.fingers[i - 5].GetTipPosition();
+				SmoothNetPosition.allFingertips[i].transform.position = Vector3.Lerp(SmoothNetPosition.allFingertips[i].transform.position, hand_model.fingers[i - 5].GetTipPosition(), Time.deltaTime);
 				SmoothNetPosition.allFingertips[i].Render = true;
 			}
-			SmoothNetPosition.allFingertips[21].transform.position = hand_model.GetPalmPosition();
+			SmoothNetPosition.allFingertips[21].transform.position = Vector3.Lerp(SmoothNetPosition.allFingertips[21].transform.position, hand_model.GetPalmPosition(), Time.deltaTime);
 			SmoothNetPosition.allFingertips[21].Render = true;
 			SmoothNetPosition.allFingertips[21].transform.localScale = Vector3.one * 200f;
 		}
