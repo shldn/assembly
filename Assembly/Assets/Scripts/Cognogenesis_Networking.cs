@@ -161,15 +161,3 @@ public class Cognogenesis_Networking : MonoBehaviour {
     } // End of OnSerializeNetworkView().
 
 } // End of CaptureNet_Manager.
-
-
-
-
-
-
-
-
-
-
-
-
