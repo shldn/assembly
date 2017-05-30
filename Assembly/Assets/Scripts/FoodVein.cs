@@ -28,7 +28,8 @@ public class FoodVein : MonoBehaviour {
             f.forward = transform.forward;
             f.localScale = foodScale * Vector3.one;
             f.parent = transform;
-            if(i > 0 && i % (length / (numBranches + 1)) == 0 && length > 1) {
+            // numBranches + 1 and ignore the end caps
+            if(i > 0 && (i < length - 2) && i % (length / (numBranches + 1)) == 0 && length > 1) {
                 float sign = ++branchesBuilt % 2 == 1 ? 1f : -1f;
                 f.forward = Quaternion.AngleAxis(sign * branchAngle, transform.up) * f.forward;
                 FoodVein vein = f.gameObject.AddComponent<FoodVein>();
@@ -53,7 +54,7 @@ public class FoodVein : MonoBehaviour {
             f.position = distFromCenter * vToPt.normalized;
             f.forward = Vector3.Cross(transform.up, -f.position.normalized);
             f.parent = transform;
-            if (i > 0 && (i < length - 1) && i % (length / (numBranches + 1)) == 0 && length > 1) {
+            if (i > 0 && (i < length - 2) && i % (length / (numBranches + 1)) == 0 && length > 1) {
                 float sign = ++branchesBuilt % 2 == 1 ? 1f : -1f;
                 f.forward = Quaternion.AngleAxis(sign * branchAngle, f.position.normalized) * f.forward;
                 FoodVein vein = f.gameObject.AddComponent<FoodVein>();
