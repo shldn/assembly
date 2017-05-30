@@ -5,16 +5,18 @@ using UnityEngine;
 public class FoodVein : MonoBehaviour {
 
     List<Transform> food = new List<Transform>();
-    int length = 150;
+    int length = 50;
     int numBranches = 2;
     float spacing = 2f;
     float branchAngle = 30f;
+    float foodScale = 2f;
 
-    float decayRate = 0.5f;
+    float branchLengthDecayRate = 0.5f;
+    float foodSizeDecayRate = 0.98f;
 
 	void Start () {
-        //BuildVein();
-        BuildSphericalVein();
+        BuildVein();
+        //BuildSphericalVein();
     }
 
     void BuildVein() {
@@ -24,15 +26,18 @@ public class FoodVein : MonoBehaviour {
             f.gameObject.GetComponent<Rigidbody>().isKinematic = true;
             f.position = transform.position + i * spacing * transform.forward.normalized;
             f.forward = transform.forward;
+            f.localScale = foodScale * Vector3.one;
             f.parent = transform;
             if(i > 0 && i % (length / (numBranches + 1)) == 0 && length > 1) {
                 float sign = ++branchesBuilt % 2 == 1 ? 1f : -1f;
                 f.forward = Quaternion.AngleAxis(sign * branchAngle, transform.up) * f.forward;
                 FoodVein vein = f.gameObject.AddComponent<FoodVein>();
-                vein.length = (int)(decayRate * length);
+                vein.length = (int)(branchLengthDecayRate * length);
+                vein.foodScale = foodScale;
             }
 
             food.Add(f);
+            foodScale = foodSizeDecayRate * foodScale;
         }
     }
     void BuildSphericalVein() {
@@ -52,7 +57,7 @@ public class FoodVein : MonoBehaviour {
                 float sign = ++branchesBuilt % 2 == 1 ? 1f : -1f;
                 f.forward = Quaternion.AngleAxis(sign * branchAngle, f.position.normalized) * f.forward;
                 FoodVein vein = f.gameObject.AddComponent<FoodVein>();
-                vein.length = (int)(decayRate * length);
+                vein.length = (int)(branchLengthDecayRate * length);
 
 
                 lastFoodDir = Vector3.Cross(transform.up, -f.position.normalized);
