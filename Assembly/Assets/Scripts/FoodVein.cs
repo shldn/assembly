@@ -37,23 +37,30 @@ public class FoodVein : MonoBehaviour {
     }
     void BuildSphericalVein() {
         int branchesBuilt = 0;
-        SphericalCoordinates currentSpherePos = new SphericalCoordinates(transform,1,200, 0, 2*Mathf.PI, 0, 2*Mathf.PI);
+        float distFromCenter = transform.position.magnitude;
+        Vector3 lastFoodPos = transform.position;
+        Vector3 lastFoodDir = transform.forward;
         for (int i = 0; i < length; ++i) {
             Transform f = ViewerController.Inst.FoodPool.Get().transform;
             f.gameObject.GetComponent<Rigidbody>().isKinematic = true;
-            f.position = transform.position + i * spacing * transform.forward.normalized;
-            SphericalCoordinates newSpherePos = new SphericalCoordinates(f.transform, 1, 200, 0, 2 * Mathf.PI, 0, 2 * Mathf.PI);
-            newSpherePos.SetRadius(currentSpherePos.radius);
-            f.position = newSpherePos.toCartesian;
+            f.position = lastFoodPos + spacing * lastFoodDir.normalized;
+            Vector3 vToPt = f.position;
+            f.position = distFromCenter * vToPt.normalized;
             f.forward = Vector3.Cross(transform.up, -f.position.normalized);
             f.parent = transform;
-            if (i > 0 && i % (length / (numBranches + 1)) == 0 && length > 1) {
+            if (i > 0 && (i < length - 1) && i % (length / (numBranches + 1)) == 0 && length > 1) {
                 float sign = ++branchesBuilt % 2 == 1 ? 1f : -1f;
                 f.forward = Quaternion.AngleAxis(sign * branchAngle, f.position.normalized) * f.forward;
                 FoodVein vein = f.gameObject.AddComponent<FoodVein>();
                 vein.length = (int)(decayRate * length);
-            }
 
+
+                lastFoodDir = Vector3.Cross(transform.up, -f.position.normalized);
+            }
+            else
+                lastFoodDir = f.forward;
+            lastFoodPos = f.position;
+            
             food.Add(f);
         }
     }
