@@ -11,17 +11,17 @@ public class FoodVein : MonoBehaviour {
 
     List<Transform> food = new List<Transform>();
     int length = 50;
-    int numBranches = 2;
+    int numBranches = 3;
     float spacing = 2f;
-    float branchAngle = 45f;
+    float branchAngleMin = 15f;
+    float branchAngleMax = 45f;
     float foodScale = 2f;
 
-    float branchLengthDecayRate = 0.5f;
     float foodSizeDecayRate = 0.98f;
 
 	void Start () {
-        //BuildVein();
-        BuildSphericalVein();
+        BuildVein();
+        //BuildSphericalVein();
     }
 
     void BuildVein() {
@@ -38,9 +38,10 @@ public class FoodVein : MonoBehaviour {
             // numBranches + 1 and ignore the end caps
             if(i > 0 && (i < length - 2) && i % (length / (numBranches + 1)) == 0 && length > 1) {
                 float sign = ++branchesBuilt % 2 == 1 ? 1f : -1f;
+                float branchAngle = Random.Range(branchAngleMin, branchAngleMax);
                 f.forward = Quaternion.AngleAxis(sign * branchAngle, transform.up) * lastFoodDir;
                 FoodVein vein = f.gameObject.AddComponent<FoodVein>();
-                vein.length = (int)(branchLengthDecayRate * length);
+                vein.length = length - i; //(int)(branchLengthDecayRate * length);
 
                 float branchPercent = 0.9f;
                 vein.foodScale = branchPercent * foodScale;
@@ -82,9 +83,10 @@ public class FoodVein : MonoBehaviour {
             f.parent = transform;
             if (i > 0 && (i < length - 2) && i % (length / (numBranches + 1)) == 0 && length > 1) {
                 float sign = ++branchesBuilt % 2 == 1 ? 1f : -1f;
+                float branchAngle = Random.Range(branchAngleMin, branchAngleMax);
                 f.forward = Quaternion.AngleAxis(sign * branchAngle, f.position.normalized) * newForward;
                 FoodVein vein = f.gameObject.AddComponent<FoodVein>();
-                vein.length = (int)(branchLengthDecayRate * length);
+                vein.length = length - i; //(int)(branchLengthDecayRate * length);
 
                 float branchPercent = 0.9f;
                 vein.foodScale = branchPercent * foodScale;
@@ -104,6 +106,4 @@ public class FoodVein : MonoBehaviour {
             foodScale = foodSizeDecayRate * foodScale;
         }
     }
-
-
 }
