@@ -182,6 +182,11 @@ public class HandCognoInside : MonoBehaviour {
 		float distFromCam = Vector3.Distance(Camera.main.transform.position, leap_hand.PalmPosition.ToUnity());
 		float attractDistribute = Mathf.InverseLerp(280f, 300f, distFromCam);
 
+		if(gesture == Gesture.fist)
+			attractDistribute = 0.5f;
+		else
+			attractDistribute = 1f;
+
 		if(attractDistribute < 0.8f) {
 			for(int i = 0; i < FoodPellet.all.Count; i++) {
 				Vector3 vectorToPellet = FoodPellet.all[i].WorldPosition - hand_model.GetPalmPosition();
