@@ -182,6 +182,11 @@ public class HandCognoInside : MonoBehaviour {
 		float distFromCam = Vector3.Distance(Camera.main.transform.position, leap_hand.PalmPosition.ToUnity());
 		float attractDistribute = Mathf.InverseLerp(280f, 300f, distFromCam);
 
+		if(gesture == Gesture.fist)
+			attractDistribute = 0.5f;
+		else
+			attractDistribute = 1f;
+
 		if(attractDistribute < 0.8f) {
 			for(int i = 0; i < FoodPellet.all.Count; i++) {
 				Vector3 vectorToPellet = FoodPellet.all[i].WorldPosition - hand_model.GetPalmPosition();
@@ -211,22 +216,22 @@ public class HandCognoInside : MonoBehaviour {
 		// Sync networked fingertip
 		if(leap_hand.IsLeft) {
 			for(int i = 10; i < 15; i++) {
-				SmoothNetPosition.allFingertips[i].transform.position = hand_model.fingers[i - 10].GetTipPosition();
+				SmoothNetPosition.allFingertips[i].transform.position = Vector3.Lerp(SmoothNetPosition.allFingertips[i].transform.position, hand_model.fingers[i - 10].GetTipPosition(), Time.deltaTime * 10f);
 				SmoothNetPosition.allFingertips[i].Render = true;
                 SmoothNetPosition.allFingertips[i].GetComponent<Renderer>().material.SetColor("_TintColor", Color.Lerp(Color.green, Color.white, attractDistribute));
             }
 			SmoothNetPosition.allFingertips[22].Render = true;
-			SmoothNetPosition.allFingertips[22].transform.position = hand_model.GetPalmPosition();
+			SmoothNetPosition.allFingertips[22].transform.position = Vector3.Lerp(SmoothNetPosition.allFingertips[22].transform.position, hand_model.GetPalmPosition(), Time.deltaTime * 10f);
 			SmoothNetPosition.allFingertips[22].transform.localScale = Vector3.one * 70f;
 			SmoothNetPosition.allFingertips[22].GetComponent<Renderer>().material.SetColor("_TintColor", Color.Lerp(Color.green, Color.white, attractDistribute));
 		} else {
 			for(int i = 15; i < 20; i++) {
-				SmoothNetPosition.allFingertips[i].transform.position = hand_model.fingers[i - 15].GetTipPosition();
+				SmoothNetPosition.allFingertips[i].transform.position = Vector3.Lerp(SmoothNetPosition.allFingertips[i].transform.position, hand_model.fingers[i - 15].GetTipPosition(), Time.deltaTime * 10f);
 				SmoothNetPosition.allFingertips[i].Render = true;
                 SmoothNetPosition.allFingertips[i].GetComponent<Renderer>().material.SetColor("_TintColor", Color.Lerp(Color.green, Color.white, attractDistribute));
             }
 			SmoothNetPosition.allFingertips[23].Render = true;
-			SmoothNetPosition.allFingertips[23].transform.position = hand_model.GetPalmPosition();
+			SmoothNetPosition.allFingertips[23].transform.position = Vector3.Lerp(SmoothNetPosition.allFingertips[23].transform.position, hand_model.GetPalmPosition(), Time.deltaTime * 10f);
 			SmoothNetPosition.allFingertips[23].transform.localScale = Vector3.one * 70f;
 			SmoothNetPosition.allFingertips[23].GetComponent<Renderer>().material.SetColor("_TintColor", Color.Lerp(Color.green, Color.white, attractDistribute));
 		}
