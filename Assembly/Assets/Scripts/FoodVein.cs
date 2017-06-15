@@ -21,14 +21,19 @@ public class FoodVein : MonoBehaviour {
     float foodSizeDecayRate = 0.98f;
     float branchLengthDecayRate = 0.5f; // works well for noisy veins (not as good for trees)
 
+    bool makeNoisy = true;
+    bool spherical = true;
+    bool realFood = false;
+
     NoiseTest.OpenSimplexNoise noise3d;
 
     void Start () {
         noise3d = new NoiseTest.OpenSimplexNoise();
 
-        bool makeNoisy = true;
-        //BuildVein(makeNoisy);
-        BuildSphericalVein(makeNoisy);
+        if(spherical)
+            BuildSphericalVein(makeNoisy);
+        else
+            BuildVein(makeNoisy);
     }
 
     void BuildVein(bool noisy = false) {
@@ -39,8 +44,8 @@ public class FoodVein : MonoBehaviour {
         Vector3 lastFoodDir = transform.forward;
         float startBranchSign = Random.value > 0.5f ? 1f : -1f;
         for (int i = 0; i < length; ++i) {
-            Transform f = GetNewFood();
-            f.position = noisy ? GetNextBest2DNoisePos(lastFoodPos, lastFoodDir.normalized) : (lastFoodPos + spacing * lastFoodDir.normalized);
+            Vector3 newPos = noisy ? GetNextBest2DNoisePos(lastFoodPos, lastFoodDir.normalized) : (lastFoodPos + spacing * lastFoodDir.normalized);
+            Transform f = GetNewFood(newPos);
             f.forward = lastFoodDir;
             f.localScale = foodScale * Vector3.one;
             f.parent = transform;
@@ -90,13 +95,13 @@ public class FoodVein : MonoBehaviour {
         float dirSign = Vector3.Angle(transform.position.normalized, transform.right) > 90f ? 1f : -1f;
         float startBranchSign = Random.value > 0.5f ? 1f : -1f;
         for (int i = 0; i < length; ++i) {
-            Transform f = GetNewFood();
+            Vector3 newPos = lastFoodPos + spacing * lastFoodDir.normalized;
             if (noisy)
-                f.position = GetNextBest3DNoisePos(lastFoodPos, lastFoodDir.normalized, lastFoodPos.normalized);
-            else
-                f.position = lastFoodPos + spacing * lastFoodDir.normalized;
-            Vector3 vToPt = f.position;
-            f.position = distFromCenter * vToPt.normalized;
+                newPos = GetNextBest3DNoisePos(lastFoodPos, lastFoodDir.normalized, lastFoodPos.normalized);
+
+            Vector3 vToPt = newPos;
+            newPos = distFromCenter * vToPt.normalized;
+            Transform f = GetNewFood(newPos);
             Vector3 newForward = Vector3.Cross(lastFoodUp, dirSign * f.position.normalized);
             f.forward = newForward;
             f.localScale = foodScale * Vector3.one;
@@ -129,11 +134,17 @@ public class FoodVein : MonoBehaviour {
         }
     }
 
-    Transform GetNewFood() {
-        Transform f = ViewerController.Inst.FoodPool.Get().transform;
-        f.gameObject.GetComponent<Rigidbody>().isKinematic = true;
-        f.gameObject.GetComponent<MeshRenderer>().enabled = false;
-        return f;
+    Transform GetNewFood(Vector3 pos) {
+        if (realFood) {
+            FoodPellet food = new FoodPellet(pos);
+            return food.viewer.gameObject.transform;
+        }
+        else {
+            Transform f = ViewerController.Inst.FoodPool.Get().transform;
+            f.gameObject.GetComponent<Rigidbody>().isKinematic = true;
+            f.gameObject.GetComponent<MeshRenderer>().enabled = false;
+            return f;
+        }
     }
 
     // This is 2D noise and assumes y is up, need alternate implementation for 3D noise.
