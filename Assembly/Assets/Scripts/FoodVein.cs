@@ -26,13 +26,13 @@ public class FoodVein : MonoBehaviour {
     void Start () {
         noise3d = new NoiseTest.OpenSimplexNoise();
 
-        //BuildVein();
-        //BuildNoiseVein();
+        bool makeNoisy = true;
+        //BuildVein(makeNoisy);
         //BuildSphericalVein();
         BuildNoisySphericalVein();
     }
 
-    void BuildVein() {
+    void BuildVein(bool noisy = false) {
         if (foodScale < minFoodScale)
             return;
         int branchesBuilt = 0;
@@ -41,7 +41,7 @@ public class FoodVein : MonoBehaviour {
         float startBranchSign = Random.value > 0.5f ? 1f : -1f;
         for (int i = 0; i < length; ++i) {
             Transform f = GetNewFood();
-            f.position = lastFoodPos + spacing * lastFoodDir.normalized;
+            f.position = noisy ? GetNextBest2DNoisePos(lastFoodPos, lastFoodDir.normalized) : (lastFoodPos + spacing * lastFoodDir.normalized);
             f.forward = lastFoodDir;
             f.localScale = foodScale * Vector3.one;
             f.parent = transform;
@@ -52,7 +52,10 @@ public class FoodVein : MonoBehaviour {
                 float branchAngle = Random.Range(branchAngleMin, branchAngleMax);
                 f.forward = Quaternion.AngleAxis(sign * branchAngle, transform.up) * lastFoodDir;
                 FoodVein vein = f.gameObject.AddComponent<FoodVein>();
-                vein.length = length - i; //(int)(branchLengthDecayRate * length);
+                if(noisy)
+                    vein.length = (int)(branchLengthDecayRate * length);
+                else
+                    vein.length = length - i; //better for more tree like behavior
 
                 float branchPercent = 0.9f;
                 vein.foodScale = branchPercent * foodScale;
@@ -133,52 +136,7 @@ public class FoodVein : MonoBehaviour {
         }
         return bestPos;
     }
-
-    void BuildNoiseVein() {
-        if (foodScale < minFoodScale)
-            return;
-        int branchesBuilt = 0;
-        Vector3 lastFoodPos = transform.position;
-        Vector3 lastFoodDir = transform.forward;
-        float startBranchSign = Random.value > 0.5f ? 1f : -1f;
-        for (int i = 0; i < length; ++i) {
-            Transform f = GetNewFood();
-            f.position = GetNextBest2DNoisePos(lastFoodPos, lastFoodDir.normalized);
-            f.forward = lastFoodDir;
-            f.localScale = foodScale * Vector3.one;
-            f.parent = transform;
-            // numBranches + 1 and ignore the end caps
-            // allow about 2 - 4 branches
-            if (i > 0 && (i < length - 2) && length > 1 && i % (length / (numBranches + 1)) == 0) {  // && Random.Range(0, length) < 3) {
-                float sign = ++branchesBuilt % 2 == 1 ? startBranchSign : -startBranchSign;
-                float branchAngle = Random.Range(branchAngleMin, branchAngleMax);
-                f.forward = Quaternion.AngleAxis(sign * branchAngle, transform.up) * lastFoodDir;
-                FoodVein vein = f.gameObject.AddComponent<FoodVein>();
-                vein.length = (int)(branchLengthDecayRate * length);
-
-                float branchPercent = 0.9f;
-                vein.foodScale = branchPercent * foodScale;
-
-                // size of branch should be a proportion of the parent branch and the parent should lose size proportionally
-                //float branchPercent = 0.25f;
-                //vein.foodScale = branchPercent * foodScale;
-                //// main branch reduces its size be branch size
-                //foodScale = (1f - branchPercent) * foodScale;
-
-                // adjust for the branch, by offsetting the parent branch angle a bit
-                float parentAngle = 0.2f * branchAngle;
-                lastFoodDir = Quaternion.AngleAxis(-sign * parentAngle, transform.up) * lastFoodDir;
-            }
-            else
-                lastFoodDir = f.forward;
-
-
-            lastFoodPos = f.position;
-            food.Add(f);
-            foodScale = foodSizeDecayRate * foodScale;
-        }
-    }
-
+    
     void BuildSphericalVein() {
         if (foodScale < minFoodScale)
             return;
@@ -232,6 +190,7 @@ public class FoodVein : MonoBehaviour {
         Vector3 lastFoodPos = transform.position;
         Vector3 lastFoodDir = transform.forward;
         Vector3 lastFoodUp = transform.up;
+        float dirSign = Vector3.Angle(transform.position.normalized, transform.right) > 90f ? 1f : -1f;
         float startBranchSign = Random.value > 0.5f ? 1f : -1f;
         for (int i = 0; i < length; ++i) {
             Transform f = GetNewFood();
@@ -239,14 +198,16 @@ public class FoodVein : MonoBehaviour {
             f.position = GetNextBest3DNoisePos(lastFoodPos, lastFoodDir.normalized, lastFoodPos.normalized);
             Vector3 vToPt = f.position;
             f.position = distFromCenter * vToPt.normalized;
-            Vector3 newForward = Vector3.Cross(lastFoodUp, -f.position.normalized);
+            Vector3 newForward = Vector3.Cross(lastFoodUp, dirSign * f.position.normalized);
             f.forward = newForward;
             f.localScale = foodScale * Vector3.one;
             f.parent = transform;
             if (i > 0 && (i < length - 2) && i % (length / (numBranches + 1)) == 0 && length > 1) {
                 float sign = ++branchesBuilt % 2 == 1 ? startBranchSign : -startBranchSign;
                 float branchAngle = Random.Range(branchAngleMin, branchAngleMax);
-                f.forward = Quaternion.AngleAxis(sign * branchAngle, f.position.normalized) * newForward;
+                // up relative to the sphere
+                Vector3 fUp = f.position.normalized;
+                f.forward = Quaternion.AngleAxis(sign * branchAngle, fUp) * newForward;
                 FoodVein vein = f.gameObject.AddComponent<FoodVein>();
                 vein.length = length - i; //(int)(branchLengthDecayRate * length);
 
@@ -255,8 +216,8 @@ public class FoodVein : MonoBehaviour {
 
                 // adjust for the branch, by offsetting the parent branch angle a bit
                 float parentAngle = 0.2f * branchAngle;
-                lastFoodDir = Quaternion.AngleAxis(-sign * parentAngle, f.position.normalized) * newForward;
-                lastFoodUp = Quaternion.AngleAxis(-sign * parentAngle, f.position.normalized) * lastFoodUp;
+                lastFoodDir = Quaternion.AngleAxis(-sign * parentAngle, fUp) * newForward;
+                lastFoodUp = Quaternion.AngleAxis(-sign * parentAngle, fUp) * lastFoodUp;
             }
             else {
                 lastFoodDir = f.forward;
