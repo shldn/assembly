@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using UnityEngine.VR;
 
 public class Assembly : CaptureObject{
@@ -20,7 +21,9 @@ public class Assembly : CaptureObject{
     public bool userReleased = false; // Did a user just drop this assembly into the world?
     public bool isOffspring = false;
     public bool isTraitTest = false;
+    public AssemblyComposition composition;
     private int id = -1;
+    private static int successfulReproductionsCount = 0;
     public int Id { 
         get { return id; } 
         set { 
@@ -36,8 +39,6 @@ public class Assembly : CaptureObject{
         } 
     }
     public string Name { get { return properties.name; } set { properties.name = value; } }
-    
-
 	Dictionary<Triplet, Node> nodeDict = new Dictionary<Triplet, Node>();
 	public Dictionary<Triplet, Node> NodeDict {get{return nodeDict;}}
     List<Node> nodes = new List<Node>();
@@ -127,7 +128,6 @@ public class Assembly : CaptureObject{
         }
     }
 
-
     public static void DestroyAll()
     {
         all.Clear();
@@ -153,7 +153,7 @@ public class Assembly : CaptureObject{
         Id = NodeController.Inst.GetNewAssemblyID();
         isOffspring = isOffspring_;
         AddRandomNodes(numNodes);
-
+        composition = new AssemblyComposition(Nodes);
         foreach (Node someNode in NodeDict.Values)
             someNode.ComputeEnergyNetwork();
 
@@ -198,7 +198,8 @@ public class Assembly : CaptureObject{
 		AllAssemblyTree.Insert(this);
 
         AddNodes(newNodes);
-		foreach(Node someNode in NodeDict.Values)
+        composition = new AssemblyComposition(Nodes);
+        foreach (Node someNode in NodeDict.Values)
 			someNode.ComputeEnergyNetwork();
 
 		PersistentGameManager.CaptureObjects.Add(this);
@@ -359,8 +360,13 @@ public class Assembly : CaptureObject{
 
 			// Create offspring!
 			if(mateCompletion >= 1f && ClientTest.Inst == null){
-				// Spawn a new assembly between the two.
-				int numNodes = Random.Range(nodes.Count, MatingWith.nodes.Count + 1);
+                // Spawn a new assembly between the two.
+                successfulReproductionsCount++;
+                if (PersistentGameManager.MetricTracking) {
+                    MetricsRecorder.Inst.WriteMetrics(composition.ToString(), successfulReproductionsCount, id);
+                    MetricsRecorder.Inst.WriteMetrics(MatingWith.composition.ToString(), successfulReproductionsCount, MatingWith.id);
+                }
+                int numNodes = Random.Range(nodes.Count, MatingWith.nodes.Count + 1);
                 string name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));
 
 				bool randomParent = Random.Range(0f, 1f) > 0.5f;
@@ -644,5 +650,80 @@ public class Assembly : CaptureObject{
 	public string ToFileString(){
         return IOHelper.AssemblyToString(this);
     } // End of ToFileString().
-
+    
+    
 } // End of PhysAssembly.
+
+//Assembly Compisition used for metric tracking of compositions of successful/unsuccessful Assemblies.
+public struct AssemblyComposition
+{
+    public int SenseCount;
+    public int MuscleCount;
+    public int ControlCount;
+    public int StemCount;
+    public int NodeCount;
+
+    public static int SenseCountTotal;
+    public static int MuscleCountTotal;
+    public static int ControlCountTotal;
+    public static int StemCountTotal;
+    public static int NodeCountTotal;
+    public static float AssembliesTotal;
+
+    public AssemblyComposition(List<Node> Nodes)
+    {
+        SenseCount = 0;
+        MuscleCount = 0;
+        ControlCount = 0;
+        StemCount = 0;
+        NodeCount = 0;
+        AssembliesTotal++;
+        updateAssemblyComposition(Nodes);
+    }//End of constructor.
+    public  void updateAssemblyComposition(List<Node> Nodes)
+    {
+        SenseCountTotal -= SenseCount;
+        MuscleCountTotal -= MuscleCount;
+        ControlCountTotal -= ControlCount;
+        StemCountTotal -= StemCount;
+        NodeCountTotal -= NodeCount;
+
+        SenseCount = 0;
+        MuscleCount = 0;
+        ControlCount = 0;
+        StemCount = 0;
+        NodeCount = 0;
+        foreach (Node node in Nodes)
+        {
+            switch (node.neighbors.Count)
+            {
+                case 1:
+                    SenseCount++;
+                    break;
+                case 2:
+                    MuscleCount++;
+                    break;
+                case 3:
+                    ControlCount++;
+                    break;
+                default:
+                    StemCount++;
+                    break;
+            }
+        }
+
+        NodeCount = SenseCount + MuscleCount + ControlCount + StemCount;
+        SenseCountTotal += SenseCount;
+        MuscleCountTotal += MuscleCount;
+        ControlCountTotal += ControlCount;
+        StemCountTotal += StemCount;
+        NodeCountTotal += NodeCount;
+
+    }//End of updateAssemblyComposition.
+    public override string ToString()
+    {
+        return SenseCount + "," + MuscleCount + "," + ControlCount + "," + StemCount + "," + NodeCount + ","
+            + SenseCountTotal/AssembliesTotal + "," + MuscleCountTotal / AssembliesTotal + "," + ControlCountTotal / AssembliesTotal
+            + "," + StemCountTotal / AssembliesTotal + "," + NodeCountTotal / AssembliesTotal + "," + AssembliesTotal + ",";
+    }//End of ToString
+}//End of AssemblyComposition.

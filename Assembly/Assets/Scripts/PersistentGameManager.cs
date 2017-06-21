@@ -19,6 +19,10 @@ public class PersistentGameManager : MonoBehaviour {
     public static bool IsAdminClient { get { return true; } }
     public static bool IsClient { get { return isClient; } }
     public static bool IsServer { get { return !IsClient; } }
+    public static bool NoGraphics = false;
+    public static bool MetricTracking = false;
+    public static string TrackingFileName = "";
+    public static string SessionTrackingID = "0";
     private static bool isClient = false;
 
     // Should Assembly/Node classes embed viewers (Genetic Tests should have them)
@@ -75,11 +79,12 @@ public class PersistentGameManager : MonoBehaviour {
         if (!IsClient && qrCodeTexture == null)
             qrCodeTexture = Resources.Load("Textures/Capture_QR_Code") as Texture;
 
-        cursorLock = !IsClient;
-
         if (IsServer)
             HandleCommandLineArgs();
-	}
+        // Keep cursor unlocked if graphics are disabled.
+        if (NoGraphics == false)
+            cursorLock = !IsClient;
+    }
 
 
 	void Update () {
@@ -150,10 +155,31 @@ public class PersistentGameManager : MonoBehaviour {
                 case "-projectpath":
                     ++i;
                     break;
+                case "-batchmode":
+                    Debug.Log("Batchmode");
+                    break;
+                case "-nographics":
+                    NoGraphics = true;
+                    Debug.Log("No Graphics Mode");
+                    break;
+                case "-logfile":
+                    ++i;
+                    break;
+                case "-tracking":
+                    ++i;
+                    MetricTracking = true;
+                    TrackingFileName = cmdLnArgs[i];
+                    ++i;
+                    SessionTrackingID = cmdLnArgs[i];
+                    break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);
                     break;
             }
+        }
+        if (MetricTracking)
+        {
+            MetricsRecorder.Inst.setupCmdArgs(TrackingFileName, SessionTrackingID, NoGraphics);
         }
     }
 
