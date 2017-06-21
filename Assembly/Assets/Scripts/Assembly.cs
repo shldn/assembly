@@ -366,6 +366,13 @@ public class Assembly : CaptureObject{
                     MetricsRecorder.Inst.WriteMetrics(composition.ToString(), successfulReproductionsCount, id);
                     MetricsRecorder.Inst.WriteMetrics(MatingWith.composition.ToString(), successfulReproductionsCount, MatingWith.id);
                 }
+                if (PersistentGameManager.ForceQuit == true)
+                {
+                    if (successfulReproductionsCount >= PersistentGameManager.QuitTimer)
+                    {
+                        Application.Quit();
+                    }
+                }
                 int numNodes = Random.Range(nodes.Count, MatingWith.nodes.Count + 1);
                 string name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));
 

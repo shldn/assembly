@@ -39,7 +39,7 @@ public class MetricsRecorder : MonoBehaviour {
     {
         string header = "";
         header += "SenseNodes,MuscleNodes,ControllerNodes,StemNodes,TotalNodes,";
-        header += "AvrgSense,AvrgMuscle,AcrgControl,AvrgStem,AvrgNodes,TotalAssemblies,";
+        header += "AvrgSense,AvrgMuscle,AvrgControl,AvrgStem,AvrgNodes,TotalAssemblies,";
         compositionHeader = header;
     }//End of HeaderInfo
 

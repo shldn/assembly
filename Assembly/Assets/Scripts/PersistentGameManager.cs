@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 // This Game Manager is not destroyed when levels are switched
 // Use this for functionality that should be consistent across levels
@@ -23,7 +24,10 @@ public class PersistentGameManager : MonoBehaviour {
     public static bool MetricTracking = false;
     public static string TrackingFileName = "";
     public static string SessionTrackingID = "0";
+    public static bool ForceQuit = false;
+    public static int QuitTimer;
     private static bool isClient = false;
+    
 
     // Should Assembly/Node classes embed viewers (Genetic Tests should have them)
     public static bool EmbedViewer { get { return (ViewerController.Inst && !ViewerOnlyApp) || IsClient; } }
@@ -171,6 +175,11 @@ public class PersistentGameManager : MonoBehaviour {
                     TrackingFileName = cmdLnArgs[i];
                     ++i;
                     SessionTrackingID = cmdLnArgs[i];
+                    break;
+                case "-forcequit":
+                    ++i;
+                    ForceQuit = true;
+                    QuitTimer = Int32.Parse(cmdLnArgs[i]);
                     break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);
