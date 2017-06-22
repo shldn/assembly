@@ -152,7 +152,7 @@ public class NodeController : MonoBehaviour {
     
 	void Update(){
 
-        if (fps != -1)
+        if (fps != -1 && PersistentGameManager.NoGraphics != true)
             Application.targetFrameRate = fps;
 
         // World grows as food nodes are consumed.

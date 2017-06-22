@@ -123,7 +123,7 @@ public class PersistentGameManager : MonoBehaviour {
 		Screen.lockCursor = cursorLock;
 
         if(!IsServer || !EmbedViewer) {
-            if (IsClient && (AssemblyEditor.Inst && (!ClientTest.Inst || !ClientTest.Inst.UnlockFrameRate)))
+            if (!NoGraphics && IsClient && (AssemblyEditor.Inst && (!ClientTest.Inst || !ClientTest.Inst.UnlockFrameRate)))
                 Application.targetFrameRate = 30;
             else
                 Application.targetFrameRate = 99999;
@@ -179,7 +179,14 @@ public class PersistentGameManager : MonoBehaviour {
                 case "-forcequit":
                     ++i;
                     ForceQuit = true;
-                    QuitTimer = Int32.Parse(cmdLnArgs[i]);
+                    try
+                    {
+                        QuitTimer = Int32.Parse(cmdLnArgs[i]);
+                    } catch (FormatException)
+                    {
+                        Console.WriteLine("Could Not Parse '{0}'.", cmdLnArgs[i]);
+                        QuitTimer = 200;
+                    }
                     break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);

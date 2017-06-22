@@ -171,7 +171,7 @@ public class Assembly : CaptureObject{
 
 
     // Load from string--file path, etc.
-    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false){
+    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false, int id_ = -1){
         List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         if(isFilePath)
@@ -179,6 +179,8 @@ public class Assembly : CaptureObject{
         else
             IOHelper.LoadAssemblyFromString(str, ref properties.name, ref id, ref worldPos, ref newNodes);
         properties.id = id;
+        if (id_ != -1)
+            Id = id_;
 
         hasBeenCaptured = !isFilePath && id != -1;
         if( hasBeenCaptured )
@@ -380,9 +382,9 @@ public class Assembly : CaptureObject{
 				Assembly newAssembly = null;
 
 				if(randomParent)
-	                newAssembly = new Assembly(IOHelper.AssemblyToString(this), Random.rotation, Position);
+	                newAssembly = new Assembly(IOHelper.AssemblyToString(this), Random.rotation, Position, false, false, NodeController.Inst.GetNewAssemblyID());
 				else
-					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position);
+					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position, false, false, NodeController.Inst.GetNewAssemblyID());
 
 				newAssembly.Mutate(0.1f);
 
