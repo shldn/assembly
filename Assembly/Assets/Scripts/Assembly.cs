@@ -154,6 +154,12 @@ public class Assembly : CaptureObject{
         isOffspring = isOffspring_;
         AddRandomNodes(numNodes);
         composition = new AssemblyComposition(Nodes);
+        while ((float) composition.StemCount / (float) composition.NodeCount > PersistentGameManager.stemNodePercentageMax)
+        {
+            AddRandomNodes(numNodes);
+            composition.updateAssemblyComposition(Nodes);
+
+        }
         foreach (Node someNode in NodeDict.Values)
             someNode.ComputeEnergyNetwork();
 
@@ -243,6 +249,7 @@ public class Assembly : CaptureObject{
             }
         } while (forceSenseNode && !containsSenseNode);
     }
+
 
 	public void AddNodes(List<Node> nodesList){
         foreach (Node someNode in nodesList)
@@ -387,6 +394,11 @@ public class Assembly : CaptureObject{
 					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position, false, false, NodeController.Inst.GetNewAssemblyID());
 
 				newAssembly.Mutate(0.1f);
+
+                if (PersistentGameManager.mutateChildren > Random.Range(0f, 1f))
+                {
+                    newAssembly.AddRandomNode();
+                }
 
                 // Update family trees
 				foreach(KeyValuePair<Triplet, Node> kvp in newAssembly.nodeDict)

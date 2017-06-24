@@ -25,6 +25,8 @@ public class PersistentGameManager : MonoBehaviour {
     public static string TrackingFileName = "";
     public static string SessionTrackingID = "0";
     public static bool ForceQuit = false;
+    public static float mutateChildren = 0;
+    public static float stemNodePercentageMax = 1;
     public static int QuitTimer;
     private static bool isClient = false;
     
@@ -183,6 +185,30 @@ public class PersistentGameManager : MonoBehaviour {
                     {
                         QuitTimer = Int32.Parse(cmdLnArgs[i]);
                     } catch (FormatException)
+                    {
+                        Console.WriteLine("Could Not Parse '{0}'.", cmdLnArgs[i]);
+                        QuitTimer = 200;
+                    }
+                    break;
+                case "-maxstem":
+                    ++i;
+                    try
+                    {
+                        stemNodePercentageMax = float.Parse(cmdLnArgs[i]);
+                    }
+                    catch (FormatException)
+                    {
+                        Console.WriteLine("Could Not Parse '{0}'.", cmdLnArgs[i]);
+                        stemNodePercentageMax = 1;
+                    }
+                    break;
+                case "-mutatechildren":
+                    ++i;
+                    try
+                    {
+                        mutateChildren = float.Parse(cmdLnArgs[i]);
+                    }
+                    catch (FormatException)
                     {
                         Console.WriteLine("Could Not Parse '{0}'.", cmdLnArgs[i]);
                         QuitTimer = 200;

@@ -4,7 +4,7 @@ using UnityEngine;
 using System.IO;
 
 public class MetricsRecorder : MonoBehaviour {
-    private float startTime;
+    private int startTime;
     private static string fileName;
     private static string sessionID;
     private static bool graphics;
@@ -51,7 +51,7 @@ public class MetricsRecorder : MonoBehaviour {
     {
         if (successfulReproductionsCount == 1)
         {
-            this.startTime = Time.time;
+            this.startTime = Time.frameCount;
            
         }
         else
@@ -63,18 +63,20 @@ public class MetricsRecorder : MonoBehaviour {
                 using (StreamWriter sw = File.CreateText(path))
                 {
                     //Header
-                    sw.WriteLine("Time,Reproductions,AverageTime," + compositionHeader + "id,SessionID,Graphics,");
+                    sw.WriteLine("Time,Reproductions,AverageTime," + compositionHeader + "id,SessionID,Graphics,FPS,FPSTarget,");
                 }
             }
             using (StreamWriter sw = File.AppendText(path))
             {
-                sw.Write(Time.time - startTime + ",");
+                sw.Write(Time.frameCount - startTime + ",");
                 sw.Write(successfulReproductionsCount + ",");
-                sw.Write((Time.time - startTime) / (successfulReproductionsCount - 1) + ",");
+                sw.Write((Time.frameCount - startTime) / (successfulReproductionsCount - 1) + ",");
                 sw.Write(composition);
                 sw.Write(assemblyID + ",");
                 sw.Write(sessionID + ",");
                 sw.Write(graphics + ",");
+                sw.Write(1.0f / Time.deltaTime + ",");
+                sw.Write(Application.targetFrameRate + ",");
                 sw.WriteLine();
             }
         }
