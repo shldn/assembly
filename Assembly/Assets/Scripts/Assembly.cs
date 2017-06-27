@@ -267,7 +267,8 @@ public class Assembly : CaptureObject{
 		Node newPhysNode = new Node(this, nodePos);
 		newPhysNode.Properties = nodeProps ?? NodeProperties.random;
         IntegrateNode(nodePos, newPhysNode);
-		return newPhysNode;
+        composition.updateAssemblyComposition(nodes);
+        return newPhysNode;
 	} // End of AddNode().
 
 
@@ -300,7 +301,8 @@ public class Assembly : CaptureObject{
             nodeDict.Remove(nodeToRemove.localHexPos);
             nodes.Remove(nodeToRemove);
         }
-	} // End of AddNode().
+        composition.updateAssemblyComposition(nodes);
+    } // End of RemoveNode().
 
 
 	public Assembly Duplicate(){
@@ -372,8 +374,10 @@ public class Assembly : CaptureObject{
                 // Spawn a new assembly between the two.
                 successfulReproductionsCount++;
                 if (PersistentGameManager.MetricTracking) {
-                    MetricsRecorder.Inst.WriteMetrics(composition.ToString(), successfulReproductionsCount, id);
-                    MetricsRecorder.Inst.WriteMetrics(MatingWith.composition.ToString(), successfulReproductionsCount, MatingWith.id);
+                    composition.updateAssemblyComposition(nodes);
+                    MatingWith.composition.updateAssemblyComposition(MatingWith.nodes);
+                    MetricsRecorder.Inst.WriteMetrics(composition.ToString(), getAverageNodeProperties(), successfulReproductionsCount, id);
+                    MetricsRecorder.Inst.WriteMetrics(MatingWith.composition.ToString(), MatingWith.getAverageNodeProperties(), successfulReproductionsCount, MatingWith.id);
                 }
                 if (PersistentGameManager.ForceQuit == true)
                 {
@@ -397,7 +401,14 @@ public class Assembly : CaptureObject{
 
                 if (PersistentGameManager.mutateChildren > Random.Range(0f, 1f))
                 {
-                    newAssembly.AddRandomNode();
+                    if (0.5 < Random.Range(0f, 1f) && newAssembly.nodes.Count > 7)
+                    {
+                        newAssembly.RemoveRandomNode();
+                    }
+                    else
+                    {
+                        newAssembly.AddRandomNode();
+                    }
                 }
 
                 // Update family trees
@@ -601,11 +612,48 @@ public class Assembly : CaptureObject{
         nodeDict.Clear();
         nodes.Clear();
     }
-
-	public void RemoveRandomNode(){
-
+    
+    public void RemoveRandomNode() {
+        RemoveNode(nodes[Random.Range(0, nodes.Count)]);
 	} // End of RemoveRandomNode().
-
+    private float[] getAverageNodeProperties()
+    {
+        float[] nodeProperties = new float[Node.Num_Node_Properties];
+        float[] someNodeProps;
+        foreach (Node someNode in nodes)
+        {
+            someNodeProps = someNode.getNodeProperties();
+            for (int i = 0; i < 6; i++)
+            {
+                nodeProperties[i] += someNodeProps[i];
+            }
+        }
+        for (int i = 0; i < Node.Num_Node_Properties; i++)
+        {
+            if (i > 1)
+            {
+                if (composition.MuscleCount > 0)
+                {
+                    nodeProperties[i] = nodeProperties[i] / composition.MuscleCount;
+                } else
+                {
+                    nodeProperties[i] = Node.Default_Node_Properties[i];
+                }
+            }
+            else
+            {
+                if (composition.SenseCount > 0)
+                {
+                    nodeProperties[i] = nodeProperties[i] / composition.SenseCount;
+                }
+                else
+                {
+                    nodeProperties[i] = Node.Default_Node_Properties[i];
+                }
+            }
+        }
+        return nodeProperties;
+    }
     public void SetVisibility(bool vis)
     {
         foreach (KeyValuePair<Triplet, Node> node in NodeDict)

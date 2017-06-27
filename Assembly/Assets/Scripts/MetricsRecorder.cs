@@ -9,7 +9,8 @@ public class MetricsRecorder : MonoBehaviour {
     private static string sessionID;
     private static bool graphics;
     private static string compositionHeader;
-    
+    private static string propertiesHeader;
+
     private static MetricsRecorder mInst = null;
     public static MetricsRecorder Inst
     {
@@ -32,22 +33,30 @@ public class MetricsRecorder : MonoBehaviour {
         MetricsRecorder.fileName = fileName;
         MetricsRecorder.sessionID = sessionID;
         MetricsRecorder.graphics = !noGraphics;
-        HeaderInfo();
+        NodeCompHeaderInfo();
+        NodePropHeaderInfo();
 
     }//end of setupCmdArgs
-    private void HeaderInfo()
+    private void NodeCompHeaderInfo()
     {
         string header = "";
         header += "SenseNodes,MuscleNodes,ControllerNodes,StemNodes,TotalNodes,";
         header += "AvrgSense,AvrgMuscle,AvrgControl,AvrgStem,AvrgNodes,TotalAssemblies,";
         compositionHeader = header;
     }//End of HeaderInfo
+    private void NodePropHeaderInfo()
+    {
+        string header = "";
+        header += "FieldOfView,SenseRange,MuscleStrength,OscillateFreq,";
+        header += "TorqueStrength,FlailMaxAngle,";
+        propertiesHeader = header;
 
+    }
     /*Write Metrics writes to the file Metrics Recorder has been given, and if the file doesn't already exist,
      * writes a header, the file is comma seperated values.
      * we only start recording after the first reproduction since it otherwise skews data with the variable time 
      * for reproduction to start occuring.*/
-    public void WriteMetrics(string composition, int successfulReproductionsCount, int assemblyID)
+    public void WriteMetrics(string composition,float[] nodeProperties, int successfulReproductionsCount, int assemblyID)
     {
         if (successfulReproductionsCount == 1)
         {
@@ -63,7 +72,7 @@ public class MetricsRecorder : MonoBehaviour {
                 using (StreamWriter sw = File.CreateText(path))
                 {
                     //Header
-                    sw.WriteLine("Time,Reproductions,AverageTime," + compositionHeader + "id,SessionID,Graphics,FPS,FPSTarget,");
+                    sw.WriteLine("Time,Reproductions,AverageTime," + compositionHeader + propertiesHeader+"id,SessionID,Graphics,FPS,FPSTarget,");
                 }
             }
             using (StreamWriter sw = File.AppendText(path))
@@ -72,6 +81,10 @@ public class MetricsRecorder : MonoBehaviour {
                 sw.Write(successfulReproductionsCount + ",");
                 sw.Write((Time.frameCount - startTime) / (successfulReproductionsCount - 1) + ",");
                 sw.Write(composition);
+                for (int i = 0; i < Node.Num_Node_Properties; i++)
+                {
+                    sw.Write(nodeProperties[i] + ",");
+                }
                 sw.Write(assemblyID + ",");
                 sw.Write(sessionID + ",");
                 sw.Write(graphics + ",");

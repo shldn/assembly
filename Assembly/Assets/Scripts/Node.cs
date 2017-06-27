@@ -4,19 +4,22 @@ using System.Collections.Generic;
 
 public class Node {
 
-	static List<Node> all = new List<Node>();
-	public static List<Node> getAll {get{return all;}}
-	public static implicit operator bool(Node exists){return exists != null;}
+    static List<Node> all = new List<Node>();
+    public static List<Node> getAll { get { return all; } }
+    public static implicit operator bool(Node exists) { return exists != null; }
 
-	public Triplet localHexPos = Triplet.zero;
-	public List<PhysNeighbor> neighbors = new List<PhysNeighbor>();
-	int lastNeighborCount = 0;
+    public Triplet localHexPos = Triplet.zero;
+    public List<PhysNeighbor> neighbors = new List<PhysNeighbor>();
+    int lastNeighborCount = 0;
     private System.Action<FoodPellet> handleFoodDelegate;
 
-	Assembly physAssembly = null;
-	public Assembly PhysAssembly {get{return physAssembly;} set{physAssembly = value;}}
-    public bool IsSense{ get{ return neighbors.Count == 1; } }
+    Assembly physAssembly = null;
+    public Assembly PhysAssembly { get { return physAssembly; } set { physAssembly = value; } }
+    public bool IsSense { get { return neighbors.Count == 1; } }
     public bool IsMuscle { get { return neighbors.Count == 2; } }
+
+    public static readonly float[] Default_Node_Properties = {90.0f, 35.0f,1.0f, 5f, 100f, 45f};
+    public const int Num_Node_Properties = 6;
 
     private NodeProperties nodeProperties = NodeProperties.random;
     public NodeProperties Properties { 
@@ -227,7 +230,7 @@ public class Node {
 
 
 		// Metabolism --------------------------------- //
-		if((CameraControl.Inst == null) || (PhysAssembly != CameraControl.Inst.selectedCaptureObj))
+		if(((CameraControl.Inst == null) || (PhysAssembly != CameraControl.Inst.selectedCaptureObj)) && neighbors.Count < 4)
 			physAssembly.energy -= NodeController.physicsStep * 0.01f;
 
 
@@ -452,7 +455,29 @@ public class Node {
 	public void Mutate(float amount){
 		nodeProperties.Mutate(amount);
 	} // End of Mutate().
-
+    public float[] getNodeProperties()
+    {
+        float[] props = new float[] {0f,0f,0f,0f,0f,0f};
+        switch (neighbors.Count)
+        {
+            case 1:
+                props[0] = nodeProperties.fieldOfView;
+                props[1] = nodeProperties.senseRange;
+                break;
+            case 2:
+                props[2] = nodeProperties.muscleStrength;
+                props[3] = nodeProperties.oscillateFrequency;
+                props[4] = nodeProperties.torqueStrength;
+                props[5] = nodeProperties.flailMaxAngle;
+                break;
+            case 3:
+                break;
+            default:
+                break;
+        }
+        
+        return props;
+    }// End of GetNodeProperties
 
     public static void DestroyAll()
     {
@@ -517,17 +542,17 @@ public struct NodeProperties {
 
 
     public NodeProperties(string str){
-
+        
         senseVector = Quaternion.identity;
-        fieldOfView = 90.0f;
-        senseRange = 35.0f;
-        muscleStrength = 1.0f;
+        fieldOfView = Node.Default_Node_Properties[0];
+        senseRange = Node.Default_Node_Properties[1];
+        muscleStrength = Node.Default_Node_Properties[2];
         actuateVector = Quaternion.identity;
 
 		torqueAxis = Vector3.forward;
-		oscillateFrequency = 5f;
-		torqueStrength = 100f;
-		flailMaxAngle = 45f;
+		oscillateFrequency = Node.Default_Node_Properties[3];
+		torqueStrength = Node.Default_Node_Properties[4];
+		flailMaxAngle = Node.Default_Node_Properties[5];
 
         string[] tok = str.Split(';');
         for(int i=0; i < tok.Length; ++i){
