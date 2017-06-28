@@ -24,6 +24,9 @@ public class Assembly : CaptureObject{
     public AssemblyComposition composition;
     private int id = -1;
     private static int successfulReproductionsCount = 0;
+    private int childrenCount = 0;
+    private string constructionDirections;
+    
     public int Id { 
         get { return id; } 
         set { 
@@ -143,7 +146,7 @@ public class Assembly : CaptureObject{
     }
 
 
-	private Assembly(Vector3 spawnPosition, Quaternion spawnRotation, int numNodes, string name = "", bool isOffspring_ = false){
+	private Assembly(Vector3 spawnPosition, Quaternion spawnRotation, int numNodes, string name = "", bool isOffspring_ = false,string blueprint=""){
 		this.spawnPosition = spawnPosition;
 		this.spawnRotation = spawnRotation;
 		properties.gender = Random.Range(0f, 1f) > 0.5f;
@@ -152,14 +155,24 @@ public class Assembly : CaptureObject{
 		Name = (name == "" ? NodeController.Inst.GetRandomName() : name);
         Id = NodeController.Inst.GetNewAssemblyID();
         isOffspring = isOffspring_;
-        AddRandomNodes(numNodes);
-        composition = new AssemblyComposition(Nodes);
-        while ((float) composition.StemCount / (float) composition.NodeCount > PersistentGameManager.stemNodePercentageMax)
+        if (blueprint == "")
         {
+            //If blueprint not given, construct randomly.
             AddRandomNodes(numNodes);
-            composition.updateAssemblyComposition(Nodes);
+            composition = new AssemblyComposition(Nodes);
+            while ((float)composition.StemCount / (float)composition.NodeCount > PersistentGameManager.stemNodePercentageMax)
+            {
+                AddRandomNodes(numNodes);
+                composition.updateAssemblyComposition(Nodes);
 
+            }
+        } else
+        {
+            //blueprint was given, construct using blueprint.
+            ConstructFromBlueprint(blueprint);
+            composition = new AssemblyComposition(Nodes);
         }
+        
         foreach (Node someNode in NodeDict.Values)
             someNode.ComputeEnergyNetwork();
 
@@ -177,7 +190,8 @@ public class Assembly : CaptureObject{
 
 
     // Load from string--file path, etc.
-    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false, int id_ = -1){
+    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false, int id_ = -1, string constructionDirections = "N:")
+    {
         List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         if(isFilePath)
@@ -205,6 +219,8 @@ public class Assembly : CaptureObject{
 		all.Add(this);
 		AllAssemblyTree.Insert(this);
 
+        this.constructionDirections = constructionDirections;
+
         AddNodes(newNodes);
         composition = new AssemblyComposition(Nodes);
         foreach (Node someNode in NodeDict.Values)
@@ -219,26 +235,32 @@ public class Assembly : CaptureObject{
     } // End of constructor (from serialized).
 
 
-	public static Assembly RandomAssembly(Vector3 spawnPos, Quaternion rotation, int numNodes){
-		Assembly newAssembly = new Assembly(spawnPos, rotation, numNodes);
+	public static Assembly RandomAssembly(Vector3 spawnPos, Quaternion rotation, int numNodes,string blueprint=""){
+		Assembly newAssembly = new Assembly(spawnPos, rotation, numNodes,blueprint: blueprint);
         NodeController.UpdateBirthCount(newAssembly.Id, 0);
 		return newAssembly;
 	} // End of RandomAssembly().
 
-    void AddRandomNodes(int numNodes, bool forceSenseNode = true) {
+    private void AddRandomNodes(int numNodes, bool forceSenseNode = true) {
         // Try a node structure... if there are no sense nodes, re-roll.
         bool containsSenseNode = false;
         do {
+            this.constructionDirections = "";
+            int nextDir = -1;
             RemoveAllNodes();
             Triplet spawnHexPos = Triplet.zero;
             int nodesToMake = numNodes;
             while (nodesToMake > 0) {
                 // Make sure no phys node is here currently.
                 if (!NodeDict.ContainsKey(spawnHexPos)) {
+                    
                     AddNode(spawnHexPos);
                     nodesToMake--;
+
                 }
-                spawnHexPos += HexUtilities.RandomAdjacent();
+                nextDir = Random.Range(0, 12);
+                constructionDirections += nextDir + ":";
+                spawnHexPos += HexUtilities.Adjacent(nextDir);
             }
 
             foreach (Node someNode in NodeDict.Values) {
@@ -249,8 +271,54 @@ public class Assembly : CaptureObject{
             }
         } while (forceSenseNode && !containsSenseNode);
     }
+    private void ConstructFromBlueprint(string blueprint)
+    {
+        blueprint = blueprint.TrimEnd(':');
+        char[] delimiterChars = {':'};
+        string[] directions = blueprint.Split(delimiterChars);
+        int iDir;
+        RemoveAllNodes();
+        Triplet spawnHexPos = Triplet.zero;
+        AddNode(spawnHexPos);
+        foreach (string sDir in directions)
+        {
+            try
+            {
+                iDir = System.Int32.Parse(sDir);
+                Debug.LogError("Dir: " + sDir + " : " + iDir);
 
+            }
+            catch (System.FormatException)
+            {
+                Debug.LogError("Could not Read Blueprint: " + blueprint);
+                iDir = 0;
+            }
+            if (iDir < 0 || iDir > 11)
+            {
+                Debug.LogError("Invalid Direction in Blueprint: " + blueprint);
+                iDir = 0;
+            }
+            spawnHexPos += HexUtilities.Adjacent(iDir);
+            if (!NodeDict.ContainsKey(spawnHexPos))
+            {
+                AddNode(spawnHexPos);
+            }
 
+        }
+        bool containsSenseNode = false;
+        foreach (Node someNode in NodeDict.Values)
+        {
+            if (someNode.neighbors.Count == 1)
+            {
+                containsSenseNode = true;
+                break;
+            }
+        }
+        if (containsSenseNode == false)
+        {
+            Debug.LogError("No Sense Node in Blueprint: " + blueprint);
+        }
+    }
 	public void AddNodes(List<Node> nodesList){
         foreach (Node someNode in nodesList)
             AddNode(someNode.localHexPos, someNode.Properties);
@@ -373,11 +441,13 @@ public class Assembly : CaptureObject{
 			if(mateCompletion >= 1f && ClientTest.Inst == null){
                 // Spawn a new assembly between the two.
                 successfulReproductionsCount++;
+                childrenCount++;
+                MatingWith.childrenCount++;
                 if (PersistentGameManager.MetricTracking) {
                     composition.updateAssemblyComposition(nodes);
                     MatingWith.composition.updateAssemblyComposition(MatingWith.nodes);
-                    MetricsRecorder.Inst.WriteMetrics(composition.ToString(), getAverageNodeProperties(), successfulReproductionsCount, id);
-                    MetricsRecorder.Inst.WriteMetrics(MatingWith.composition.ToString(), MatingWith.getAverageNodeProperties(), successfulReproductionsCount, MatingWith.id);
+                    MetricsRecorder.Inst.WriteMetrics(composition.ToString(), getAverageNodeProperties(), successfulReproductionsCount, id,childrenCount,constructionDirections);
+                    MetricsRecorder.Inst.WriteMetrics(MatingWith.composition.ToString(), MatingWith.getAverageNodeProperties(), successfulReproductionsCount, MatingWith.id,MatingWith.childrenCount,MatingWith.constructionDirections);
                 }
                 if (PersistentGameManager.ForceQuit == true)
                 {
@@ -393,9 +463,9 @@ public class Assembly : CaptureObject{
 				Assembly newAssembly = null;
 
 				if(randomParent)
-	                newAssembly = new Assembly(IOHelper.AssemblyToString(this), Random.rotation, Position, false, false, NodeController.Inst.GetNewAssemblyID());
+	                newAssembly = new Assembly(IOHelper.AssemblyToString(this), Random.rotation, Position, false, false, NodeController.Inst.GetNewAssemblyID(), constructionDirections: this.constructionDirections);
 				else
-					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position, false, false, NodeController.Inst.GetNewAssemblyID());
+					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position, false, false, NodeController.Inst.GetNewAssemblyID(), constructionDirections: MatingWith.constructionDirections);
 
 				newAssembly.Mutate(0.1f);
 

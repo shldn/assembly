@@ -56,7 +56,7 @@ public class MetricsRecorder : MonoBehaviour {
      * writes a header, the file is comma seperated values.
      * we only start recording after the first reproduction since it otherwise skews data with the variable time 
      * for reproduction to start occuring.*/
-    public void WriteMetrics(string composition,float[] nodeProperties, int successfulReproductionsCount, int assemblyID)
+    public void WriteMetrics(string composition,float[] nodeProperties, int successfulReproductionsCount, int assemblyID,int childrenCount,string constructionDirections)
     {
         if (successfulReproductionsCount == 1)
         {
@@ -72,7 +72,7 @@ public class MetricsRecorder : MonoBehaviour {
                 using (StreamWriter sw = File.CreateText(path))
                 {
                     //Header
-                    sw.WriteLine("Time,Reproductions,AverageTime," + compositionHeader + propertiesHeader+"id,SessionID,Graphics,FPS,FPSTarget,");
+                    sw.WriteLine("Time,Reproductions,AverageTime," + compositionHeader + propertiesHeader+"Children,id,SessionID,Graphics,FPS,FPSTarget,ConstructionBlueprint,");
                 }
             }
             using (StreamWriter sw = File.AppendText(path))
@@ -85,11 +85,13 @@ public class MetricsRecorder : MonoBehaviour {
                 {
                     sw.Write(nodeProperties[i] + ",");
                 }
+                sw.Write(childrenCount + ",");
                 sw.Write(assemblyID + ",");
                 sw.Write(sessionID + ",");
                 sw.Write(graphics + ",");
                 sw.Write(1.0f / Time.deltaTime + ",");
                 sw.Write(Application.targetFrameRate + ",");
+                sw.Write(constructionDirections+",");
                 sw.WriteLine();
             }
         }

@@ -18,7 +18,7 @@ public class Node {
     public bool IsSense { get { return neighbors.Count == 1; } }
     public bool IsMuscle { get { return neighbors.Count == 2; } }
 
-    public static readonly float[] Default_Node_Properties = {90.0f, 35.0f,1.0f, 5f, 100f, 45f};
+    public static readonly float[] Default_Node_Properties = {90.0f, 65.0f,0.55f, 5.5f, 105f, 45f};
     public const int Num_Node_Properties = 6;
 
     private NodeProperties nodeProperties = NodeProperties.random;

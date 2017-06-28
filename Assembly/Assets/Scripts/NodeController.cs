@@ -71,6 +71,8 @@ public class NodeController : MonoBehaviour {
 
 	float leaderboardFadeIn = 0f;
 
+    private System.IO.StreamReader blueprintFile;
+
     // Debug
     public int NumAssembliesAllocated { get { return nextAssemblyID; } }
 
@@ -105,6 +107,11 @@ public class NodeController : MonoBehaviour {
         }
 
 		worldSize = minWorldSize;
+
+        if (PersistentGameManager.UsingBlueprint == true)
+        {
+            blueprintFile = new System.IO.StreamReader(PersistentGameManager.BluePrintFile);
+        }
     } // End of Start().
 
 
@@ -209,8 +216,21 @@ public class NodeController : MonoBehaviour {
 				// Populate world if less than 50% max pop.
 				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.75f)){
 					Vector3 assemblySpawnPos = Vector3.Scale(Random.onUnitSphere, Vector3.one * worldSize * Random.Range(0.6f, 2f));
-                    if(Environment.Inst.IsInside(assemblySpawnPos))
-    					Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
+                    if (Environment.Inst.IsInside(assemblySpawnPos))
+                        if (PersistentGameManager.UsingBlueprint == false)
+                        {
+                            Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
+                        } else
+                        {
+                            string line;
+                            if ((line = blueprintFile.ReadLine()) != null)
+                            {
+                                Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes), blueprint: line);
+                            } else
+                            {
+                                PersistentGameManager.UsingBlueprint = false;
+                            }
+                        }
 				}
 
 				// Cull the herd if too many assemblies.

@@ -28,6 +28,8 @@ public class PersistentGameManager : MonoBehaviour {
     public static float mutateChildren = 0;
     public static float stemNodePercentageMax = 1;
     public static int QuitTimer;
+    public static bool UsingBlueprint = false;
+    public static string BluePrintFile = "";
     private static bool isClient = false;
     
 
@@ -213,6 +215,11 @@ public class PersistentGameManager : MonoBehaviour {
                         Console.WriteLine("Could Not Parse '{0}'.", cmdLnArgs[i]);
                         QuitTimer = 200;
                     }
+                    break;
+                case "-blueprint":
+                    ++i;
+                    UsingBlueprint = true;
+                    BluePrintFile = cmdLnArgs[i];
                     break;
                 default:
                     Debug.Log("Unknown command line arg: " + cmdLnArgs[i]);
