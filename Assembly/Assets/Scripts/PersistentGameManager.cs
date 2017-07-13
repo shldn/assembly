@@ -48,11 +48,11 @@ public class PersistentGameManager : MonoBehaviour {
 	public string serverCapturedAssem = "";
 	public string capturedWorldFilename = "";
 
-	bool cognogenesisNet = true;
+	bool cognogenesisNet = false;
 
 
 	void Awake () {
-        //cognogenesisNet = Application.loadedLevelName == "Cognogenesis";
+        cognogenesisNet = Application.loadedLevelName == "Cognogenesis";
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
         if( !cognogenesisNet && !captureMgr )
