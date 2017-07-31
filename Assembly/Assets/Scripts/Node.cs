@@ -11,6 +11,7 @@ public class Node {
 	public Triplet localHexPos = Triplet.zero;
 	public List<PhysNeighbor> neighbors = new List<PhysNeighbor>();
 	int lastNeighborCount = 0;
+    private System.Action<FoodPellet> handleFoodDelegate;
 
 	Assembly physAssembly = null;
 	public Assembly PhysAssembly {get{return physAssembly;} set{physAssembly = value;}}
@@ -97,7 +98,7 @@ public class Node {
 
 	List<SenseActuateLink> senseActuateLinks = new List<SenseActuateLink>();
 
-	public float senseAttractRange = 30f;
+	public float senseAttractRange = 10f;
     public Vector3 SenseForward { get { return Rotation * (nodeProperties.senseVector * Vector3.forward); } }
     
 
@@ -127,7 +128,8 @@ public class Node {
         if (PersistentGameManager.EmbedViewer)
             viewer = new NodeViewer(Position, nodeProperties, physAssembly.properties);
 
-    } // End of Awake().
+        handleFoodDelegate = new System.Action<FoodPellet>(HandleDetectedFood);
+} // End of Awake().
 
 
     public Node(Triplet localHexPos, NodeProperties props){
@@ -158,9 +160,7 @@ public class Node {
 	public void DoMath(){
 		if(cull || !physAssembly)
 			return;
-
-		power = 1f;
-
+		
 		float wiggle = Mathf.Sin(waveformRunner * (2f * Mathf.PI) * (1f / nodeProperties.oscillateFrequency)) * smoothedPower;
 		waveformRunner += NodeController.physicsStep * power;
 		bool functioningMuscle = (neighbors.Count == 2) && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
@@ -213,6 +213,12 @@ public class Node {
             lastNeighborCount = neighbors.Count;
 
             bool createTrail = neighbors.Count == 2 && ((neighbors[0].physNode.neighbors.Count != 2) || (neighbors[1].physNode.neighbors.Count != 2));
+
+			// Don't need trails on amalgam level... the amalgams are heavy enough to render already.
+			if(NodeController.Inst.LoadedLevelName == "Soup_Amalgams")
+				createTrail = false;
+
+			//createTrail = false;
             if (viewer != null)
                 viewer.SetNeighborCount(neighbors.Count, createTrail);
             if (neighbors.Count == 1)
@@ -221,7 +227,7 @@ public class Node {
 
 
 		// Metabolism --------------------------------- //
-		if(CameraControl.Inst == null || PhysAssembly != CameraControl.Inst.selectedAssembly)
+		if((CameraControl.Inst == null) || (PhysAssembly != CameraControl.Inst.selectedCaptureObj))
 			physAssembly.energy -= NodeController.physicsStep * 0.01f;
 
 
@@ -229,24 +235,42 @@ public class Node {
         //if(!WorldSizeController.Inst.WithinBoundary){
 		if(physAssembly.amalgam && (Vector3.Distance(Position, physAssembly.amalgam.transform.position) > physAssembly.amalgam.radius)){
 			Position -= (physAssembly.amalgam.transform.position - Position).normalized * ( Vector3.Distance(Position, physAssembly.amalgam.transform.position) - physAssembly.amalgam.radius);
+		//// Reel in to amalgam
+		//Vector3 worldSize = Vector3.one * 100f;
+		//if(NodeController.Inst.LoadedLevelName.Equals("Soup_Assemblies") && (Mathf.Sqrt(Mathf.Pow(Position.x / worldSize.x, 2f) + Mathf.Pow(Position.y / worldSize.y, 2f) + Mathf.Pow(Position.z / worldSize.z, 2f)) > 1f)){
+		//	delayPosition = Vector3.MoveTowards(delayPosition, Vector3.zero, NodeController.physicsStep * 1f);
 		}
-
+		
 
 		// Reset power
-		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep);
+		smoothedPower = Mathf.MoveTowards(smoothedPower, power, NodeController.physicsStep * 3f);
 
-		// Sense nodes at full power if we're in the client, otherwise residual.
-		if(neighbors.Count == 1)
-			power = PersistentGameManager.IsClient? (ClientTest.Inst ? ClientTest.Inst.NodePower : 1f) : 0.2f;
-		// "Residual" power
-		else if(neighbors.Count == 2)
-			power = 0f;
+        // Sense nodes at full power if we're in the client, otherwise residual.
+        if (neighbors.Count == 1) {
+            power = ClientTest.Inst ? ClientTest.Inst.NodePower : (PersistentGameManager.IsClient ? 1f : 0.2f);
+        }
+        // "Residual" power
+        else if (neighbors.Count == 2)
+            power = 0f;
+		
 	} // End of DoMath().
 
 
 	public void UpdateTransform(){
 		if(cull || !physAssembly)
 			return;
+
+		if(viewer != null)
+			viewer.cubeTransform.GetComponent<Rigidbody>().isKinematic = !viewer.cubeTransform.GetComponent<GrabbableObject>().IsGrabbed();
+
+		if(viewer.cubeTransform.GetComponent<GrabbableObject>().IsGrabbed()) {
+			delayPosition = viewer.cubeTransform.position;
+			delayRotation = viewer.cubeTransform.rotation;
+			position = delayPosition;
+			rotation = delayRotation;
+			velocity = viewer.cubeTransform.GetComponent<Rigidbody>().velocity * 0.25f;
+			return;
+		}
 
 		Vector3 thisFrameVelocity = delayPosition - Position;
 		velocity += thisFrameVelocity * velocityCoefficient;
@@ -279,8 +303,8 @@ public class Node {
 		switch(neighbors.Count){
 			case 1 : 
 				//calling detect food on sense node, determines power of node
-                Bounds foodDetectBoundary = new Bounds(position, nodeProperties.senseRange * (new Vector3(1, 1, 1)));
-				FoodPellet.AllFoodTree.RunActionInRange(new System.Action<FoodPellet>(HandleDetectedFood), foodDetectBoundary);
+                Bounds foodDetectBoundary = new Bounds(position, nodeProperties.senseRange * (Vector3.one));
+				FoodPellet.AllFoodTree.RunActionInRange(handleFoodDelegate, foodDetectBoundary);
 
 				// Amalgamation attraction
 				//Bounds attractBoundary = new Bounds(position, senseAttractRange * (new Vector3(1, 1, 1)));
@@ -319,16 +343,18 @@ public class Node {
 		newNeighbor.physNode.AttachNeighbor(this);
 	} // End of AttachNeighbor().
 
-	public void Destroy(){
-        if (viewer != null)
-            viewer.Destroy();
+    public void Destroy(bool immediate = false){
+        if (viewer != null) {
+			viewer.Destroy(immediate);
+		}
 		cull = true;
 	} // End of OnDestroy().
 
 
 	// When a sense node calls this function, it will rebuild its energy transfer network.
 	public void ComputeEnergyNetwork(){
-		senseActuateLinks = ComputeCircuitry(new HashSet<Node>(new Node[]{this}), 1f);
+        if(IsSense)
+    		senseActuateLinks = ComputeCircuitry(new HashSet<Node>(new Node[]{this}), 1f);
 	} // End of ComputeEnergyNetwork().
 
 
@@ -340,7 +366,7 @@ public class Node {
 		if(signalStrength < 0.02f)
 			return linksToReturn;
 
-		if(neighbors.Count == 2)
+		if(IsMuscle)
 			linksToReturn.Add(new SenseActuateLink(this, signalStrength));
 
 		for(int i = 0; i < neighbors.Count; i++){
@@ -369,9 +395,10 @@ public class Node {
 
 
     private void HandleDetectedFood(FoodPellet food){
+
 		Vector3 vectorToFood = food.WorldPosition - position;
 		float distanceToFood = vectorToFood.magnitude;
-		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) )
+		if(distanceToFood > nodeProperties.senseRange || (food.owner != null && food.owner != physAssembly ) || (CognoAmalgam.Inst != null && !food.Activated))
 			return;
 
 		float angleToFood = Vector3.Angle(rotation * nodeProperties.senseVector * Vector3.forward, vectorToFood);
@@ -379,10 +406,13 @@ public class Node {
 
 		if(angleToFood < 0.5f * nodeProperties.fieldOfView){
 			power = 1f;
+
 			signalRotation = Quaternion.Inverse(rotation) * Quaternion.LookRotation(vectorToFood, rotation * Vector3.up);
 			//GLDebug.DrawLine(position, food.worldPosition, new Color(0.4f, 1f, 0.4f, Mathf.Pow(1f - (distanceToFood / senseDetectRange), 2f)));
 
-			float foodToPull = NodeController.physicsStep * 0.3f;
+            float fullPullCutoff = 0.25f * nodeProperties.senseRange;
+            float pullMagnitude = distanceToFood < fullPullCutoff ? 1f : Mathf.Lerp(1f, 0f, (distanceToFood - fullPullCutoff) / (nodeProperties.senseRange - fullPullCutoff));
+			float foodToPull = pullMagnitude * NodeController.physicsStep * 0.3f;
 
             food.Energy -= foodToPull;
 			physAssembly.energy += foodToPull;
@@ -461,6 +491,10 @@ public class SenseActuateLink {
 
 public struct NodeProperties {
 
+    public static readonly bool tetherFovAndRange = true;
+    public static readonly float senseMin = 1f;
+    public static readonly float senseMax = 100f;
+
     // Sense
     public Quaternion senseVector;  // viewer needs
     public float fieldOfView;       // viewer needs
@@ -478,7 +512,9 @@ public struct NodeProperties {
     // A fully randomly-seeded NodeProperties.
     public static NodeProperties random{
         get{
-            return new NodeProperties(Random.rotation, 45f, Random.Range(100.0f, 180.0f), Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
+            float senseRange = Random.Range(50f, 80f);
+            float fov = tetherFovAndRange ? GetFovFromRange(senseRange) : Random.Range(70.0f, 110.0f);
+            return new NodeProperties(Random.rotation, fov, senseRange, Random.rotation, Random.Range(0.1f, 1f), Random.onUnitSphere, Random.Range(1f, 10f), Random.Range(10f, 200f), Random.Range(10f, 80f));
         }
     } // End of NodeProperties.random.
 
@@ -502,7 +538,7 @@ public struct NodeProperties {
 
         senseVector = Quaternion.identity;
         fieldOfView = 90.0f;
-        senseRange = 150.0f;
+        senseRange = 35.0f;
         muscleStrength = 1.0f;
         actuateVector = Quaternion.identity;
 
@@ -556,15 +592,23 @@ public struct NodeProperties {
         }
     } // End of NodeProperties constructor.
 
+    static float GetFovFromRange(float range) {
+        float lerpVal = (range - senseMin) / (senseMax - senseMin);
+        return Mathf.Lerp(225f, 15f, lerpVal);
+    }
 
 	public void Mutate(float amount){
 		senseVector *= Quaternion.AngleAxis(Random.Range(0f, 180f * amount), Random.onUnitSphere);
 
         senseRange = (1.0f + Random.Range(-amount, amount)) * senseRange;
-        senseRange = Mathf.Clamp(senseRange, 1f, 1000f);
+        senseRange = Mathf.Clamp(senseRange, senseMin, senseMax);
 
-		fieldOfView += Random.Range(-180f, 180f) * amount;
-		fieldOfView = Mathf.Clamp(fieldOfView, 1f, 180f);
+        if (tetherFovAndRange)
+            fieldOfView = GetFovFromRange(senseRange);
+        else {
+            fieldOfView += Random.Range(-180f, 180f) * amount;
+            fieldOfView = Mathf.Clamp(fieldOfView, 1f, 180f);
+        }
 
 		muscleStrength += Random.Range(-1f, 1f) * amount;
 		muscleStrength = Mathf.Clamp01(muscleStrength);

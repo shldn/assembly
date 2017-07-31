@@ -19,6 +19,7 @@ public class Assembly : CaptureObject{
     bool propertiesDirty = false;
     public bool userReleased = false; // Did a user just drop this assembly into the world?
     public bool isOffspring = false;
+    public bool isTraitTest = false;
     private int id = -1;
     public int Id { 
         get { return id; } 
@@ -27,10 +28,10 @@ public class Assembly : CaptureObject{
             properties.id = id;
             if( id != -1 )
             {
-                familyTree.Add(value);
-                familyGenerationRemoved.Add(value, 0);
-                NodeController.Inst.assemblyNameDictionary.Add(value, Name);
-                NodeController.assemblyScores.Add(value, 0);
+                //familyTree.Add(value);
+                //familyGenerationRemoved.Add(value, 0);
+                //NodeController.Inst.assemblyNameDictionary.Add(value, Name);
+                //NodeController.assemblyScores.Add(value, 0);
             }
         } 
     }
@@ -52,10 +53,10 @@ public class Assembly : CaptureObject{
             if (cachedFrame == Time.frameCount)
                 return cachedPosition;
 			Vector3 worldPos = Vector3.zero;
-			foreach(Node someNode in nodeDict.Values)
-				worldPos += someNode.Position;
-			if(nodeDict.Keys.Count > 0f)
-				worldPos /= nodeDict.Keys.Count;
+			foreach(KeyValuePair<Triplet,Node> kvp in nodeDict)
+				worldPos += kvp.Value.Position;
+			if(nodeDict.Count > 0f)
+				worldPos /= nodeDict.Count;
 
             cachedFrame = Time.frameCount;
             cachedPosition = worldPos;
@@ -95,18 +96,25 @@ public class Assembly : CaptureObject{
     }
 	float mateAttractDist = 100f;
 	float mateCompletion = 0f;
+	float mateCooldown = 30f;
 
 	public float distanceCovered = 0f;
 	Vector3 lastPosition = Vector3.zero;
     Vector3 velocity = Vector3.zero;
 
 	public Amalgam amalgam = null;
+	public CognoAmalgam cognoAmalgam = null;
+	//public int boundAmalgamVertex = 0;
 
 	bool pushedToClients = false;
 
 	public bool ready = false; // Turns true after having survived an Update() step.
 
-	private static Octree<Assembly> allAssemblyTree;
+    System.DateTime creationTime = System.DateTime.Now;
+    public void SetReborn() { creationTime = System.DateTime.Now; }
+    public float AgeInSeconds { get { return (float)(System.DateTime.Now - creationTime).TotalSeconds; } }
+
+    private static Octree<Assembly> allAssemblyTree;
     public static Octree<Assembly> AllAssemblyTree{ 
         get{
             if(allAssemblyTree == null){
@@ -146,8 +154,8 @@ public class Assembly : CaptureObject{
         isOffspring = isOffspring_;
         AddRandomNodes(numNodes);
 
-        foreach (Node someNode in NodeDict.Values)
-            someNode.ComputeEnergyNetwork();
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            kvp.Value.ComputeEnergyNetwork();
 
 
         if (!PersistentGameManager.EmbedViewer) {
@@ -163,7 +171,7 @@ public class Assembly : CaptureObject{
 
 
     // Load from string--file path, etc.
-    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false){
+    public Assembly(string str, Quaternion? spawnRotation, Vector3? spawnPosition, bool isFilePath = false, bool userReleased_ = false, bool addMutationNode = false){
         List<Node> newNodes = new List<Node>();
         Vector3 worldPos = new Vector3();
         if(isFilePath)
@@ -190,8 +198,10 @@ public class Assembly : CaptureObject{
 		AllAssemblyTree.Insert(this);
 
         AddNodes(newNodes);
-		foreach(Node someNode in NodeDict.Values)
-			someNode.ComputeEnergyNetwork();
+        if (addMutationNode)
+            AddRandomNode();
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            kvp.Value.ComputeEnergyNetwork();
 
 		PersistentGameManager.CaptureObjects.Add(this);
         userReleased = userReleased_;
@@ -224,8 +234,8 @@ public class Assembly : CaptureObject{
                 spawnHexPos += HexUtilities.RandomAdjacent();
             }
 
-            foreach (Node someNode in NodeDict.Values) {
-                if (someNode.neighbors.Count == 1) {
+            foreach (KeyValuePair<Triplet, Node> kvp in nodeDict) {
+                if (kvp.Value.neighbors.Count == 1) {
                     containsSenseNode = true;
                     break;
                 }
@@ -239,7 +249,7 @@ public class Assembly : CaptureObject{
 
         // Destroy the duplicates
         for (int i = nodesList.Count - 1; i >= 0; --i)
-            nodesList[i].Destroy();
+            nodesList[i].Destroy(true);
 
             //IntegrateNode(someNode.localHexPos, someNode);
 	} // End of AddNodes().
@@ -294,17 +304,19 @@ public class Assembly : CaptureObject{
 		lastEnergy = energy;
 
 		if(PersistentGameManager.IsServer){
-			if(energy < 0f)
+			if(energy < 0f && (!userReleased || AgeInSeconds > 30))
 				Destroy();
 		}
 
-		float maxEnergy = nodeDict.Values.Count * 2f;
+		float maxEnergy = nodeDict.Count * 2f;
 		if(!PersistentGameManager.IsClient)
 			energy = Mathf.Clamp(energy, 0f, maxEnergy);
 
-        if (!PersistentGameManager.IsClient && (Node.getAll.Count < NodeController.Inst.worldNodeThreshold * 0.9f) && (energy > (maxEnergy * 0.9f)))
+		mateCooldown -= NodeController.physicsStep;
+
+		if(!PersistentGameManager.IsClient && (energy > (maxEnergy * 0.9f)) && (mateCooldown < 0f) && (NeuroScaleDemo.Inst == null || NeuroScaleDemo.Inst.TargetNode == null || NeuroScaleDemo.Inst.TargetNode.PhysAssembly != this))
             WantToMate = true;
-        else if ((Node.getAll.Count > (NodeController.Inst.worldNodeThreshold * 0.8f)) || (energy < maxEnergy * 0.5f) && (Random.Range(0f, 1f) < 0.01f)){
+		else if(energy < maxEnergy * 0.5f){
             WantToMate = false;
 			mateCompletion = 0f;
 
@@ -335,8 +347,8 @@ public class Assembly : CaptureObject{
                 if (MatingWith.nodes.Count > i) {
 					otherNode = MatingWith.nodes[i];
 
-					//if((!VRDevice.isPresent) && myNode.Visible && otherNode.Visible)
-					//	GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
+					if((!VRDevice.isPresent) && myNode.Visible && otherNode.Visible)
+						GLDebug.DrawLine(myNode.Position, otherNode.Position, new Color(1f, 0f, 1f, 0.5f));
 					Vector3 vectorToMate = myNode.Position - otherNode.Position;
 					float distance = vectorToMate.magnitude;
 			
@@ -348,18 +360,38 @@ public class Assembly : CaptureObject{
 			}
 
 			// Create offspring!
-			if(mateCompletion >= 1f){
+			if(mateCompletion >= 1f && ClientTest.Inst == null){
 				// Spawn a new assembly between the two.
 				int numNodes = Random.Range(nodes.Count, MatingWith.nodes.Count + 1);
                 string name = Name.Substring(0, Mathf.RoundToInt(Name.Length * 0.5f)) + MatingWith.Name.Substring(MatingWith.Name.Length - Mathf.RoundToInt(MatingWith.Name.Length * 0.5f), Mathf.RoundToInt(MatingWith.Name.Length * 0.5f));
-                Assembly newAssembly = new Assembly((Position + MatingWith.Position) / 2f, Random.rotation, numNodes, name, true);
+
+				bool randomParent = Random.Range(0f, 1f) > 0.5f;
+                bool addMutationNode = Random.value > 0.9f; // infrequently mutate structure of offspring
+                Assembly newAssembly = null;
+
+				if(randomParent)
+	                newAssembly = new Assembly(IOHelper.AssemblyToString(this), Random.rotation, Position, false, false, addMutationNode);
+				else
+					newAssembly = new Assembly(IOHelper.AssemblyToString(matingWith), Random.rotation, Position, false, false, addMutationNode);
+
+				newAssembly.Mutate(0.1f);
 
                 // Update family trees
+				foreach(KeyValuePair<Triplet, Node> kvp in newAssembly.nodeDict)
+					kvp.Value.Position = Position;
+
                 newAssembly.UpdateFamilyTreeFromParent(this);
                 newAssembly.UpdateFamilyTreeFromParent(MatingWith);
+
+				// Inherit amalgam
 				newAssembly.amalgam = amalgam;
 				if(newAssembly.amalgam)
 					newAssembly.amalgam.assemblies.Add(newAssembly);
+
+				// Inherit cognoamalgam
+				newAssembly.cognoAmalgam = cognoAmalgam;
+				if(newAssembly.cognoAmalgam)
+					newAssembly.cognoAmalgam.assemblies.Add(newAssembly);
 
                 //Debug.LogError("Baby assembly born: family size: " + familyTree.Count);
 
@@ -373,6 +405,10 @@ public class Assembly : CaptureObject{
 				mateCompletion = 0f;
 				energy *= 0.5f;
                 MatingWith = null;
+				mateCooldown = 30f;
+
+				RandomMelody.Inst.PlayNote();
+				MonoBehaviour.Instantiate(PrefabManager.Inst.birthEffect, Position, Random.rotation);
 			}
 		}
 
@@ -382,10 +418,23 @@ public class Assembly : CaptureObject{
         lastPosition = newPosition;
 
         // Keeps assemblies in Capsule
-        if (Environment.Inst && !PersistentGameManager.IsClient && !WorldSizeController.Inst.WithinBoundary(Position)) {
-            foreach (Node someNode in nodeDict.Values) {
-                Vector3 dir = (WorldSizeController.Inst.WorldOrigin - Position).normalized;
-                someNode.velocity += dir * 2f * NodeController.physicsStep;
+        //if (Environment.Inst && !PersistentGameManager.IsClient && !WorldSizeController.Inst.WithinBoundary(Position)) {
+        //    foreach (Node someNode in nodeDict.Values) {
+        //        Vector3 dir = (WorldSizeController.Inst.WorldOrigin - Position).normalized;
+        //        someNode.velocity += dir * 2f * NodeController.physicsStep;
+        //    }
+        if (!PersistentGameManager.IsClient) {
+            if (CognoAmalgam.Inst != null && Random.Range(0f, 1f) >= 0.6f && !CognoAmalgam.Inst.IsInside(Position)) {
+                foreach (KeyValuePair<Triplet,Node> kvp in nodeDict)
+                    kvp.Value.velocity += -Position.normalized * NodeController.physicsStep;
+            }
+            else if (Environment.Inst && Environment.Inst.isActiveAndEnabled && PersistentGameManager.IsServer) {
+                if (!WorldSizeController.Inst.WithinBoundary(Position)) {
+                    foreach (KeyValuePair<Triplet, Node> kvp in nodeDict){
+                        Vector3 dir = (WorldSizeController.Inst.WorldOrigin - Position).normalized;
+                        kvp.Value.velocity += dir * 2f * NodeController.physicsStep;
+                    }
+                }
             }
         }
 
@@ -396,7 +445,7 @@ public class Assembly : CaptureObject{
 				int newAssemID = NodeController.Inst.GetNewAssemblyID();
 				Id = newAssemID;
 			}
-			AssemblyRadar.Inst.GetComponent<NetworkView>().RPC("CreateBlip", RPCMode.Others, IOHelper.AssemblyToString(this), Position);
+			//AssemblyRadar.Inst.GetComponent<NetworkView>().RPC("CreateBlip", RPCMode.Others, IOHelper.AssemblyToString(this), Position);
 		}
 
         if (propertiesDirty) {
@@ -417,6 +466,8 @@ public class Assembly : CaptureObject{
 
     private void UpdateFamilyTreeFromParent(Assembly parent)
     {
+		return;
+
         foreach (int someInt in parent.familyTree)
         {
             familyTree.Add(someInt);
@@ -431,6 +482,8 @@ public class Assembly : CaptureObject{
     // Captured assembly is released back into the world, retrieve its cached family tree
     private void RebuildFamilyTree()
     {
+		return;
+
         if( id == -1 && Debug.isDebugBuild )
         {
             Debug.LogError("Attempting to rebuild family tree for an invalid index");
@@ -480,7 +533,8 @@ public class Assembly : CaptureObject{
 
 	// Merges two assemblies together.
 	public void AmaglamateTo(Assembly otherAssembly, Triplet offset){
-		foreach(Node someNode in nodeDict.Values){
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict) {
+            Node someNode = kvp.Value;
 			otherAssembly.energy += 1f;
 			someNode.PhysAssembly = otherAssembly;
 			someNode.localHexPos += offset;
@@ -503,8 +557,8 @@ public class Assembly : CaptureObject{
 
 
 	public void Mutate(float amount){
-		foreach(Node someNode in NodeDict.Values)
-			someNode.Mutate(amount);
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            kvp.Value.Mutate(amount);
 	} // End of Mutate().
 
 
@@ -520,7 +574,6 @@ public class Assembly : CaptureObject{
 				// If this position is not filled, we have our position.
 				if(!NodeDict.Keys.Contains(testPos)){
 					Node newNode = AddNode(testPos);
-					MonoBehaviour.print(newNode.localHexPos);
 					return;
 				}
 			}
@@ -529,8 +582,8 @@ public class Assembly : CaptureObject{
 
     public void RemoveAllNodes(bool destroy = true) {
         if(destroy)
-            foreach (Node someNode in NodeDict.Values)
-                someNode.Destroy();
+            foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+                kvp.Value.Destroy();
 
         nodeDict.Clear();
         nodes.Clear();
@@ -547,19 +600,49 @@ public class Assembly : CaptureObject{
     } // End of SetVisibility().
 
 
-	public void Destroy(){
-		foreach(KeyValuePair<Triplet, Node> somePair in nodeDict)
-			somePair.Value.Destroy();
+    public float GetBoundingSphereRadiusFromPoint(Vector3 point) {
+        Vector3 center;
+        float radius;
+        GetBoundingSphere(out center, out radius);
+        return radius + Vector3.Distance(center, point);
+    } // End of GetBoundingSphereRadius().
 
-		allAssemblyTree.Remove(this);
+    public void GetBoundingSphere(out Vector3 center, out float sphereRadius) {
+        List<Vector3> pts = new List<Vector3>();
+        foreach (KeyValuePair<Triplet, Node> kvp in nodeDict)
+            pts.Add(kvp.Value.Position);
+        MathHelper.GetBoundingSphere(pts, out center, out sphereRadius);
+    } // End of GetBoundingSphere().
+
+    public void DestroyImmediate() {
+        DestroyImpl(true);
+    } // End of DestroyImmediate().
+
+
+    public void Destroy(){
+        DestroyImpl(false);
+	} // End of Destroy().
+
+    private void DestroyImpl(bool immediate) {
+        foreach (KeyValuePair<Triplet, Node> somePair in nodeDict)
+            somePair.Value.Destroy(immediate);
+
+        allAssemblyTree.Remove(this);
         foreach (int someInt in familyTree)
             NodeController.UpdateDeathCount(someInt, familyGenerationRemoved[someInt]);
 		PersistentGameManager.CaptureObjects.Remove(this);
 
 		if(amalgam)
 			amalgam.assemblies.Remove(this);
+
+		if(cognoAmalgam)
+			cognoAmalgam.assemblies.Remove(this);
+
 		cull = true;
         ViewerData.Inst.assemblyDeletes.Add(id);
+
+        // this is handled next frame in NodeController. Checks for cull == true
+        //all.Remove(this);
 	} // End of Destroy().
 
 

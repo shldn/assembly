@@ -9,8 +9,8 @@ public class Amalgam : MonoBehaviour
 
 	public List<Assembly> assemblies = new List<Assembly>();
 	public List<FoodPellet> foodPellets = new List<FoodPellet>();
-	int targetNumAssems = 20;
-	int targetNumFood = 60;
+	public int targetNumAssems = 15;
+	public int targetNumFood = 30;
 
 	public float radius = 50f;
 	public Vector3[] initialVerts;
@@ -23,7 +23,7 @@ public class Amalgam : MonoBehaviour
 	int[] shortestPath;
 	public MeshFilter meshFilter;
 
-	Color color = Color.white;
+	public Color color = Color.white;
 
 	public List<AmalgamHandle> handles = new List<AmalgamHandle>();
 	public UnityEngine.Object handlePrefabInt = null;
@@ -33,11 +33,21 @@ public class Amalgam : MonoBehaviour
 
 	Vector3 randomRotVector = Vector3.zero;
 
-	Vector3 motionVector = Vector3.zero;
-	Vector3 motionVectorVel = Vector3.zero;
-	Vector3 currentVelocity = Vector3.zero;
+	//Vector3 motionVector = Vector3.zero;
+	//Vector3 motionVectorVel = Vector3.zero;
+	//Vector3 currentVelocity = Vector3.zero;
 
-	public class ActiveVertex
+	public float deformFluxRate = 2f;
+	public float wiggleFluxRate = 5f;
+	public static int sphereResolution = 2;
+
+	float minDeformRadius = 0f;
+
+    // skin mesh
+    IcoSphereCreator skinMeshCreator = null;
+
+
+    public class ActiveVertex
 	{
 		public int index = 0;
 		public ActiveVertex[] neighbors;
@@ -55,22 +65,27 @@ public class Amalgam : MonoBehaviour
 
 		public bool[] openGates = new bool[0];
 
-		public float skinDeform = 0f;
-		float[] flux = new float[0];
+		public float deform = 0f;
+		float[] deformFlux = new float[0];
+
+		public Vector3 wiggle = Vector3.zero;
+		Vector3[] wiggleFlux = new Vector3[0];
 
 
 		public void Update(){ 
 
-			skinDeform = Mathf.MoveTowards(skinDeform, 0f, NodeController.physicsStep * 0.2f);
+			deform = Mathf.MoveTowards(deform, 0f, NodeController.physicsStep * 0.2f);
 			//energy = Mathf.Clamp01(energy);
 
-			flux = new float[neighbors.Length];
+			deformFlux = new float[neighbors.Length];
+			wiggleFlux = new Vector3[neighbors.Length];
 			for(int i = 0; i < neighbors.Length; i++){
 				if(!openGates[i])
 					continue;
 
 				ActiveVertex curNeighbor = neighbors[i];
-				flux[i] = (curNeighbor.skinDeform - skinDeform);
+				deformFlux[i] = (curNeighbor.deform - deform);
+				wiggleFlux[i] = (curNeighbor.wiggle - wiggle);
 			}
 
 		} // End of Update().
@@ -78,9 +93,13 @@ public class Amalgam : MonoBehaviour
 		public void RevengeOfUpdate(){
 			for(int i = 0; i < neighbors.Length; i++){
 				ActiveVertex curNeighbor = neighbors[i];
-				float energyTransfer = flux[i] * NodeController.physicsStep * (1f / neighbors.Length);
-				skinDeform += energyTransfer;
-				curNeighbor.skinDeform -= energyTransfer;
+				float deformFluxTransfer = deformFlux[i] * NodeController.physicsStep * amalgam.deformFluxRate * (1f / neighbors.Length);
+				deform += deformFluxTransfer;
+				curNeighbor.deform -= deformFluxTransfer;
+
+				Vector3 wiggleFluxTransfer = wiggleFlux[i] * (NodeController.physicsStep * amalgam.wiggleFluxRate * (1f / neighbors.Length));
+				wiggle += wiggleFluxTransfer;
+				curNeighbor.wiggle -= wiggleFluxTransfer;
 			}
 		} // End of RevengeOfUpdate().
 
@@ -90,16 +109,21 @@ public class Amalgam : MonoBehaviour
 	void Awake(){
 		allAmalgams.Add(this);
 		meshFilter = GetComponent<MeshFilter>();
-		motionVector = Random.rotation * Vector3.forward;
+		//motionVector = Random.rotation * Vector3.forward;
 	} // End of Awake().
 
 
 	void Start()
 	{
-		Mesh newIcoSphere = IcoSphereCreator.Inst.Create(2);
-		GetComponent<MeshFilter>().mesh = newIcoSphere;
-		initialVerts = newIcoSphere.vertices;
-		initialNorms = newIcoSphere.normals;
+        skinMeshCreator = gameObject.AddComponent<IcoSphereCreator>();
+        Mesh skinMesh = skinMeshCreator.Create(sphereResolution);
+		GetComponent<MeshFilter>().mesh = skinMesh;
+		initialVerts = skinMesh.vertices;
+		initialNorms = skinMesh.normals;
+
+		deformFluxRate = Mathf.Pow(Random.Range(1f, 2f), 3f);
+		wiggleFluxRate = Mathf.Pow(Random.Range(1f, 3f), 2f);
+
 
 
 		// UV mapping
@@ -114,17 +138,17 @@ public class Amalgam : MonoBehaviour
         }
 		meshFilter.mesh.uv = newUV.ToArray();
 
-		activeVertices = new ActiveVertex[newIcoSphere.vertexCount]; // Set up active vertex list
-		for(int i = 0; i < newIcoSphere.vertexCount; i++){
+		activeVertices = new ActiveVertex[skinMesh.vertexCount]; // Set up active vertex list
+		for(int i = 0; i < skinMesh.vertexCount; i++){
 			activeVertices[i] = new ActiveVertex();
 			activeVertices[i].amalgam = this;
 			activeVertices[i].index = i;
-			activeVertices[i].originPoint = newIcoSphere.vertices[i];
+			activeVertices[i].originPoint = skinMesh.vertices[i];
 		}
 
 		vertexGraph = new int[activeVertices.Length][]; // Set up vertex graph
-		for(int i = 0; i < newIcoSphere.vertexCount; i++){
-			int[] neighborVerts = FindNeighborVertices(i, newIcoSphere);
+		for(int i = 0; i < skinMesh.vertexCount; i++){
+			int[] neighborVerts = FindNeighborVertices(i, skinMesh);
 			activeVertices[i].neighbors = new ActiveVertex[neighborVerts.Length];
 
 			// Fill vertex graph
@@ -141,25 +165,30 @@ public class Amalgam : MonoBehaviour
 			}
 		}
 
-		//color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
-		color = new Color(11f / 255f, 62f / 255f, 110f / 255f);
-		GetComponent<Renderer>().material.SetColor("_RimColor", color);
+		color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
+		//color = new Color(11f / 255f, 62f / 255f, 110f / 255f);
+		GetComponent<Renderer>().materials[1].SetColor("_RimColor", color);
 
 
 		handlePrefabInt = Resources.Load("AmalgamHandleInt");
 		handlePrefabExt = Resources.Load("AmalgamHandleExt");
-		for(int i = 0; i < 6; i++){
-			handles.Add(new AmalgamHandle(this, Random.Range(0, newIcoSphere.vertexCount)));
+		int numHandles = Random.Range(3, 12);
+		for(int i = 0; i < numHandles; i++){
+			handles.Add(new AmalgamHandle(this, Random.Range(0, skinMesh.vertexCount)));
 			
 			// Initialize arteries
-			GameObject newArteryGO = Instantiate(Resources.Load("AmalgamArtery")) as GameObject;
-			AmalgamArtery newArtery = newArteryGO.GetComponent<AmalgamArtery>();
-			newArtery.amalgam = this;
-			newArtery.vertices = ShortestVertexPath(handles[i].attachedVert, handles[Random.Range(0, handles.Count)].attachedVert);
+			if(Random.Range(0f, 1f) < 0.25f) {
+				GameObject newArteryGO = Instantiate(Resources.Load("AmalgamArtery")) as GameObject;
+				AmalgamArtery newArtery = newArteryGO.GetComponent<AmalgamArtery>();
+				newArtery.amalgam = this;
+				newArtery.vertices = ShortestVertexPath(handles[i].attachedVert, handles[Random.Range(0, handles.Count)].attachedVert);
+			}
         }
 
-		transform.rotation = Random.rotationUniform;
+		//transform.rotation = Random.rotationUniform;
 		randomRotVector = Random.rotationUniform * Vector3.forward;
+
+		transform.localScale *= Random.Range(0.5f, 2f);
 
 	} // End of Start().
 
@@ -168,6 +197,7 @@ public class Amalgam : MonoBehaviour
 	void Update()
 	{
 		// Find closest vert to mouse.
+		/*
 		float maxDist = 9999f;
 		float distFromCam = 9999f;
 		ActiveVertex curVert = null;
@@ -184,14 +214,15 @@ public class Amalgam : MonoBehaviour
 		// This tracks if the amalgam should move around.
 		Vector3 positionChange = Vector3.zero;
 		for(int i = 0; i < handles.Count; i++){
-			positionChange += 4f * handles[i].energyBuildup * (transform.rotation * initialNorms[handles[i].attachedVert]) * NodeController.physicsStep;
+			positionChange += 0.1f * handles[i].energyBuildup * (transform.rotation * initialNorms[handles[i].attachedVert]) * NodeController.physicsStep;
 
 			//Debug.DrawRay(transform.position, (transform.rotation * initialNorms[handles[i].attachedVert]) * 100f);
 		}
+		*/
 
 		//positionChange += motionVector * NodeController.physicsStep * 2f;
 		
-		motionVector = Vector3.SmoothDamp(motionVector, currentVelocity, ref motionVectorVel, 5f);
+		//motionVector = Vector3.SmoothDamp(motionVector, currentVelocity, ref motionVectorVel, 5f);
 
 
 		// Update active vertices
@@ -208,14 +239,18 @@ public class Amalgam : MonoBehaviour
 
 
 		// Propel amalgam
-		transform.position += positionChange;
+		//transform.position += positionChange;
+
+		/*
 		for(int i = 0; i < assemblies.Count; i++)
 			foreach(KeyValuePair<Triplet, Node> someNodeKVP in assemblies[i].NodeDict)
 				someNodeKVP.Value.staticMove += positionChange;
 		for(int i = 0; i < foodPellets.Count; i++)
 			foodPellets[i].WorldPosition += positionChange;
+		*/
 
-		currentVelocity = positionChange / NodeController.physicsStep;
+
+		//currentVelocity = positionChange / NodeController.physicsStep;
 
 
 		for(int i = 0; i < activeVertices.Length; i++)
@@ -226,6 +261,7 @@ public class Amalgam : MonoBehaviour
 			Assembly newAssem = Assembly.RandomAssembly(transform.position + (Random.insideUnitSphere * radius), Quaternion.identity, Random.Range(4, 10));
 			assemblies.Add(newAssem);
 			newAssem.amalgam = this;
+			//newAssem.boundAmalgamVertex = Random.Range(0, meshFilter.mesh.vertexCount);
 		}
 
 		// ...but not TOO many! Cull the herd if there are too many.
@@ -247,29 +283,36 @@ public class Amalgam : MonoBehaviour
 		/*
 		if(foodPellets.Count < targetNumFood){
 			FoodPellet newFood = new FoodPellet(transform.position + (Random.insideUnitSphere * radius));
-			foodPellets.Add(newFood);
 			newFood.amalgam = this;
 		}
 		*/
+		
 
 		Mesh tempMesh = GetComponent<MeshFilter>().mesh;
 		Vector3[] verts = tempMesh.vertices;
 		Color[] colors = new Color[tempMesh.vertexCount];
-		float motionVectorMagnitude = Mathf.Clamp01(motionVector.magnitude);
+		//float motionVectorMagnitude = Mathf.Clamp01(motionVector.magnitude);
 		for(int i = 0; i < tempMesh.vertexCount; i++){
 
 			// Vert offset
 			Vector3 vertRotated = transform.rotation * initialVerts[i];
-			float motionPosition = Vector3.Dot(vertRotated, motionVector);
-			float vertOffset = 1.15f + ((Mathf.Cos(Time.time + (motionPosition * 5f)) * 0.15f) * motionVectorMagnitude);
+			//float motionPosition = Vector3.Dot(vertRotated, motionVector);
+			//float vertOffset = 1.15f + ((Mathf.Cos(Time.time + (motionPosition * 5f)) * 0.15f) * motionVectorMagnitude);
 
-			verts[i] = (initialVerts[i] * vertOffset) + (initialNorms[i] * activeVertices[i].skinDeform * 1f);
-			colors[i] = Color.Lerp(new Color(0f, 0f, 0.1f), Color.cyan, activeVertices[i].skinDeform);
+			float actualSkinDeform = activeVertices[i].deform;
+			if(actualSkinDeform < 0f)
+				actualSkinDeform = -Mathf.Sqrt(-actualSkinDeform);
+			else
+				actualSkinDeform = Mathf.Sqrt(actualSkinDeform);
+
+			verts[i] = (Quaternion.Euler(activeVertices[i].wiggle) * initialVerts[i]) * Mathf.Clamp(actualSkinDeform, 0.1f, Mathf.Infinity);
+			colors[i] = Color.Lerp(new Color(0f, 0f, 0.1f), Color.cyan, actualSkinDeform);
 		}
 		GetComponent<MeshFilter>().mesh.colors = colors;
 		GetComponent<MeshFilter>().mesh.vertices = verts;
 
 		GetComponent<MeshFilter>().mesh.RecalculateNormals();
+
 
 		/*
 		// Shortest path test
@@ -280,13 +323,80 @@ public class Amalgam : MonoBehaviour
 		*/
 
 		// Rotation
-		transform.rotation *= Quaternion.AngleAxis(NodeController.physicsStep * 1f, randomRotVector);
+		//transform.rotation *= Quaternion.AngleAxis(NodeController.physicsStep * 1f, randomRotVector);
 
 		for(int i = 0; i < handles.Count; i++)
 			handles[i].Update();
 
 
 		//renderer.materials[0].mainTextureOffset = new Vector2(Time.time * 0.01f, Time.time * 0.01f);
+
+		for(int i = 0; i < assemblies.Count; i++) {
+			Assembly curAssem = assemblies[i];
+            Vector3 newPos = Vector3.zero;
+            if (!IsInside(curAssem.Position, out newPos)) {
+                for (int j = 0; j < curAssem.Nodes.Count; j++) {
+                    Debug.DrawLine(curAssem.Nodes[j].Position, newPos);
+					curAssem.Nodes[j].Position += (newPos - curAssem.Position) * -0.01f;
+                }
+            }
+		}
+
+
+		// Bind assemblies to the 'rail' formed by their vertex.
+		/*
+		for(int i = 0; i < assemblies.Count; i++) {
+			Assembly curAssem = assemblies[i];
+			
+
+			Vector3 localVertexPoint = meshFilter.mesh.vertices[curAssem.boundAmalgamVertex];
+			Vector3 worldVertexPoint = transform.TransformPoint(localVertexPoint);
+
+			//Debug.DrawLine(transform.position, worldVertexPoint, new Color(1f, 1f, 1f, 0.2f));
+
+			Vector3 localNormalToVertex = localVertexPoint.normalized;
+
+			Vector3 assemLocalPos = transform.InverseTransformPoint(curAssem.Position);
+			Vector3 localPointOnRail = Vector3.Project(assemLocalPos, localVertexPoint);
+			Vector3 worldPointOnRail = transform.TransformPoint(localPointOnRail);
+
+			//Debug.DrawLine(transform.position, worldPointOnRail, new Color(1f, 1f, 1f, 0.5f));
+			//Debug.DrawLine(curAssem.Position, worldPointOnRail, new Color(0f, 1f, 1f, 0.2f));
+
+			Color debugColor = Color.green;
+			Vector3 targetPos = worldPointOnRail;
+			// Dot product test
+			float hullDot = Vector3.Dot(localVertexPoint - assemLocalPos, localNormalToVertex);
+			if(hullDot < 0f) {
+				debugColor = Color.red;
+				targetPos = worldVertexPoint;
+			}
+
+			float originDot = Vector3.Dot(assemLocalPos, localNormalToVertex);
+			if(originDot < 0f) {
+				debugColor = Color.yellow;
+				targetPos = transform.position;
+			}
+
+
+			//Debug.DrawRay(targetPos, Vector3.up, debugColor);
+			//Debug.DrawRay(targetPos, -Vector3.up, debugColor);
+			//Debug.DrawRay(targetPos, Vector3.right, debugColor);
+			//Debug.DrawRay(targetPos, -Vector3.right, debugColor);
+			//Debug.DrawRay(targetPos, Vector3.forward, debugColor);
+			//Debug.DrawRay(targetPos, -Vector3.forward, debugColor);
+
+			Vector3 vectorToTargetPoint = curAssem.Position - targetPos;
+			for(int j = 0; j < curAssem.Nodes.Count; j++) {
+				curAssem.Nodes[j].Position += vectorToTargetPoint * 0.1f;
+			}
+		}
+		*/
+
+		if(Input.GetKey(KeyCode.R))
+			for(int i = 0; i < activeVertices.Length; i++)
+				activeVertices[i].deform = 0f;
+
 
 	} // End of Update().
 	
@@ -314,7 +424,7 @@ public class Amalgam : MonoBehaviour
 	} // End of FindNeighborVertices().
 
 
-	// Uses A* to find the shortest path between two vertices.
+	// Use simplified A* to find the shortest path between two vertices.
 	int[] ShortestVertexPath(int initialVert, int targetVert){
 		List<int> shortestPath = new List<int>();
 		shortestPath.Add(initialVert);
@@ -362,6 +472,29 @@ public class Amalgam : MonoBehaviour
 		return transform.position + (transform.rotation * Vector3.Scale(meshFilter.mesh.vertices[index], transform.localScale));
 	} // End of GetVertexWorldPoint().
 
+
+	public bool IsInside(Vector3 pt) {
+
+        //check inner sphere first
+        //if (pt.sqrMagnitude < transform.lossyScale.x * (1 + minDeformRadius) * transform.lossyScale.x * (1 + minDeformRadius))
+            //return true;
+
+        // now check outer geometry
+        bool isInside = false;
+        Vector3 transformedPt = transform.InverseTransformPoint(pt);
+        skinMeshCreator.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside);
+        return isInside;
+    } // End of IsInside().
+
+    // amalgam
+    public bool IsInside(Vector3 pt, out Vector3 amalgamPt) {
+        bool isInside = false;
+        Vector3 transformedPt = transform.InverseTransformPoint(pt);
+        skinMeshCreator.GetProjectedFace(transformedPt, GetComponent<MeshFilter>().mesh.vertices, out isInside, out amalgamPt);
+        amalgamPt = transform.TransformPoint(amalgamPt);
+        return isInside;
+    }
+
 } // End of Amalgam.
 
 
@@ -376,7 +509,7 @@ public class AmalgamHandle {
 	public Transform gameObjectInt = null;
 	public Transform gameObjectExt = null;
 
-	//public float frequency = 0f;
+	public float frequency = 0f;
 
 	public float energyBuildup = 0f; // When this is high enough, it will emit a food pellet.
 
@@ -384,6 +517,12 @@ public class AmalgamHandle {
 
 	float energySearchCooldown = 0f;
 	public EnergySource energySource = null;
+
+
+	public float testBubble = 0f;
+	public Vector3 testWiggle = Vector3.zero;
+	public float testWiggleFreq = 0f;
+
 
 	public AmalgamHandle (Amalgam amalgam, int attachedVert){
 		this.attachedVert = attachedVert;
@@ -397,7 +536,8 @@ public class AmalgamHandle {
 		intEffect = Random.Range(0.2f, 1f);
 
 		energySearchCooldown = Random.Range(0f, 10f);
-		//frequency = Random.Range(2f, 30f);
+
+		RandomizeHandleBehaviours();
 	} // End of AmalgamHandle().
 
 	public void Update(){
@@ -426,6 +566,7 @@ public class AmalgamHandle {
 							raidenLaser = newAbsorbGO.GetComponent<RaidenLaser>();
 							raidenLaser.startTrans = gameObjectExt;
 							raidenLaser.endTrans = energySource.transform;
+							raidenLaser.color = amalgam.color;
 
 							break;
 						}
@@ -442,17 +583,19 @@ public class AmalgamHandle {
 
 
 		if(energySource != null){
-			float energyToAbsorb = 0.25f * NodeController.physicsStep /* * (0.5f + (0.5f * Mathf.Cos((2f * Mathf.PI * Time.time) / curHandle.frequency)))*/;
+			float energyToAbsorb = 1f * NodeController.physicsStep /* * (0.5f + (0.5f * Mathf.Cos((2f * Mathf.PI * Time.time) / curHandle.frequency)))*/;
 			energySource.energy -= energyToAbsorb;
 			energyBuildup += energyToAbsorb;
 
 			Vector3 vecToSource = energySource.transform.position - gameObjectExt.position;
 			//amalgam.transform.rotation = Quaternion.RotateTowards(amalgam.transform.rotation, Quaternion.LookRotation(vecToSource), NodeController.physicsStep * 2f);
+		} else {
+			energyBuildup -= 0.5f * NodeController.physicsStep;
 		}
 
 		energyBuildup = Mathf.MoveTowards(energyBuildup, 0f, NodeController.physicsStep * 0.02f);
 
-		if(energyBuildup >= 1f) {
+		if((energyBuildup >= 1f) && (Random.Range(0f, 1f) < 0.03f) && (amalgam.foodPellets.Count < amalgam.targetNumFood)) {
 			FoodPellet newFood = new FoodPellet(gameObjectInt.position);
 			newFood.velocity = (gameObjectInt.forward * Random.Range(16f, 24f)) + (Random.rotation * Vector3.forward);
 			amalgam.foodPellets.Add(newFood);
@@ -460,10 +603,19 @@ public class AmalgamHandle {
 			energyBuildup -= 1f;
 		}
 
-		amalgam.ActiveVertices[attachedVert].skinDeform += NodeController.physicsStep + (0.02f * energyBuildup);
+		//amalgam.ActiveVertices[attachedVert].deform += NodeController.physicsStep + (0.02f * energyBuildup);
 
+		amalgam.ActiveVertices[attachedVert].deform = testBubble * (1f + (Mathf.Cos(Time.time * testWiggleFreq) * 0.5f));
 
+		if(Input.GetKeyDown(KeyCode.B))
+			RandomizeHandleBehaviours();
+		
 	} // End of Update().
+
+	void RandomizeHandleBehaviours() {
+		testWiggleFreq = Random.Range(0.2f, 1f);
+		testBubble = Random.Range(0f, 3f);
+	} // End of RandomizeHandleBehaviours().
 
 	bool CheckEnergySource(EnergySource source){
 		if(Vector3.Distance(gameObjectExt.position, source.transform.position) < 500f){

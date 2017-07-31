@@ -10,7 +10,10 @@ public class MuseManager : MonoBehaviour {
 	public Texture2D sensorDisplayIn;
 
     // Local variables
+    private bool useLSL = false; // Switch to NeuroScale pipeline with a data streaming over LSL
+    private bool forceDataDisplay = false; // Get data even if not touching forehead
     private bool touchingForehead = false;
+    private int offForeheadCounter = 0;
     private float lastConcentrationMeasure = 0f;
     private float batteryLevel = 1.0f;
     private List<int> headConnectionStatus = new List<int>() {0,0,0,0};
@@ -19,8 +22,12 @@ public class MuseManager : MonoBehaviour {
 
 
     // Accessors
-    public bool TouchingForehead{get{return touchingForehead && (MuseManager.Inst.SecondsSinceLastMessage < 1f);}}
-    public float LastConcentrationMeasure{get{return !invertConcentration? lastConcentrationMeasure : 1f - lastConcentrationMeasure;}}
+    public bool TouchingForehead{get{return forceDataDisplay || (touchingForehead && (MuseManager.Inst.SecondsSinceLastMessage < 1f));}}
+    public float LastConcentrationMeasure{
+        get {
+            float concentration = useLSL ? MuseLSLManager.Inst.LastConcentrationMetric : lastConcentrationMeasure;
+            return !invertConcentration? concentration : 1f - concentration;
+        }}
     public float SecondsSinceLastMessage { get { return (float)(DateTime.Now - timeOfLastMessage).TotalSeconds; } }
     public int NumBlinksInLastSecond { get { return Sum(blinkQueue); } }
     // float (0-1)
@@ -34,6 +41,12 @@ public class MuseManager : MonoBehaviour {
 	public bool SlowResponse {get{return slowResponse;}}
 
 
+	// Diagetic GUI
+	public Transform[] physicalCxnInds = new Transform[0];
+	Vector3 defaultPhysCxnIndScale = Vector3.one;
+	public TextMesh physText = null;
+
+
     void Awake(){
         Inst = this;
     }
@@ -44,6 +57,9 @@ public class MuseManager : MonoBehaviour {
         if (OSCHandler.Instance.Servers.ContainsKey("AssemblyOSC"))
             OSCHandler.Instance.Servers["AssemblyOSC"].server.PacketReceivedEvent += Server_PacketReceivedEvent;
 #endif
+
+		if(physicalCxnInds.Length > 0)
+			defaultPhysCxnIndScale = physicalCxnInds[0].localScale;
     }
 
 	void Update () {
@@ -51,7 +67,11 @@ public class MuseManager : MonoBehaviour {
 			invertConcentration = !invertConcentration;
 		if(Input.GetKeyDown(KeyCode.S))
 			slowResponse = !slowResponse;
-	}
+        if (Input.GetKeyDown(KeyCode.L))
+            useLSL = !useLSL;
+        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.F))
+            forceDataDisplay = !forceDataDisplay;
+    }
 
     void OnDestroy() {
         Inst = null;
@@ -62,7 +82,7 @@ public class MuseManager : MonoBehaviour {
     {
         //Debug.Log("packet: " + packet.Address + " " + OSCHandler.DataToString(packet.Data));
         if (packet.Address.Contains("touching_forehead"))
-            touchingForehead = ((int)packet.Data[0] != 0);
+            HandleTouchingForehead((int)packet.Data[0] != 0);
         else if (packet.Address.Contains("concentration"))
             HandleConcentrationSample((float)packet.Data[0]);
         else if (packet.Address.Contains("horseshoe"))
@@ -72,6 +92,20 @@ public class MuseManager : MonoBehaviour {
         else if (packet.Address.Contains("blink"))
             HandleBlinkSample(packet.Data);
         timeOfLastMessage = DateTime.Now;
+    }
+
+    private void HandleTouchingForehead(bool touching) {
+        if (touchingForehead && !touching) {
+            offForeheadCounter++;
+            if (offForeheadCounter >= 2) {
+                touchingForehead = false;
+                offForeheadCounter = 0;
+            }
+        }
+        else {
+            touchingForehead = touching;
+            offForeheadCounter = 0;
+        }
     }
 #endif
 
@@ -118,7 +152,13 @@ public class MuseManager : MonoBehaviour {
 
     void OnGUI()
     {
-		wearingHeadsetIndication = Mathf.SmoothDamp(wearingHeadsetIndication, TouchingForehead? 1f : 0f, ref wearingHeadsetIndicationVel, 1f);
+        if (ClientTest.Inst != null)
+        {
+            wearingHeadsetIndication = 0f;
+            return;
+        }
+
+        wearingHeadsetIndication = Mathf.SmoothDamp(wearingHeadsetIndication, TouchingForehead? 1f : 0f, ref wearingHeadsetIndicationVel, 1f);
 
 		// Sensor displays
 		float sensorRingSize = 50f * wearingHeadsetIndication;
@@ -132,6 +172,8 @@ public class MuseManager : MonoBehaviour {
 			GUI.DrawTexture(sensorStatusRect, sensorDisplayIn);
 
 			sensorIndSizes[i] = Mathf.SmoothDamp(sensorIndSizes[i], HeadConnectionStatus[i], ref sensorIndSizeVels[i], 0.25f);
+			if(physicalCxnInds.Length > 0)
+				physicalCxnInds[i].localScale = (defaultPhysCxnIndScale * ((4f - sensorIndSizes[i]) / 3f));
 		}
 
         GUI.skin.label.fontSize = 14;
@@ -139,8 +181,8 @@ public class MuseManager : MonoBehaviour {
 
 		string statusStr = "";
 		// Attention metric
-		if(SecondsSinceLastMessage < 1f){
-			if(touchingForehead)
+		if(SecondsSinceLastMessage < 1f || forceDataDisplay) {
+			if(TouchingForehead)
 				statusStr += (NeuroScaleDemo.Inst.enviroScale * 100f).ToString("F0") + "%";
 			else
 				statusStr += "EEG device ready.";
@@ -151,11 +193,24 @@ public class MuseManager : MonoBehaviour {
 			if(slowResponse)
 				statusStr += " s";
 
-			if(BatteryPercentage < 0.2f)
+            if (useLSL)
+                statusStr += " Q";
+
+            if (forceDataDisplay)
+                statusStr += ">";
+
+            if (BatteryPercentage < 0.2f)
 				statusStr += "\n" + (BatteryPercentage * 100f).ToString("F0") + "% battery remaining.";
 
 
 			GUI.Label(MathUtilities.CenteredSquare(Screen.width * 0.5f, ((sensorRingSize + (sensorRingSpacing)) * Mathf.Sqrt(wearingHeadsetIndication)) + 505f, 1000f), statusStr);
+			if(physText) {
+				physText.text = statusStr;
+				physText.GetComponent<Renderer>().enabled = true;
+			}
+		} else {
+			if(physText)
+				physText.GetComponent<Renderer>().enabled = false;
 		}
     }
 }

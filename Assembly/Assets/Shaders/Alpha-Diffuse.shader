@@ -7,7 +7,7 @@ Properties {
 SubShader {
 	Tags {"Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent"}
 	LOD 200
-	Cull back
+	Cull front
 
 CGPROGRAM
 #pragma surface surf Lambert alpha

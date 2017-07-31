@@ -19,6 +19,7 @@ public class PlayerSync : MonoBehaviour {
 
     LinkedList<Vector2> lastPoints = new LinkedList<Vector2>();
     LinkedList<float> lastPointDists = new LinkedList<float>();
+    Vector3 lastMousePosition = Vector2.zero;
     bool selecting = false;
     bool initialPosSent = false;
 
@@ -91,9 +92,8 @@ public class PlayerSync : MonoBehaviour {
             // handle camera orbiting for these players screenPos movements here
 			if(orbitModeInit){
                 Vector2 centerOffset = (new Vector2(screenPos.x, screenPos.y) - new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
-				CameraControl.Inst.targetOrbitQ *= Quaternion.AngleAxis(centerOffset.x * 1.5f, Vector3.up);
-				CameraControl.Inst.targetOrbitQ *= Quaternion.AngleAxis(centerOffset.y * 1.5f, -Vector3.right);
-				CameraControl.Inst.targetRadius += screenPos.z;
+
+				CameraControl.Inst.ManualOrbit(centerOffset.x, centerOffset.y, screenPos.z);
 
                 if( UtopiaGameManager.Inst )
                 {
@@ -139,12 +139,10 @@ public class PlayerSync : MonoBehaviour {
 			}
 
             if(GetComponent<NetworkView>().isMine){
-#if UNITY_ANDROID || UNITY_IOS
-                if(!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0) && ((Input.touchCount == 1) || (Application.platform == RuntimePlatform.WindowsEditor)))
-#else
-                if (!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0))
-#endif
-                    screenPos += new Vector3(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y")) * 10f;
+                bool drawningOnScreen = (Input.touchSupported && Input.touchCount == 1 && !Input.GetMouseButtonDown(0) && Input.GetMouseButton(0)) || (!Input.GetMouseButtonDown(0) && Input.GetMouseButton(0));
+                if (drawningOnScreen)
+                    screenPos += new Vector3(Input.mousePosition.x - lastMousePosition.x, -(Input.mousePosition.y - lastMousePosition.y));
+                lastMousePosition = Input.mousePosition;
             }
 
             screenPos.x = Mathf.Clamp(screenPos.x, 0f, Screen.width);
@@ -293,7 +291,6 @@ public class PlayerSync : MonoBehaviour {
 
             if( a != null )
             {
-                a.SaveFamilyTree();
                 SendCaptureAssemblyRPC(a.ToFileString());
 
 				// Single-player
@@ -325,7 +322,8 @@ public class PlayerSync : MonoBehaviour {
         }
 
         Instantiate(PersistentGameManager.Inst.pingBurstObj, capturedObj.Position, Quaternion.identity);
-        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.captureClip, capturedObj.Position);
+		CaptureNet_Manager.Inst.UIAudioSource.clip = PersistentGameManager.Inst.captureClip;
+		CaptureNet_Manager.Inst.UIAudioSource.Play();
         editing = true;
         //capturedObj.Destroy();
         capturedObj.Destroy();
@@ -362,7 +360,8 @@ public class PlayerSync : MonoBehaviour {
         foreach(Jellyfish someJelly in Jellyfish.all)
             someJelly.Destroy();
 
-        AudioSource.PlayClipAtPoint(PersistentGameManager.Inst.captureClip, Vector3.zero);
+        CaptureNet_Manager.Inst.UIAudioSource.clip = PersistentGameManager.Inst.captureClip;
+		CaptureNet_Manager.Inst.UIAudioSource.Play();
         Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, Vector3.zero, Random.rotation) as Transform;
         JellyFishCreator newJellyCreator = newJellyTrans.GetComponent<JellyFishCreator>();
         newJellyCreator.changeHead(head);
@@ -380,9 +379,10 @@ public class PlayerSync : MonoBehaviour {
     void CaptureAssembly(string assemblyStr)
     {
         float distFromCamToSpawn = 5.0f;
-        AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
+		CaptureNet_Manager.Inst.UIAudioSource.clip = JellyfishPrefabManager.Inst.pingClip;
+		CaptureNet_Manager.Inst.UIAudioSource.Play();
         Assembly a = new Assembly(assemblyStr, null, null);
-		CameraControl.Inst.selectedAssembly = a;
+		CameraControl.Inst.selectedCaptureObj = a;
         a.spawnPosition = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
         CaptureEditorManager.capturedObj = a;
 
@@ -394,7 +394,8 @@ public class PlayerSync : MonoBehaviour {
     void CaptureUCreature()
     {
         float distFromCamToSpawn = 5.0f;
-        AudioSource.PlayClipAtPoint(JellyfishPrefabManager.Inst.pingClip, Vector3.zero);
+        CaptureNet_Manager.Inst.UIAudioSource.clip = JellyfishPrefabManager.Inst.pingClip;
+		CaptureNet_Manager.Inst.UIAudioSource.Play();
         SpringCreature c = new SpringCreature();
         c.transform.position = Camera.main.transform.position + Camera.main.transform.forward * distFromCamToSpawn;
         CaptureEditorManager.capturedObj = c;
@@ -493,10 +494,14 @@ public class PlayerSync : MonoBehaviour {
 
     public void ToggleOrbitPlayer(NetworkPlayer player)
     {
-        if (CaptureNet_Manager.Inst.orbitPlayers.Contains(player))
+        if (CaptureNet_Manager.Inst.orbitPlayers.Contains(player)) {
             CaptureNet_Manager.Inst.orbitPlayers.Remove(player);
-        else
+			CameraControl.Inst.SetMode_GalleryAuto();
+		}
+        else {
             CaptureNet_Manager.Inst.orbitPlayers.Add(player);
+			CameraControl.Inst.SetMode_UserOrbit();
+		}
     }
 
     // Notifies server when a player sync object is spawned

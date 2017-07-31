@@ -28,19 +28,28 @@ public class FoodPellet {
     int id = -1;
     public int Id { get { return id; } }
 	float energy = 10f;
-    public float Energy { get { return energy; } set { energy = value; if (viewer != null) { viewer.Scale = energy / maxEnergy; } } }
+    public float Energy { get { return energy; } set { energy = value; } }
 	float maxEnergy = 10f;
 	public bool cull = false;
+
+
+    // Cognogenesis
+    bool cognoQuickKill = true;
+    bool activated = false;
+    bool captured = false;
+    public bool Activated { get { return activated; } set { activated = value; if (activated) { captured = false; } } }
+    public bool Captured { get { return captured; } set { captured = value; } }
 
     // For Olympics
     public Assembly owner = null; // to restrict energy consumption to just this entity
 
-    FoodPelletViewer viewer = null;
+    public FoodPelletViewer viewer = null;
     public bool Visible
     {
         get { return viewer.Visible; }
         set { viewer.Visible = value; }
     }
+
 
 	public FoodPellet(Vector3 position, Assembly owner_ = null){
 		worldPosition = position;
@@ -69,24 +78,54 @@ public class FoodPellet {
 
     public void Update(){
 
-		if(energy < 0f){
+        if (Cognogenesis_Networking.Inst) {
+
+            // Enforce lifetime
+            if (!activated && MuseManager.Inst.TouchingForehead) {
+                if(!captured)
+                    Energy -= (1f - MuseManager.Inst.LastConcentrationMeasure) * 0.25f;
+            }
+            else if (cognoQuickKill && !captured)
+                Energy -= NodeController.physicsStep * 0.25f;
+        }
+
+		if (energy < 0f){
 			WorldSizeController.Inst.AdvanceWorldTick();
 			cull = true;
 		}
 
+        if (CognoAmalgam.Inst != null && Random.Range(0f, 1f) >= 0.6f && !CognoAmalgam.Inst.IsInside(WorldPosition))
+            velocity += -WorldPosition.normalized * NodeController.physicsStep * 8;
+
+
         // Destroy nodes outside of worlds
+		/*
         if (!WorldSizeController.Inst.WithinBoundary(worldPosition) && Environment.Inst)
         {
             cull = true;
         }
+		*/
 
-		worldPosition += velocity * NodeController.physicsStep;
-		velocity = Vector3.MoveTowards(velocity, Vector3.zero, NodeController.physicsStep * 4f);
-		if(viewer != null)
-			viewer.Position = worldPosition;
+		viewer.gameObject.GetComponent<Rigidbody>().isKinematic = !viewer.gameObject.GetComponent<GrabbableObject>().IsGrabbed();
+		if(viewer.gameObject.GetComponent<GrabbableObject>().IsGrabbed()) {
+			WorldPosition = viewer.gameObject.transform.position;
+			velocity = viewer.gameObject.GetComponent<Rigidbody>().velocity;
+		}
+		else {
+			worldPosition += velocity * NodeController.physicsStep;
+			velocity = Vector3.MoveTowards(velocity, Vector3.zero, NodeController.physicsStep * 4f);
+		}
 
-	} // End of Update().
+        if (viewer != null) {
+            viewer.Position = worldPosition;
+            viewer.Scale = (energy / maxEnergy) * 0.5f/* * (activated? 1f : Random.Range(0.3f, 0.5f))*/;
+        }
+    } // End of Update().
 
+    public static bool WithinBoundary(Vector3 worldPosition)
+    {
+        return !(Mathf.Sqrt(Mathf.Pow(worldPosition.x / NodeController.Inst.worldSphereScale.x, 2f) + Mathf.Pow(worldPosition.y / NodeController.Inst.worldSphereScale.y, 2f) + Mathf.Pow(worldPosition.z / NodeController.Inst.worldSphereScale.z, 2f)) > 1f);
+    }
 
 	public void Destroy(){
         all.Remove(this);

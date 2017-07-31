@@ -17,7 +17,7 @@ public class EnergySource : MonoBehaviour {
 		transform.rotation *= Quaternion.AngleAxis(Time.deltaTime * 30f, transform.right);
 		transform.rotation *= Quaternion.AngleAxis(Time.deltaTime * 10f, transform.forward);
 
-		if(energy <= 0f)
-			Destroy(gameObject);
+		//if(energy <= 0f)
+			//Destroy(gameObject);
 	}
 }

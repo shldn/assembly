@@ -50,13 +50,18 @@ public class PersistentGameManager : MonoBehaviour {
 	public string serverCapturedAssem = "";
 	public string capturedWorldFilename = "";
 
+	bool cognogenesisNet = true;
+
 
 	void Awake () {
-
+        //cognogenesisNet = Application.loadedLevelName == "Cognogenesis";
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
-        if(CaptureNet_Manager.Inst == null && (!ViewerOnlyApp || (ViewerOnlyApp && ViewerConnectsWithPhones)))
+            captureMgr = gameObject.AddComponent<CaptureNet_Manager>();
+        if(!cognogenesisNet && CaptureNet_Manager.Inst == null && (!ViewerOnlyApp || (ViewerOnlyApp && ViewerConnectsWithPhones)))
             gameObject.AddComponent<CaptureNet_Manager>();
+		//if( cognogenesisNet && !cognoNetMgr )
+            //cognoNetMgr = gameObject.AddComponent<Cognogenesis_Networking>();
 		if( !assemRadar )
             assemRadar = gameObject.AddComponent<AssemblyRadar>();
 
@@ -74,6 +79,7 @@ public class PersistentGameManager : MonoBehaviour {
                 qrCodeTexture = Resources.Load("Textures/Capture_QR_Code") as Texture;
         }
 
+        if(!Debug.isDebugBuild)
         cursorLock = !IsClient && !IsLightServer;
 
         if (IsServer)
@@ -160,7 +166,10 @@ public class PersistentGameManager : MonoBehaviour {
         }
     }
 
+    void OnLevelWasLoaded(int level) {
+        TrailMeshPool.Clear();
+    }
+
     // Helper function to make sure singleton instance exists and is initialized
     public void Touch() { }
-
 }

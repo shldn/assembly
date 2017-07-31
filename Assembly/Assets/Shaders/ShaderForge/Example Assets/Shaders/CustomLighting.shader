@@ -1,3 +1,7 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
 // Shader created with Shader Forge v1.00 
 // Shader Forge (c) Neat Corporation / Joachim Holmer - http://www.acegikmo.com/shaderforge/
 // Note: Manually altering this data may prevent you from opening it in Shader Forge
@@ -40,7 +44,7 @@ Shader "Shader Forge/Examples/Custom Lighting" {
             };
             VertexOutput vert (VertexInput v) {
                 VertexOutput o;
-                o.pos = mul(UNITY_MATRIX_MVP, float4(v.vertex.xyz + v.normal*0.05,1));
+                o.pos = UnityObjectToClipPos(float4(v.vertex.xyz + v.normal*0.05,1));
                 return o;
             }
             fixed4 frag(VertexOutput i) : COLOR {
@@ -91,12 +95,12 @@ Shader "Shader Forge/Examples/Custom Lighting" {
             VertexOutput vert (VertexInput v) {
                 VertexOutput o;
                 o.uv0 = v.texcoord0;
-                o.normalDir = mul(_Object2World, float4(v.normal,0)).xyz;
-                o.tangentDir = normalize( mul( _Object2World, float4( v.tangent.xyz, 0.0 ) ).xyz );
+                o.normalDir = mul(unity_ObjectToWorld, float4(v.normal,0)).xyz;
+                o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
                 o.binormalDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
-                o.posWorld = mul(_Object2World, v.vertex);
+                o.posWorld = mul(unity_ObjectToWorld, v.vertex);
                 float3 lightColor = _LightColor0.rgb;
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
                 return o;
             }
@@ -162,12 +166,12 @@ Shader "Shader Forge/Examples/Custom Lighting" {
             VertexOutput vert (VertexInput v) {
                 VertexOutput o;
                 o.uv0 = v.texcoord0;
-                o.normalDir = mul(_Object2World, float4(v.normal,0)).xyz;
-                o.tangentDir = normalize( mul( _Object2World, float4( v.tangent.xyz, 0.0 ) ).xyz );
+                o.normalDir = mul(unity_ObjectToWorld, float4(v.normal,0)).xyz;
+                o.tangentDir = normalize( mul( unity_ObjectToWorld, float4( v.tangent.xyz, 0.0 ) ).xyz );
                 o.binormalDir = normalize(cross(o.normalDir, o.tangentDir) * v.tangent.w);
-                o.posWorld = mul(_Object2World, v.vertex);
+                o.posWorld = mul(unity_ObjectToWorld, v.vertex);
                 float3 lightColor = _LightColor0.rgb;
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 TRANSFER_VERTEX_TO_FRAGMENT(o)
                 return o;
             }

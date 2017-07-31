@@ -1,3 +1,7 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
 // Shader created with Shader Forge v1.00 
 // Shader Forge (c) Neat Corporation / Joachim Holmer - http://www.acegikmo.com/shaderforge/
 // Note: Manually altering this data may prevent you from opening it in Shader Forge
@@ -55,9 +59,9 @@ Shader "Shader Forge/Examples/LightCone" {
             VertexOutput vert (VertexInput v) {
                 VertexOutput o;
                 o.uv0 = v.texcoord0;
-                o.normalDir = mul(_Object2World, float4(v.normal,0)).xyz;
-                o.posWorld = mul(_Object2World, v.vertex);
-                o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+                o.normalDir = mul(unity_ObjectToWorld, float4(v.normal,0)).xyz;
+                o.posWorld = mul(unity_ObjectToWorld, v.vertex);
+                o.pos = UnityObjectToClipPos(v.vertex);
                 return o;
             }
             fixed4 frag(VertexOutput i) : COLOR {

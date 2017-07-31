@@ -23,6 +23,8 @@ public class GrabbableObject : MonoBehaviour {
   protected bool grabbed_ = false;
   protected bool hovered_ = false;
 
+  public Vector3 positionUpdate = Vector3.zero;
+
   public bool IsHovered() {
     return hovered_;
   }

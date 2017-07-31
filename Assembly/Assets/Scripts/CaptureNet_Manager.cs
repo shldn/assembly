@@ -7,6 +7,7 @@ using System.Collections.Generic;
 public class CaptureNet_Manager : MonoBehaviour {
 
 	public static CaptureNet_Manager Inst = null;
+    public static bool HasOrbitPlayers { get { return Inst != null && Inst.orbitPlayers.Count > 0; } }
 
     // Multiplayer variables
 
@@ -45,11 +46,14 @@ public class CaptureNet_Manager : MonoBehaviour {
     int connectingBlock = 0;
     bool hostListReceived = false;
 
+	AudioSource uiAudioSource;
+	public AudioSource UIAudioSource { get { return uiAudioSource; } }
+
 
     void Awake(){
 		Inst = this;
 
-        if (PersistentGameManager.IsClient)
+        if (PersistentGameManager.IsClient && Config.useMasterServer)
             InitializeClient();
         else
             InitializeServer();
@@ -73,9 +77,14 @@ public class CaptureNet_Manager : MonoBehaviour {
 
         tempServerName = serverTagline;
 
-        InvokeRepeating("ReregisterMasterServer", 30 * 60, 30 * 60);
+        if(Config.useMasterServer)
+            InvokeRepeating("ReregisterMasterServer", 30 * 60, 30 * 60);
     }
 
+		uiAudioSource = gameObject.AddComponent<AudioSource>();
+		uiAudioSource.spatialBlend = 0f;
+
+    } // End of Awake().
     void InitializeClient() {
         if (PersistentGameManager.IsClient && !useKhanServerList)
             RequestMasterServerHostList();
@@ -101,12 +110,19 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void UpdateClient() {
         connectCooldown -= Time.deltaTime;
-        // Cycle through available IPs to connect to.
-        if (useKhanServerList && (connectToIP.Count > 0) && (PersistentGameManager.IsClient) && (Network.peerType == NetworkPeerType.Disconnected) && (connectCooldown <= 0f) && (!ClientAdminMenu.Inst.showMenu || !PersistentGameManager.IsAdminClient)) {
-            Network.Connect(connectToIP[ipListConnect], connectionPort);
-            ipListConnect = (ipListConnect + 1) % connectToIP.Count;
-
-            connectCooldown = 0.5f;
+        if ((Network.peerType == NetworkPeerType.Disconnected) && (PersistentGameManager.IsClient)) {
+            if((connectCooldown <= 0f) && (!ClientAdminMenu.Inst.showMenu || !PersistentGameManager.IsAdminClient)) {
+                if (!Config.useMasterServer && Config.fallbackServerIP != "") {
+                    Network.Connect(Config.fallbackServerIP, connectionPort);
+                    connectCooldown = 0.5f;
+                }
+                // Cycle through available IPs to connect to.
+                else if (useKhanServerList && (connectToIP.Count > 0)) {
+                    Network.Connect(connectToIP[ipListConnect], connectionPort);
+                    ipListConnect = (ipListConnect + 1) % connectToIP.Count;
+                    connectCooldown = 0.5f;
+                }
+            }
         }
     }
 
@@ -116,6 +132,17 @@ public class CaptureNet_Manager : MonoBehaviour {
             Network.InitializeServer(maxNumberOfPlayers, connectionPort, !Network.HavePublicAddress());
             MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
         }
+        // Replaced for the merge, not clear if this was needed.
+        //// If player is not connected, run the ConnectWindow function.
+        //if( PersistentGameManager.IsServer )
+        //{
+        //    if ((Network.peerType == NetworkPeerType.Disconnected) && !showNameServer)
+        //    {
+        //        // Create the server.
+        //        Network.InitializeServer(maxNumberOfPlayers, connectionPort, !Network.HavePublicAddress());
+        //        if(Config.useMasterServer)
+        //            MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
+        //    }
 
         if (KeyInput.GetKeyUp(KeyCode.Q))
             showQRCode = !showQRCode;
@@ -202,7 +229,7 @@ public class CaptureNet_Manager : MonoBehaviour {
                 GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), "Connecting to server...");
             }
         }
-        if (PersistentGameManager.IsClient && (Network.peerType == NetworkPeerType.Disconnected) && !useKhanServerList && Time.frameCount > connectingBlock + 10) {
+        if (PersistentGameManager.IsClient && (Network.peerType == NetworkPeerType.Disconnected) && Config.useMasterServer && !useKhanServerList && Time.frameCount > connectingBlock + 10) {
             GUI.skin = AssemblyEditor.Inst.guiSkin;
             GUI.skin.button.font = PrefabManager.Inst.assemblyFont;
             GUI.skin.label.font = PrefabManager.Inst.assemblyFont;
@@ -401,8 +428,10 @@ public class CaptureNet_Manager : MonoBehaviour {
 
     void ReregisterMasterServer()
     {
-        MasterServer.UnregisterHost();
-        MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
+        if (Config.useMasterServer){
+            MasterServer.UnregisterHost();
+            MasterServer.RegisterHost(masterServerGameType, serverName, serverTagline);
+        }
     }
 
     [RPC] // Server receives this from client when they send a jellyfish back.
@@ -413,6 +442,8 @@ public class CaptureNet_Manager : MonoBehaviour {
 
         float distInFrontOfCam = 10f;
         Vector3 newJellyPos = Camera.main.transform.position + (Camera.main.transform.forward * distInFrontOfCam) + (Random.insideUnitSphere * 0.6f * distInFrontOfCam);
+        uiAudioSource.clip = PersistentGameManager.Inst.pushClip;
+        uiAudioSource.Play();
         PlayInstantiationEffect(newJellyPos);
 
         Transform newJellyTrans = Instantiate(JellyfishPrefabManager.Inst.jellyfish, newJellyPos, Random.rotation) as Transform;
@@ -431,7 +462,7 @@ public class CaptureNet_Manager : MonoBehaviour {
     {
 		print("PushAssembly()");
         //if (!GameManager.Inst)
-            //return;
+        //return;
 
 
         if (PersistentGameManager.IsLightServer && !PersistentGameManager.ViewerConnectsWithPhones) {
@@ -447,7 +478,8 @@ public class CaptureNet_Manager : MonoBehaviour {
     public void ReleaseAssembly(string assemblyStr) {
         // Ensure assemblies are dropped in at a viable position, relative to the camera.
         Vector3 assemblyNewPos = Camera.main.transform.position + (Camera.main.transform.forward * 20f) + (Random.insideUnitSphere * 10f);
-
+        uiAudioSource.clip = PersistentGameManager.Inst.pushClip;
+        uiAudioSource.Play();
         PlayInstantiationEffect(assemblyNewPos);
         PersistentGameManager.Inst.EnviroImpulse(assemblyNewPos, 30f);
 

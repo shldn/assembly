@@ -119,7 +119,7 @@ public class PlayerController : MonoBehaviour {
     bool targetArrivalY = false;
 
     public float targetDistFromDest = 0.1f;
-    NavMeshAgent navAgent = null;
+    UnityEngine.AI.NavMeshAgent navAgent = null;
     public GameObject goToIndicatorPrefab = null;
     GameObject goToIndicator = null;
 
@@ -130,7 +130,7 @@ public class PlayerController : MonoBehaviour {
 
     Player followedPlayer = null;
 
-    NavMeshPath testNavPath = null;
+    UnityEngine.AI.NavMeshPath testNavPath = null;
 
     public bool targetRotActive = false;
     public float targetRot = 0f;
@@ -180,7 +180,7 @@ public class PlayerController : MonoBehaviour {
 	void Awake(){
         animator = GetComponent<Animator>();
         animatorHelper = GetComponent<AnimatorHelper>();
-        testNavPath = new NavMeshPath();
+        testNavPath = new UnityEngine.AI.NavMeshPath();
 
         // disable click to move for assembly
         clickToMove = false;
@@ -189,7 +189,7 @@ public class PlayerController : MonoBehaviour {
 
     void Start(){
         if(isLocalPlayer){
-            navAgent = gameObject.AddComponent<NavMeshAgent>();
+            navAgent = gameObject.AddComponent<UnityEngine.AI.NavMeshAgent>();
             navAgent.angularSpeed = 9999f;
             navAgent.height = 3.5f;
 
@@ -233,7 +233,7 @@ public class PlayerController : MonoBehaviour {
             }
             else{
                 pathfindingDest.SetActive(false);
-                if(navAgent.pathStatus != NavMeshPathStatus.PathInvalid)
+                if(navAgent.pathStatus != UnityEngine.AI.NavMeshPathStatus.PathInvalid)
                     navAgent.SetDestination(transform.position);
             }
 
@@ -270,11 +270,11 @@ public class PlayerController : MonoBehaviour {
                 if (clickToMove && (ctmiFrames == 0)) {
                     RaycastHit mouseHit = new RaycastHit();
                     if (Physics.Raycast(Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f)), out mouseHit, 1 << LayerMask.NameToLayer("ground"))){
-                        NavMeshHit navHit = new NavMeshHit();
-                        if (NavMesh.SamplePosition(mouseHit.point, out navHit, 1f, 1)){
-                            NavMesh.CalculatePath(transform.position, navHit.position, -1, testNavPath);
+                        UnityEngine.AI.NavMeshHit navHit = new UnityEngine.AI.NavMeshHit();
+                        if (UnityEngine.AI.NavMesh.SamplePosition(mouseHit.point, out navHit, 1f, 1)){
+                            UnityEngine.AI.NavMesh.CalculatePath(transform.position, navHit.position, -1, testNavPath);
 
-                            if(testNavPath.status == NavMeshPathStatus.PathComplete){
+                            if(testNavPath.status == UnityEngine.AI.NavMeshPathStatus.PathComplete){
                                 goToIndicator.transform.position = navHit.position;
                                 goToIndicator.SetActive(true);
                             }
@@ -330,7 +330,7 @@ public class PlayerController : MonoBehaviour {
 
         // Propel the character.
         moveVector = (MathHelper.MoveAngleUnitVector(forwardAngle) * moveSpeed) + (MathHelper.MoveAngleUnitVector(forwardAngle + 90) * strafeSpeed);
-        if(useNavMesh && navAgent && navAgent.enabled && (navAgent.pathStatus != NavMeshPathStatus.PathInvalid)){
+        if(useNavMesh && navAgent && navAgent.enabled && (navAgent.pathStatus != UnityEngine.AI.NavMeshPathStatus.PathInvalid)){
             GetComponent<Rigidbody>().useGravity = false;
             GetComponent<Rigidbody>().isKinematic = true;
             navAgent.enabled = true;
@@ -564,8 +564,8 @@ public class PlayerController : MonoBehaviour {
     }
     public void SetNavDestination(Vector3 pos){
         followedPlayer = null;
-        NavMeshHit navHit = new NavMeshHit();
-        if (NavMesh.SamplePosition(pos, out navHit, 10f, 1)){
+        UnityEngine.AI.NavMeshHit navHit = new UnityEngine.AI.NavMeshHit();
+        if (UnityEngine.AI.NavMesh.SamplePosition(pos, out navHit, 10f, 1)){
             holdNavDest = navHit.position;
             navDestHeld = true;
         }
@@ -574,8 +574,8 @@ public class PlayerController : MonoBehaviour {
 
     public void GoToPlayer(Player player){
         followedPlayer = null;
-        NavMeshHit navHit = new NavMeshHit();
-        if (NavMesh.SamplePosition(player.gameObject.transform.position, out navHit, 10f, 1)){
+        UnityEngine.AI.NavMeshHit navHit = new UnityEngine.AI.NavMeshHit();
+        if (UnityEngine.AI.NavMesh.SamplePosition(player.gameObject.transform.position, out navHit, 10f, 1)){
             holdNavDest = navHit.position;
             navDestHeld = true;
             targetDistFromDest = 2.5f;

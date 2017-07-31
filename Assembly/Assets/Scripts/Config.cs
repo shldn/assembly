@@ -14,6 +14,11 @@ public class IpPortPair
 public static class Config {
 
     // Graphics Config
+    public static float resetTime = 30f * 60f; // half an hour
+
+    // Networking Config
+    public static bool useMasterServer = true;
+    public static string fallbackServerIP = "127.0.0.1";
 
 
     // Viewer Config
@@ -23,9 +28,22 @@ public static class Config {
     // Controller Config
 
 
+    // EEG Config
+    public static string LSLStream = "ConcentrationStream";
+
+
+    // Cognogenesis Config
+    public static string cognoIP = "132.239.235.116";
+
+    // Is view from inside or from outside.
+    // values in ["inside","outside"]
+    public static string cognoView = "";
+
+
+    // Blip Config
+    public static bool enableBlips = false;
 
     static Config () {
-        Debug.LogError("Config constructor");
         Read("config.txt");
 	}
 
@@ -55,11 +73,23 @@ public static class Config {
                         case "graphics":
                             ReadGraphics(arr[i].Obj);
                             break;
+                        case "network":
+                            ReadNetwork(arr[i].Obj);
+                            break;
                         case "viewer":
                             ReadViewer(arr[i].Obj);
                             break;
                         case "controller":
                             ReadController(arr[i].Obj);
+                            break;
+                        case "eeg":
+                            ReadEEG(arr[i].Obj);
+                            break;
+                        case "cognogenesis":
+                            ReadCognogenesis(arr[i].Obj);
+                            break;
+                        case "blips":
+                            ReadBlips(arr[i].Obj);
                             break;
                         default:
                             Debug.LogError("Config type " + arr[i].Obj.GetString("type").Trim() + " not handled yet.");
@@ -75,7 +105,19 @@ public static class Config {
     }
 
     static void ReadGraphics(JSONObject obj) {
+        foreach (KeyValuePair<string, JSONValue> v in obj) {
+            if (v.Key.Trim() == "resetTime")
+                resetTime = (float)v.Value.Number;
+        }
+    }
 
+    static void ReadNetwork(JSONObject obj) {
+        foreach (KeyValuePair<string, JSONValue> v in obj) {
+            if (v.Key.Trim() == "server_ip")
+                fallbackServerIP = v.Value.Str.Trim();
+            if (v.Key.Trim().ToLower() == "usemasterserver")
+                useMasterServer = v.Value.Boolean;
+        }
     }
 
     static void ReadViewer(JSONObject obj) {
@@ -87,6 +129,33 @@ public static class Config {
 
     static void ReadController(JSONObject obj) {
 
+    }
+
+    static void ReadEEG(JSONObject obj) {
+        foreach (KeyValuePair<string, JSONValue> v in obj) {
+            if (v.Key.Trim() == "LSLStream")
+                LSLStream = v.Value.Str.Trim();
+            if (v.Key.Trim() == "enableMutationOnFocus")
+                NeuroScaleDemo.enableMutationOnFocus = v.Value.Boolean;
+            if (v.Key.Trim() == "focusedTimeToLaunchMutation")
+                NeuroScaleDemo.timeAtZeroToStartTest = (float)v.Value.Number;
+        }
+    }
+
+    static void ReadCognogenesis(JSONObject obj) {
+        foreach (KeyValuePair<string, JSONValue> v in obj) {
+            if (v.Key.Trim() == "server_ip")
+                cognoIP = v.Value.Str.Trim();
+            if (v.Key.Trim().ToLower() == "view")
+                cognoView = v.Value.Str.Trim().ToLower();
+        }
+    }
+
+    static void ReadBlips(JSONObject obj) {
+                foreach (KeyValuePair<string, JSONValue> v in obj) {
+            if (v.Key.Trim() == "enableBlips")
+                enableBlips = v.Value.Boolean;
+        }
     }
 
     static void AddControllerAddresses(JSONValue v) {

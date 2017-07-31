@@ -51,87 +51,53 @@ public class TransitionManager : MonoBehaviour {
 	// Update is called once per frame
 	void Update(){
 
+		float targetFade = 0f;
+		float fadeTime = 0f;
+
         // Scene setup. All dark, all quiet--wait until scene is ready to go.
         if(transitionType == TransitionType.initialize){
             fadeAlpha = 1f;
-            
-            if(JellyfishGameManager.Inst){
-                zoomJelly = Jellyfish.all[Random.Range(0, Jellyfish.all.Count)];
-                CameraControl.Inst.selectedJellyfish = zoomJelly;
-
-                CameraControl.Inst.radius = 0f;
-                CameraControl.Inst.targetRadius = CameraControl.Inst.maxRadius;
-            }
-
-            if(NodeController.Inst && CameraControl.Inst){
-                CameraControl.Inst.radius = 1000f;
-				CameraControl.Inst.targetRadius = 200f;
-            }
-
-
             transitionType = TransitionType.fadeIn;
         }
 
-        // Scene setup. All dark, all quiet--wait until scene is ready to go.
+        // Fade in to/reveal scene.
         if(transitionType == TransitionType.fadeIn){
-            fadeAlpha = Mathf.SmoothDamp(fadeAlpha, 0f, ref fadeVel, fadeInTime);
-            fadeAlpha = Mathf.MoveTowards(fadeAlpha, 0f, 0.1f * Time.deltaTime);
+			targetFade = 0f;
+			fadeTime = fadeInTime;
+
+			// Switch to normal mode once faded completely in.
             if(fadeAlpha == 0f)
                 transitionType = TransitionType.normal;
 
-            CameraControl.Inst.smoothTime = Mathf.Lerp(0.5f, 5f, fadeAlpha);
-
             // If we wanna change levels, we jump to fadeOut.
-            if(targetLevel != Application.loadedLevel){
+            if(targetLevel != Application.loadedLevel)
                 transitionType = TransitionType.fadeOut;
-            }
         }
 
-        // Scene setup. All dark, all quiet--wait until scene is ready to go.
+        // Scene running as normal.
         if(transitionType == TransitionType.normal){
-
-            if(CameraControl.Inst.selectedJellyfish){
-                CameraControl.Inst.centerOffset = CameraControl.Inst.center - Vector3.zero;
-                CameraControl.Inst.selectedJellyfish = null;
-                zoomJelly = null;
-            }
-
             fadeAlpha = 0f;
+
             // If we wanna change levels, we jump to fadeOut.
-            if(targetLevel != Application.loadedLevel){
+            if(targetLevel != Application.loadedLevel)
                 transitionType = TransitionType.fadeOut;
-            }
         }
 
-        // Scene setup. All dark, all quiet--wait until scene is ready to go.
+        // Scene exit--fade out.
         if(transitionType == TransitionType.fadeOut){
+			targetFade = 1f;
+			fadeTime = fadeOutTime;
 
-            if(JellyfishGameManager.Inst){
-                if(!zoomJelly){
-                    zoomJelly = Jellyfish.all[Random.Range(0, Jellyfish.all.Count)];
-                    CameraControl.Inst.selectedJellyfish = zoomJelly;
-                    CameraControl.Inst.centerOffset = CameraControl.Inst.center - zoomJelly.transform.position;
-
-                }
-                CameraControl.Inst.minRadius = 0f;
-                CameraControl.Inst.targetRadius = 0f;
-                CameraControl.Inst.smoothTime = 0.3f;
-            }
-            if(NodeController.Inst){
-                CameraControl.Inst.targetRadius = CameraControl.Inst.radius + 100f;
-                CameraControl.Inst.maxRadius = CameraControl.Inst.targetRadius;
-            }
-
-            fadeAlpha = Mathf.SmoothDamp(fadeAlpha, 1f, ref fadeVel, fadeOutTime);
-            fadeAlpha = Mathf.MoveTowards(fadeAlpha, 1f, 0.1f * Time.deltaTime);
+			// Load next level once we've fadedo out completely.
             if(fadeAlpha == 1f)
                 transitionType = TransitionType.waitFornext;
         }
 
-        if(transitionType == TransitionType.waitFornext){
+        if(transitionType == TransitionType.waitFornext)
             Application.LoadLevel(targetLevel);
-        }
 
+		fadeAlpha = Mathf.SmoothDamp(fadeAlpha, targetFade, ref fadeVel, fadeTime);
+        fadeAlpha = Mathf.MoveTowards(fadeAlpha, targetFade, 0.01f * Time.deltaTime); // Make sure we actually get there...
         AudioListener.volume = 1f - fadeAlpha;
         
 	} // End of Update().
@@ -145,7 +111,5 @@ public class TransitionManager : MonoBehaviour {
 
     } // End of OnGUI().
 
-
-    
-
+	
 } // End of Transitionmanager.

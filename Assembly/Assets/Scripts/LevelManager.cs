@@ -27,8 +27,9 @@ public class LevelManager {
     // Must be called from each level's game manager - or we refactor to have a game manager that is never destroyed across levels.
     public static void InputHandler()
     {
-        if (Input.GetKeyUp(KeyCode.Equals))
+		if (Input.GetKeyUp(KeyCode.Equals)) {
             LoadNextLevel();
+		}
         if (Input.GetKeyUp(KeyCode.Minus))
             LoadPrevLevel();
 

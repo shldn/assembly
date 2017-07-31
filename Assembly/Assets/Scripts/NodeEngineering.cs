@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿/*
+using UnityEngine;
 using System.Collections;
 
 public class NodeEngineering : MonoBehaviour {
@@ -107,13 +108,6 @@ public class NodeEngineering : MonoBehaviour {
 
             uiLockout = senseHandle.hovered || senseHandle.held || actuateHandle.hovered || actuateHandle.held;
         }
-		/*
-        else if(selectedAssembly && selectedAssembly.physicsObject){
-            // Rotate assembly manually.
-            selectedAssembly.physicsObject.transform.rotation *= Quaternion.Inverse(Quaternion.AngleAxis(WesInput.editHorizontalThrottle * 90f * (Time.deltaTime / Time.timeScale), Quaternion.Inverse(selectedAssembly.physicsObject.transform.rotation) * Camera.main.transform.up));
-            selectedAssembly.physicsObject.transform.rotation *= Quaternion.Inverse(Quaternion.AngleAxis(WesInput.editVerticalThrottle * 90f * (Time.deltaTime / Time.timeScale), Quaternion.Inverse(selectedAssembly.physicsObject.transform.rotation) * -Camera.main.transform.right));
-        }
-		*/
 	} // End of OnGUI().
 } // End of NodeEngineering.
 
@@ -162,3 +156,4 @@ public class ActiveButton {
     } // End of Draw().
 
 } // End of ActiveButton.
+*/

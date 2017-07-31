@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +19,13 @@ public class NodeController : MonoBehaviour {
 	public static float physicsStep = 0.05f;
 
 	int foodPellets = 150;
+	float foodCooldown = 0f;
+	public float foodRate = 0.5f;
 	public static int assemStage1Size = 20;
+	bool foodSeeded = false; // Once max food pellets are hit at the beginning, we start employing the foodCooldown.
 
-	int minNodes = 3;
-	int maxNodes = 15;
+	int minNodes = 8;
+	int maxNodes = 20;
 
 	public int worldNodeThreshold = 1000;
     bool showLeaderboard = true;
@@ -51,6 +55,10 @@ public class NodeController : MonoBehaviour {
     // testing
     public int fps = -1;
 
+    // culling helpers
+    List<Node> nodesToRemove = new List<Node>();
+    List<FoodPellet> foodToRemove = new List<FoodPellet>();
+
     // Controller (Light Server) Variables
     MVCBridge mvcBridge = new MVCBridge();
     public float messageFPS = -1;
@@ -64,6 +72,10 @@ public class NodeController : MonoBehaviour {
     System.DateTime lastResetTime = System.DateTime.Now;
     public System.DateTime lastPlayerActivityTime = System.DateTime.Now;
 
+    // Performance helpers
+    // Application.loadedLevelName allocates memory unnecessarily, this approach saves that and helps on garbage collection events.
+    private string loadedLevelName = "";
+    public string LoadedLevelName { get { return loadedLevelName; } }
 
 	float leaderboardFadeIn = 0f;
 
@@ -92,8 +104,12 @@ public class NodeController : MonoBehaviour {
 
 	} // End of Awake().
 
+        SceneManager.sceneLoaded += onSceneLoaded;
+    } // End of Awake().
 
     void Start(){
+		PersistentGameManager.Inst.Touch();
+
 		// Are we loading a saved world for a singleplayer run?
 		if(Application.loadedLevelName.Equals("SoupPhysics") && (PersistentGameManager.Inst.capturedWorldFilename != "")){
 			EnvironmentManager.Load(PersistentGameManager.Inst.capturedWorldFilename);
@@ -106,10 +122,17 @@ public class NodeController : MonoBehaviour {
 
         if (PersistentGameManager.IsLightServer)
             PersistentGameManager.Inst.Touch();
+
+        if(PersistentGameManager.IsServer)
+            gameObject.AddComponent<ResetManager>();
     } // End of Start().
 
+    void onSceneLoaded(Scene scene, LoadSceneMode mode) {
+        loadedLevelName = scene.name;
+    }
 
-	public string GetRandomName(){
+
+    public string GetRandomName(){
 		return nameList[Random.Range(0, nameList.Length)];
 	} // End of GetRandomName().
 
@@ -123,7 +146,24 @@ public class NodeController : MonoBehaviour {
 		}
 	} // End of ClearAll().
 
+    void Cull() {
 
+        // Culling
+        nodesToRemove.Clear();
+        for (int i = 0; i < Node.getAll.Count; i++)
+            if (Node.getAll[i].cull)
+                nodesToRemove.Add(Node.getAll[i]);
+        foreach (Node n in nodesToRemove)
+            Node.getAll.Remove(n);
+
+        foodToRemove.Clear();
+        for (int i = 0; i < FoodPellet.all.Count; i++)
+            if (FoodPellet.all[i].cull)
+                foodToRemove.Add(FoodPellet.all[i]);
+        foreach (FoodPellet f in foodToRemove)
+            f.Destroy();
+    }
+    
 	void Update(){
 
         if (fps != -1)
@@ -141,8 +181,8 @@ public class NodeController : MonoBehaviour {
 			Assembly curAssem = Assembly.getAll[i];
 
 			if(curAssem.cull){
-				if(Network.peerType == NetworkPeerType.Server)
-					AssemblyRadar.Inst.GetComponent<NetworkView>().RPC("RemoveBlip", RPCMode.Others, curAssem.Id);
+				//if(Network.peerType == NetworkPeerType.Server)
+					//AssemblyRadar.Inst.GetComponent<NetworkView>().RPC("RemoveBlip", RPCMode.Others, curAssem.Id);
 				Assembly.getAll.RemoveAt(i);
 				i--;
 			}else
@@ -152,19 +192,7 @@ public class NodeController : MonoBehaviour {
 		foreach(FoodPellet someFood in FoodPellet.all)
 			someFood.Update();
 
-		// Culling
-		Node[] tempHoldNodes = new Node[Node.getAll.Count];
-		Node.getAll.CopyTo(tempHoldNodes);
-		for(int i = 0; i < tempHoldNodes.Length; i++)
-			if(tempHoldNodes[i].cull)
-				Node.getAll.Remove(tempHoldNodes[i]);
-
-
-		FoodPellet[] tempHoldFood = new FoodPellet[FoodPellet.all.Count];
-		FoodPellet.all.CopyTo(tempHoldFood);
-		for(int i = 0; i < tempHoldFood.Length; i++)
-			if(tempHoldFood[i].cull)
-				tempHoldFood[i].Destroy();
+        Cull();
 
 		// Maintain octrees
 		FoodPellet.AllFoodTree.Maintain();
@@ -172,97 +200,42 @@ public class NodeController : MonoBehaviour {
 		Assembly.AllAssemblyTree.Maintain();
 
 		int cycleDir = Mathf.FloorToInt((Time.time * 0.2f) % 12);
-
-		// Show details on selected assembly.
-        if(CameraControl.Inst) {
-            Assembly selectedAssem = CameraControl.Inst.selectedAssembly;
-            Assembly hoveredAssem = CameraControl.Inst.hoveredPhysAssembly;
-            if (selectedAssem) {
-
-                // debug
-                if (KeyInput.GetKeyDown(KeyCode.N))
-                    CameraControl.Inst.selectedAssembly.AddRandomNode();
-
-                /*
-                foreach(KeyValuePair<Triplet, PhysNode> kvp in selectedAssem.NodeDict){
-                    Triplet curPos = kvp.Key;
-                    PhysNode curNode = kvp.Value;
-                    // Render nodes
-                    GLDebug.DrawCube(selectedAssem.spawnPosition + HexUtilities.HexToWorld(curPos), Quaternion.identity, Vector3.one * 0.5f, kvp.Value.cubeTransform.renderer.material.color + new Color(0.1f, 0.1f, 0.1f), 0f, false);
-                    // Centerpoint
-                    //GLDebug.DrawCube(selectedAssem.WorldPosition, Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
-                }*/
-
-                // Duplicate assembly using string IO methods
-                if (KeyInput.GetKey(KeyCode.D)) {
-                    new Assembly(IOHelper.AssemblyToString(selectedAssem), null, null, false);
-                }
-            }
-        }
-		/*
-			// Determine closest fit with hovered assembly.
-			if(hoveredAssem){
-				Triplet[] testThisBuiltin = new Triplet[hoveredAssem.NodeDict.Keys.Count];
-				Triplet[] againstThisBuiltin = new Triplet[selectedAssem.NodeDict.Keys.Count];
-				hoveredAssem.NodeDict.Keys.CopyTo(testThisBuiltin, 0);
-				selectedAssem.NodeDict.Keys.CopyTo(againstThisBuiltin, 0);
-
-				int bestRotation;
-				Triplet bestTranslation;
-				SnugFit(testThisBuiltin, againstThisBuiltin, out bestRotation, out bestTranslation);
-				foreach(KeyValuePair<Triplet, PhysNode> kvp in hoveredAssem.NodeDict){
-					Triplet curPos = kvp.Key;
-					PhysNode curNode = kvp.Value;
-					// Render nodes
-					GLDebug.DrawCube(selectedAssem.WorldPosition + HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(curPos, bestRotation) + bestTranslation), Quaternion.identity, Vector3.one, Color.cyan, 0f, false);
-					// Center point
-					GLDebug.DrawCube(selectedAssem.WorldPosition + HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(Triplet.zero, bestRotation) + bestTranslation), Quaternion.identity, Vector3.one * 0.5f, Color.white, 0f, false);
-					GLDebug.DrawLine(selectedAssem.WorldPosition, selectedAssem.WorldPosition + HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(Triplet.zero, bestRotation) + bestTranslation), Color.white, 0f, false);
-				}
-			}
-		}
-
-		GLDebug.DrawLine(Vector3.zero, Vector3.forward, Color.blue);
-		GLDebug.DrawLine(Vector3.zero, Vector3.right, Color.red);
-		GLDebug.DrawLine(Vector3.zero, Vector3.up, Color.green);
-		GLDebug.DrawCube(HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(new Triplet(2, 0, 0), Mathf.FloorToInt(Time.time % 12))), HexUtilities.HexDirToRot(Mathf.FloorToInt(Time.time % 12)));
-		for(int i = 0; i < 12; i++){
-			GLDebug.DrawCube(HexUtilities.HexToWorld(HexUtilities.HexRotateAxis(new Triplet(2, 0, 0), i)), HexUtilities.HexDirToRot(i), Vector3.one * 0.5f, Color.green);
-		}
-		print(Mathf.FloorToInt(Time.time % 12));
-		*/
+		
 
 		// Control environment.
-		if(Environment.Inst && Environment.Inst.isActiveAndEnabled){
+		if(Environment.Inst && Environment.Inst.isActiveAndEnabled && ClientTest.Inst == null){
 			if(PersistentGameManager.IsServer){
 				// Populate world if less than 50% max pop.
-				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.7f)){
-					Vector3 assemblySpawnPos = WorldOffset + Vector3.Scale(Random.insideUnitSphere, worldSize);
-					Assembly newAssembly = Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
+				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.75f)){
+					Vector3 assemblySpawnPos = WorldOffset + Vector3.Scale(Random.onUnitSphere, Vector3.one * worldSize * Random.Range(0.6f, 2f));
+                    if(Environment.Inst.IsInside(assemblySpawnPos))
+    					Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
 				}
 
-                /*
 				// Cull the herd if too many assemblies.
 				if(populationControl && (Node.getAll.Count > worldNodeThreshold)){
-					float highestHealth = 9999f;
-					Assembly worstAssembly = null;
+                    float lowestHealth = Mathf.Infinity;
+                    Assembly worstAssembly = null;
 					for(int i = 0; i < Assembly.getAll.Count; i++){
-						if(Assembly.getAll[i].Health < highestHealth){
-							highestHealth = Assembly.getAll[i].Health;
+						if(Assembly.getAll[i].Health < lowestHealth && (NeuroScaleDemo.Inst == null || NeuroScaleDemo.Inst.TargetNode == null || (NeuroScaleDemo.Inst.TargetNode != null && NeuroScaleDemo.Inst.TargetNode.PhysAssembly != Assembly.getAll[i]))){
+							lowestHealth = Assembly.getAll[i].Health;
 							worstAssembly = Assembly.getAll[i];
 						}
 					}
 					if(worstAssembly)
 						worstAssembly.Destroy();
 				}
-                */
 
 				// Keep food at full amount.
-				if(populationControl && (FoodPellet.all.Count < foodPellets)){
+				foodCooldown -= physicsStep;
+				if(FoodPellet.all.Count == foodPellets)
+					foodSeeded = true;
+				if(populationControl && (FoodPellet.all.Count < foodPellets) && (!foodSeeded || (foodCooldown <= 0f))){
+					foodCooldown = 1f / foodRate;
 					Vector3 foodPosition = Vector3.zero;
 					if(foodInitialized && (WorldSizeController.Inst.WorldAnim == WorldAnimType.capsule)){
-						float randomSeed = Random.Range(-worldSize.z * 0.5f, worldSize.z * 0.5f);
-						float radius = worldSize.x * 0.5f;
+						float randomSeed = Random.Range(-worldSize * 0.5f, worldSize * 0.5f);
+						float radius = worldSize * 0.5f;
 						float spiralIntensity = 0.2f;
 						foodPosition = WorldSizeController.Inst.WorldOrigin + new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
 					}else
@@ -296,10 +269,9 @@ public class NodeController : MonoBehaviour {
                 }
 
 
-
-                if(!VRDevice.isPresent)
-					for (int i = 0; i < relativesToHighlight.Count - 1; i++)
-						GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount * leaderboardFadeIn));
+                //if(!VRDevice.isPresent)
+					//for (int i = 0; i < relativesToHighlight.Count - 1; i++)
+						//GLDebug.DrawLine(relativesToHighlight[i].Position, relativesToHighlight[i + 1].Position, new Color(0f, 1f, 1f, fadeAmount * leaderboardFadeIn));
             }
             else
                 currentLeaderIndex = -1;
@@ -320,7 +292,7 @@ public class NodeController : MonoBehaviour {
             }
         }
 
-
+		/*
 		// Server-local capture.
 		if(Input.GetKeyDown(KeyCode.Insert)){
 			Assembly assemToCap = CameraControl.Inst.assemblyOfInterest;
@@ -330,6 +302,7 @@ public class NodeController : MonoBehaviour {
 			PersistentGameManager.Inst.serverCapturedAssem = assemToCap.ToString();
 			Application.LoadLevel("CaptureClient");
 		}
+		*/
 
         float delayBetweenMessages = (messageFPS <= 0f) ? -1f : 1.0f / messageFPS;
         if(delayBetweenMessages <= (System.DateTime.Now - lastMessageSent).TotalSeconds && mvcBridge.controllerReadyToSend)
@@ -515,41 +488,6 @@ public class NodeController : MonoBehaviour {
 
 	void OnGUI(){
 
-		/*
-		string infoString = "";
-		infoString += "Nodes: " + Node.getAll.Count + "\n";
-		infoString += "Assemblies: " + Assembly.getAll.Count + "\n";
-		infoString += "Framerate: " + (1f / Time.deltaTime).ToString("F1") + "\n";
-
-		GUI.skin.label.alignment = TextAnchor.UpperLeft;
-		GUI.skin.label.fontSize = 12;
-		GUI.Label(new Rect(10f, 10f, Screen.width - 20f, Screen.height - 20f), infoString);
-
-		if(!PersistentGameManager.IsClient){
-			foreach(Assembly someAssem in Assembly.getAll){
-
-				Vector3 screenPos = Camera.main.WorldToScreenPoint(someAssem.Position);
-				//screenPos.y = Screen.height - screenPos.y;
-				if(screenPos.z < 0f)
-					continue;
-
-				GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-				GUI.skin.label.fontSize = Mathf.Clamp(Mathf.CeilToInt(20f / (screenPos.z * 0.01f)), 0, 50);
-				
-
-				if(relativesToHighlight.Contains(someAssem))
-					GUI.color = Color.cyan;
-				else
-					GUI.color = Color.white;
-
-				string familyString = "";
-				foreach(int someInt in someAssem.familyTree)
-					familyString += someInt + " ";
-				GUI.Label(MathUtilities.CenteredSquare(screenPos.x, screenPos.y, 1000f), familyString);
-			}
-		}
-		*/
-
         // Leaderboard
         if (PersistentGameManager.IsServer && ViewerController.Inst && !ViewerController.Hide && showLeaderboard)
         {
@@ -621,6 +559,8 @@ public class NodeController : MonoBehaviour {
 
     public static void UpdateBirthCount(int assemblyID, int generationRemoved)
     {
+		return;
+
         float posGen = (generationRemoved < 0) ? 0f : (float)generationRemoved;
 		if(generationRemoved < 10){
 			if(!assemblyScores.ContainsKey(assemblyID))
@@ -635,6 +575,8 @@ public class NodeController : MonoBehaviour {
 
     private static void MaintainLeaderboardOnBirth(int assemblyID, List<int> leaderList)
     {
+		return;
+
         int idx = LeaderboardIndex(assemblyID, leaderList);
         if (idx != -1)
             AdjustExistingLeaderBoardEntry(assemblyID, idx, leaderList);
@@ -642,7 +584,10 @@ public class NodeController : MonoBehaviour {
             InsertLeaderBoardEntry(assemblyID, leaderList);
     }
 
-    private static void AdjustExistingLeaderBoardEntry(int assemblyID, int currentIdx, List<int> leaderList){
+    private static void AdjustExistingLeaderBoardEntry(int assemblyID, int currentIdx, List<int> leaderList)
+	{
+		return;
+
         // find new insert point
         int newIdx = -1;
         for (int i = 1; i <= currentIdx && assemblyScores[leaderList[currentIdx - i]] < assemblyScores[assemblyID]; ++i)
@@ -657,6 +602,8 @@ public class NodeController : MonoBehaviour {
 
     private static void InsertLeaderBoardEntry(int assemblyID, List<int> leaderList)
     {
+		return;
+
         if (!ViewerController.Inst || ViewerController.Hide)
             return;
         if (leaderList.Count < leaderboardMaxSize || assemblyScores[leaderList.Last<int>()] < assemblyScores[assemblyID])
@@ -677,6 +624,8 @@ public class NodeController : MonoBehaviour {
 
     public static void UpdateDeathCount(int assemblyID, int generationRemoved)
     {
+		return;
+
         float posGen = (generationRemoved < 0) ? 0f : (float)generationRemoved;
 		if(generationRemoved < 10){
 			if (!assemblyScores.ContainsKey(assemblyID))
@@ -691,6 +640,8 @@ public class NodeController : MonoBehaviour {
 
     private static void MaintainLeaderboardOnDeath(int assemblyID, List<int> leaderList)
     {
+		return;
+
         int idx = LeaderboardIndex(assemblyID, leaderList);
         if (idx != -1)
         {
@@ -744,7 +695,6 @@ public class NodeController : MonoBehaviour {
         if (a == null)
             Debug.LogError("Could not find assembly " + capture.id);
         else {
-            a.SaveFamilyTree();
             // if Viewer is connected to mobile
             if (PersistentGameManager.ViewerConnectsWithPhones)
                 ViewerData.Inst.messages.Add(new CaptureData(capture.id, (a).ToFileString()));

@@ -44,10 +44,12 @@ public class AssemblyRadar : MonoBehaviour {
 		boneTexture = Resources.Load<Texture2D>("Textures/bone_pixel");
 
 		CameraControl.Inst.targetRadius = 100f;
-	} // End of Start().
-	
 
-	void Update(){
+        enabled = Config.enableBlips;
+    } // End of Start().
+
+
+    void Update(){
 		// Broadcast assembly position updates across network.
 		if(Network.peerType == NetworkPeerType.Server){
 			if(assemToBroadcast >= Assembly.getAll.Count)
@@ -122,7 +124,7 @@ public class AssemblyRadar : MonoBehaviour {
 
 	void LateUpdate(){
 		if((CaptureEditorManager.capturedObj == null) && selectedBlip != null){
-			CameraControl.Inst.targetOrbitQ = Quaternion.LookRotation(selectedBlip.position, Camera.main.transform.up);
+			//CameraControl.Inst.targetOrbitQ = Quaternion.LookRotation(selectedBlip.position, Camera.main.transform.up);
 			CameraControl.Inst.targetRadius = selectedBlip.position.magnitude + 30f;
 
 			//GLDebug.DrawLine(selectedBlip.position, Camera.main.ScreenToWorldPoint(new Vector3(Screen.width * 0.55f, Screen.height * 0.5f, 100f)));

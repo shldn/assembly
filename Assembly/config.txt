@@ -8,6 +8,12 @@
         "type": "graphics",
     },
     {
+        "#" : "network settings - if not using master server, can specify ip address to connect to (ad hoc networking solution)",
+        "type": "network",
+        "useMasterServer": true,
+        "server_ip": "127.0.0.1",
+    },    
+    {
         "#" : "viewer settings",
         "type": "viewer",
         "controllers":[
@@ -23,5 +29,17 @@
         "#" : "controller settings",
         "type": "controller",
     },
-
+    {
+        "#" : "eeg settings - enableMutationOnFocus - when focusing on an assembly for focusedTimeToLaunchMutation seconds, mutation test is launched",
+        "type": "eeg",
+        "enableMutationOnFocus": true,
+        "focusedTimeToLaunchMutation": 5,
+        "LSLStream": "ConcentrationStreamErik",
+    },
+    {
+        "#" : "cognogenesis settings - view = inside or outside",
+        "type": "cognogenesis",
+        "server_ip": "132.239.235.103",
+        "view":"inside"
+    },
 ]    

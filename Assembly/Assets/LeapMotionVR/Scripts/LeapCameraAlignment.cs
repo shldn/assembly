@@ -17,12 +17,12 @@ public class LeapCameraAlignment : MonoBehaviour {
   protected KeyCode recenter = KeyCode.R;
 
   [Header("Alignment Targets (Advanced Mode)")]
-  [SerializeField]
-  protected Transform leftCamera;
-  [SerializeField]
-  protected Transform rightCamera;
-  [SerializeField]
-  protected Transform centerCamera;
+  //[SerializeField]
+  public Transform leftCamera;
+  //[SerializeField]
+  public Transform rightCamera;
+  //[SerializeField]
+  public Transform centerCamera;
   [System.NonSerialized]
   public List<LeapImageBasedMaterial> warpedImages;
 
@@ -321,7 +321,7 @@ public class LeapCameraAlignment : MonoBehaviour {
 	// IMPORTANT: This method MUST be called after OVRManager.LateUpdate.
   // FIXME Use EnableUpdateOrdering script to ensure correct call order -> Declare relative script ordering
   void LateUpdate() {
-    if (!(IsFinite (leftCamera.position) && IsFinite (leftCamera.rotation) &&
+    if (leftCamera && centerCamera && rightCamera  && !(IsFinite (leftCamera.position) && IsFinite (leftCamera.rotation) &&
           IsFinite (centerCamera.position) && IsFinite (centerCamera.rotation) &&
           IsFinite (rightCamera.position) && IsFinite (rightCamera.rotation))) {
       // Uninitialized camera positions
@@ -437,7 +437,7 @@ public class LeapCameraAlignment : MonoBehaviour {
     long tweenAddition = (long)((1f - tweenRewind) * (float)(latestTime - rewindTime));
     TransformData past = TransformAtTime(rewindTime + tweenAddition);
 
-    if (!eyeAlignment.use) {
+    if (leftCamera && centerCamera && rightCamera && !eyeAlignment.use) {
       // Derive eye alignment from the left & right cameras
       Vector3 virtualBaseline = leftCamera.position - rightCamera.position;
       if (!(IsFinite (virtualBaseline) &&
@@ -453,7 +453,7 @@ public class LeapCameraAlignment : MonoBehaviour {
     float separate = (tweenPosition * deviceInfo.baseline + (1f - tweenPosition) * eyeAlignment.ipd);
     float forward = tweenPosition * tweenForward * deviceInfo.focalPlaneOffset;
     
-    if (!eyeAlignment.use) {
+    if (leftCamera && centerCamera && rightCamera && !eyeAlignment.use) {
       // Move Virtual cameras to align position & orientation
       centerCamera.rotation = past.rotation;
       centerCamera.position = past.position + centerCamera.forward * forward;

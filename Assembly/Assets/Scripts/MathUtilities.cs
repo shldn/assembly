@@ -110,4 +110,23 @@ public static class MathUtilities {
 		return p;
 	} // End of CalculateBezierPoint().
 
+
+	public static Transform FindChildRecursively(this GameObject gameObject, string childName){
+		Transform[] allChildren = gameObject.GetComponentsInChildren<Transform>();
+		for(int i = 0; i < allChildren.Length; i++)
+			if(allChildren[i].gameObject.name.Equals(childName))
+				return allChildren[i];
+		return null;
+	} // End of FindChildRecursively().
+
+
+	public static float LinToSmoothLerp(float input) {
+		return 0.5f + ((Mathf.Sin(Mathf.PI * (input - 0.5f)) * 0.5f));
+	} // End of LinearLerpToSmooth().
+
+
+	public static float SmoothPingPong01(float input) {
+		return Mathf.Sin(input * Mathf.PI);
+	} // End of LinearLerpToSmooth().
+
 } // End of MathUtilities.

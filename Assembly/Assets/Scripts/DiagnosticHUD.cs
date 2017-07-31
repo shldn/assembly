@@ -69,32 +69,42 @@ public class DiagnosticHUD : MonoBehaviour {
 
     string GetDiagnosticString()
     {
-        string str = "";
-        str += string.Format("Running Time:  {0:F2} hrs", (Time.time / (60f * 60f)));
-        str += "\n";
-        str += string.Format("FPS: {0:F1}", fps);
-        str += "\n";
-        str += string.Format("Mem: {0:F1} MB", memUsage);
-        str += "\n";
-        str += "Assemblies Allocated: " + NodeController.Inst.NumAssembliesAllocated;
-        str += "\n";
-		str += "Num Nodes: " + Node.getAll.Count;
-        str += "\n";
-        str += "Num Assemblies: " + Assembly.getAll.Count;
-        str += "\n";
-        str += "Game Objects: " + goCount;
-        str += "\n";
-        str += "Num Assembly Scores: " + NodeController.assemblyScores.Count;
-        str += "\n";
-        str += "Num Assembly Names: " + NodeController.Inst.assemblyNameDictionary.Count;
+        string str = ""
+        + string.Format("Running Time:  {0:F2} hrs", (Time.time / (60f * 60f)))
+        + "\n"
+        + string.Format("FPS: {0:F1}", fps)
+        + "\n"
+        + string.Format("Mem: {0:F1} MB", memUsage)
+        + "\n"
+        + "Assemblies Allocated: " + NodeController.Inst.NumAssembliesAllocated
+        + "\n"
+        + "Num Nodes: " + Node.getAll.Count
+        + "\n"
+        + "Num Assemblies: " + Assembly.getAll.Count
+        + "\n"
+        + "Num Food Pellets: " + FoodPellet.all.Count
+        + "\n"
+        + "Game Objects: " + goCount
+        + "\n"
+        + "Num Assembly Scores: " + NodeController.assemblyScores.Count
+        + "\n"
+        + "Num Assembly Names: " + NodeController.Inst.assemblyNameDictionary.Count;
 
+        string neuroStr = "";
+        string museStr = "";
         if (NeuroScaleDemo.Inst != null)
         {
-            str += "\n";
-            str += "EnviroScale: " + (NeuroScaleDemo.Inst.enviroScale * 100f).ToString("F0") + "%";
+            neuroStr = "\n"
+            + "EnviroScale: " + (NeuroScaleDemo.Inst.enviroScale * 100f).ToString("F0") + "%";
+        }
+        if (MuseLSLManager.Exists && MuseLSLManager.Inst.IsConnected) {
+            museStr = "\n"
+            + "Stream: " + MuseLSLManager.Inst.LSLStreamName
+            + "\n"
+            + "LSL Value: " + MuseLSLManager.Inst.LastConcentrationMetric.ToString("F2");
         }
 
-        return str;
+        return str + neuroStr + museStr;
     }
 
     void OnGUI()

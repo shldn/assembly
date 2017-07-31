@@ -52,7 +52,7 @@ public class NodeViewer {
             if(cubeTransform != null)
                 cubeTransform.GetComponent<Renderer>().enabled = value;
             if (trail)
-                trail.render = value;
+                trail.Render = value;
             if (viewCone)
                 viewCone.render = value;
         }
@@ -61,7 +61,9 @@ public class NodeViewer {
     // Constructors
     public NodeViewer(Vector3 position, NodeProperties properties, AssemblyProperties aProperties)
     {
-        cubeTransform = MonoBehaviour.Instantiate(ViewerController.Inst.physNodePrefab, position, Quaternion.identity) as Transform;
+        cubeTransform = ViewerController.Inst.NodePool.Get().transform;
+        cubeTransform.position = position;
+        cubeTransform.rotation = Quaternion.identity;
         cubeTransform.GetComponent<PhysNode>().nodeViewer = this;
         if(aProperties != null) {
             cubeTransform.name = "Node-" + aProperties.id;
@@ -122,12 +124,6 @@ public class NodeViewer {
             viewConeTrans = null;
         }
 
-        if (trail)
-        {
-            GameObject.Destroy(trail.gameObject);
-            GameObject.Destroy(trail);
-            trail = null;
-        }
     }
 
     void CreateViewCone()
@@ -147,14 +143,26 @@ public class NodeViewer {
             trail.lifeTime *= 0.3f;
     }
 
-    public void Destroy()
+    public void Destroy(bool immediate = false)
     {
-        if(trail)
+        if(trail) {
             trail.transform.parent = null;
+            GameObject.Destroy(trail.gameObject);
+		}
         CleanupNodeEffects();
 
         if (cubeTransform) {
-            MonoBehaviour.Destroy(cubeTransform.gameObject);
+            if (immediate)
+                ViewerController.Inst.NodePool.Release(cubeTransform.gameObject);
+            else {
+                Shrink shrinker = cubeTransform.gameObject.GetComponent<Shrink>();
+                if(shrinker == null)
+                    shrinker = cubeTransform.gameObject.AddComponent<Shrink>();
+                shrinker.enabled = true;
+                shrinker.StartShrink();
+                shrinker.Done += OnNodeDoneShrinking;
+            }
+        }
             cubeTransform = null;
         }
     }
@@ -195,9 +203,18 @@ public class NodeViewer {
 			if (viewConeTrans)
 				UpdateViewConeTransform();
 		}
+
+		if(trail)
+			trail.fade = Mathf.Sin(Time.time);
     }
 
     public void UpdateTransform(Vector3 pos, Quaternion rot, bool smoothed = false) {
+		if(cubeTransform.GetComponent<GrabbableObject>().IsGrabbed()) {
+			if (viewConeTrans)
+				UpdateViewConeTransform();
+			return;
+		}
+
 		smoothMotion = smoothed;
 		if(smoothed) {
 			positionTarget = pos;
@@ -227,6 +244,12 @@ public class NodeViewer {
         viewCone.fovAngle = nodeProperties.fieldOfView;
     }
 
-
+    void OnNodeDoneShrinking(GameObject go, Vector3 initScale) {
+        Shrink shrinker = cubeTransform.gameObject.GetComponent<Shrink>();
+        if (shrinker != null)
+            shrinker.Done -= OnNodeDoneShrinking;
+        go.transform.localScale = initScale;
+        ViewerController.Inst.NodePool.Release(go);
+    }
 
 }
