@@ -57,7 +57,6 @@ public class PersistentGameManager : MonoBehaviour {
         //cognogenesisNet = Application.loadedLevelName == "Cognogenesis";
         isClient = Application.loadedLevelName == "CaptureClient";
         DontDestroyOnLoad(this);
-            captureMgr = gameObject.AddComponent<CaptureNet_Manager>();
         if(!cognogenesisNet && CaptureNet_Manager.Inst == null && (!ViewerOnlyApp || (ViewerOnlyApp && ViewerConnectsWithPhones)))
             gameObject.AddComponent<CaptureNet_Manager>();
 		//if( cognogenesisNet && !cognoNetMgr )

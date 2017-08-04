@@ -102,8 +102,6 @@ public class NodeController : MonoBehaviour {
         WorldSizeController.Inst.WorldSize = worldSize;
         HandleCommandLineArgs();
 
-	} // End of Awake().
-
         SceneManager.sceneLoaded += onSceneLoaded;
     } // End of Awake().
 
@@ -207,7 +205,7 @@ public class NodeController : MonoBehaviour {
 			if(PersistentGameManager.IsServer){
 				// Populate world if less than 50% max pop.
 				if(populationControl && (Node.getAll.Count < worldNodeThreshold * 0.75f)){
-					Vector3 assemblySpawnPos = WorldOffset + Vector3.Scale(Random.onUnitSphere, Vector3.one * worldSize * Random.Range(0.6f, 2f));
+					Vector3 assemblySpawnPos = WorldOffset + Vector3.Scale(Random.onUnitSphere, worldSize * Random.Range(0.6f, 2f));
                     if(Environment.Inst.IsInside(assemblySpawnPos))
     					Assembly.RandomAssembly(assemblySpawnPos, Quaternion.identity, Random.Range(minNodes, maxNodes));
 				}
@@ -234,8 +232,8 @@ public class NodeController : MonoBehaviour {
 					foodCooldown = 1f / foodRate;
 					Vector3 foodPosition = Vector3.zero;
 					if(foodInitialized && (WorldSizeController.Inst.WorldAnim == WorldAnimType.capsule)){
-						float randomSeed = Random.Range(-worldSize * 0.5f, worldSize * 0.5f);
-						float radius = worldSize * 0.5f;
+						float randomSeed = Random.Range(-worldSize.x * 0.5f, worldSize.x * 0.5f);
+						float radius = worldSize.x * 0.5f;
 						float spiralIntensity = 0.2f;
 						foodPosition = WorldSizeController.Inst.WorldOrigin + new Vector3(Mathf.Sin(randomSeed * spiralIntensity) * radius, Mathf.Cos(randomSeed * spiralIntensity) * radius, randomSeed * 3f);
 					}else

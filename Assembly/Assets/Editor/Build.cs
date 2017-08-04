@@ -29,4 +29,10 @@ public class Build : MonoBehaviour {
         string error = BuildPipeline.BuildPlayer(scenes, "./bin/assembly_cogno.exe", BuildTarget.StandaloneWindows, BuildOptions.AutoRunPlayer);
     }
 
+    [MenuItem("Assembly/Build Light Server")]
+    public static void BuildLightServer() {
+        string[] scenes = new string[] { sceneFolder + "LightSoup.unity" };
+        string error = BuildPipeline.BuildPlayer(scenes, "./bin/assembly_light.exe", BuildTarget.StandaloneWindows, BuildOptions.AutoRunPlayer);
+    }
+
 }

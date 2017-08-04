@@ -43,7 +43,8 @@ public class AssemblyRadar : MonoBehaviour {
 		muscleTexture = Resources.Load<Texture2D>("Textures/muscle_pixel");
 		boneTexture = Resources.Load<Texture2D>("Textures/bone_pixel");
 
-		CameraControl.Inst.targetRadius = 100f;
+        if(CameraControl.Inst)
+    		CameraControl.Inst.targetRadius = 100f;
 
         enabled = Config.enableBlips;
     } // End of Start().

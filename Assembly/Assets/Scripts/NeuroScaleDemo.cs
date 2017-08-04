@@ -71,7 +71,8 @@ public class NeuroScaleDemo : MonoBehaviour {
 		if(!simulateMuse && !MuseManager.Inst.TouchingForehead && isActive && ClientTest.Inst == null) {
 			isActive = false;
 			targetNode = null;
-			CameraControl.Inst.SetMode_GalleryAuto();
+            if(CameraControl.Inst)
+    			CameraControl.Inst.SetMode_GalleryAuto();
 			SetAllNodeVisibility(true);
 		}
 

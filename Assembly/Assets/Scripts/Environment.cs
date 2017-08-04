@@ -28,7 +28,7 @@ public class Environment : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		if(!overrideScale)
-			transform.localScale = NodeController.Inst.worldSphereScale;
+			transform.localScale = WorldSizeController.Inst.WorldSize;
 
         // Fade outer shell if camera gets close.
         if (Camera.main) {
@@ -40,6 +40,6 @@ public class Environment : MonoBehaviour {
     }
 
     public bool IsInside(Vector3 pos) {
-        return (Mathf.Sqrt(Mathf.Pow(pos.x / NodeController.Inst.worldSphereScale.x, 2f) + Mathf.Pow(pos.y / NodeController.Inst.worldSphereScale.y, 2f) + Mathf.Pow(pos.z / NodeController.Inst.worldSphereScale.z, 2f)) <= 1f);
+        return WorldSizeController.Inst.WithinBoundary(pos);
     }
 }

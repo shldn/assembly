@@ -105,9 +105,10 @@ public class FoodPellet {
             cull = true;
         }
 		*/
-
-		viewer.gameObject.GetComponent<Rigidbody>().isKinematic = !viewer.gameObject.GetComponent<GrabbableObject>().IsGrabbed();
-		if(viewer.gameObject.GetComponent<GrabbableObject>().IsGrabbed()) {
+        GrabbableObject grabbable = (viewer != null) ? viewer.gameObject.GetComponent<GrabbableObject>() : null;
+        if(viewer != null)
+            viewer.gameObject.GetComponent<Rigidbody>().isKinematic = grabbable ? !grabbable.IsGrabbed() : true;
+		if(grabbable && grabbable.IsGrabbed()) {
 			WorldPosition = viewer.gameObject.transform.position;
 			velocity = viewer.gameObject.GetComponent<Rigidbody>().velocity;
 		}
@@ -124,7 +125,7 @@ public class FoodPellet {
 
     public static bool WithinBoundary(Vector3 worldPosition)
     {
-        return !(Mathf.Sqrt(Mathf.Pow(worldPosition.x / NodeController.Inst.worldSphereScale.x, 2f) + Mathf.Pow(worldPosition.y / NodeController.Inst.worldSphereScale.y, 2f) + Mathf.Pow(worldPosition.z / NodeController.Inst.worldSphereScale.z, 2f)) > 1f);
+        return WorldSizeController.Inst.WithinBoundary(worldPosition);
     }
 
 	public void Destroy(){

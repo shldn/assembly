@@ -163,8 +163,7 @@ public class NodeViewer {
                 shrinker.Done += OnNodeDoneShrinking;
             }
         }
-            cubeTransform = null;
-        }
+        cubeTransform = null;
     }
 
     public void Update()
@@ -245,7 +244,7 @@ public class NodeViewer {
     }
 
     void OnNodeDoneShrinking(GameObject go, Vector3 initScale) {
-        Shrink shrinker = cubeTransform.gameObject.GetComponent<Shrink>();
+        Shrink shrinker = (cubeTransform != null && cubeTransform.gameObject != null) ? cubeTransform.gameObject.GetComponent<Shrink>() : null;
         if (shrinker != null)
             shrinker.Done -= OnNodeDoneShrinking;
         go.transform.localScale = initScale;

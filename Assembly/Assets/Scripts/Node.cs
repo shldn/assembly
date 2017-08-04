@@ -263,7 +263,8 @@ public class Node {
 		if(viewer != null)
 			viewer.cubeTransform.GetComponent<Rigidbody>().isKinematic = !viewer.cubeTransform.GetComponent<GrabbableObject>().IsGrabbed();
 
-		if(viewer.cubeTransform.GetComponent<GrabbableObject>().IsGrabbed()) {
+        GrabbableObject grabbable = (viewer != null && viewer.cubeTransform) ? viewer.cubeTransform.GetComponent<GrabbableObject>() : null;
+        if (grabbable && grabbable.IsGrabbed()) {
 			delayPosition = viewer.cubeTransform.position;
 			delayRotation = viewer.cubeTransform.rotation;
 			position = delayPosition;

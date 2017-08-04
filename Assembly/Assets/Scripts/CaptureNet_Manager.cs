@@ -79,7 +79,6 @@ public class CaptureNet_Manager : MonoBehaviour {
 
         if(Config.useMasterServer)
             InvokeRepeating("ReregisterMasterServer", 30 * 60, 30 * 60);
-    }
 
 		uiAudioSource = gameObject.AddComponent<AudioSource>();
 		uiAudioSource.spatialBlend = 0f;
