@@ -35,4 +35,13 @@ public class Build : MonoBehaviour {
         string error = BuildPipeline.BuildPlayer(scenes, "./bin/assembly_light.exe", BuildTarget.StandaloneWindows, BuildOptions.AutoRunPlayer);
     }
 
+    // Viewer - counter point to the Light Server - connects to one and displays its contents.
+    [MenuItem("Assembly/Build Viewer")]
+    public static void BuildViewer() {
+        // Need to turn off Node Controller, so Node Controller is 
+        PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, "DISABLE_NODE_CONTROLLER");
+        string[] scenes = new string[] { sceneFolder + "Soup_Assemblies.unity" };
+        string error = BuildPipeline.BuildPlayer(scenes, "./bin/assembly_viewer.exe", BuildTarget.StandaloneWindows, BuildOptions.AutoRunPlayer);
+    }
+
 }

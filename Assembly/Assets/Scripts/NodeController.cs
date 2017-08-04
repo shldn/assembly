@@ -92,6 +92,9 @@ public class NodeController : MonoBehaviour {
 
 	void Awake(){
 		Inst = this;
+#if DISABLE_NODE_CONTROLLER
+        enabled = false;
+#endif
         bool isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor;
         string lineEnding = isWindows ? "\r\n" : "\n";
         TextAsset maleNamesText = Resources.Load("Text/randomwords.txt") as TextAsset;
