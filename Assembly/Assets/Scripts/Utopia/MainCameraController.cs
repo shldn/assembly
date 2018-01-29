@@ -120,7 +120,7 @@ public class MainCameraController : MonoBehaviour {
     {
 
         if(Input.GetKey(KeyCode.T) && Input.GetKey(KeyCode.P) && !screenTaken){
-            Application.CaptureScreenshot("Screenshot_II" + Time.fixedTime + ".png");
+            ScreenCapture.CaptureScreenshot("Screenshot_II" + Time.fixedTime + ".png");
             screenTaken = true;
         }
         if(!Input.GetKey(KeyCode.P))
