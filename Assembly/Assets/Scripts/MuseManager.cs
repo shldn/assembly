@@ -42,9 +42,9 @@ public class MuseManager : MonoBehaviour {
 
 
 	// Diagetic GUI
-	public Transform[] physicalCxnInds = new Transform[0];
-	Vector3 defaultPhysCxnIndScale = Vector3.one;
-	public TextMesh physText = null;
+	//public Transform[] physicalCxnInds = new Transform[0];
+	//Vector3 defaultPhysCxnIndScale = Vector3.one;
+	//public TextMesh physText = null;
 
 
     void Awake(){
@@ -58,8 +58,8 @@ public class MuseManager : MonoBehaviour {
             OSCHandler.Instance.Servers["AssemblyOSC"].server.PacketReceivedEvent += Server_PacketReceivedEvent;
 #endif
 
-		if(physicalCxnInds.Length > 0)
-			defaultPhysCxnIndScale = physicalCxnInds[0].localScale;
+		//if(physicalCxnInds.Length > 0)
+			//defaultPhysCxnIndScale = physicalCxnInds[0].localScale;
     }
 
 	void Update () {
@@ -163,8 +163,10 @@ public class MuseManager : MonoBehaviour {
 		// Sensor displays
 		float sensorRingSize = 50f * wearingHeadsetIndication;
 		float sensorRingSpacing = 10f;
+		float bottomGutter = 30;
 		for(int i = 0; i < 4; i++){
-			Vector2 sensorRectCenter = new Vector2(((Screen.width * 0.5f) - ((sensorRingSize * 1.5f) + (sensorRingSpacing * 1.5f))) + (i * (sensorRingSize + sensorRingSpacing)), (sensorRingSpacing + (sensorRingSize * 0.5f)));
+			Vector2 sensorRectCenter = new Vector2(((Screen.width * 0.5f) - ((sensorRingSize * 1.5f) + (sensorRingSpacing * 1.5f))) + (i * (sensorRingSize + sensorRingSpacing)),
+												   (sensorRingSpacing + (sensorRingSize * 0.5f) + bottomGutter));
 			Rect sensorRect = MathUtilities.CenteredSquare(sensorRectCenter.x, sensorRectCenter.y, sensorRingSize);
 			GUI.DrawTexture(sensorRect, sensorDisplayOut);
 
@@ -172,8 +174,8 @@ public class MuseManager : MonoBehaviour {
 			GUI.DrawTexture(sensorStatusRect, sensorDisplayIn);
 
 			sensorIndSizes[i] = Mathf.SmoothDamp(sensorIndSizes[i], HeadConnectionStatus[i], ref sensorIndSizeVels[i], 0.25f);
-			if(physicalCxnInds.Length > 0)
-				physicalCxnInds[i].localScale = (defaultPhysCxnIndScale * ((4f - sensorIndSizes[i]) / 3f));
+			//if(physicalCxnInds.Length > 0)
+				//physicalCxnInds[i].localScale = (defaultPhysCxnIndScale * ((4f - sensorIndSizes[i]) / 3f));
 		}
 
         GUI.skin.label.fontSize = 14;
@@ -203,14 +205,14 @@ public class MuseManager : MonoBehaviour {
 				statusStr += "\n" + (BatteryPercentage * 100f).ToString("F0") + "% battery remaining.";
 
 
-			GUI.Label(MathUtilities.CenteredSquare(Screen.width * 0.5f, ((sensorRingSize + (sensorRingSpacing)) * Mathf.Sqrt(wearingHeadsetIndication)) + 505f, 1000f), statusStr);
-			if(physText) {
-				physText.text = statusStr;
-				physText.GetComponent<Renderer>().enabled = true;
-			}
-		} else {
-			if(physText)
-				physText.GetComponent<Renderer>().enabled = false;
-		}
+			GUI.Label(MathUtilities.CenteredSquare(Screen.width * 0.5f, ((sensorRingSize + sensorRingSpacing) * Mathf.Sqrt(wearingHeadsetIndication)) + 505f + bottomGutter, 1000f), statusStr);
+			//if(physText) {
+				//physText.text = statusStr;
+				//physText.GetComponent<Renderer>().enabled = true;
+			//}
+		} //else {
+			//if(physText)
+				//physText.GetComponent<Renderer>().enabled = false;
+		//}
     }
 }
