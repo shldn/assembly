@@ -6,26 +6,5 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Logo.unity
-    guid: c83f89a3056f276488062f01490d951c
-  - enabled: 1
-    path: Assets/Scenes/Soup_Assemblies.unity
-    guid: eef52c3794403b048a7363b8d2141122
-  - enabled: 1
-    path: Assets/Scenes/Soup_Amalgams.unity
-    guid: 68d34c67ae3ee5f4bb86c36ee374ac4f
-  - enabled: 1
-    path: Assets/Scenes/JellyfishGrotto.unity
-    guid: ff052491573d8604d8118ad14c7ea076
-  - enabled: 0
-    path: Assets/Scenes/CaptureClient.unity
-    guid: 59e954aadbff1c84aa636924eaaf887f
-  - enabled: 0
-    path: Assets/Scenes/Utopia.unity
-    guid: b1800b92a21d0da41adf862d27227fb5
-  - enabled: 0
-    path: Assets/Scenes/LightSoup.unity
-    guid: ffd0e75de3533fb4a91a2c2d2096fb43
-  - enabled: 0
-    path: Assets/Scenes/Cognogenesis.unity
-    guid: 7e2c86f825a53be4180ad2c169e05e79
+    path: Assets/Scenes/Heartrate_Workbench.unity
+    guid: bbe0a2e0ce552bf43abfded901750d8e
