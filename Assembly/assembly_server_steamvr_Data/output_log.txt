@@ -1,0 +1,116 @@
+Initialize engine version: 5.6.1f1 (2860b30f0b54)
+GfxDevice: creating device client; threaded=1
+VR: OpenVR Error! OpenVR failed initialization with error code VRInitError_Init_PathRegistryNotFound: "Installation path could not be located (110)"!
+ 
+(Filename:  Line: 1028)
+
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce GTX 1060 (ID=0x1c20)
+    Vendor:   NVIDIA
+    VRAM:     6052 MB
+    Driver:   23.21.13.9101
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\Assembly-CSharp-firstpass.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\Assembly-CSharp-firstpass.dll into Unity Child Domain
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\Assembly-UnityScript-firstpass.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\Assembly-UnityScript-firstpass.dll into Unity Child Domain
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\Assembly-UnityScript.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\Assembly-UnityScript.dll into Unity Child Domain
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\UnityEngine.VR.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\UnityEngine.VR.dll into Unity Child Domain
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\LeapCSharp.NET3.5.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\LeapCSharp.NET3.5.dll into Unity Child Domain
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\Valve.Newtonsoft.Json.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\Valve.Newtonsoft.Json.dll into Unity Child Domain
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\CloudsToy.dll (this message is harmless)
+Loading C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\CloudsToy.dll into Unity Child Domain
+- Completed reload, in  0.290 seconds
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\Users\Robert\Documents\clarkecenter\assembly\Assembly\assembly_server_steamvr_Data\Managed\System.dll (this message is harmless)
+OnLevelWasLoaded was found on PlayerSync
+This message has been deprecated and will be removed in a later version of Unity.
+Add a delegate to SceneManager.sceneLoaded instead to get notifications after scene loading has completed
+ 
+(Filename:  Line: 376)
+
+OnLevelWasLoaded was found on PersistentGameManager
+This message has been deprecated and will be removed in a later version of Unity.
+Add a delegate to SceneManager.sceneLoaded instead to get notifications after scene loading has completed
+ 
+(Filename:  Line: 376)
+
+OnLevelWasLoaded was found on OVRScreenFade
+This message has been deprecated and will be removed in a later version of Unity.
+Add a delegate to SceneManager.sceneLoaded instead to get notifications after scene loading has completed
+ 
+(Filename:  Line: 376)
+
+<RI> Initializing input.
+<RI> Input initialized.
+desktop: 1920x1080 60Hz; virtual: 1920x1080 at 0,0
+<RI> Initialized touch support.
+VR: OpenVR Error! OpenVR failed initialization with error code VRInitError_Init_PathRegistryNotFound: "Installation path could not be located (110)"!
+ 
+(Filename:  Line: 1028)
+
+VR: OpenVR Error! OpenVR failed initialization with error code VRInitError_Init_PathRegistryNotFound: "Installation path could not be located (110)"!
+ 
+(Filename:  Line: 1028)
+
+WARNING: Shader Unsupported: 'Custom/Silhoutted Hatching' - Pass 'FORWARD' has no vertex shader
+WARNING: Shader Unsupported: 'Custom/Silhoutted Hatching' - Pass 'FORWARD' has no vertex shader
+WARNING: Shader Unsupported: 'Custom/Silhoutted Hatching' - Pass 'META' has no vertex shader
+UnloadTime: 1.034209 ms
+Trying to create a material from string - this is no longer supported.
+ 
+(Filename:  Line: 1086)
+
+Trying to create a material from string - this is no longer supported.
+ 
+(Filename:  Line: 1086)
+
+CheckResources () for _Main Camera (Vignetting) should be overwritten.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+CheckResources () for Background Camera (Blur) should be overwritten.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+CheckResources () for Foreground Camera (Vignetting) should be overwritten.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 0.622130 ms
+Trying to create a material from string - this is no longer supported.
+ 
+(Filename:  Line: 1086)
+
+Trying to create a material from string - this is no longer supported.
+ 
+(Filename:  Line: 1086)
+
+
+Unloading 33 unused Assets to reduce memory usage. Loaded Objects now: 2669.
+Total: 1.618049 ms (FindLiveObjects: 0.268398 ms CreateObjectMapping: 0.273139 ms MarkObjects: 0.781491 ms  DeleteObjects: 0.293925 ms)
+
+CheckResources () for Background Camera (Blur) should be overwritten.
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+6595:IOCR, ID_OPEN_CONNECTION_REQUEST
+Setting up 4 worker threads for Enlighten.
+  Thread -> id: 37bc -> priority: 1 
+  Thread -> id: 3028 -> priority: 1 
+  Thread -> id: 397c -> priority: 1 
+  Thread -> id: 3424 -> priority: 1 
