@@ -21,7 +21,6 @@ public class RaidenLaser : MonoBehaviour {
 	float scaleCoefficient = 1f;
 
 	ParticleSystem pSys;
-	
 
 
 	void Start(){
@@ -54,10 +53,13 @@ public class RaidenLaser : MonoBehaviour {
 
 		float distBetween = Vector3.Distance(pos0, pos3);
 		int vertexCount = Mathf.CeilToInt(resolution * distBetween + 1);
-		lineRenderer.material.mainTextureScale = new Vector2(distBetween * 0.01f * scaleCoefficient, 1f);
+		// lineRenderer.material.mainTextureScale = new Vector2(distBetween * 0.01f * scaleCoefficient, 1f);
+		lineRenderer.material.mainTextureScale = new Vector2(distBetween * 0.01f * scaleCoefficient, 0f);
 		lineRenderer.material.mainTextureOffset = new Vector2(textureRunner * 0.5f, 0f);
 		lineRenderer.SetVertexCount(vertexCount);
-		lineRenderer.SetWidth(width, width);
+		// lineRenderer.SetWidth(width, width);
+		lineRenderer.SetWidth(0,0);
+
 
 		if(startTrans)
 			pos1 = startTrans.position + (startTrans.forward * distBetween * 0.5f);
