@@ -1,6 +1,10 @@
+This is the current branch of this project. 
+
+It runs with Unity 5.6.6f2, which can be downloaded from:
+https://unity3d.com/get-unity/download/archive
+
 This is an automatically-generated directory for Assembly.
 UCSD Arthur C. Clarke Center 2013
-
 
 Shortcuts:
 
